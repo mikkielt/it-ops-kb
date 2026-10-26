@@ -2,7 +2,7 @@
   "id": "ST-f5lbn3aw",
   "kind": "story",
   "title": "Duplicate research is found for a paraphrased fact, not only one whose text holds the exact claimed term",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-giqleoy2",
   "sprint": "SP-n7f53pgv",
   "priority": "P3",
@@ -56,6 +56,19 @@
     "parked: SP-7s6uubs7 review"
   ],
   "notes": "Review of SP-7s6uubs7, S3, about ST-kb74yzac g2 (confirmed): real terms come from coord.py fingerprint of kb lacks: lines and are multi-word. The check reads source only: planning replaces it with a planted run. Plan check 2026-10-26: the old check read source text only; check 0 stubs two agents' paraphrased facts (no \"batch size\" in their text) on the claimed topic while agent 1 held research:public/x/y:batch-size-d2bd91, and the same facts on another article: on the base neither is found (the paraphrase should be). Ordered after BG-3rhpom4d: both change bench_multi.duplicate_research.",
-  "claimed_by": "claude-775f1f5d",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "0671e698404dd1f3e80137d1447f35b8fd95aa77",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0,'_tools')\nimport bench_multi as B,coord\nkey='research:public/x/y:'+coord.term_id('batch size',60)\nB.origin_path=lambda root:'bare';B.agent_email=lambda n:'a%d@example.com'%n\nB.claim_windows=lambda store:[(key,'multi-agent1',90.0,200.0)]\nB.bench_repro.match_facts=lambda a,b:[(0,0)]\ndef dup(path):\n    B.added_facts=lambda bare,base,email:[{'path':path,'text':'Exports send 512 records in each request (agent %s).'%email[1],'at':100.0}]\n    return B.duplicate_research('root',{'base':'b','agents':[{'coord_store':'s'}]},[{'n':1,'agent':'agent-1'},{'n':2,'agent':'agent-2'}])\non=dup('public/x/y.md');off=dup('public/x/z.md')\nprint('paraphrase on the claimed topic:',on,'on another article:',off);sys.exit(0 if on and not off else 1)\n\n"
+        ],
+        "exit": 0,
+        "sha256": "a8618e7c0afa521e"
+      }
+    ]
+  }
 }
