@@ -30,9 +30,9 @@ and each line at the terminal's columns less one (COLUMNS, else the terminal's s
 
 An entry of an unknown type, or a line that is not a JSON object, is skipped and counted; the types Claude Code writes
 that are no conversation (attachment, mode, system, summary and the like) are ignored uncounted. `--once` ends with
-`kbtail: skipped N` on stderr. While following, the process waits on coord's event log (`coord.wait`, a store that exists:
-KB_COORD_STORE, else the project's) and otherwise sleeps; either way it reads only the bytes appended since its last
-read. It writes no file. Exit codes: 0 done (also an interrupt), 2 a bad argument or a TARGET with no transcript.
+`kbtail: skipped N` on stderr. While following, the process waits on the stat of coord's store file (a store that exists:
+KB_COORD_STORE, else the project's; it opens no connection, so a lock another process holds does not delay a read) and
+otherwise sleeps; either way it reads only the bytes appended since its last read. It writes no file. Exit codes: 0 done (also an interrupt), 2 a bad argument or a TARGET with no transcript.
 `kbmon.py --follow ARGS` runs it with ARGS.
 
 Answers: what a session, or every live session of the clone, is doing right now, as a redacted line for each tool call, result and message
@@ -56,6 +56,7 @@ import redact
 
 HISTORY = 20  # lines printed before following
 WAKE_S = 1.0  # longest wait between two reads of a followed file
+STORE_POLL_S = 0.05  # seconds between two looks at the coord store file's stat
 MAX_SESSIONS = 16  # sessions followed at once; the rest are named in one line
 SCAN_S = 30  # seconds after which the live sessions are listed again
 SCAN_MIN_S = 5  # the least seconds between two lists a change of the coord store asks for
@@ -209,19 +210,31 @@ def history(path, count):
         window *= 4
 
 
+def signature(store):
+    """What the store file's stat shows (modification time and size of it and its write-ahead log), else None. It opens no
+    connection, so another process holding the store's write lock does not hold this back."""
+    sig = []
+    for suffix in ("", "-wal"):
+        try:
+            st = os.stat(store + suffix)
+            sig.append((st.st_mtime_ns, st.st_size))
+        except OSError:
+            sig.append(None)
+    return tuple(sig)
+
+
 def wake(since, store, timeout=WAKE_S):
-    """Wait up to `timeout` seconds for a coord event after `since` (without a store: just sleep); the cursor to wait from
-    next."""
+    """Wait up to `timeout` seconds for the coord store to change after `since` (without a store: just sleep); the cursor to
+    wait from next."""
     if store is None:
         time.sleep(timeout)
         return since
-    import coord
-    args = argparse.Namespace(store=store, since=since, timeout=timeout, kind=None, item=None, pid=None)
-    try:
-        return coord.wait(args, time.time)["last"]
-    except Exception:  # a store that cannot be read: wait as without one
-        time.sleep(timeout)
-        return since
+    end = time.monotonic() + timeout
+    while True:
+        now = signature(store)
+        if now != since or time.monotonic() >= end:
+            return now
+        time.sleep(min(STORE_POLL_S, max(end - time.monotonic(), 0)))
 
 
 def coord_store():
