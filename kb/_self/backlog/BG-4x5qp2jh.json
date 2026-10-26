@@ -2,7 +2,7 @@
   "id": "BG-4x5qp2jh",
   "kind": "bug",
   "title": "A feedback flag stays on its reported line number after the article is edited, so it lands on another fact",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-vlfcgmbu",
   "priority": "P3",
   "rank": 0,
@@ -43,5 +43,7 @@
   "links": [
     "parked: SP-ficl7pxl review"
   ],
-  "notes": "Plan check 2026-10-26: check 0 plants a temporary root in its own git repository and a store report naming line 14 on 2026-10-01, then commits an edit on 2026-10-05 that puts another fact on line 14; on the base the flag stays on line 14 (premise reproduced)."
+  "notes": "Plan check 2026-10-26: check 0 plants a temporary root in its own git repository and a store report naming line 14 on 2026-10-01, then commits an edit on 2026-10-05 that puts another fact on line 14; on the base the flag stays on line 14 (premise reproduced).",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
