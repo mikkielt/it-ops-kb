@@ -17,6 +17,16 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "python3 _tools/benchmarks.py run session-load --fs-usage FILE writes per class, beside file_reads, the rows opens_read (open lines with R first in the mode), descriptor_reads (read, readv, pread, preadv) and disk_reads (RdData), since one read of one file can show as all three",
+      "check": 0
+    },
+    {
+      "clause": "and a RdData line with a device and no file path adds nothing to distinct_paths",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/bench_load.py",
     "kb/_self/benchmarks.md",

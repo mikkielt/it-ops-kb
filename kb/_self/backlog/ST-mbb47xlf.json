@@ -6,7 +6,7 @@
   "sprint": "SP-m5m67goe",
   "priority": "P2",
   "rank": 0,
-  "goal": "The project's .claude/settings.json allows Bash(python3 _tools/factdiff.py *), Bash(python3 _tools/kbsettings.py *), Bash(python3 _tools/kbask.py *), Bash(python3 _tools/coord.py *) and Bash(python3 _tools/doc2query.py *) as their skill texts run them, so python3 _tools/backlog.py selfcheck's allow-rules check passes; no other rule changes",
+  "goal": "The project's .claude/settings.json allows Bash(python3 _tools/factdiff.py *), Bash(python3 _tools/kbsettings.py *), Bash(python3 _tools/kbask.py *), Bash(python3 _tools/coord.py *) and Bash(python3 _tools/doc2query.py *) as their skill texts run them, so python3 _tools/backlog.py selfcheck's allow-rules check passes",
   "checks": [
     {
       "run": [
@@ -16,9 +16,16 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "The project's .claude/settings.json allows Bash(python3 _tools/factdiff.py *), Bash(python3 _tools/kbsettings.py *), Bash(python3 _tools/kbask.py *), Bash(python3 _tools/coord.py *) and Bash(python3 _tools/doc2query.py *) as their skill texts run them, so python3 _tools/backlog.py selfcheck's allow-rules check passes",
+      "check": 0
+    }
+  ],
   "touches": [
     ".claude/settings.json",
     "kb/_self/maintaining.md"
   ],
+  "notes": "No other rule of the settings changes: the review reads the diff of .claude/settings.json.",
   "filed_in": "clone-0ea70e5c"
 }

@@ -16,6 +16,24 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "kb/_self/backlog.md's sprint Plan rules and the kb-sprint skill's plan step say that a check mapped to a goal clause reads every part of that clause (each named class, row, arm",
+      "check": 0
+    },
+    {
+      "clause": "an isolation part such as a scratch home or no forge call)",
+      "check": 0
+    },
+    {
+      "clause": "that a part no check reads is split into its own clause with its own check before the start gate",
+      "check": 0
+    },
+    {
+      "clause": "the rule is a tested question of the kb-sprint:plan set",
+      "check": 0
+    }
+  ],
   "touches": [
     "kb/_self/backlog.md",
     "skills/sprint/SKILL.md",

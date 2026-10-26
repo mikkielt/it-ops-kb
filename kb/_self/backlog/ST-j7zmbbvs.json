@@ -13,8 +13,22 @@
       "run": [
         "python3",
         "-c",
-        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport re\nfor path in ('kb/_self/benchmarks.md', 'kb/_self/reports/benchmarks.md'):\n    text = open(path, encoding='utf-8').read()\n    paras = [p for p in re.split(r'\\n\\s*\\n', text) if 'arm B' in p or 'Arm B' in p]\n    assert paras, ('no arm B paragraph', path)\n    for p in paras:\n        assert 'heavier refresh' not in p, ('an arm B paragraph still calls the pane run the heavier refresh', path)\n    assert any('--receipt' in p for p in paras), ('no arm B paragraph says the mod also runs --receipt and arm B does not', path)\n"
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport re\nfor path in ('kb/_self/benchmarks.md', 'kb/_self/reports/benchmarks.md'):\n    text = open(path, encoding='utf-8').read()\n    paras = [p for p in re.split(r'\\n\\s*\\n', text) if 'arm B' in p or 'Arm B' in p]\n    assert paras, ('no arm B paragraph', path)\n    for p in paras:\n        assert 'heavier refresh' not in p, ('an arm B paragraph still calls the pane run the heavier refresh', path)\n    assert any('--receipt' in p for p in paras), ('no arm B paragraph says the mod also runs --receipt and arm B does not', path)\n    assert any('empty' in p and ('coord' in p or 'query log' in p) for p in paras), ('no arm B paragraph says its kbmon reads an empty coord store and query log', path)\n"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb/_self/benchmarks.md and the session-load section of kb/_self/reports/benchmarks.md say, in their arm B paragraphs, that the kbmon-pane mod's first refresh also runs kbmon.py --receipt (about as costly as --once) and arm B does not, so arm B's kbmon figures understate the mod's by about one --once-sized run in a 150 s window",
+      "check": 0
+    },
+    {
+      "clause": "that arm B's kbmon reads an empty coord store and query log",
+      "check": 0
+    },
+    {
+      "clause": "no arm B paragraph calls a pane run the heavier refresh",
+      "check": 0
     }
   ],
   "touches": [

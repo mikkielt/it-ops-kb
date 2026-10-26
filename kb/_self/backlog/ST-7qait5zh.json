@@ -16,6 +16,20 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "kb/_self/backlog.md's sprint Plan rules and the kb-sprint skill's plan step say that a check which orders or bounds measured figures (timings, starts, memory) is written after the planner has measured the figures' run-to-run spread on the base or a prototype",
+      "check": 0
+    },
+    {
+      "clause": "states its margin against that spread or asserts an exact difference the code makes by construction",
+      "check": 0
+    },
+    {
+      "clause": "the rule is a tested question of the kb-sprint:plan set",
+      "check": 0
+    }
+  ],
   "touches": [
     "kb/_self/backlog.md",
     "skills/sprint/SKILL.md",
