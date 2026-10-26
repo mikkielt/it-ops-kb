@@ -2,7 +2,7 @@
   "id": "BG-jrs3k6mt",
   "kind": "bug",
   "title": "The coord hook posts no intent for a claim run as backlog.py --root X claim ID or behind a wrapper such as timeout",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-n7f53pgv",
   "priority": "P3",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "ST-bilb3nzx",
   "kind": "story",
   "title": "Any MCP client checks a research question against live claims before it starts: the kb MCP server lists coord_dedup and coord.py serve answers dedup",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-fxrzbuza",
   "sprint": "SP-n7f53pgv",
   "priority": "P2",

@@ -2,7 +2,7 @@
   "id": "ST-wu4lbbjs",
   "kind": "story",
   "title": "coord exchanges claims with any external coordination service through a JSON-lines contract: live intents and touches out, external reservations in as overlaps",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-66qfpegm",
   "sprint": "SP-n7f53pgv",
   "priority": "P2",

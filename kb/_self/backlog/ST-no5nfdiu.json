@@ -2,7 +2,7 @@
   "id": "ST-no5nfdiu",
   "kind": "story",
   "title": "The alternatives doc compares multi-agent coordination, task tracking and agent runtime tools, and says where the kb plugs into each",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-66qfpegm",
   "sprint": "SP-n7f53pgv",
   "priority": "P3",
