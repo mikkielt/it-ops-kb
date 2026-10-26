@@ -24,6 +24,27 @@
   "depends_on": [
     "BG-xao6jaon"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "The item's repro counts shown lines of the replacing smaller file with a substring test (small2 matches small28 and small29), so a correct kbtail.py showing exactly the last 2 lines gets 3 and the goal's command exits 1. How is the check made satisfiable?",
+      "options": [
+        "Operator replaces the goal's command with a whole-word count",
+        "Operator accepts the item done with the repro's one false positive"
+      ],
+      "recommendation": "Operator replaces the goal's command with a whole-word count",
+      "do": {
+        "Operator replaces the goal's command with a whole-word count": "BG-lclivroa",
+        "Operator accepts the item done with the repro's one false positive": "BG-lclivroa"
+      },
+      "class": "design",
+      "answer": "Operator replaces the goal's command with a whole-word count",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-wurbmsid review"
   ],
