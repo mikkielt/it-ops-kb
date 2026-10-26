@@ -97,11 +97,13 @@ TOKEN_COUNT = re.compile(
 # the stem of a file name (`LIMIT_TOKENS.json`); one with a credential word (`API_TOKENS`) or a secret word
 # (`SECRET_TOKENS`, `PRIVATE_TOKENS`, `KEY_TOKENS`) among its parts is no count, so it stays in the text searched.
 TOKEN_IDENT = re.compile(r"\b(?:[A-Z0-9]+_)+TOKENS(?:_[A-Z0-9]+)*\b(?!\.\w)")
-# A lower-case snake_case code identifier that ends in `token` or `tokens` with at least one other part before it
-# (`bare_token`, `def_tokens`, `read_token`), not the stem of a file name: the name of a function or variable, no
-# credential. One with a credential, secret or service part among its parts (`api_token`, `gitlab_token`) stays in the
-# text searched, as does one in upper case (`GITLAB_TOKEN`) or in mixed case, or after a credential word (`API bare_token`).
+# A lower-case snake_case code identifier that ends in `token` or `tokens` with at least one other part before it, not
+# the stem of a file name. It is the name of a function or variable, no credential, only where every part before the
+# ending is on the closed list CODE_PARTS (`bare_token`, `def_tokens`, `read_token`); any other part (`registration_token`,
+# `vault_token`, `api_token`, `gitlab_token`) keeps the identifier in the text searched, so the rule fails closed, as does
+# an identifier in upper case (`GITLAB_TOKEN`) or in mixed case, or after a credential word (`API bare_token`).
 SNAKE_TOKEN_IDENT = re.compile(r"\b(?:[a-z0-9]+_)+tokens?\b(?!\.\w)")
+CODE_PARTS = frozenset(("bare", "def", "read"))
 SERVICE_PART = re.compile(r"^(?:gitlab|github|glab|slack|npm|pypi|aws|azure|bot|service|deploy|runner|registry|user|admin)$")
 # A credential word inside a matched phrase (`overlap of the API tokens`, `overlap of the deploy tokens`) keeps the
 # class, as one right before it does.
@@ -167,8 +169,8 @@ def without_token_counts(text):
     text = TOKEN_DOC.sub(
         lambda m: m.group(0) if names_secret(m.group(0)) or DOC_SECRET.search(m.group(0)) else " ", text)
     text = SNAKE_TOKEN_IDENT.sub(
-        lambda m: m.group(0) if CRED_BEFORE.search(text[:m.start()]) or any(
-            CRED_PART.match(q) or SERVICE_PART.match(q) for q in m.group(0).split("_")) else " ", text)
+        lambda m: m.group(0) if CRED_BEFORE.search(text[:m.start()]) or not all(
+            q in CODE_PARTS for q in m.group(0).split("_")[:-1]) else " ", text)
     text = TOKEN_IDENT.sub(
         lambda m: m.group(0) if any(CRED_PART.match(p) for p in m.group(0).split("_")) else " ", text)
     return TOKEN_COUNT.sub(lambda m: m.group(0) if m.group("cred") or CRED_INSIDE.search(m.group(0)) else " ", text)
