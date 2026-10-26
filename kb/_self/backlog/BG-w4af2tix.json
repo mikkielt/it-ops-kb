@@ -59,7 +59,9 @@
       },
       "class": "design",
       "answer": "case-flip tells: a piece is no path piece with a lower-case letter or digit then an upper-case letter that no lower-case follows, or a one- or two-letter hump after a lower-case letter, and the 16-character cap is dropped",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
