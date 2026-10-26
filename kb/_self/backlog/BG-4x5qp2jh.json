@@ -16,6 +16,21 @@
     ]
   },
   "repro_reason": "the drift needs a committed store report plus an article edit between report and read; planting both is the fix's own work, so the repro reads that feedback_flags keeps no fact-text hash or change check yet",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,os,re,subprocess as s,sys,tempfile\nd=tempfile.mkdtemp();n=chr(10)\ndef w(p,t):\n    os.makedirs(os.path.dirname(os.path.join(d,p)) or d,exist_ok=True);open(os.path.join(d,p),'w').write(t)\nw('_root.md','---'+n+'root: zzplant'+n+'id_prefix: ZQ'+n+'visibility: internal'+n+'description: planted'+n+'---'+n+n+'# zzplant'+n)\nH='id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by'\nR=['ZQ-aaaabbbb,https://learn.microsoft.com/x,X,Microsoft,,link,2025-01-10,2025-01-01,,t/a.md,',\n   'ZQ-ccccdddd,https://github.com/o/r/blob/0123456789abcdef0123456789abcdef01234567/m.py,M,O,MIT,link,2025-01-10,v1,,t/a.md,',\n   'ZQ-eeeeffff,https://github.com/o/r/blob/main/m.py,M2,O,MIT,link,2025-01-10,main,,t/a.md,']\nw('_sources.csv',H+n+n.join(R)+n)\ne=dict(os.environ,KB_ROOTS=d)\ndef run(*a):\n    p=s.run([sys.executable,*a],env=e,capture_output=True,text=True,timeout=900);print(' '.join(a)[:80],'->',p.returncode,p.stdout[-600:],p.stderr[-300:]);return p\ndef art(facts):\n    w('t/a.md','---'+n+'topic: t/a'+n+'sources: ZQ-aaaabbbb ZQ-ccccdddd ZQ-eeeeffff'+n+'---'+n+n+'# A'+n+n+'## Summary'+n+n+'S.'+n+n+'## Facts'+n+n+n.join(facts)+n+n+'## Reference'+n+n+'R. [DOC ZQ-aaaabbbb] [CODE ZQ-ccccdddd m.py#f] [DOC ZQ-eeeeffff]'+n+n+'## Examples'+n+n+'E.'+n)\n    run('_tools/build_index.py')\ndef lint():\n    import json\n    p=run('.claude/skills/kb-verify/lint.py','zzplant/t/a.md','--json')\n    try:\n        return json.loads(p.stdout or '[]')\n    except ValueError:\n        return [{'level':'ERROR','path':'?','message':'lint printed no JSON: '+p.stdout[-200:]}]\nimport json\ng=lambda *a,dt='2026-09-01T00:00:00':s.run(['git','-C',d]+list(a),capture_output=True,check=True,env=dict(os.environ,GIT_AUTHOR_DATE=dt,GIT_COMMITTER_DATE=dt))\nart(['- Fact alpha about widgets. [DOC ZQ-aaaabbbb]','- Fact beta about sprockets. [DOC ZQ-aaaabbbb]'])\nL=open(os.path.join(d,'t/a.md')).read().splitlines();na=[i+1 for i,l in enumerate(L) if 'alpha' in l][0]\ng('init','-q');g('add','.');g('-c','user.name=c','-c','user.email=c@example.com','commit','-qm','a')\nst=tempfile.mkdtemp();os.makedirs(os.path.join(st,'2026-10'))\nopen(os.path.join(st,'2026-10','20261001T000000Z-aaaaaaaa.jsonl'),'w').write(json.dumps({'run':'20261001T000000Z-aaaaaaaa'})+n+json.dumps({'id':'e1','day':'2026-10-01','feedback':[{'lines':[{'line':'zzplant/t/a.md:%d'%na,'issue':'wrong'}]}]})+n)\nbefore=s.run([sys.executable,'-c','import sys;sys.path.insert(0,\"_tools\");import ql_base,kbfacts;ql_base.STORE=sys.argv[1];print(sorted(kbfacts.feedback_flags().get(\"zzplant/t/a.md\",{})))',st],env=e,capture_output=True,text=True)\nart(['- Fact zero inserted above. [DOC ZQ-aaaabbbb]','- Fact alpha about widgets. [DOC ZQ-aaaabbbb]','- Fact beta about sprockets. [DOC ZQ-aaaabbbb]'])\ng('add','.');g('-c','user.name=c','-c','user.email=c@example.com','commit','-qm','b',dt='2026-10-05T00:00:00')\nafter=s.run([sys.executable,'-c','import sys;sys.path.insert(0,\"_tools\");import ql_base,kbfacts;ql_base.STORE=sys.argv[1];print(sorted(kbfacts.feedback_flags().get(\"zzplant/t/a.md\",{})))',st],env=e,capture_output=True,text=True)\nL2=open(os.path.join(d,'t/a.md')).read().splitlines()\nprint('line',na,'before',before.stdout.strip(),before.stderr[-300:],'after',after.stdout.strip(),after.stderr[-300:],'now holds',L2[na-1])\nfl=json.loads(after.stdout.strip() or 'null') if after.returncode==0 else None\nok=before.stdout.strip()==str([na]) and fl is not None and na not in fl\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "feedback_flags drops or moves a flag whose article changed after the report (a fact-text hash kept with the line, or the file's change after the report's day), so a flag never shows on a fact the report did not name. Found by the SP-ficl7pxl review (ST-lcsgjg6p gap)",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kbfacts.py",
     "kb/_self/tools.md",
@@ -27,5 +42,6 @@
   ],
   "links": [
     "parked: SP-ficl7pxl review"
-  ]
+  ],
+  "notes": "Plan check 2026-10-26: check 0 plants a temporary root in its own git repository and a store report naming line 14 on 2026-10-01, then commits an edit on 2026-10-05 that puts another fact on line 14; on the base the flag stays on line 14 (premise reproduced)."
 }

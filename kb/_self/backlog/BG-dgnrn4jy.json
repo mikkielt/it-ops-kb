@@ -15,6 +15,25 @@
       "import subprocess,sys; bad=[m for m in (\"kf_route\",\"kf_index\",\"kf_fresh\") if subprocess.run([sys.executable,\"-c\",\"import \"+m],cwd=\"_tools\",capture_output=True).returncode]; print(\"kf_ modules that fail when imported first:\",bad); sys.exit(1 if bad else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import glob,re,subprocess as s,sys\nnames=set()\nfor f in glob.glob('_tools/*.py')+glob.glob('.claude/skills/*/*.py'):\n    t=open(f).read()\n    if f.endswith('kbfacts.py'):continue\n    names|=set(re.findall(r'\\bkbfacts\\.([A-Za-z_]\\w*)\\b(?!\\.py)',t))-{'py'}\n    for m in re.findall(r'from kbfacts import (\\([^)]*\\)|[^\\n]+)',t):m=m.strip('()');names|={x.strip().split(' as ')[0] for x in m.replace(chr(10),',').split(',') if x.strip() and not x.strip().startswith('#')}\ncode='import sys;sys.path.insert(0,\"_tools\");import kbfacts;miss=[x for x in sys.argv[1:] if not hasattr(kbfacts,x)];print(\"missing:\",miss);sys.exit(1 if miss else 0)'\np=s.run([sys.executable,'-c',code,*sorted(names)],capture_output=True,text=True);print(len(names),'names',p.stdout,p.stderr[-300:]);sys.exit(p.returncode)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "each kf_ stage imports on its own, before kbfacts",
+      "check": 1
+    },
+    {
+      "clause": "every name other modules use from kbfacts still imports",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kbfacts.py",
     "_tools/kf_index.py",
@@ -27,5 +46,6 @@
   ],
   "links": [
     "parked: SP-jplczvj2 review"
-  ]
+  ],
+  "notes": "Plan check 2026-10-26: check 0 passes before the work on purpose: it pins that every name other modules read from kbfacts (132 today) still resolves after the split. The repro reads the first clause."
 }

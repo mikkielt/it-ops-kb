@@ -7,7 +7,7 @@
   "sprint": "SP-vlfcgmbu",
   "priority": "P2",
   "rank": 0,
-  "goal": "content-rules.md defines how a fact states when it became true and when it stopped (dates for DOC and DER facts, a commit range for CODE facts) in the form the operator's gate names; the contract lint accepts a well-formed window and rejects a malformed one, an end before a start or a range on an unpinned source; the index and rag.py audit read the window, and a fact with none is valid from its retrieval date with no end, so every existing fact stays valid unchanged.",
+  "goal": "content-rules.md defines how a fact states when it became true and when it stopped, as the marker before its tag that the operator's gate names: (valid YYYY-MM-DD..YYYY-MM-DD) for DOC and DER facts and (valid REV..REV) with short commit ids for CODE facts, an open end written as nothing after the two dots; the contract lint accepts a well-formed window and rejects a malformed one, an end before a start or a commit range on a fact whose cited source is not pinned; rag.py audit counts each article's facts whose window has ended; a fact with no window is valid from its retrieval date with no end, so every existing fact stays valid unchanged.",
   "checks": [
     {
       "run": [
@@ -19,11 +19,41 @@
     {
       "run": [
         "python3",
-        "_tools/rag.py",
-        "audit",
-        "--status",
-        "partial"
+        "-c",
+        "import csv,os,re,subprocess as s,sys,tempfile\nd=tempfile.mkdtemp();n=chr(10)\ndef w(p,t):\n    os.makedirs(os.path.dirname(os.path.join(d,p)) or d,exist_ok=True);open(os.path.join(d,p),'w').write(t)\nw('_root.md','---'+n+'root: zzplant'+n+'id_prefix: ZQ'+n+'visibility: internal'+n+'description: planted'+n+'---'+n+n+'# zzplant'+n)\nH='id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by'\nR=['ZQ-aaaabbbb,https://learn.microsoft.com/x,X,Microsoft,,link,2025-01-10,2025-01-01,,t/a.md,',\n   'ZQ-ccccdddd,https://github.com/o/r/blob/0123456789abcdef0123456789abcdef01234567/m.py,M,O,MIT,link,2025-01-10,v1,,t/a.md,',\n   'ZQ-eeeeffff,https://github.com/o/r/blob/main/m.py,M2,O,MIT,link,2025-01-10,main,,t/a.md,']\nw('_sources.csv',H+n+n.join(R)+n)\ne=dict(os.environ,KB_ROOTS=d)\ndef run(*a):\n    p=s.run([sys.executable,*a],env=e,capture_output=True,text=True,timeout=900);print(' '.join(a)[:80],'->',p.returncode,p.stdout[-600:],p.stderr[-300:]);return p\ndef art(facts):\n    w('t/a.md','---'+n+'topic: t/a'+n+'sources: ZQ-aaaabbbb ZQ-ccccdddd ZQ-eeeeffff'+n+'---'+n+n+'# A'+n+n+'## Summary'+n+n+'S.'+n+n+'## Facts'+n+n+n.join(facts)+n+n+'## Reference'+n+n+'R. [DOC ZQ-aaaabbbb] [CODE ZQ-ccccdddd m.py#f] [DOC ZQ-eeeeffff]'+n+n+'## Examples'+n+n+'E.'+n)\n    run('_tools/build_index.py')\ndef lint():\n    import json\n    p=run('.claude/skills/kb-verify/lint.py','zzplant/t/a.md','--json')\n    try:\n        return json.loads(p.stdout or '[]')\n    except ValueError:\n        return [{'level':'ERROR','path':'?','message':'lint printed no JSON: '+p.stdout[-200:]}]\nok=['- Windowed fact. (valid 2024-03-01..2025-09-30) [DOC ZQ-aaaabbbb]','- Open fact. (valid 2024-03-01..) [DOC ZQ-aaaabbbb]','- Code fact. (valid 0123abc..4567def) [CODE ZQ-ccccdddd m.py#f]','- Plain fact. [DOC ZQ-aaaabbbb]']\nbad={'malformed date':'- Bad fact. (valid 2024-13-45..2025-01-01) [DOC ZQ-aaaabbbb]','end before start':'- Bad fact. (valid 2025-09-30..2024-03-01) [DOC ZQ-aaaabbbb]','range on unpinned source':'- Bad fact. (valid 0123abc..4567def) [DOC ZQ-eeeeffff]'}\nfails=[]\nart(ok);f=lint()\nif [x for x in f if x['level']=='ERROR' or re.search('valid|window|range',x['message'])]:fails.append('well-formed windows draw findings: '+str(f))\nfor k,v in bad.items():\n    art(ok+[v]);f=lint()\n    if not [x for x in f if x['level']=='ERROR' and re.search('valid|window|range',x['message'])]:fails.append(k+': no ERROR naming the window')\nprint(fails);sys.exit(1 if fails else 0)\n"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,os,re,subprocess as s,sys,tempfile\nd=tempfile.mkdtemp();n=chr(10)\ndef w(p,t):\n    os.makedirs(os.path.dirname(os.path.join(d,p)) or d,exist_ok=True);open(os.path.join(d,p),'w').write(t)\nw('_root.md','---'+n+'root: zzplant'+n+'id_prefix: ZQ'+n+'visibility: internal'+n+'description: planted'+n+'---'+n+n+'# zzplant'+n)\nH='id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by'\nR=['ZQ-aaaabbbb,https://learn.microsoft.com/x,X,Microsoft,,link,2025-01-10,2025-01-01,,t/a.md,',\n   'ZQ-ccccdddd,https://github.com/o/r/blob/0123456789abcdef0123456789abcdef01234567/m.py,M,O,MIT,link,2025-01-10,v1,,t/a.md,',\n   'ZQ-eeeeffff,https://github.com/o/r/blob/main/m.py,M2,O,MIT,link,2025-01-10,main,,t/a.md,']\nw('_sources.csv',H+n+n.join(R)+n)\ne=dict(os.environ,KB_ROOTS=d)\ndef run(*a):\n    p=s.run([sys.executable,*a],env=e,capture_output=True,text=True,timeout=900);print(' '.join(a)[:80],'->',p.returncode,p.stdout[-600:],p.stderr[-300:]);return p\ndef art(facts):\n    w('t/a.md','---'+n+'topic: t/a'+n+'sources: ZQ-aaaabbbb ZQ-ccccdddd ZQ-eeeeffff'+n+'---'+n+n+'# A'+n+n+'## Summary'+n+n+'S.'+n+n+'## Facts'+n+n+n.join(facts)+n+n+'## Reference'+n+n+'R. [DOC ZQ-aaaabbbb] [CODE ZQ-ccccdddd m.py#f] [DOC ZQ-eeeeffff]'+n+n+'## Examples'+n+n+'E.'+n)\n    run('_tools/build_index.py')\ndef lint():\n    import json\n    p=run('.claude/skills/kb-verify/lint.py','zzplant/t/a.md','--json')\n    try:\n        return json.loads(p.stdout or '[]')\n    except ValueError:\n        return [{'level':'ERROR','path':'?','message':'lint printed no JSON: '+p.stdout[-200:]}]\nart(['- Ended fact. (valid 2020-01-01..2021-12-31) [DOC ZQ-aaaabbbb]','- Current fact. (valid 2022-01-01..) [DOC ZQ-aaaabbbb]','- Plain fact, no window. [DOC ZQ-aaaabbbb]'])\np=run('_tools/rag.py','audit','zzplant/t/a')\nL=[l for l in p.stdout.splitlines() if l.startswith('|')]\nh=[c.strip() for c in L[0].strip('|').split('|')] if L else []\nk=[i for i,c in enumerate(h) if re.search('ended|expired|no longer|window|valid',c,re.I)]\nr=[[c.strip() for c in l.strip('|').split('|')] for l in L if 'zzplant/t/a' in l]\nv=r[0][k[0]] if k and r else None\nprint('column',[h[i] for i in k],'value',v);sys.exit(0 if v=='1' else 1)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys;t=open('kb/_self/content-rules.md').read();sys.exit(0 if re.search(r'\\(valid \\d{4}-\\d\\d-\\d\\d\\.\\.',t) and re.search(r'CODE[^\\n]*\\(valid [0-9a-f]{7,}\\.\\.|\\(valid [0-9a-f]{7,}\\.\\.[^\\n]*CODE',t) else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "content-rules.md defines how a fact states when it became true and when it stopped, as the marker before its tag that the operator's gate names: (valid YYYY-MM-DD..YYYY-MM-DD) for DOC and DER facts and (valid REV..REV) with short commit ids for CODE facts, an open end written as nothing after the two dots",
+      "check": 3
+    },
+    {
+      "clause": "the contract lint accepts a well-formed window and rejects a malformed one, an end before a start or a commit range on a fact whose cited source is not pinned",
+      "check": 1
+    },
+    {
+      "clause": "rag.py audit counts each article's facts whose window has ended",
+      "check": 2
+    },
+    {
+      "clause": "a fact with no window is valid from its retrieval date with no end, so every existing fact stays valid unchanged",
+      "check": 2
     }
   ],
   "touches": [
@@ -63,5 +93,6 @@
       "role": "interactive"
     }
   ],
+  "notes": "Plan check 2026-10-26: check 0 (the whole kb lints clean) passes before the work on purpose: it pins that every existing fact stays valid. Checks 1-2 plant a temporary root (KB_ROOTS) and fail on the base: lint draws no window ERROR for a malformed date, an end before a start or a commit range on an unpinned source; audit has no ended-window column. Goal narrowed from \"the index and rag.py audit read the window\" to the audit count: ST-dnpg6e7d carries the index read through pack --as-of.",
   "filed_in": "clone-0ea70e5c"
 }
