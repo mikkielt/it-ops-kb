@@ -2,7 +2,7 @@
   "id": "ST-zbyvpunj",
   "kind": "story",
   "title": "kbtail.py follows one session's transcript live in a terminal, redacted and cut, and kbmon.py --follow runs it",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-booflukv",
   "sprint": "SP-wurbmsid",
   "priority": "P2",
@@ -78,5 +78,7 @@
     "kb: public/claude/hooks.md:56 (documented interfaces for session data)"
   ],
   "notes": "Wake: a blocking in-process coord wait (`coord.py wait --since N --timeout 2`, no --kind or --item, so it takes no wait/ lease; with no store a 2 s sleep), then a read of only the bytes appended since the last offset; a partial last line waits for its newline. History is read from the file's end (`kbusage.tail_lines`). Known non-display entry types (attachment, mode, permission-mode, last-prompt, ai-title, api-request*, file-history-snapshot, system, summary, cost-state, atis-latch) are ignored silently; any other is counted. A line the leak scan (`kbcommon.leak_hits`) still hits after redaction prints as `[withheld: KIND]`; the home directory shows as `~`. Behaviour beyond the checks is proven by operator feedback, no suite test.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-6c439ca9",
+  "operator": "op-f618a13e"
 }
