@@ -4,6 +4,7 @@
   "title": "kbtail.py follows one session's transcript live in a terminal, redacted and cut, and kbmon.py --follow runs it",
   "status": "draft",
   "parent": "EP-booflukv",
+  "sprint": "SP-wurbmsid",
   "priority": "P2",
   "rank": 0,
   "goal": "`python3 _tools/kbtail.py TARGET` follows one Claude Code session's transcript, TARGET a transcript path or a session id (the newest `<id>.jsonl` under the Claude config directory's projects, as `kbusage.find_transcript` finds it); it prints the last `--history N` lines (default 20) and, unless `--once`, each line appended later within 2 seconds of its write, a half-written line only once whole; each line is the time, a kind and a text: a tool call's name and key input (a Bash command's first line, a path relative to the session's cwd), a tool result's error mark and first non-empty line, an assistant text's or prompt's first line, never thinking; every text passes `redact.redact`, fields are cut (command 100, result 80 characters) and each line to the terminal's columns; an entry of an unknown type or a line that is not JSON is skipped and counted, `--once` ending with `kbtail: skipped N` on stderr; it writes no file; `kbmon.py --follow ARGS` runs `kbtail.py ARGS` and prints the same",
