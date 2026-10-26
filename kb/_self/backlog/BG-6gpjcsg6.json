@@ -2,7 +2,7 @@
   "id": "BG-6gpjcsg6",
   "kind": "bug",
   "title": "redact leaves a host inside a url unchanged, so an internal url in a question passes the spool, kbmon output and coord asks",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-mk6ikval",
   "priority": "P3",
   "rank": 0,
@@ -39,6 +39,28 @@
     "parked: SP-c7oav2vn review"
   ],
   "notes": "Found 2026-10-23 by the SP-c7oav2vn fresh review; pre-existing (HOST's lookbehind skips a host after //). Not S1: the store never holds question text (querylog.md:149) and a lead url's host passes ql_store's own public-host gate; the url reaches only local surfaces. Add cases inside an existing test function of the touched test file: the test-id ceiling is hard, so no new test id. Sprint SP-mk6ikval started 2026-10-26; item moved from draft to todo.",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "6fb72d7a939f328f7742c7e4afc9660eeee77a5e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0,\"_tools\")\nimport redact\nbare=redact.redact(\"ci7.qzvx-internal.net\")\na=redact.redact(\"open https://ci7.qzvx-internal.net/x\")\nb=redact.redact(\"open http://ci7.qzvx-internal.net:8080/x?y=1\")\nkept=redact.redact(\"see https://learn.microsoft.com/en-us/graph/overview\")\nprint(\"bare host ->\",bare,\"| https url ->\",a,\"| http url with port ->\",b,\"| public host url ->\",kept)\nok=\"qzvx\" not in a and \"qzvx\" not in b and bare in a and bare in b and \"learn.microsoft.com\" in kept\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "b3816e39a3d8213b"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import redact;o=redact.redact('open https://ci7.qzvx-internal.net/x');print(o);sys.exit(1 if 'qzvx' in o else 0)"
+        ],
+        "exit": 0,
+        "sha256": "74e02a1433aaf7ce"
+      }
+    ]
+  }
 }
