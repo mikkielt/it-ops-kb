@@ -2,7 +2,7 @@
   "id": "BG-jsuvjayf",
   "kind": "bug",
   "title": "done moves a claimed run key to landed at the done commit, before it is on the integration main, and a later land then never holds landing",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-nij36lt7",
   "sprint": "SP-42b2cjm3",
   "priority": "P2",
@@ -58,6 +58,19 @@
   ],
   "notes": "Gate g1 answered with its recommendation by operator (pre-approved by the operator for the 2026-10-26 run).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "f26a54d1df6d17612d88dab96aeb1ef55a435f6a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, tempfile, os, shutil, re, sys, json, glob\nR = os.getcwd(); T = os.path.realpath(tempfile.mkdtemp()); S = os.path.join(tempfile.mkdtemp(), 'c.sqlite')\nenv = dict(os.environ, KB_COORD_STORE=S)\ndef sh(*a): return subprocess.run(a, cwd=T, capture_output=True, text=True, env=env)\ng = lambda *a: sh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', *a)\nB = os.path.realpath(tempfile.mkdtemp()) + '/origin.git'; sh('git', 'init', '-q', '--bare', '-b', 'main', B)\ng('init', '-q', '-b', 'main', '.'); g('commit', '-q', '--allow-empty', '-m', 'init'); g('remote', 'add', 'origin', B)\nshutil.copy(R + '/backlog.json', T); os.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh(sys.executable, R + '/_tools/backlog.py', '--root', T, *a)\ndef c(*a): return subprocess.run([sys.executable, R + '/_tools/coord.py', '--store', S, *a], capture_output=True, text=True)\nsp = re.search(r'SP-\\w+', bl('new', 'sprint', '--title', 'S', '--goal', 'g').stdout).group(0)\niid = re.search(r'ST-\\w+', bl('new', 'story', '--title', 'Planted', '--goal', 'g', '--touch', 'kb/public/work.txt',\n                              '--check', 'python3 -c \"import os,sys;sys.exit(0 if os.path.exists(\\'kb/public/work.txt\\') else 1)\"').stdout).group(0)\nfor f in glob.glob(T + '/kb/_self/backlog/*.json'):\n    d = json.load(open(f, encoding='utf-8'))\n    if d['id'] == sp: d['status'] = 'active'\n    if d['id'] == iid: d['status'] = 'doing'; d['sprint'] = sp\n    json.dump(d, open(f, 'w', encoding='utf-8'), indent=2)\ng('add', '-A'); g('commit', '-q', '-m', 'planted doing'); g('push', '-q', '-u', 'origin', 'main')\nc('transition', 'run/' + iid, '--to', 'claimed')\nos.makedirs(T + '/kb/public'); open(T + '/kb/public/work.txt', 'w').write(iid)\ng('add', '-A'); g('commit', '-q', '-m', 'work ' + iid + '\\n\\nKB-Work: ' + iid)\ndone = bl('done', iid, '--commit')\nstate = c('get', 'run/' + iid).stdout\npushed = sh('git', 'rev-parse', 'HEAD').stdout == sh('git', 'rev-parse', 'refs/remotes/origin/main').stdout\nprint('done commit on origin/main:', pushed, '| done', done.returncode, (done.stdout + done.stderr).strip()[-300:], '| run key', state.strip()[-60:])\nsys.exit(0 if done.returncode == 0 and not pushed and '\"landed\"' not in state else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "17c4847c16224b0a"
+      }
+    ]
+  }
 }
