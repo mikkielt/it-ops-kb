@@ -1,0 +1,36 @@
+{
+  "id": "ST-6zg57xiu",
+  "kind": "story",
+  "title": "session-load measures the intake hook's real cost at session start, its drift scan running item checks",
+  "status": "draft",
+  "parent": "EP-nxb7hjwd",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "python3 _tools/benchmarks.py run session-load --intake-real replays arm A's SessionStart intake hook in a replay clone left as the checkout is (no pin of the item files), so its drift scan runs item checks up to its wall-clock budget as in a session in the main checkout, and writes for it the rows cpu_s, wall_s and spawns with case 'idle hook intake real', its cpu_s note naming the scan budget; the pinned arm comparison stays as it is; and kb/_self/reports/benchmarks.csv holds a 5-rep record of it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport csv, os, shutil, subprocess, tempfile\nT = tempfile.mkdtemp()\nB = os.path.join(T, 'bin'); os.mkdir(B)\nopen(os.path.join(B, 'claude'), 'w').write('#!/bin/sh\\nexit 1\\n')\nos.chmod(os.path.join(B, 'claude'), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ['PATH'])\nout = os.path.join(T, 'out.csv')\np = subprocess.run([sys.executable, '_tools/benchmarks.py', 'run', 'session-load', '--arms', 'A', '--intake-real', '--reps', '1', '--out', out],\n                   capture_output=True, text=True, env=ENV, timeout=1800)\nrows = list(csv.DictReader(open(out, encoding='utf-8'))) if os.path.exists(out) else []\nshutil.rmtree(T, ignore_errors=True)\nassert p.returncode == 0, ('run session-load --intake-real exit', p.returncode, p.stderr[-400:])\nval = {(r['case'], r['arm'], r['metric']): (float(r['value']), r['note']) for r in rows if r['scenario'] == 'session-load'}\nfor m in ('cpu_s', 'wall_s', 'spawns'):\n    assert ('idle hook intake real', 'A', m) in val, ('no unpinned intake row', m)\nassert val[('idle hook intake real', 'A', 'spawns')][0] > val.get(('idle hook intake', 'A', 'spawns'), (0, ''))[0], 'the unpinned intake run starts no more processes than the pinned one'\nassert 'budget' in val[('idle hook intake real', 'A', 'cpu_s')][1], 'the unpinned cpu_s note names no scan budget'\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_load.py",
+    "_tools/benchmarks.py",
+    "kb/_self/benchmarks.md",
+    "kb/_self/tools.md",
+    "kb/_self/reports/benchmarks.md",
+    "kb/_self/reports/benchmarks.csv",
+    "README.md"
+  ],
+  "depends_on": [
+    "ST-7nuaruwn"
+  ],
+  "relates_to": [
+    "ST-qqpcgqe7"
+  ],
+  "notes": "Premise from ST-7nuaruwn's first record (before g8's pin): the SessionStart intake hook's drift scan took about 50 s and 50 CPU seconds per session start in a replay clone, against under 15 starts for every other hook; the pinned record leaves it out (gate g8 of ST-7nuaruwn). The hook files nothing in a linked worktree under .claude/worktrees/ (kb/_self/backlog.md), so dispatched workers skip it; sessions in the main checkout, interactive or headless, pay it. Its figure goes into the switch decision of ST-qqpcgqe7. Operator chose on 2026-10-26: keep the pin and measure this apart.",
+  "filed_in": "clone-0ea70e5c"
+}
