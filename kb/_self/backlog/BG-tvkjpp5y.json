@@ -2,7 +2,7 @@
   "id": "BG-tvkjpp5y",
   "kind": "bug",
   "title": "census leak_problems scans the new_rows fields",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-mk6ikval",
   "priority": "P3",
   "rank": 0,
@@ -62,6 +62,28 @@
     "parked: SP-ovwzbc7u review"
   ],
   "notes": "Found by the SP-ovwzbc7u review on 2026-10-23: leak_problems builds its fields from outcome notes, gap texts and conflict texts only, while new_rows go to the tracked _sources.csv through kbid.add_source, which has no leak check, so a planted GUID in a new_rows title returns no problem. The other leak_problems of ql_deliver.py and ql_store.py are separate functions and stay. Sprint SP-mk6ikval started 2026-10-26; item moved from draft to todo.",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "860054fa1dc7fab408b75abe7207400bbc9e76cf",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0,\"_tools\")\nimport census\nguid=\"-\".join([\"7f3c2a10\",\"5b6d\",\"4e8f\",\"9a1b\",\"2c3d4e5f6a7b\"])\nmail=\"jan.kowalski\"+chr(64)+\"corp-mail.test\"\nmiss=[];shown=[]\nfor f in (\"url\",\"title\",\"publisher\",\"licence\",\"version_or_date\",\"used_in\"):\n    for what in (\"tenant \"+guid,mail):\n        row={\"url\":\"https://x.example.com/a\",\"title\":\"t\"}\n        row[f]=(\"https://x.example.com/\"+what) if f==\"url\" else what\n        r=census.leak_problems({\"outcomes\":[],\"gaps\":[],\"conflicts\":[],\"new_rows\":[row]})\n        txt=\"\\n\".join(map(str,r))\n        if not r or f not in txt:miss.append(f)\n        if guid in txt or mail in txt:shown.append(f)\nprint(\"fields whose planted leak is not reported by name:\",sorted(set(miss)),\"| fields whose value is printed:\",sorted(set(shown)))\nsys.exit(1 if miss or shown else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "70a93effeb67052b"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0,\"_tools\")\nimport census\nleak=\"tenant \"+\"-\".join([\"7f3c2a10\",\"5b6d\",\"4e8f\",\"9a1b\",\"2c3d4e5f6a7b\"])\nr=census.leak_problems({\"outcomes\":[],\"gaps\":[],\"conflicts\":[],\"new_rows\":[{\"url\":\"https://x.example.com/a\",\"title\":leak}]})\nprint(\"leak_problems of a new row whose title holds a tenant id:\",r)\nsys.exit(0 if r else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "82e474211ed6622d"
+      }
+    ]
+  }
 }
