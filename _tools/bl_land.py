@@ -678,8 +678,8 @@ def cmd_done(bl, a):
     it.pop("claimed_by", None)
     bl.save(it)
     say(f"done {bl.label(iid)} at {at[:10]}" + ("" if a.commit else f"; commit this with the trailer KB-Work: {iid}"))
-    if run_state(iid) == "claimed":  # no worker and no landing moved the key: the orchestrator finished the item itself
-        move_run(iid, "landed", "done")
+    # the run key stays where it is: `landed` means the done commit is on the integration main, which `land` finds
+    # (verify) and moves it for, a key still at `claimed` too (no worker started: the orchestrator finished the item itself)
     commit_written(bl, a, "done", iid)
     return 0
 
