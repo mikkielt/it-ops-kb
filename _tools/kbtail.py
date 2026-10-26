@@ -150,7 +150,7 @@ def rows_of(entry):
         if b.get("type") == "text" and isinstance(b.get("text"), str):
             rows.append(("prompt" if user else "reply", safe(b["text"])))
         elif b.get("type") == "tool_use":
-            name = clean(str(b.get("name", "tool")))[:40]
+            name = cut(safe(str(b.get("name", "tool"))) or "tool", 40)
             rows.append(("tool", f"{name} {cut(safe(key_input(name, b.get('input'), cwd)), COMMAND_CUT)}".rstrip()))
         elif b.get("type") == "tool_result":
             mark = "! " if b.get("is_error") else ""
