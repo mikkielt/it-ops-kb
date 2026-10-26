@@ -64,7 +64,9 @@
       },
       "class": "design",
       "answer": "A run of 20 or more characters that starts with three capitalised words of three letters or more is no key material",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
