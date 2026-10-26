@@ -17,7 +17,11 @@
   ],
   "touches": [
     ".claude/skills/kb-sprint/SKILL.md",
-    "_tools/bl_sprint.py"
+    "_tools/bl_plan.py"
   ],
+  "links": [
+    "parked: SP-mk6ikval close"
+  ],
+  "notes": "Retrospective finding of the 2026-10-26 run of SP-mk6ikval: start SP without --commit left 13 item files modified and kbgit.py sync --push refused the claim push (unstaged item files); the run worked around it with set --add-notes --commit. The check reads the skill text only; the planner should add a planted run of start --commit on a fixture.",
   "filed_in": "clone-0ea70e5c"
 }
