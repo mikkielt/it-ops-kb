@@ -15,6 +15,35 @@
         "-c",
         "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport csv, os, shutil, subprocess, tempfile\nT = tempfile.mkdtemp()\ncap = os.path.join(T, 'fs_usage.txt')\nL = [\n    '13:21:46.312411  open              F=3        (R_____N____)  /work/kb/_tools/kbcommon.py                 0.000030   python3.4101',\n    '13:21:46.312499  read              F=3    B=0x1a2b                                                       0.000011   python3.4101',\n    '13:21:46.313000  open              F=4        (R_____N____)  /work/kb/_tools/coord.py                    0.000021   python3.4101',\n    '13:21:46.313100  write             F=4    B=0x10                                                         0.000009   python3.4101',\n    '13:21:46.313200  open              F=5        (_WC____N___)  /work/kb/_cache/out.json                    0.000040   python3.4101',\n    '13:21:46.314000  RdData[A]         D=0x0012a3b0  B=0x1000   /dev/disk3s1  /work/kb/.git/index         0.000150 W git.4202',\n    '13:21:46.314100  pread             F=6    B=0x200   O=0x00000000                                         0.000008   git.4202',\n    '13:21:46.315000  open              F=7        (R__________)  /work/kb                                    0.000012   lsof.4303',\n    '13:21:46.316000  open              F=8        (R__________)  /Library/Preferences/x.plist                0.000012   mds.4404',\n    '13:21:46.316100  WrData[A]         D=0x0012a3c0  B=0x1000   /dev/disk3s1  /work/kb/.git/index.lock    0.000150 W git.4202',\n]\nopen(cap, 'w').write('\\n'.join(L) + '\\n')\nout = os.path.join(T, 'out.csv')\np = subprocess.run([sys.executable, '_tools/benchmarks.py', 'run', 'session-load', '--fs-usage', cap, '--out', out],\n                   capture_output=True, text=True, timeout=600)\nrows = list(csv.DictReader(open(out, encoding='utf-8'))) if os.path.exists(out) else []\nshutil.rmtree(T, ignore_errors=True)\nassert p.returncode == 0, ('run session-load --fs-usage exit', p.returncode, p.stderr[-400:])\nval = {(r['case'], r['metric']): float(r['value']) for r in rows if r['scenario'] == 'session-load'}\nwant = {('capture kb-tools', 'file_reads'): 3, ('capture kb-tools', 'distinct_paths'): 2,\n        ('capture git', 'file_reads'): 2, ('capture lsof', 'file_reads'): 1, ('capture other', 'file_reads'): 1,\n        ('capture all', 'file_reads'): 7}\nfor k, v in want.items():\n    assert val.get(k) == v, ('wrong or missing', k, val.get(k), 'want', v)\nassert not [r for r in rows if r['metric'] in ('cpu_s', 'spend_usd')], '--fs-usage ran a replay or a model'\n"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, shutil, subprocess, tempfile\nT = tempfile.mkdtemp()\nB = os.path.join(T, 'bin'); os.mkdir(B)\nmark = os.path.join(T, 'sudo-ran')\nfor name, body in (('claude', 'exit 1'), ('sudo', 'touch \"' + mark + '\"; exit 1')):\n    open(os.path.join(B, name), 'w').write('#!/bin/sh\\n' + body + '\\n')\n    os.chmod(os.path.join(B, name), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ['PATH'])\np = subprocess.run([sys.executable, '_tools/benchmarks.py', 'run', 'session-load', '--arms', 'D', '--reps', '1', '--out', os.path.join(T, 'out.csv')],\n                   capture_output=True, text=True, env=ENV, timeout=1800)\nran = os.path.exists(mark)\nshutil.rmtree(T, ignore_errors=True)\nassert p.returncode == 0, ('run session-load --arms D exit', p.returncode, p.stderr[-400:])\nassert [ln for ln in (p.stdout + p.stderr).splitlines() if 'sudo fs_usage' in ln], 'the run names no sudo fs_usage command for the operator'\nassert not ran, 'the run called sudo'\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "python3 _tools/benchmarks.py run session-load --fs-usage FILE reads a capture of fs_usage -w -f filesys, starts no replay and no model",
+      "check": 0
+    },
+    {
+      "clause": "writes per process class (by the process name each line ends with: python3 kb-tools, git, lsof, claude, fseventsd, else other) and for all a file_reads row (open for reading, read, pread and RdData lines",
+      "check": 0
+    },
+    {
+      "clause": "writes left out) and a distinct_paths row, case 'capture <class>'",
+      "check": 0
+    },
+    {
+      "clause": "without --fs-usage the scenario prints the sudo fs_usage command the operator runs by hand beside it",
+      "check": 1
+    },
+    {
+      "clause": "no check or run of the tool calls sudo",
+      "check": 1
     }
   ],
   "touches": [

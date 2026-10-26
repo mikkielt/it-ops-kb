@@ -24,6 +24,24 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "python3 _tools/benchmarks.py run session-load --arms B runs arm A plus the commands the kbmon-pane mod runs in an interactive session (kbmon.py --once, then --status all, as .claude/skills/kbmon-pane/hooks/register.tsx does), the first after FIRST_MS and then every --pane-every seconds (default the mod's REFRESH_MS) over a --window of seconds per phase",
+      "check": 0
+    },
+    {
+      "clause": "writes per phase a pane_runs row and the kbmon class's cpu_s, rss_peak_mb, rss_mean_mb and spawns_per_min beside arm A's",
+      "check": 0
+    },
+    {
+      "clause": "arm A runs no pane command",
+      "check": 0
+    },
+    {
+      "clause": "and kb/_self/reports/benchmarks.csv holds a 5-rep record of arm B at the default schedule",
+      "check": 1
+    }
+  ],
   "touches": [
     "_tools/bench_load.py",
     "_tools/benchmarks.py",
