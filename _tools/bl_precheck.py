@@ -7,7 +7,7 @@ Standard library only; imports `bl_base`, `bl_check`, `bl_cli`, `bl_intake` and 
 `backlog`: `bl_land` imports this module, so every name the other modules read as `bl_land.NAME` stays importable
 from there. It registers `researched` and `precheck` with `bl_cli` itself when imported (`backlog.py`'s USAGE puts each in
 its usage position)."""
-import csv, datetime, importlib, io, re, shlex
+import csv, datetime, importlib, io, json, re, shlex, sys
 
 import bl_cli
 import bl_intake
@@ -17,6 +17,7 @@ from bl_base import (
     setting,
 )
 from bl_check import other_clone
+from bl_plan import shared_doc, touch_files, touch_paths
 
 
 def item_commits(root, ids):
@@ -201,6 +202,78 @@ def cmd_researched(bl, a):
         return 1
     say(f"researched {bl.label(iid)}: {proof}" + (f"; {skipped}" if skipped else ""))
     return 0
+
+
+CONFLICT_KINDS = ("textual", "semantic")  # what a predicted conflict is: lines collide, or the changes disagree in meaning
+
+
+def read_conflicts(bl, source):
+    """[(refs, path, kind)] of the predicted conflicts in SOURCE, a file or `-` for standard input: one JSON object a
+    line, {"items": [two branches or item ids], "path": P, "kind": "textual" or "semantic"}, written by any conflict
+    predictor; blank lines are skipped. A line that is no such object is refused naming its number."""
+    try:
+        text = sys.stdin.read() if source == "-" else open(source, encoding="utf-8").read()
+    except OSError as ex:
+        raise Refused(f"--conflicts: cannot read {source}: {ex}")
+    out = []
+    for n, line in enumerate(text.splitlines(), 1):
+        if not line.strip():
+            continue
+        try:
+            d = json.loads(line)
+        except ValueError:
+            d = None
+        refs = d.get("items") if isinstance(d, dict) else None
+        if not (isinstance(refs, list) and len(refs) == 2 and all(isinstance(r, str) and r for r in refs)
+                and isinstance(d.get("path"), str) and d["path"] and d.get("kind") in CONFLICT_KINDS):
+            raise Refused(f"--conflicts: line {n} of {source} is no {{\"items\": [two branches or item ids], \"path\": P, "
+                          f"\"kind\": {' or '.join(CONFLICT_KINDS)}}} object")
+        out.append((refs, d["path"], d["kind"]))
+    return out
+
+
+def conflict_item(bl, ref):
+    """The item id a conflict's branch or id names (the first id of the project's shape in REF, `work/ST-x` too) when
+    the backlog holds it, else None."""
+    m = id_re().search(ref)
+    return m.group(0) if m and m.group(0) in bl.items else None
+
+
+def planned_overlaps(bl, ids):
+    """[(item id, item id, [paths])] of the pairs of IDS whose touches name a common path (globs read against the
+    tracked files; a kb/_self doc is left out, as `check` leaves it), in order."""
+    files = touch_files(bl.root)
+    paths = {i: touch_paths(bl.items[i], files, []) for i in ids}
+    out = []
+    for n, a in enumerate(ids):
+        for c in ids[n + 1:]:
+            shared = sorted(p for p in paths[a] & paths[c] if not shared_doc(p))
+            if shared:
+                out.append((a, c, shared))
+    return out
+
+
+def conflict_lines(bl, sid, source):
+    """The lines `precheck --conflicts` prints: the sprint's own overlap of planned files (`planned_overlaps` over the
+    open committed items), then each predicted conflict whose two items are both in the sprint, then, apart, each
+    that names an item outside it or one the backlog does not hold."""
+    ids = precheck_items(bl, sid)
+    members = set(bl.sprint_items(sid))
+    lines = ["planned file overlaps of the sprint's items (their touches):"]
+    found = planned_overlaps(bl, ids)
+    lines += [f"  {bl.label(a)} and {bl.label(c)}: {', '.join(shared)}" for a, c, shared in found] or ["  none"]
+    inside, apart = [], []
+    for refs, path, kind in read_conflicts(bl, source):
+        named = [conflict_item(bl, r) for r in refs]
+        names = " and ".join(bl.label(i) if i else f"{r} (no item of the backlog)" for i, r in zip(named, refs))
+        text = f"  {kind}: {names} at {path}"
+        (inside if all(i in members for i in named) else apart).append(text)
+    lines.append("predicted conflicts between the sprint's items (from the conflict predictor):")
+    lines += inside or ["  none"]
+    if apart:
+        lines.append("predicted conflicts that name an item outside the sprint (listed apart):")
+        lines += apart
+    return lines
 
 
 PRECHECK_NOTE = "passes before the work"  # an item's notes saying so keep its passing checks out of precheck's warnings
@@ -452,9 +525,18 @@ def cmd_precheck(bl, a):
                 say(text)
         for text in warns:
             say(text)
+    if a.conflicts:
+        for text in conflict_lines(bl, sid, a.conflicts):
+            say(text)
     say(f"precheck {bl.label(sid)}: checks={len(rows)} passing={passing} unread={unread}")
     return 0
 
 
 bl_cli.register("researched", cmd_researched, lambda p: p.add_argument("id"))
-bl_cli.register("precheck", cmd_precheck, lambda p: p.add_argument("sprint"))
+def precheck_arguments(p):
+    p.add_argument("sprint")
+    p.add_argument("--conflicts", metavar="FILE|-",
+                   help="JSON lines of predicted conflicts from any predictor, printed beside the sprint's own file overlaps")
+
+
+bl_cli.register("precheck", cmd_precheck, precheck_arguments)
