@@ -531,9 +531,37 @@ STRING_BODY = {  # per opening quote: the rest of the literal, to its first unes
     q: re.compile(body.replace("Q", q[0]), re.S) for q, body in (
         ('"', r'[^Q\\\n]*(?:\\.[^Q\\\n]*)*Q'), ("'", r'[^Q\\\n]*(?:\\.[^Q\\\n]*)*Q'),
         ('"""', r'[^Q\\]*(?:(?:\\.|Q(?!QQ))[^Q\\]*)*QQQ'), ("'''", r'[^Q\\]*(?:(?:\\.|Q(?!QQ))[^Q\\]*)*QQQ'))}
-DOC_GAP = re.compile(r"(?:\s|﻿|#[^\n]*)*[rRuU]?")  # all that may stand between a header's colon and a docstring
+DOC_GAP = re.compile(r"[\s﻿]+|#[^\n]*|\\\n|(\()")  # a piece of what may stand between a header's colon and a docstring
+DOC_PREFIX = re.compile(r"[rRuU]?")  # the one prefix a docstring may have
 DOC_JOIN = re.compile(r"[ \t]*(?:\\\n[ \t]*)*[rRuU]?")  # between two string literals that make one
+DOC_JOIN_PAREN = re.compile(r"(?:\s|\\\n|#[^\n]*)*[rRuU]?")  # the same inside parentheses, where a line may end
+DOC_CLOSE = re.compile(r"(?:\s|\\\n|#[^\n]*(?=\n|\Z))*\)")  # up to and with a closing parenthesis
 DOC_END = re.compile(r"[ \t]*(?:[#;\n]|\Z)")  # a docstring is a statement by itself, not the start of an expression
+
+
+def doc_open(text, i, end):
+    """How many parentheses open between `i` and the string literal at `end`, `("doc")` being a docstring as
+    `ast.get_docstring` reads it, when nothing but blanks, comments and line continuations stands between; None
+    when something else does."""
+    depth = 0
+    while i < end:
+        m = DOC_GAP.match(text, i, end)
+        if m is None:
+            break
+        depth += m.group(1) is not None
+        i = m.end()
+    return depth if DOC_PREFIX.fullmatch(text, i, end) else None
+
+
+def doc_tail(text, end, depth):
+    """The index past the `depth` closing parentheses that follow a docstring ending at `end`; None when they
+    do not."""
+    for _ in range(depth):
+        m = DOC_CLOSE.match(text, end)
+        if m is None:
+            return None
+        end = m.end()
+    return end
 
 
 FSTRING_PREFIX = re.compile(r"(?:^|\W)(?:rf|fr|f)\Z", re.I)  # what may stand before an f-string's quote
@@ -611,8 +639,9 @@ def code_comment_lines(path):
             text = f.read()
     except (OSError, UnicodeDecodeError):
         return []
-    events = []  # in file order: [start, end, is docstring]
+    events = []  # in file order: [start, end, is docstring, where its closing parentheses end]
     doc_from, join_from, pos = 0, None, 0  # where a docstring may start; where a string would extend one
+    depth = 0  # parentheses open around the docstring found
     find = CODE_TOKEN.search
     m = find(text, pos)
     while m:
@@ -621,17 +650,20 @@ def code_comment_lines(path):
         if c == "#":
             end = text.find("\n", start)
             end = len(text) if end < 0 else end
-            events.append([start, end, False])
+            events.append([start, end, False, None])
             pos = end
         elif c in "\"'":
             end = string_end(text, start)
             if end is None:
                 return []
-            if doc_from is not None and DOC_GAP.fullmatch(text, doc_from, start):
-                events.append([start, end, True])
+            opened = None if doc_from is None else doc_open(text, doc_from, start)
+            if opened is not None:
+                doc, depth = [start, end, True, doc_tail(text, end, opened)], opened
+                events.append(doc)
                 doc_from, join_from = None, end
-            elif join_from is not None and DOC_JOIN.fullmatch(text, join_from, start):
-                events[-1][1] = join_from = end
+            elif join_from is not None and (DOC_JOIN_PAREN if depth else DOC_JOIN).fullmatch(text, join_from, start):
+                doc[1] = join_from = end
+                doc[3] = doc_tail(text, end, depth)
             else:
                 doc_from = join_from = None
             pos = end
@@ -645,7 +677,7 @@ def code_comment_lines(path):
                 if c == "#":
                     end = text.find("\n", pos)
                     end = len(text) if end < 0 else end
-                    events.append([h.start(), end, False])
+                    events.append([h.start(), end, False, None])
                     pos = end
                 elif c in "\"'":
                     pos = string_end(text, h.start())
@@ -660,12 +692,12 @@ def code_comment_lines(path):
             doc_from, join_from = pos, None
         m = find(text, pos)
     lines, res, number, at = text.split("\n"), {}, 1, 0
-    for start, end, doc in events:
+    for start, end, doc, tail in events:
         number += text.count("\n", at, start)
         at = start
         if not doc:
             res.setdefault(number, text[start:end])
-        elif DOC_END.match(text, end):
+        elif tail is not None and DOC_END.match(text, tail):
             res.update((n, lines[n - 1]) for n in range(number, number + text.count("\n", start, end) + 1))
     return sorted(res.items())
 
