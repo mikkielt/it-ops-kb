@@ -1046,9 +1046,10 @@ def detached_line(bl, iid, proc, log, scratch, since=0):
 
 def start_detached(bl, a, iid, scratch):
     """Start the dispatch with `spawn_detached`, print its pid, the log and the `coord.py wait --pid` command (after the
-    events posted so far) and return at once."""
+    worker's own `working` event, held for up to BEGIN_SETTLE_S seconds) and return."""
+    before = coord_cursor(iid)  # a `working` event at or below it is an earlier dispatch's, not this worker's
     proc, log = spawn_detached(bl, a, iid, scratch)
-    say(detached_line(bl, iid, proc, log, scratch, coord_cursor(iid)))
+    say(detached_line(bl, iid, proc, log, scratch, coord_cursor(iid, proc.pid, BEGIN_SETTLE_S, before)))
     return 0
 
 
@@ -1212,7 +1213,7 @@ def cmd_dispatch(bl, a):
 
 
 BEGIN_WAIT_S = 60  # seconds `begin` waits for a detached dispatch to make its work branch
-BEGIN_SETTLE_S = 10  # seconds `begin` then holds for the worker's `working` event, which its printed wait must start after
+BEGIN_SETTLE_S = 10  # seconds `begin` and `dispatch --detach` hold for the worker's `working` event, which the printed wait must start after
 
 
 def begin_plan(bl, a, ref):
