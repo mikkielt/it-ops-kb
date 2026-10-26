@@ -18,5 +18,9 @@
   "touches": [
     "kb/_self/backlog.md"
   ],
+  "links": [
+    "parked: SP-sgfucsn6 review"
+  ],
+  "notes": "Review gap of SP-sgfucsn6 (S4), found by the sprint reviewer in ST-qwipu6df landing. Premise ran on today base: backlog.md line 216 says the suite runs the lookup eval; no _tools/test_*.py runs rag.py eval and _tools/test_live_kb.py is gone.",
   "filed_in": "clone-0ea70e5c"
 }
