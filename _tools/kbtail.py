@@ -350,10 +350,19 @@ def subagent_files(transcript):
         return []
 
 
+def named(row):
+    """The words that name the session of ROW: its role and its item, which is shown only as a backlog item id or, for a
+    `work/` branch name that is none, as `safe` redacts it."""
+    item = row["item"]
+    if item and not ITEM_ID.fullmatch(item):
+        item = safe(item)
+    return " ".join(w for w in (row["role"], item) if w)
+
+
 def tags(followed):
     """{pid: the words that name a session}: its role and item, with its label (else its pid) added when another followed
     session has the same words, never a raw session id."""
-    words = {pid: " ".join(w for w in (f.row["role"], f.row["item"]) if w) for pid, f in followed.items()}
+    words = {pid: named(f.row) for pid, f in followed.items()}
     same = Counter(words.values())
     return {pid: w if same[w] == 1 else f"{w} {followed[pid].row['label'] or 'pid ' + str(pid)}" for pid, w in words.items()}
 
@@ -397,7 +406,7 @@ def scan(root, item, role, followed, count):
         if transcript is None:
             continue
         if len(followed) >= MAX_SESSIONS:
-            over.append(" ".join(w for w in (row["role"], row["item"]) if w))
+            over.append(named(row))
             continue
         f = followed[row["pid"]] = Followed(row, transcript)
         subs = subagent_files(transcript)
