@@ -72,6 +72,44 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How long may kbtail wait between two reads of the followed file?",
+      "options": [
+        "1 second",
+        "2 seconds"
+      ],
+      "recommendation": "1 second",
+      "reason": "a 2-second wait plus the read can pass the 2 seconds the goal allows from a line's write",
+      "do": {
+        "1 second": "ST-zbyvpunj",
+        "2 seconds": "ST-zbyvpunj"
+      },
+      "class": "design",
+      "answer": "1 second",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Where does the --follow flag of kbmon.py take its arguments from, and how is a tool call's key input cut?",
+      "options": [
+        "--follow first, all other arguments to kbtail.py; every tool call's key input cut at 100 characters",
+        "--follow anywhere, kbmon's own options also accepted; only a Bash command cut at 100"
+      ],
+      "recommendation": "--follow first, all other arguments to kbtail.py; every tool call's key input cut at 100 characters",
+      "reason": "kbmon's options mean nothing to kbtail, and one cut keeps the lines alike",
+      "do": {
+        "--follow first, all other arguments to kbtail.py; every tool call's key input cut at 100 characters": "ST-zbyvpunj",
+        "--follow anywhere, kbmon's own options also accepted; only a Bash command cut at 100": "ST-zbyvpunj"
+      },
+      "class": "design",
+      "answer": "--follow first, all other arguments to kbtail.py; every tool call's key input cut at 100 characters",
+      "by": "agent"
+    }
+  ],
   "links": [
     "kb: public/claude/hooks.md:54 (transcript path and slug; entry format internal)",
     "kb: public/claude/hooks.md:51 (subagent transcripts under <session>/subagents/)",
