@@ -1,0 +1,21 @@
+{
+  "id": "BG-c3vnscx7",
+  "kind": "bug",
+  "title": "The leak scan flags the EC armor label quoted before a repository path with a camel-case abbreviation (ConfigMgr, UserSvc), which the old segment-length rule let pass",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbcommon.leak_hits does not flag the EC armor label quoted directly before a repository path with a short camel-case abbreviation such as ConfigMgr or UserSvc, and still flags a single-line EC key body of 20 to 40 characters that holds a slash",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import kbcommon;L=\"-\"*5+\"BEGIN EC PRIVATE KEY\"+\"-\"*5;bad=[p for p in (\"kb/public/mecm/ConfigMgr/Views.md\",\"Docs/ConfigMgr/2203/ReleaseNotes.md\",\"docs/UserSvc/Overview.md\") if any(k==\"secret\" for k,_ in kbcommon.leak_hits(L+\" \"+p))];print(\"paths flagged:\",bad);sys.exit(1 if bad else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/kbcommon.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
