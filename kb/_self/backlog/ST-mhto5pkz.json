@@ -1,0 +1,26 @@
+{
+  "id": "ST-mhto5pkz",
+  "kind": "story",
+  "title": "Sprint planning reads every interval or delay an item's notes name against the latency figures its goal allows",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the sprint skill's plan step 6 tells the planner to check each interval, wake or poll period an item's notes name against each latency figure of its goal, so a notes value that cannot meet the goal is changed or gated before the start gate",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys\nt=open('skills/sprint/SKILL.md',encoding='utf-8').read()\ns=t.split('## plan',1)[1].split('\\n## ',1)[0]\nstep=[p for p in re.split(r'\\n(?=\\d+\\. )',s) if p.startswith('6. ')]\nsys.exit(0 if step and re.search('latenc',step[0],re.I) else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-wurbmsid close"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

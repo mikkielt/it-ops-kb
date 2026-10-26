@@ -1,0 +1,26 @@
+{
+  "id": "ST-72wajowg",
+  "kind": "story",
+  "title": "A planted check for a latency goal times each input shape that takes a slower code path, not only plain text",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the sprint skill's plan step 6 tells the planner that a check proving a latency or time figure times each input shape that takes a slower code path (a redaction trigger such as an IPv4 or a home path, a first call that loads data), not only a plain input",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys\nt=open('skills/sprint/SKILL.md',encoding='utf-8').read()\ns=t.split('## plan',1)[1].split('\\n## ',1)[0]\nstep=[p for p in re.split(r'\\n(?=\\d+\\. )',s) if p.startswith('6. ')]\nsys.exit(0 if step and re.search('slower code path',step[0],re.I) else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-wurbmsid close"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
