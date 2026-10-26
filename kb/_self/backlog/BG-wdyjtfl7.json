@@ -2,7 +2,7 @@
   "id": "BG-wdyjtfl7",
   "kind": "bug",
   "title": "window_sections fails an unchanged body window and passes a removed or renamed heading window since BG-hxp3f73q",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-vlfcgmbu",
   "priority": "P1",
   "rank": 0,
@@ -61,6 +61,28 @@
   ],
   "notes": "Check 0 is BG-hxp3f73q's repro and passes before the work on purpose: it pins that the fix keeps that case. The repro reads both clauses with four planted Doc texts.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-775f1f5d",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "fa03a6ea86907fdb9375243bca27019a7ca92467",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import factdiff as F\nb='# Title\\n\\nIntro.\\n\\n## Alpha\\n\\nAlpha body NEW.\\n\\n## Beta\\n\\nBeta body.\\n';o=b.replace('NEW','OLD')\nd=F.Doc(o);a={'heading':d.units[2][0],'sha':F.sha(d.window(2,2))}\nv=b.replace('## Beta','## Gamma\\n\\nG.\\n\\n## Beta');r=F.section_unchanged(F.window_sections(a,F.Doc(v),F.Doc(b)),F.sections(b),F.sections(v))\ni=b.replace('Intro.','Intro, edited.');s=F.section_unchanged(F.window_sections(a,F.Doc(i),F.Doc(b)),F.sections(b),F.sections(i))\nprint('unrelated H2 passes:',r,'intro edit passes:',s);sys.exit(0 if r and not s else 1)"
+        ],
+        "exit": 0,
+        "sha256": "69935b37cac4e839"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import factdiff as F\nn=chr(10)\ndef su(b,a,c):return F.section_unchanged(F.window_sections(a,F.Doc(c),F.Doc(b)),F.sections(b),F.sections(c))\nb='# Title'+n+n+'Intro.'+n+n+'## Beta'+n+n+'Beta body.'+n+n+'## Alpha'+n+n+'Alpha body NEW.'+n\nd=F.Doc(b.replace('NEW','OLD'));a={'heading':d.units[5][0],'sha':F.sha(d.window(5,1))}\nr={'body window, identical text':su(b,a,b),'body window, H2 added before its section':su(b,a,b.replace('## Alpha','## Gamma'+n+n+'G.'+n+n+'## Alpha'))}\nb2='# Title'+n+n+'Intro.'+n+n+'## Alpha'+n+n+'Alpha body NEW.'+n+n+'## Beta'+n+n+'Beta body.'+n\nd2=F.Doc(b2.replace('NEW','OLD'));a2={'heading':d2.units[2][0],'sha':F.sha(d2.window(2,2))}\nr['heading window, its section removed (want False)']=not su(b2,a2,b2.replace('## Alpha'+n+n+'Alpha body NEW.'+n+n,''))\nr['heading window, its section renamed (want False)']=not su(b2,a2,b2.replace('## Alpha','## Alpha2'))\nprint(r);sys.exit(0 if all(r.values()) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "4abca928bd626e55"
+      }
+    ]
+  }
 }
