@@ -2,7 +2,7 @@
   "id": "ST-xvdk32ag",
   "kind": "story",
   "title": "Every live session gets a silence measure, with or without a backlog item",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-hxxn6fnv",
   "priority": "P3",
@@ -53,5 +53,7 @@
     "kb/_self/tools.md"
   ],
   "notes": "Plan check 2026-10-26: the old check read kbmon of this clone, which a hand run can satisfy; the new checks plant a temp clone with a session whose transcript is 900 s old and no item and a fresh worker session, and fail on the base: no silent_s on a session row, no session silence metric or alert rule, the text line shows only \"up\".",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
