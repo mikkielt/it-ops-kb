@@ -2,7 +2,7 @@
   "id": "ST-qifdoe2g",
   "kind": "story",
   "title": "Research sprint goal: Code questions from a pinned code map, used by planning too",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-acysfnxr",
   "goal_research": true,
   "priority": "P1",
@@ -22,6 +22,20 @@
     "kb/public/**"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-775f1f5d",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "0e9ad9ee2271f9ea40f0da2b0e9b56648d14fd4f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-qifdoe2g"
+        ],
+        "exit": 0,
+        "sha256": "7de2438dc3196f0f"
+      }
+    ]
+  }
 }
