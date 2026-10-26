@@ -2843,9 +2843,11 @@ def result_problems(res, group, scope, log, sources, root, today=None):
 
 
 def leak_problems(res):
-    """[problem] for each outcome note, gap text and conflict text that holds a value the leak scan flags (the scan of
-    tracked files, `kbpublic.file_hits`, with the clone's `_tools/tests_allowlist.txt`), naming the field and the kinds,
-    never the value: a note is written to the log and a gap or conflict text to a ledger, both tracked."""
+    """[problem] for each outcome note, gap text, conflict text and string field of a new row (url, title, publisher,
+    licence, version_or_date, used_in) that holds a value the leak scan flags (the scan of tracked files,
+    `kbpublic.file_hits`, with the clone's `_tools/tests_allowlist.txt`), naming the field and the kinds, never the
+    value: a note is written to the log, a gap or conflict text to a ledger and a new row to `_sources.csv`, all tracked.
+    A url is scanned as `file_hits` scans it (urls stripped) plus an email address anywhere in it."""
     import kbpublic
     path = os.path.join(kbcommon.HOME, kbpublic.ALLOWLIST_PATH)
     try:
@@ -2855,9 +2857,15 @@ def leak_problems(res):
         allow = {}
     fields = [(f"outcomes[{i}] note", o["note"]) for i, o in enumerate(res["outcomes"])]
     fields += [(f"{kind}[{i}] text", e["text"]) for kind in ("gaps", "conflicts") for i, e in enumerate(res[kind])]
+    fields += [(f"new_rows[{i}] {col}", row[col]) for i, row in enumerate(res["new_rows"])
+               for col in ("url", "title", "publisher", "licence", "version_or_date", "used_in")
+               if isinstance(row.get(col), str)]
     out = []
     for field, text in fields:
-        kinds = sorted({k for k, _ in kbpublic.file_hits("census-result.json", text, allow)})
+        hits = kbpublic.file_hits("census-result.json", text, allow)
+        if field.endswith(" url"):  # file_hits strips urls; an address in a source url is still a leak
+            hits += [h for h in kbcommon.leak_hits(text, allow) if h[0] == "email"]
+        kinds = sorted({k for k, _ in hits})
         if kinds:
             out.append(f"{field} has a leak-scan hit ({', '.join(kinds)}; value not printed): write a placeholder instead")
     return out
