@@ -19,6 +19,9 @@
     "_tools/bl_runs.py",
     "kb/_self/backlog.md"
   ],
+  "links": [
+    "parked: SP-7ba3r4ec close"
+  ],
   "notes": "Seen 2026-10-26 on SP-wurbmsid and SP-eyhift2n: each review and research story finished with `done --commit` in the orchestrator's checkout stayed at run claimed; after `close` deleted the item files, `runs --reconcile` reported 0 reconciled and kbmon raised a run-drift alert; the orchestrator repaired them with `coord.py transition run/ID --to landed`. In the repro, reconcile moves one of the two to released, a state that claims the item was let go undone. Module: done in bl_land.py, runs in bl_runs.py; close (bl_close.py) needs no change if done moves the state.",
   "filed_in": "clone-0ea70e5c"
 }

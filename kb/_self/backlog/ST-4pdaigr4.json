@@ -1,0 +1,27 @@
+{
+  "id": "ST-4pdaigr4",
+  "kind": "story",
+  "title": "A planted check counts numbered markers by whole tokens, never by substring",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the sprint skill's plan step 6 tells the planner that a planted check counting numbered markers in output (line0, line1 ... line29) counts whole tokens (a word boundary), since a substring count reads line2 in line28",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys\nt=open('skills/sprint/SKILL.md',encoding='utf-8').read()\ns=t.split('## plan',1)[1].split('\\n## ',1)[0]\nstep=[p for p in re.split(r'\\n(?=\\d+\\. )',s) if p.startswith('6. ')]\nsys.exit(0 if step and re.search(r'whole[- ]token|whole number|word boundar',step[0],re.I) else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-7ba3r4ec close"
+  ],
+  "notes": "SP-7ba3r4ec close: BG-lclivroa's repro counted 'small%d' by substring, so small2 matched small28 and small29 and a correct fix could not pass; its worker stopped on a gate and the operator approved the rewrite.",
+  "filed_in": "clone-0ea70e5c"
+}
