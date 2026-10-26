@@ -67,9 +67,6 @@
     "kb/_self/tools.md",
     "kb/_self/querylog.md"
   ],
-  "depends_on": [
-    "ST-zimb7vuu"
-  ],
   "notes": "Plan check 2026-10-26: check 0 dispatches a fake claude in a temp clone with a launcher that records its argv and runs the command, and once with none; check 1 plants two sessions and an agent_states command naming one by pid (idle) and one by session id (done) and reads kbmon --root; both fail on the base (the launcher is never called, no state on a row). The goal now names the placeholders {dir} and {command} and narrows \"beside the presence lease\" to the session's row of the sessions panel.",
   "filed_in": "clone-0ea70e5c"
 }
