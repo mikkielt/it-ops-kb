@@ -1,20 +1,59 @@
 {
   "id": "ST-6n5xrkbt",
   "kind": "story",
-  "title": "One call turns a task's title and body into a context pack: the cited fact lines, the code locations it names at a pinned commit, and what the kb lacks",
+  "title": "One call turns a task's title and body into a context pack: the cited fact lines and what the kb lacks",
   "status": "draft",
   "parent": "EP-66qfpegm",
   "sprint": "SP-n7f53pgv",
   "priority": "P2",
   "rank": 0,
-  "goal": "rag.py task FILE|- reads a task's text (any tracker's title and body, plain text or Markdown) and prints, within a token budget (default 1200), the pack's verdict and fact lines for the questions the text raises, the code locations its paths or symbols name at the pinned commit of an ingested repository, and the kb has / kb lacks lines; the kb MCP server serves the same as kb_task_context; nothing in the code or docs names a tracker product.",
+  "goal": "rag.py task FILE|- reads a task's text (any tracker's title and body, plain text or Markdown) and prints, within a token budget (default 1200), the pack's verdict and fact lines for the questions the text raises; it prints the kb has / kb lacks lines; the kb MCP server serves the same as kb_task_context; nothing in the code or docs names a tracker product.",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import subprocess as s,sys;p=s.run([sys.executable,'_tools/rag.py','task','-'],input='Pilot devices fail Autopilot pre-provisioning; check the enrollment status page timeout and the related Intune policy',capture_output=True,text=True,timeout=180);print(p.stdout[:600],p.stderr[:300]);sys.exit(0 if p.returncode==0 and 'coverage:' in p.stdout else 1)"
+        "import os,re,subprocess as s,sys,tempfile\nT='# Pilot devices fail Autopilot pre-provisioning'+chr(10)+chr(10)+'Check the enrollment status page timeout and the Intune policy that sets it.'+chr(10)\nf=os.path.join(tempfile.mkdtemp(),'task.md');open(f,'w').write(T)\na=s.run([sys.executable,'_tools/rag.py','task','-'],input=T,capture_output=True,text=True,timeout=300)\nb=s.run([sys.executable,'_tools/rag.py','task',f],capture_output=True,text=True,timeout=300)\nc=s.run([sys.executable,'_tools/rag.py','task',f,'--budget','300'],capture_output=True,text=True,timeout=300)\nprint(a.returncode,a.stdout[:600],a.stderr[-300:])\nfacts=[l for l in a.stdout.splitlines() if re.search(r'\\S+\\.(md|csv):\\d+',l) and re.search(r'\\[(DOC|CODE|DER|COMMUNITY|UNK|DECISION)',l)]\nok=a.returncode==0 and a.stdout.startswith('coverage:') and bool(facts) and a.stdout==b.stdout and len(a.stdout)<=1200*4+600 and c.returncode==0 and len(c.stdout)<len(a.stdout)\nsys.exit(0 if ok else 1)\n\n"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess as s,sys\nT='Set up Autopilot pre-provisioning for the pilot devices.'+chr(10)+chr(10)+'Then configure the zorblax quantum flux relay for the vendor kiosk.'+chr(10)\na=s.run([sys.executable,'_tools/rag.py','task','-'],input=T,capture_output=True,text=True,timeout=300)\nprint(a.returncode,a.stdout[-800:],a.stderr[-300:])\nL=a.stdout.splitlines()\nok=a.returncode==0 and any(l.startswith('kb has:') for l in L) and any(l.startswith('kb lacks:') and 'zorblax' in l.lower() for l in L)\nsys.exit(0 if ok else 1)\n\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,re,subprocess as s,sys\nT='# Pilot devices fail Autopilot pre-provisioning'+chr(10)+chr(10)+'Check the enrollment status page timeout and the Intune policy that sets it.'+chr(10)\na=s.run([sys.executable,'_tools/rag.py','task','-'],input=T,capture_output=True,text=True,timeout=300)\nM=[{'jsonrpc':'2.0','id':0,'method':'initialize','params':{'protocolVersion':'2025-11-25','capabilities':{},'clientInfo':{'name':'chk','version':'1'}}},{'jsonrpc':'2.0','method':'notifications/initialized'},{'jsonrpc':'2.0','id':1,'method':'tools/call','params':{'name':'kb_task_context','arguments':{'text':T}}}]\np=s.run([sys.executable,'_tools/kb_mcp.py'],input=chr(10).join(json.dumps(x) for x in M)+chr(10),capture_output=True,text=True,timeout=300)\nr=[json.loads(l) for l in p.stdout.splitlines() if l.strip()]\nt=' '.join(c.get('text','') for x in r if x.get('id')==1 for c in (x.get('result') or {}).get('content',[]))\nref=lambda o:set(re.findall(r'\\S+\\.(?:md|csv):\\d+',o))\nprint(sorted(ref(a.stdout))[:6],sorted(ref(t))[:6])\nok=a.returncode==0 and bool(ref(a.stdout)) and ref(a.stdout)==ref(t)\nsys.exit(0 if ok else 1)\n\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,re,subprocess as s,sys\nh=s.run([sys.executable,'_tools/rag.py','task','-h'],capture_output=True,text=True,timeout=120)\nM=[{'jsonrpc':'2.0','id':0,'method':'initialize','params':{'protocolVersion':'2025-11-25','capabilities':{},'clientInfo':{'name':'chk','version':'1'}}},{'jsonrpc':'2.0','method':'notifications/initialized'},{'jsonrpc':'2.0','id':1,'method':'tools/list','params':{}}]\np=s.run([sys.executable,'_tools/kb_mcp.py'],input=chr(10).join(json.dumps(x) for x in M)+chr(10),capture_output=True,text=True,timeout=120)\nr=[json.loads(l) for l in p.stdout.splitlines() if l.strip()]\ntool=[t for x in r if x.get('id')==1 for t in x['result']['tools'] if t['name']=='kb_task_context']\ntext=h.stdout+json.dumps(tool)\nbad=re.findall(r'(?i)\\b(jira|linear|asana|trello|github|gitlab|beads|youtrack|azure devops|shortcut|clickup|monday)\\b',text)\nprint(h.returncode,len(tool),bad);sys.exit(0 if h.returncode==0 and tool and not bad else 1)\n\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "rag.py task FILE|- reads a task's text (any tracker's title and body, plain text or Markdown) and prints, within a token budget (default 1200), the pack's verdict and fact lines for the questions the text raises",
+      "check": 0
+    },
+    {
+      "clause": "it prints the kb has / kb lacks lines",
+      "check": 1
+    },
+    {
+      "clause": "the kb MCP server serves the same as kb_task_context",
+      "check": 2
+    },
+    {
+      "clause": "nothing in the code or docs names a tracker product",
+      "check": 3
     }
   ],
   "touches": [
@@ -30,8 +69,8 @@
     "kb/_self/content-rules.md"
   ],
   "depends_on": [
-    "ST-q4fbmomg",
     "ST-wu4lbbjs"
   ],
+  "notes": "Plan check 2026-10-26: goal narrowed: the code locations at an ingested repository's pinned commit are left out, since they need the code map of ST-q4fbmomg, which left SP-acysfnxr with its gate ST-teivhsxq g1 (agents-rule) open; the dependency on ST-q4fbmomg is dropped and a later item adds the code locations. Check 0 runs rag.py task on stdin and on a file (same output, a fact line, the coverage line first, a smaller --budget gives less), check 1 a task with one kb part and one unknown part (kb has / kb lacks), check 2 kb_task_context over MCP against the CLI's cited lines, check 3 the help and the tool description for a tracker name. On the base: no task subcommand and no kb_task_context: premise reproduced.",
   "filed_in": "clone-0ea70e5c"
 }

@@ -7,14 +7,57 @@
   "sprint": "SP-n7f53pgv",
   "priority": "P2",
   "rank": 0,
-  "goal": "coord.py export-intents prints each live intent with its session, items and touch globs as JSON lines; coord.py import-reservations FILE|- takes JSON lines of holder, path globs, expiry and source and stores them as leases of their own that expire on their own; digest and the coord hook show an imported reservation that meets a session's touches as an overlap, as they show a session's; the contract is documented in coordination.md with no product named; on a temp store an imported reservation's holder appears in the digest.",
+  "goal": "coord.py export-intents prints each live intent with its session, items and touch globs as JSON lines; coord.py import-reservations FILE|- takes JSON lines of holder, paths (globs), expires_in (seconds) and source and stores them as leases of their own that expire on their own; digest and the coord hook show an imported reservation that meets a session's touches as an overlap, as they show a session's; the contract is documented in coordination.md with no product named; on a temp store an imported reservation's holder appears in the digest.",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import json,os,subprocess as s,sys,tempfile;d=tempfile.mkdtemp();t=os.path.join(d,'c.sqlite');f=os.path.join(d,'r.jsonl');open(f,'w').write(json.dumps({'holder':'ext-agent-1','paths':['src/auth/*'],'expires_in':600,'source':'external'})+chr(10));a=s.run([sys.executable,'_tools/coord.py','import-reservations',f,'--store',t],capture_output=True,text=True,timeout=60);b=s.run([sys.executable,'_tools/coord.py','digest','--store',t],capture_output=True,text=True,timeout=60);print(a.stdout,a.stderr,b.stdout);sys.exit(0 if a.returncode==0 and b.returncode==0 and 'ext-agent-1' in b.stdout else 1)"
+        "import json,os,subprocess as s,sys,tempfile\nt=os.path.join(tempfile.mkdtemp(),'c.sqlite')\nc=lambda *a:s.run([sys.executable,'_tools/coord.py',*a,'--store',t],capture_output=True,text=True,timeout=120)\nc('claim','session/s1','--holder','s1','--ttl','600')\nc('post','--kind','intent','--field','session=s1','--field','item=ST-aaaaaaaa','--field','touch=src/auth/*')\np=c('export-intents');print(p.returncode,p.stdout[-500:],p.stderr[-300:])\nrows=[]\nfor l in p.stdout.splitlines():\n    try:\n        rows.append(json.loads(l))\n    except ValueError:\n        pass\nok=p.returncode==0 and any('s1' in json.dumps(r) and 'ST-aaaaaaaa' in json.dumps(r) and 'src/auth/*' in json.dumps(r) for r in rows)\nsys.exit(0 if ok else 1)\n\n"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile,time\nd=tempfile.mkdtemp();t=os.path.join(d,'c.sqlite');f=os.path.join(d,'r.jsonl')\nopen(f,'w').write(json.dumps({'holder':'ext-agent-1','paths':['src/auth/*'],'expires_in':600,'source':'external'})+chr(10)+json.dumps({'holder':'ext-agent-2','paths':['src/auth/*'],'expires_in':1,'source':'external'})+chr(10))\na=s.run([sys.executable,'_tools/coord.py','import-reservations',f,'--store',t],capture_output=True,text=True,timeout=60)\ntime.sleep(3)\nb=s.run([sys.executable,'_tools/coord.py','digest','--store',t,'--key','src/auth/login.py','--lines','20'],capture_output=True,text=True,timeout=60)\nprint(a.returncode,a.stdout[-300:],a.stderr[-300:],b.stdout[-400:])\nok=a.returncode==0 and b.returncode==0 and 'ext-agent-1' in b.stdout and 'ext-agent-2' not in b.stdout\nsys.exit(0 if ok else 1)\n\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import importlib.util as u,json,os,subprocess as s,sys,tempfile\nd=tempfile.mkdtemp();t=os.path.join(d,'c.sqlite');f=os.path.join(d,'r.jsonl');os.environ['KB_COORD_STORE']=t\nopen(f,'w').write(json.dumps({'holder':'ext-agent-1','paths':['src/auth/*'],'expires_in':600,'source':'external'})+chr(10))\na=s.run([sys.executable,'_tools/coord.py','import-reservations',f,'--store',t],capture_output=True,text=True,timeout=60)\nb=s.run([sys.executable,'_tools/coord.py','digest','--store',t,'--key','src/auth/login.py','--lines','20'],capture_output=True,text=True,timeout=60)\nsp=u.spec_from_file_location('h','.claude/hooks/coord_hook.py');h=u.module_from_spec(sp);sp.loader.exec_module(h)\no=h.overlaps('s-mine',['src/auth/login.py'])\nprint(a.returncode,a.stderr[-200:],b.stdout[-300:],o)\nok=a.returncode==0 and 'ext-agent-1' in b.stdout and 'ext-agent-1' in json.dumps(o)\nsys.exit(0 if ok else 1)\n\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys\nt=open('kb/_self/coordination.md',encoding='utf-8').read()\nparas=[p for p in re.split(r'\\n\\s*\\n',t) if 'import-reservations' in p or 'export-intents' in p]\nnames=re.findall(r'(?i)agent mail|mcp_agent_mail|\\bbeads\\b|\\bherdr\\b|\\bclash\\b|\\bweave\\b',' '.join(paras))\nprint(len(paras),'paragraphs name the contract; product names in them:',names)\nsys.exit(0 if paras and any('import-reservations' in p for p in paras) and any('export-intents' in p for p in paras) and not names else 1)\n\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "coord.py export-intents prints each live intent with its session, items and touch globs as JSON lines",
+      "check": 0
+    },
+    {
+      "clause": "coord.py import-reservations FILE|- takes JSON lines of holder, paths (globs), expires_in (seconds) and source and stores them as leases of their own that expire on their own",
+      "check": 1
+    },
+    {
+      "clause": "digest and the coord hook show an imported reservation that meets a session's touches as an overlap, as they show a session's",
+      "check": 2
+    },
+    {
+      "clause": "the contract is documented in coordination.md with no product named",
+      "check": 3
+    },
+    {
+      "clause": "on a temp store an imported reservation's holder appears in the digest",
+      "check": 1
     }
   ],
   "touches": [
@@ -55,5 +98,6 @@
       "role": "interactive"
     }
   ],
+  "notes": "Plan check 2026-10-26: the old check called digest without --key and --lines, which exits 2 whatever the work. Check 0 posts a live intent and reads export-intents; check 1 imports a 600 s and a 1 s reservation, waits 3 s and reads the digest of a path under them (the first shown, the expired one gone); check 2 reads the coord hook's overlaps() for that path; check 3 reads the contract paragraphs of coordination.md for a product name. The goal names the field names the old check used. On the base: export-intents and import-reservations are invalid choices: premise reproduced. Gate g1 (agents-rule) stands as the operator answered it.",
   "filed_in": "clone-0ea70e5c"
 }

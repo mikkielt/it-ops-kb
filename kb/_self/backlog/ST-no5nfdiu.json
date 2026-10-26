@@ -19,15 +19,35 @@
     {
       "run": [
         "python3",
-        "_tools/selfdoc.py",
-        "section",
-        "alternatives",
-        "Coordination"
+        "-c",
+        "import re,sys\nt=open('kb/_self/alternatives.md',encoding='utf-8').read().splitlines()\nh=[i for i,l in enumerate(t) if l.startswith('### ') and re.search('coordinat',l,re.I)]\nif not h:\n    print('no ### section on coordination tools');sys.exit(1)\nend=next((i for i in range(h[0]+1,len(t)) if t[i].startswith('#')),len(t))\ntab=[l for l in t[h[0]:end] if l.startswith('|')]\nhead=[c.strip().lower() for c in tab[0].strip('|').split('|')] if tab else []\nneed=[any('tool' in c for c in head),any('licen' in c for c in head),any('overlap' in c for c in head),any('differ' in c for c in head),any(re.search('adapter|contract|plug|complement',c) for c in head)]\nrows=[[c.strip() for c in l.strip('|').split('|')] for l in tab[2:]]\nsrc=t[next((i for i,l in enumerate(t) if l.startswith('## Sources')),len(t)):]\nsrct=' '.join(src).lower()\ncited=[r[0] for r in rows if r and (re.search(r'`[^`]*\\.[a-z]{2,}/[^`]*`',' '.join(r)) or (re.findall(r'[a-z]{3,}',r[0].lower())[:1] and re.findall(r'[a-z]{3,}',r[0].lower())[0] in srct))]\nprint('columns',head,'needed',need,'rows',len(rows),'cited',len(cited))\nsys.exit(0 if all(need) and len(rows)>=3 and len(cited)==len(rows) else 1)\n\n"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,subprocess as s,sys\nt=open('kb/_self/alternatives.md',encoding='utf-8').read().splitlines()\nh=[i+1 for i,l in enumerate(t) if l.startswith('### ') and re.search('coordinat',l,re.I)]\nend=next((i+1 for i in range(h[0],len(t)) if t[i].startswith('#')),len(t)+1) if h else 0\np=s.run([sys.executable,'_tools/rag.py','pack','--root','_self','which tools coordinate parallel agents, track their tasks or host their sessions, and where does the kb plug into each'],capture_output=True,text=True,timeout=300)\nlines=[int(n) for n in re.findall(r'kb/_self/alternatives\\.md:(\\d+)',p.stdout)]\ninside=[n for n in lines if h and h[0]<=n<end]\nprint('section lines',h[:1],end,'cited lines',lines[:8]);sys.exit(0 if inside else 1)\n\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb/_self/alternatives.md has a section on tools that coordinate parallel agents, track their tasks or host their sessions, each with what it overlaps with, how it differs, its licence (a rider that bars some parties named as such) and the adapter or contract through which the kb complements it",
+      "check": 1
+    },
+    {
+      "clause": "its sources are cited as the doc's others are",
+      "check": 1
+    },
+    {
+      "clause": "selfdoc.py check passes",
+      "check": 0
     }
   ],
   "touches": [
     "kb/_self/alternatives.md"
   ],
+  "notes": "Plan check 2026-10-26: check 0 (selfdoc check) passes before the work on purpose: it pins that the docs stay consistent. Check 1 reads the new ### section of alternatives.md for its columns (tool, licence, overlap, difference, adapter or contract), at least three rows and a source for each row; check 2 runs the _self pack of the clause's question and needs a cited line inside that section. The old section check named a heading the doc has no reason to hold. On the base: no such section: premise reproduced.",
   "filed_in": "clone-0ea70e5c"
 }

@@ -15,6 +15,34 @@
         "-c",
         "import json,subprocess as s,sys;m=[{'jsonrpc':'2.0','id':0,'method':'initialize','params':{'protocolVersion':'2025-11-25','capabilities':{},'clientInfo':{'name':'chk','version':'1'}}},{'jsonrpc':'2.0','method':'notifications/initialized'},{'jsonrpc':'2.0','id':1,'method':'tools/list','params':{}}];p=s.run([sys.executable,'_tools/kb_mcp.py'],input=chr(10).join(json.dumps(x) for x in m)+chr(10),capture_output=True,text=True,timeout=120,check=True);r=[json.loads(l) for l in p.stdout.splitlines() if l.strip()];n=[t['name'] for x in r if x.get('id')==1 for t in x['result']['tools']];print(n);sys.exit(0 if 'coord_dedup' in n and 'coord_wait' in n and n.index('coord_dedup')==n.index('coord_wait')+1 else 1)"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile\nt=os.path.join(tempfile.mkdtemp(),'c.sqlite');e=dict(os.environ,KB_COORD_STORE=t)\ndef call(h):\n    m=[{'jsonrpc':'2.0','id':0,'method':'initialize','params':{'protocolVersion':'2025-11-25','capabilities':{},'clientInfo':{'name':'chk','version':'1'}}},{'jsonrpc':'2.0','method':'notifications/initialized'},{'jsonrpc':'2.0','id':1,'method':'tools/call','params':{'name':'coord_dedup','arguments':{'question':'How does the Intune enrollment status page timeout work','holder':h}}}]\n    p=s.run([sys.executable,'_tools/kb_mcp.py'],input=chr(10).join(json.dumps(x) for x in m)+chr(10),env=e,capture_output=True,text=True,timeout=300)\n    r=[json.loads(l) for l in p.stdout.splitlines() if l.strip()]\n    x=[y for y in r if y.get('id')==1]\n    res=(x[0].get('result') or {}) if x else {}\n    sc=res.get('structuredContent')\n    if sc is None:\n        try:\n            sc=json.loads(' '.join(c.get('text','') for c in res.get('content',[])))\n        except ValueError:\n            sc={}\n    return {} if res.get('isError') or not isinstance(sc,dict) else sc\na=call('chk-a');b=call('chk-b');print(a,b)\nkeys={'topic','terms','uncovered','overlaps','held','claimed','token'}\nok=keys<=set(a) and bool(a.get('claimed')) and 'chk-a' in json.dumps(b.get('overlaps'))\nsys.exit(0 if ok else 1)\n\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile\nd=tempfile.mkdtemp();t=os.path.join(d,'c.sqlite');k=os.path.join(d,'keys');os.mkdir(k,0o700)\nfor n in ('opa','opb'):\n    f=os.path.join(k,n);open(f,'w').write('tok-'+n+'-0123456789abcdef'+chr(10));os.chmod(f,0o600)\np=s.Popen([sys.executable,'_tools/coord.py','serve','--store',t,'--bind','127.0.0.1:0','--keys',k],stdout=s.PIPE,stderr=s.PIPE,text=True)\nok=False\ntry:\n    line=p.stdout.readline();url=line.strip().rpartition(' ')[2];print(line.strip())\n    def q(n):\n        r=s.run([sys.executable,'_tools/coord.py','--url',url,'--key-file',os.path.join(k,n),'dedup','How does the Intune enrollment status page timeout work','--holder','chk-'+n],capture_output=True,text=True,timeout=300)\n        print(n,r.returncode,r.stdout[-400:],r.stderr[-300:])\n        try:\n            return r.returncode,json.loads(r.stdout)\n        except ValueError:\n            return r.returncode,{}\n    ca,a=q('opa');cb,b=q('opb')\n    ok=ca==0 and cb==0 and bool(a.get('claimed')) and 'chk-opa' in json.dumps(b.get('overlaps'))\nfinally:\n    p.terminate();p.wait(10)\nsys.exit(0 if ok else 1)\n\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "The kb MCP server lists a coord_dedup tool right after coord_wait that runs coord.py dedup with the same id-only fields (question, holder, topic, token, ttl) and returns its topic, terms, uncovered, overlaps, held, claimed and token",
+      "check": 1
+    },
+    {
+      "clause": "coord.py serve accepts dedup, so agents of any vendor on other hosts dedup against one store",
+      "check": 2
+    },
+    {
+      "clause": "a second holder's dedup of the same question on a temp store reports the first holder's overlap",
+      "check": 1
     }
   ],
   "touches": [
@@ -31,5 +59,6 @@
   "depends_on": [
     "BG-n4pgkyos"
   ],
+  "notes": "Plan check 2026-10-26: check 0 reads the tools/list order, check 1 calls coord_dedup over MCP twice on a temp store (KB_COORD_STORE) and reads the fields and the second holder's overlap, check 2 starts coord.py serve on a free loopback port with two planted operator keys and runs dedup through --url twice. On the base: no coord_dedup tool (checks 0-1) and serve refuses dedup as an invalid choice (check 2): premise reproduced.",
   "filed_in": "clone-0ea70e5c"
 }

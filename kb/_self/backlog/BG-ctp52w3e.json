@@ -15,6 +15,32 @@
       "import argparse,os,sys,tempfile,time;sys.path.insert(0,'_tools');import coord;coord.fingerprint=lambda q,t=None:('logs/otel-python-sdk',[]);s=os.path.join(tempfile.mkdtemp(),'c.sqlite');b=coord.dedup(argparse.Namespace(store=s,holder='h',topic=None,token=None,ttl=60,question='q'),time.time);bad=[k for k in b['claimed'] if not coord.FIELD_VALUE.fullmatch(k)];print('claimed past FIELD_VALUE:',bad);sys.exit(1 if bad else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import argparse,os,sys,tempfile,time\nsys.path.insert(0,'_tools');import coord\nlong='logs/'+'a'*105\ncases={'whole topic':('logs/otel-python-sdk',[]),'long topic, whole':(long,[]),'long topic, terms':(long,['batch size','export interval']),'non-ASCII term':('logs/otel-python-sdk',['gęślą jaźń'])}\nbad=[];readable=None\nfor name,fp in cases.items():\n    coord.fingerprint=lambda q,t=None,fp=fp:fp\n    s=os.path.join(tempfile.mkdtemp(),'c.sqlite')\n    try:\n        b=coord.dedup(argparse.Namespace(store=s,holder='h',topic=None,token=None,ttl=60,question='q'),time.time)\n    except Exception as e:\n        bad.append((name,'raised '+e.__class__.__name__+': '+str(e)[:80]));continue\n    bad+=[(name,k) for k in b.get('claimed',[]) if not coord.FIELD_VALUE.fullmatch(k)]\n    if name=='non-ASCII term':\n        readable=any('gesla' in k for k in b.get('claimed',[]))\nprint('claimed past FIELD_VALUE:',bad,'non-ASCII term readable:',readable)\nsys.exit(0 if not bad and readable else 1)\n\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys\nt=open('.claude/skills/kb-research/SKILL.md',encoding='utf-8').read()\nm=re.search(r'`uncovered` \\(([^)]*)\\)',t)\nprint('uncovered is described as:',m.group(1) if m else None)\nsys.exit(0 if m and re.search(r'\\bids?\\b',m.group(1)) else 1)\n\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "every key coord.py dedup claims fullmatches FIELD_VALUE, the whole-topic key and a topic of 104 or more characters included, a term id keeps a readable form of a non-ASCII term",
+      "check": 0
+    },
+    {
+      "clause": "the kb-research skill's text on uncovered names what it holds",
+      "check": 1
+    }
+  ],
   "touches": [
     "_tools/coord.py",
     ".claude/skills/kb-research/SKILL.md",
@@ -27,5 +53,6 @@
   ],
   "links": [
     "parked: SP-c7oav2vn review"
-  ]
+  ],
+  "notes": "Plan check 2026-10-26: check 0 plants four fingerprints (a whole-topic key, a 110-character topic whole and with terms, a non-ASCII term) and fails on the base: every whole-topic key holds a * past FIELD_VALUE, the long topic's keys pass 120 characters and the non-ASCII term keeps no readable form. Check 1 reads the kb-research skill's description of uncovered (now \"the terms you research\"; it holds term ids). The repro reads the whole-topic key only."
 }

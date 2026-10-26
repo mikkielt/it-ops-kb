@@ -4,7 +4,6 @@
   "title": "A paid-run item's checks count the records of each arm against the reps its spend gate sized",
   "status": "draft",
   "parent": "EP-giqleoy2",
-  "sprint": "SP-n7f53pgv",
   "priority": "P2",
   "rank": 0,
   "goal": "an item that records sized paid runs carries a check that each arm has as many records as reps were sized, so a record that collapses two reps fails the item's done; SP-3pvz2noj: 2 reps were recorded as one for seven arms and only the worker's own spend sum showed it (BG-e2hfeycb)",
@@ -21,6 +20,8 @@
     "kb/_self/backlog.md"
   ],
   "links": [
-    "parked: SP-3pvz2noj close"
-  ]
+    "parked: SP-3pvz2noj close",
+    "moved out: SP-n7f53pgv"
+  ],
+  "notes": "Plan check 2026-10-26: moved out of SP-n7f53pgv: its only check reads a phrase of backlog.md, and a behaviour check of the rule needs a detector in bl_check (rule-guarding touches, whose design gate no one answers this run). ST-fdigz7xe's own check counts the records of each arm and level against the 4 its plan sized, so the sprint keeps the rule for its one paid run."
 }
