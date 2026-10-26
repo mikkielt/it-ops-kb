@@ -216,18 +216,25 @@ def runs_of(rows, events, now):
 
 
 def transcript_age(sessions, now):
-    """The seconds since the newest write to the transcript of any of SESSIONS (`kbusage.find_transcript`); None when none of them
-    has one."""
+    """The seconds since the newest write to the transcript of any of SESSIONS (`kbusage.find_transcript`) or to a transcript of
+    its subagents (`<session>/subagents/agent-*.jsonl` beside it): a session that fans out writes there while its own transcript
+    waits. None when none of them has one."""
     import kbusage
     from ql_capture import SAFE_SESSION
     stamps = []
     for session in sessions:
         path = kbusage.find_transcript(session) if SAFE_SESSION.fullmatch(session) else None
+        if path is None:
+            continue
         try:
-            stamps.append(path.stat().st_mtime if path else None)
+            files = [path, *path.with_suffix("").joinpath("subagents").glob("agent-*.jsonl")]
         except OSError:
-            stamps.append(None)
-    stamps = [s for s in stamps if s is not None]
+            files = [path]
+        for f in files:
+            try:
+                stamps.append(f.stat().st_mtime)
+            except OSError:
+                pass
     return max(0, int(now - max(stamps))) if stamps else None
 
 

@@ -45,6 +45,25 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "For a live session with no transcript found or no session id, what does silent_s measure from?",
+      "options": [
+        "the newer of the newest spool row and the process start",
+        "the process start only"
+      ],
+      "recommendation": "the newer of the newest spool row and the process start",
+      "do": {
+        "the newer of the newest spool row and the process start": "BG-bppk4c4a",
+        "the process start only": "BG-bppk4c4a"
+      },
+      "class": "design",
+      "answer": "the newer of the newest spool row and the process start",
+      "by": "agent"
+    }
+  ],
   "notes": "The repro plants a temp clone with fake claude processes (a symlink to sleep), killed in a finally block; it ran on main 2026-10-26 and all three cases failed. Check 0 reads the monitoring.md alert count against the rules file (seven now, the doc says six).",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-775f1f5d",

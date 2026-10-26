@@ -19,7 +19,8 @@ entry for each `claude` process in a checkout of the clone, with its `label` (`m
 names the session's id), `role` (the first row of `ROLES` that fits), `item` and `item_title`, `sprint` and
 `sprint_title`, `step`, `started` (the process's start), `last_activity` and `spend_usd` (the newest row and the priced
 usage rows of the session's own spool file, null without one) and `silent_s` (the seconds since the newest write to the
-session's transcript, `mon_coord.transcript_age`; null where nothing binds the session or it has no transcript). `overlaps` lists each pair of live sessions whose
+session's transcript or its subagents' transcripts, `mon_coord.transcript_age`; with none found, since the newer of its newest spool row
+and its process's start, `silence`; null only where none is known). `overlaps` lists each pair of live sessions whose
 intents' items or touches meet, with the shared `files` and the `strategy` (`undecided`, else the one a `coordinate` event
 between their items announced), and `needs_you_after_min` is the setting `mon_needs` ages an undecided one against (`overlap_rows`,
 `after_minutes`; both left out with `intents`, and left out with `overlaps_unread`, the reason, where a coord store is there
@@ -636,6 +637,18 @@ def spool_figures(session):
     return (max(stamps) if stamps else None), (round(bl_cost.price_usd(models)[0], 4) if counted else None)
 
 
+def silence(session, last_activity, started, now):
+    """The seconds a live session has gone quiet: since the newest write to its transcript or its subagents' (SESSION, a
+    session id or None); with none found (no id, or no transcript) since the newer of its newest spool row (LAST_ACTIVITY, an
+    ISO time or None) and its process's start (STARTED, epoch seconds or None); None only where none of them is known."""
+    import mon_coord
+    quiet = mon_coord.transcript_age([session], now) if session is not None else None
+    if quiet is not None:
+        return quiet
+    known = [t for t in (epoch(last_activity) if last_activity else None, started) if t is not None]
+    return max(0, int(now - max(known))) if known else None
+
+
 def landing_steps(root):
     """{item: the newest `land.step` of its landing in progress} from the ops rows of ROOT; {} when they cannot be read."""
     try:
@@ -780,7 +793,6 @@ def session_entries(ctx, procs, placed, by_path, found, bl, names, light=False):
     claude.sort(key=lambda p: (p["start"] is None, p["start"] or 0, p["pid"]))
     if not claude:
         return []
-    import mon_coord
     now = time.time()
     bound = bind_sessions(claude, placed, by_path, ledgers, found)
     landing = landing_steps(ctx.root) if bl is not None and not light else {}
@@ -808,7 +820,7 @@ def session_entries(ctx, procs, placed, by_path, found, bl, names, light=False):
         item = items[0] if len(items) == 1 else None
         sprint = sprints.pop() if len(sprints) == 1 else None
         stamp, spend = spool_figures(sid) if sid is not None and not light else (None, None)
-        silent = mon_coord.transcript_age([sid], now) if sid is not None and not light else None
+        silent = None if light else silence(sid, stamp, p["start"], now)
         step = step_of(role, items + [i for i in dispatched if runner and i not in items], bl, landing, live_workers) \
             if bl is not None and not light else None
         out.append({"label": mon_view.session_label(sid) if sid else None, "role": role, "item": item,
