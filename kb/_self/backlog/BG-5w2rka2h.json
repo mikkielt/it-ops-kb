@@ -25,6 +25,25 @@
   "depends_on": [
     "BG-6epmljwc"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does kbtail count and word the live sessions with no session id?",
+      "options": [
+        "one line 'kbtail: N live sessions have no session id, not followed', counting rows the --item and --role filters keep, printed again while following only when N changes",
+        "one line counting every live session of the clone with no id, whatever the filters"
+      ],
+      "recommendation": "one line 'kbtail: N live sessions have no session id, not followed', counting rows the --item and --role filters keep, printed again while following only when N changes",
+      "do": {
+        "one line 'kbtail: N live sessions have no session id, not followed', counting rows the --item and --role filters keep, printed again while following only when N changes": "BG-5w2rka2h",
+        "one line counting every live session of the clone with no id, whatever the filters": "BG-5w2rka2h"
+      },
+      "class": "design",
+      "answer": "one line 'kbtail: N live sessions have no session id, not followed', counting rows the --item and --role filters keep, printed again while following only when N changes",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-7ba3r4ec review"
   ],

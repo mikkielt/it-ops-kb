@@ -15,8 +15,8 @@ sessions have the same words, never a raw session id) in a column as wide as the
 (`<session>/subagents/agent-*.jsonl`) are indented under its session's. `--item ID` and `--role ROLE` keep the matching
 sessions only. A followed session whose process ends gets a line `HH:MM:SS ended` within 2 seconds and the others go on. The
 session list is read again when the coord store has changed (5 seconds apart at most), after a session ended and every 30
-seconds, for sessions that began since. At most 16 sessions are followed, the rest named in one line. `--history N` is each
-file's.
+seconds, for sessions that began since. At most 16 sessions are followed, the rest named in one line; one more line counts
+the live sessions with no session id, which cannot be followed. `--history N` is each file's.
 
 A line is the time (local, HH:MM:SS), a kind and a text:
   prompt   a user prompt's first line
@@ -389,17 +389,20 @@ def alive(pid):
 
 
 def wanted(root, item, role):
-    """The `live_sessions` rows of the clone at ROOT that have a session id and match ITEM and ROLE (None keeps all)."""
+    """([the `live_sessions` rows of the clone at ROOT that have a session id and match ITEM and ROLE (None keeps all)], how
+    many matching rows have none, which cannot be followed)."""
     import mon_sessions
-    return [r for r in mon_sessions.live_sessions(root)
-            if r["session"] and item in (None, r["item"]) and role in (None, r["role"])]
+    rows = [r for r in mon_sessions.live_sessions(root) if item in (None, r["item"]) and role in (None, r["role"])]
+    return [r for r in rows if r["session"]], sum(1 for r in rows if not r["session"])
 
 
 def scan(root, item, role, followed, count):
     """Follow the live sessions that began since the last scan, up to MAX_SESSIONS: ([(time, pid, subagent, line)] of the
-    history of each new session's files, how many lines were skipped, the tags of those left out)."""
+    history of each new session's files, how many lines were skipped, the tags of those left out, how many live sessions have
+    no session id)."""
     shown, skipped, over = [], 0, []
-    for row in wanted(root, item, role):
+    rows, unbound = wanted(root, item, role)
+    for row in rows:
         if row["pid"] in followed:
             continue
         transcript = kbusage.find_transcript(row["session"])
@@ -420,7 +423,7 @@ def scan(root, item, role, followed, count):
             f.files[path] = mark(end, known)
             skipped += bad
             shown += [(line[:8], row["pid"], sub, line) for line in lines]
-    return sorted(shown, key=lambda x: x[0]), skipped, over
+    return sorted(shown, key=lambda x: x[0]), skipped, over, unbound
 
 
 def drain(followed, pid, count=HISTORY):
@@ -440,17 +443,21 @@ def drain(followed, pid, count=HISTORY):
     return out
 
 
-def show(followed, shown, over, columns, out):
-    """Write the history lines SHOWN (`scan`'s list) and one line naming the sessions OVER the limit."""
+def show(followed, shown, over, unbound, columns, out):
+    """Write the history lines SHOWN (`scan`'s list), one line naming the sessions OVER the limit and one counting the live
+    sessions UNBOUND to a session id."""
     for _, pid, sub, line in shown:
         out.write(prefixed(followed, pid, sub, line, columns) + "\n")
+    if unbound:
+        out.write(fit(f"kbtail: {unbound} live session{' has' if unbound == 1 else 's have'} no session id, not followed",
+                      columns) + "\n")
     if over:
         out.write(fit(f"kbtail: {len(over)} more sessions not followed: {', '.join(over)}", columns) + "\n")
 
 
 def follow_all(a, columns, out):
     """Print the history, then follow the live sessions of the clone at a.root until interrupted (the module doc says how)."""
-    followed, last, over_shown = {}, None, []
+    followed, last, over_shown, unbound_shown = {}, None, [], 0
     store = coord_store()
     since = wake(0, store, 0)
     rescan = True
@@ -459,12 +466,12 @@ def follow_all(a, columns, out):
         if rescan or now - last >= SCAN_S:
             rescan = False
             try:
-                shown, _, over = scan(a.root, a.item, a.role, followed, a.history)
+                shown, _, over, unbound = scan(a.root, a.item, a.role, followed, a.history)
             except Exception:  # noqa: BLE001 - a list that fails once is tried again at the next scan
-                shown, over = [], over_shown
+                shown, over, unbound = [], over_shown, unbound_shown
             last = time.monotonic()
-            show(followed, shown, over if over != over_shown else [], columns, out)
-            over_shown = over
+            show(followed, shown, over if over != over_shown else [], unbound if unbound != unbound_shown else 0, columns, out)
+            over_shown, unbound_shown = over, unbound
         for pid in list(followed):
             for who, sub, line in drain(followed, pid, a.history):
                 out.write(prefixed(followed, who, sub, line, columns) + "\n")
@@ -494,8 +501,8 @@ def main_all(a, out, err):
     try:
         if a.once:
             followed = {}
-            shown, skipped, over = scan(a.root, a.item, a.role, followed, a.history)
-            show(followed, shown, over, columns, out)
+            shown, skipped, over, unbound = scan(a.root, a.item, a.role, followed, a.history)
+            show(followed, shown, over, unbound, columns, out)
             out.flush()
             print(f"kbtail: skipped {skipped}", file=err)
             return 0
