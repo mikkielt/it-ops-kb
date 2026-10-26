@@ -2,7 +2,7 @@
   "id": "ST-uzlkxtst",
   "kind": "story",
   "title": "Research sprint goal: Facts know when they were true",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-vlfcgmbu",
   "goal_research": true,
   "priority": "P1",
@@ -22,6 +22,20 @@
     "kb/public/**"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-775f1f5d",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "5bba0537c0639821ef016943137dcc7cf2cca8a2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-uzlkxtst"
+        ],
+        "exit": 0,
+        "sha256": "e7e7f5e4b8117ad3"
+      }
+    ]
+  }
 }
