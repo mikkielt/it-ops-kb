@@ -21,5 +21,9 @@
     "kb/_self/tools.md",
     "kb/_self/monitoring.md"
   ],
+  "links": [
+    "parked: SP-vmtfnkim review"
+  ],
+  "notes": "Found by the SP-vmtfnkim review on 2026-10-26 (BG-xgpnkgth, whose gate g1 answer keeps one git status for each worktree every other check leaves removable): the item's check plants 30 leftovers that are not removable (their items are open), so it counts 13 processes; with 60 leftovers whose items are done and which are clean, merged and idle, tidy --older-than 0 starts 73 git processes, one status each. The repro plants that. No verdict changes and no data is at risk; the process count grows with the removable leftovers, which the goal's fixed number says it should not. A fix needs a way to read the dirtiness of many worktrees in a fixed number of processes, or a bounded goal.",
   "filed_in": "clone-0ea70e5c"
 }
