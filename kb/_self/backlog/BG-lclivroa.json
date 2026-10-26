@@ -38,7 +38,11 @@
         "Operator replaces the goal's command with a whole-word count": "BG-lclivroa",
         "Operator accepts the item done with the repro's one false positive": "BG-lclivroa"
       },
-      "class": "design"
+      "class": "design",
+      "answer": "Operator replaces the goal's command with a whole-word count",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
