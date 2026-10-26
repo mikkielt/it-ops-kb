@@ -46,6 +46,11 @@
     "kb/_self/tools.md",
     "README.md"
   ],
+  "depends_on": [
+    "BG-3rhpom4d",
+    "ST-f5lbn3aw",
+    "ST-y7rnd2tw"
+  ],
   "relates_to": [
     "ST-y7rnd2tw",
     "ST-f5lbn3aw"
