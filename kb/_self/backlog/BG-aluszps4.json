@@ -30,10 +30,32 @@
   "depends_on": [
     "BG-m7g4bccg"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does dispatch --resume refuse a staging or landing run key: for a real resume only (after the pid check, like the other state refusals) or also for --dry-run?",
+      "options": [
+        "real resume only, dry run still prints the plan",
+        "dry run too"
+      ],
+      "recommendation": "real resume only, dry run still prints the plan",
+      "reason": "dry-run already skips the status check and writes nothing",
+      "do": {
+        "real resume only, dry run still prints the plan": "BG-aluszps4",
+        "dry run too": "BG-aluszps4"
+      },
+      "class": "agents-rule",
+      "answer": "real resume only, dry run still prints the plan",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-dx76osrn review"
   ],
-  "notes": "Sprint started 2026-10-26 on the operator's approval for the unattended run.",
+  "notes": "Sprint started 2026-10-26 on the operator's approval for the unattended run. Gate g1 answered with its recommendation by operator (pre-approved by the operator for the 2026-10-26 run).",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"

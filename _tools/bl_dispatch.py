@@ -17,7 +17,8 @@ brief's staging part names it, so a worker's report states its `problems=` count
 checks (`begin_plan`), `claim --commit`, one `land_push` run for the claim commits and `dispatch --detach` of each.
 
 `backlog.py dispatch --resume ID --message FILE` sends the worker session of the item's last dispatch back with the text of
-FILE (`claude -p --resume`, in the item's worktree, the same environment and caps) and moves the run state as a dispatch does.
+FILE (`claude -p --resume`, in the item's worktree, the same environment and caps) and moves the run state as a dispatch does; it is refused, before any session starts, while
+the run state is `staging` or `landing`, naming the tool that holds it.
 
 The brief is the item's JSON and goal text, its external tracker ids with their urls, the worker's role file, its
 worktree and scratch directory, the in-flight sibling items with the files their touches change, the known failing
@@ -1185,6 +1186,11 @@ def cmd_resume(bl, a):
         pid = None
     if isinstance(pid, int) and bl_procs.alive(pid):
         raise Refused(f"the worker of {iid} still runs (pid {pid}): wait for it, or steer it with an ask")
+    held = bl_land.run_state(iid)
+    if held in bl_land.RUN_TOOLS:  # a worker moving its branch under a land or a stage-back would be refused its own moves
+        raise Refused(f"the run state of {bl.label(iid)} is {held}: a {bl_land.RUN_TOOLS[held]} is running on its branch; "
+                      f"wait for it to end, or, when it died, run python3 _tools/backlog.py runs --reconcile (it moves "
+                      f"the state to {bl_land.RUN_HEALED[held]}); no session was started")
     say(budget_line(budget_usd(a.max_budget_usd)))
     if a.detach:
         return start_detached(bl, a, iid, scratch)
