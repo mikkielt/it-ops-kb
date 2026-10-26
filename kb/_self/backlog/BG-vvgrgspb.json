@@ -1,0 +1,25 @@
+{
+  "id": "BG-vvgrgspb",
+  "kind": "bug",
+  "title": "An answers entry says a cross-session message is held only by an explicit hold or a bypass default",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The Conclusion of QK-listagents-sendmessage-two-sessions-held in kb/public/_answers.md names every case the cited facts give for a held message: an invalid crossSessionInbound value, plan mode counted as bypassing, and a stricter project or local setting. Found by the SP-basca7ae review (S3 on ST-mdjpzi2b).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re,sys;t=open(\"kb/public/_answers.md\").read();i=t.find(\"QK-listagents-sendmessage-two-sessions-held\");b=t[i:t.find(\"\\n## \",i+10)];c=[l for l in b.splitlines() if \"held only by\" in l];print(c[:1]);sys.exit(1 if c and not re.search(r\"invalid\",c[0]) else 0)"
+    ]
+  },
+  "repro_reason": "the defect is the wording of one answers entry against facts the kb already holds; the repro reads that Conclusion line for the missing case",
+  "touches": [
+    "kb/public/_answers.md"
+  ],
+  "links": [
+    "parked: SP-basca7ae review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
