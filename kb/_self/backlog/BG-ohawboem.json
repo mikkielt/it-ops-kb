@@ -38,6 +38,28 @@
   "depends_on": [
     "BG-sqmvvtiy"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which wording does the token-count rule add for tokens per answer: only 'tokens per/by' plus answer, question, task, call, query, turn or model (with correct, right, wrong, failed before answer), or any word after 'tokens per'?",
+      "options": [
+        "Fixed list of unit nouns after tokens per or by",
+        "Any word after tokens per"
+      ],
+      "recommendation": "Fixed list of unit nouns after tokens per or by",
+      "reason": "a bare tokens per user stays classed by its token word, so the rule fails closed",
+      "do": {
+        "Fixed list of unit nouns after tokens per or by": "BG-ohawboem",
+        "Any word after tokens per": "BG-ohawboem"
+      },
+      "class": "secrets",
+      "answer": "Fixed list of unit nouns after tokens per or by",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-v64egscn close"
   ],
