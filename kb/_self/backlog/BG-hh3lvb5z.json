@@ -2,8 +2,7 @@
   "id": "BG-hh3lvb5z",
   "kind": "bug",
   "title": "dispatch --detach says the last line of dispatch.log is 'worker of ID exited', but begin and dispatch print rows and report lines after it",
-  "status": "doing",
-  "sprint": "SP-hxxn6fnv",
+  "status": "draft",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -24,9 +23,9 @@
     "BG-k4korjo4"
   ],
   "links": [
-    "parked: SP-vxdacfpl review"
+    "parked: SP-vxdacfpl review",
+    "moved out: SP-hxxn6fnv"
   ],
-  "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-775f1f5d",
-  "operator": "op-f618a13e"
+  "notes": "Moved out of SP-hxxn6fnv by the unattended orchestrator 2026-10-26: the worker raised gate g1 (class agents-rule, since the item touches _tools/bl_dispatch.py) \"How does the printed detach line stop claiming the log ends at worker of ID exited?\" (reword the printed line, recommended, or reorder dispatch output). It waits on the operator; work so far is on branch work/BG-hh3lvb5z.",
+  "filed_in": "clone-0ea70e5c"
 }
