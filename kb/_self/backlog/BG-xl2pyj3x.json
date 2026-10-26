@@ -26,6 +26,24 @@
   "depends_on": [
     "BG-lagjhkzn"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where is the previous run's worker_session kept out of a live worker's binding?",
+      "options": [
+        "in the readers: a pid that still runs never takes the record's worker_session",
+        "in dispatch: clear worker_session when worker_pid is recorded"
+      ],
+      "recommendation": "in the readers: a pid that still runs never takes the record's worker_session",
+      "reason": "dispatch --resume still finds the last session of a worker that died",
+      "do": {
+        "in the readers: a pid that still runs never takes the record's worker_session": "BG-xl2pyj3x",
+        "in dispatch: clear worker_session when worker_pid is recorded": "BG-xl2pyj3x"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "notes": "Fresh review of SP-7ba3r4ec, gap 2 (S2, raised to S1 by the operator): bind_sessions prefers the ledger's dispatch record; bl_dispatch records worker_session only when a worker exits, so the record holds the last run's session while the new pid runs. Fix in the binding (a leased hook session of the checkout that is newer than the record's) or in dispatch (clear worker_session when it records worker_pid).",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-6c439ca9",
