@@ -1,0 +1,37 @@
+{
+  "id": "ST-ittt27lq",
+  "kind": "story",
+  "title": "backlog.py tidy --path removes one recorded leftover, so a session can remove its own worktree without tidying every other session's",
+  "status": "draft",
+  "sprint": "SP-eyhift2n",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "`backlog.py tidy --path PATH` (repeatable) keeps only the recorded leftovers at those paths, listed or, with `--apply`, removed under the same `safe_to_remove` verdict as every tidy row, so a session removes its own worktree and no other's; a path no record names exits 2 naming it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, shutil, subprocess, sys, tempfile\nR = os.getcwd(); T = os.path.realpath(tempfile.mkdtemp())\nenv = {k: v for k, v in os.environ.items() if not k.startswith(\"GIT_\")}\nenv[\"KB_COORD_STORE\"] = os.path.join(T, \"coord.sqlite\")\ndef sh(*a, cwd=T):\n    return subprocess.run(a, cwd=cwd, env=env, capture_output=True, text=True, timeout=120)\nO = os.path.join(T, \"origin.git\"); K = os.path.join(T, \"clone\")\nsh(\"git\", \"init\", \"-q\", \"--bare\", \"-b\", \"main\", O)\nsh(\"git\", \"clone\", \"-q\", O, K)\nshutil.copy(os.path.join(R, \"backlog.json\"), K); os.makedirs(os.path.join(K, \"kb\", \"_self\", \"backlog\"))\nsh(\"git\", \"add\", \".\", cwd=K)\nsh(\"git\", \"-c\", \"user.email=a@b\", \"-c\", \"user.name=n\", \"commit\", \"-q\", \"-m\", \"b\", cwd=K)\nsh(\"git\", \"push\", \"-q\", \"origin\", \"HEAD:main\", cwd=K)\nsh(\"git\", \"fetch\", \"-q\", cwd=K)\nbl = lambda *a: sh(sys.executable, os.path.join(R, \"_tools\", \"backlog.py\"), \"--root\", K, *a, cwd=K)\npaths = {}\nfor n in (\"a\", \"b\"):\n    p = os.path.join(K, \".claude\", \"worktrees\", \"review-\" + n)\n    sh(\"git\", \"worktree\", \"add\", \"-q\", \"--detach\", p, \"origin/main\", cwd=K)\n    bl(\"own\", p, \"--class\", \"worktree\", \"--sprint\", \"SP-aaaaaaaa\")\n    paths[n] = p\nif not all(os.path.isdir(p) for p in paths.values()):\n    print(\"check broken: the planted worktrees were not made\"); sys.exit(2)\nproblems = []\ndry = bl(\"tidy\", \"--path\", paths[\"a\"], \"--older-than\", \"0\")\nif dry.returncode != 0 or \"review-a\" not in dry.stdout or \"review-b\" in dry.stdout:\n    problems.append(\"tidy --path A (no --apply) does not list A alone: exit %d %s %s\" % (dry.returncode, dry.stdout[-300:], dry.stderr[-200:]))\nif not os.path.isdir(paths[\"a\"]):\n    problems.append(\"tidy --path without --apply removed A\")\nr = bl(\"tidy\", \"--path\", paths[\"a\"], \"--older-than\", \"0\", \"--apply\")\nif r.returncode != 0 or os.path.isdir(paths[\"a\"]):\n    problems.append(\"tidy --path A --apply did not remove A: exit %d %s %s\" % (r.returncode, r.stdout[-300:], r.stderr[-200:]))\nif not os.path.isdir(paths[\"b\"]):\n    problems.append(\"tidy --path A --apply removed B too\")\ndirty = os.path.join(paths[\"b\"], \"planted-change.txt\")\nopen(dirty, \"w\").write(\"x\\n\")\nd = bl(\"tidy\", \"--path\", paths[\"b\"], \"--older-than\", \"0\", \"--apply\")\nif not os.path.isdir(paths[\"b\"]):\n    problems.append(\"tidy --path --apply removed a worktree with an untracked file\")\nu = bl(\"tidy\", \"--path\", os.path.join(T, \"not-recorded\"), \"--older-than\", \"0\")\nif u.returncode != 2:\n    problems.append(\"a --path no record names exits %d, not 2: %s\" % (u.returncode, (u.stdout + u.stderr)[-200:]))\nprint(\"\\n\".join(problems) or \"ok\")\nsys.exit(1 if problems else 0)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "`backlog.py tidy --path PATH` (repeatable) keeps only the recorded leftovers at those paths, listed or, with `--apply`, removed under the same `safe_to_remove` verdict as every tidy row, so a session removes its own worktree and no other's",
+      "check": 0
+    },
+    {
+      "clause": "a path no record names exits 2 naming it",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/bl_clean.py",
+    "_tools/backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "notes": "Operator request 2026-10-26: `.claude/settings.json` denies `git worktree remove` to agents (kept), and `tidy --apply` removes every safe leftover of every session at once, so a session could not remove its own reviewer worktree. The deny stays; the remedy is this filter on the tool route with all of tidy's checks. The close's kept line is in bl_close.py (`left for tidy --apply`). No suite test: the check is a planted run.",
+  "filed_in": "clone-0ea70e5c"
+}

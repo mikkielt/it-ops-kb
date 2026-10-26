@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: the change is a filter on this project's own tool (bl_clean.py tidy); it rests on no product behaviour the kb would hold.",
   "filed_in": "clone-0ea70e5c"
 }
