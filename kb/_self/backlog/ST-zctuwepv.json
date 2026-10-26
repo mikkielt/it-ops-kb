@@ -31,6 +31,30 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How many of the repro's last output lines does new bug print?",
+      "options": [
+        "5 non-empty lines, each cut to 200 characters",
+        "3 lines",
+        "the whole output"
+      ],
+      "recommendation": "5 non-empty lines, each cut to 200 characters",
+      "reason": "enough for a traceback's last frames, short for a long output",
+      "do": {
+        "5 non-empty lines, each cut to 200 characters": "ST-zctuwepv",
+        "3 lines": "ST-zctuwepv",
+        "the whole output": "ST-zctuwepv"
+      },
+      "class": "agents-rule",
+      "answer": "5 non-empty lines, each cut to 200 characters",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-s2svf5a6 close"
   ],
