@@ -2,7 +2,7 @@
   "id": "BG-qiuojur6",
   "kind": "bug",
   "title": "backlog.py in the kb's own checkout starts one git process, not several, to find its root",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-vmtfnkim",
   "priority": "P3",
   "rank": 0,
@@ -25,5 +25,7 @@
   "links": [
     "parked: SP-ovwzbc7u review"
   ],
-  "notes": "Found by the SP-ovwzbc7u review on 2026-10-23: default_root (bl_cli.py:127) runs git rev-parse --show-toplevel and two --git-common-dir calls on every backlog.py start, hooks included, and the repro counts 5 git processes for one config run in this checkout where it should count at most 1; the reviewer did not time it. Three of the five are default_root's by reading; the fix must account for the rest. Sprint SP-vmtfnkim started 2026-10-26: start gate answered approve by operator (pre-approved by the operator for the 2026-10-26 run)."
+  "notes": "Found by the SP-ovwzbc7u review on 2026-10-23: default_root (bl_cli.py:127) runs git rev-parse --show-toplevel and two --git-common-dir calls on every backlog.py start, hooks included, and the repro counts 5 git processes for one config run in this checkout where it should count at most 1; the reviewer did not time it. Three of the five are default_root's by reading; the fix must account for the rest. Sprint SP-vmtfnkim started 2026-10-26: start gate answered approve by operator (pre-approved by the operator for the 2026-10-26 run).",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
