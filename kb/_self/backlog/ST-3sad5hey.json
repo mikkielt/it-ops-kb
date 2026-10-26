@@ -2,7 +2,7 @@
   "id": "ST-3sad5hey",
   "kind": "story",
   "title": "Review sprint: One session's host cost, measured without a model",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3qowbedb",
   "review": true,
   "priority": "P1",
@@ -24,6 +24,27 @@
     }
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-c5ef8aa4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "038c32043c7a22e859d2db67fb0c2deb4fc20ebb",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "a67430d30f8b26ac"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "e5c2d5fb32c6a44d"
+      }
+    ]
+  }
 }
