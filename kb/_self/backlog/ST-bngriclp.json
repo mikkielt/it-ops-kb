@@ -101,7 +101,9 @@
       },
       "class": "design",
       "answer": "poll each followed pid once a second, list again on a coord change at most every 5 s, after an end and every 30 s; the newest 4 subagent files show history; sessions past 16 named in one stdout line",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
