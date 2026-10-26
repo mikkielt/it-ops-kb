@@ -36,6 +36,6 @@
     "ST-hjl7dhyh",
     "ST-3suebmof"
   ],
-  "notes": "Seen 2026-10-26: an overlap with a session whose intent has a topic but no item (the session-load benchmark's topic intent) cannot be settled by , which needs the other side's item, so kbmon keeps it under needs-you as undecided. The settling rule here (a depends_on or a coordinate event) needs a form for an item-less peer: a coordinate naming the other session, or the peer's topic.",
+  "notes": "Seen 2026-10-26: an overlap with a session whose intent has a topic but no item (the session-load benchmark topic intent) cannot be settled by kbask.py coordinate, which needs the other side item, so kbmon keeps it under needs-you as undecided. The settling rule here (a depends_on or a coordinate event) needs a form for an item-less peer: a coordinate naming the other session, or the peer topic.",
   "filed_in": "clone-0ea70e5c"
 }
