@@ -21,5 +21,9 @@
     "_tools/ql_base.py",
     "kb/_self/querylog.md"
   ],
+  "links": [
+    "parked: SP-vmtfnkim review"
+  ],
+  "notes": "Found by the SP-vmtfnkim review on 2026-10-26. It changes the provisional answer BG-zoaoahj4 g1 took (the guard in ops_row and record_pipeline only; the other option, a guard in ql_capture.record, was not taken): kg_sync.record_gate (sync.gate) and ql_capture.census_phase (census.phase) call ql_capture.record directly, so a probe that imports the clone's tools from another directory still writes those rows to the clone's spool. The repro runs a census phase from a temporary clone and counts the rows left in the owning clone's spool. The operator decides whether the gate's other option is meant.",
   "filed_in": "clone-0ea70e5c"
 }
