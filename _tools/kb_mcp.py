@@ -957,6 +957,7 @@ LIVE_HANDLERS = {"docs_search": docs_search, "docs_fetch": docs_fetch}
 COORD = Path(TOOLS, "coord.py")
 COORD_WAIT_MAX_S = 60  # this server answers one request at a time: a wait holds every other tool call for as long
 COORD_RUN_S = 120
+COORD_DEDUP_WAIT_S = 130  # coord.py dedup runs the pack first (120 seconds at most), then writes the claims
 COORD_DOCS = ("Claims, leases and events other agents share (coord.py; not kb facts, not live device data). "
               "Runs against KB_COORD_STORE (else the clone's own store, the one the coord hook uses), or against the coord.py serve address KB_COORD_URL names with the token in "
               "KB_COORD_KEY_FILE. ")
@@ -1044,6 +1045,20 @@ COORD_TOOL_LIST = [
          "item": {"type": "string", "description": "return only events whose item field is one of these ids (comma-separated)"}},
          "required": ["since", "timeout"], "additionalProperties": False},
      "annotations": {"title": "Wait for events", **READ_ONLY}},
+    {"name": "coord_dedup", "title": "Check a research question against live claims",
+     "description": COORD_DOCS + "Before researching QUESTION, run it against the live research claims (coord.py dedup): "
+                    "it claims the terms the kb lacks that no overlapping live claim covers and returns topic, terms, "
+                    "uncovered (research only these), overlaps (each other holder's claim and the terms it shares), held, "
+                    "claimed and token (only when it claimed: keep it for coord_renew and coord_release of the claimed "
+                    "keys and as token of a later dedup under the same holder). Takes up to two minutes: it runs the pack.",
+     "inputSchema": {"type": "object", "properties": {
+         "question": {"type": "string", "minLength": 1, "description": "the research question, as it would be asked of kb_pack"},
+         "holder": {"type": "string", "description": "name shown to a later question that overlaps this one (default anonymous)"},
+         "topic": {"type": "string", "description": "the article path to anchor the claim on, instead of the pack's first article"},
+         "token": {"type": "string", "minLength": 1, "description": "the token an earlier coord_dedup printed: its claims under this holder are yours, not an overlap"},
+         "ttl": {"type": "number", "exclusiveMinimum": 0, "description": "lease length in seconds (default 3600)"}},
+         "required": ["question"], "additionalProperties": False},
+     "annotations": {"title": "Check a research question against live claims", **COORD_WRITE}},
 ]
 
 
@@ -1157,9 +1172,19 @@ def coord_wait(args):
     return coord_run(argv, wait_s=int(timeout))
 
 
+def coord_dedup(args):
+    question = args.get("question")
+    if not isinstance(question, str) or not question.strip():
+        raise ToolError("question is required: the research question to check against the live claims")
+    flags = coord_argv("dedup", {k: v for k, v in args.items() if k != "question"}, ("holder", "topic", "token", "ttl"),
+                       {"holder": "--holder", "topic": "--topic", "token": "--token", "ttl": "--ttl"})
+    return coord_run([*flags, "--", question], wait_s=COORD_DEDUP_WAIT_S)
+
+
 COORD_HANDLERS = {"coord_claim": coord_claim, "coord_renew": coord_renew, "coord_release": coord_release,
                   "coord_post": coord_post, "coord_get": coord_get, "coord_put": coord_put,
-                  "coord_digest": coord_digest, "coord_wait": coord_wait}
+                  "coord_digest": coord_digest, "coord_wait": coord_wait,
+                  "coord_dedup": coord_dedup}
 
 
 # ---------------------------------------------------------------- monitor status
@@ -1618,9 +1643,9 @@ FACADE_HANDLERS = {"kb_querylog": kb_querylog, "kb_docs": kb_docs, "kb_tools": k
 
 
 def coord_enabled():
-    """True when the team's own server is started with KB_COORD_TOOLS=1: the coord_ tools write to the coord store, so
-    a default server lists and serves none of them."""
-    return not limited() and os.environ.get("KB_COORD_TOOLS") == "1"
+    """True unless the server is limited to named roots or started with KB_COORD_TOOLS=0: the coord_ tools write to the
+    coord store (KB_COORD_STORE, else the clone's own), so that variable turns them off."""
+    return not limited() and os.environ.get("KB_COORD_TOOLS") != "0"
 
 
 def tool_list(every=False):
