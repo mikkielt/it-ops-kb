@@ -2,7 +2,7 @@
   "id": "ST-odbpwslc",
   "kind": "story",
   "title": "Research sprint goal: tidy --path: a session removes its own worktree",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-eyhift2n",
   "goal_research": true,
   "priority": "P1",
@@ -23,6 +23,20 @@
   ],
   "notes": "No outside facts: the change is a filter on this project's own tool (bl_clean.py tidy); it rests on no product behaviour the kb would hold.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-6c439ca9",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "91bb0bfde8a06981054c072106eafa0c3d818846",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-odbpwslc"
+        ],
+        "exit": 0,
+        "sha256": "4bc28789dc39f7d6"
+      }
+    ]
+  }
 }
