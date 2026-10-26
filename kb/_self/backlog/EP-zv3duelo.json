@@ -1,0 +1,14 @@
+{
+  "id": "EP-zv3duelo",
+  "kind": "epic",
+  "title": "Sessions plan with each other: a planner sees every live session's plans and files and settles shared files before the start",
+  "status": "draft",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "a session that plans or files work sees what every other live session of the clone plans and works on, settles each file it shares with them through a coord ask before the start gate, and a landing that conflicts on a shared doc names the doc and the item that changed it",
+  "relates_to": [
+    "EP-fxrzbuza"
+  ],
+  "notes": "Operator request 2026-10-26: sessions have the tools to know about each other, yet a planner learns of another session's work only when told. Evidence, read 2026-10-26: (1) this session planned the live-view sprints while the session-load benchmark session planned its sprint on shared kb/_self/map.csv and kb/_self/tools.md, with a design dependency on one session reader; `held --overlaps` said no overlap and `set --sprint` posts nothing; they met only because the operator asked, then relayed 'tell the other session about it all'. (2) coord: 1361 intents, one with a planning topic (posted by hand), 951 with no files; 2 coordinate events ever; 20 of 40 asks answered. (3) ops rows: 17 of the 20 real land rebase failures were on shared kb/_self docs (tools.md, backlog.md, code.md, querylog.md, monitoring.md, coordination.md), 3 on code or ledgers (coord.py, kbgit.py, mon_sprint.py, autopilot.py, bench_pool.py, _sources.csv). (4) query log 2026-10-23: two orchestrators' Claude Code cross-session messages were held by permission mode and not delivered; coord asks do not depend on it. Operator decisions: one `backlog.py peers` command plus skill steps and a session-start line; planning posts a plan intent; on an overlap the planner asks the other session and records the order, precheck warns of an undecided one; a shared kb/_self doc stays no ordering overlap but is shown; peers shows liveness and open asks and kbask refuses an ask to an ended session; checks replay today's case on a planted clone. The operator chose 'land retries' for doc conflicts; a rebase conflict is a text conflict a retry cannot clear, so the land story names the doc, the item that changed it and the resume remedy instead.",
+  "filed_in": "clone-0ea70e5c"
+}
