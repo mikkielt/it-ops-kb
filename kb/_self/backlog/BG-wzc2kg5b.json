@@ -32,6 +32,27 @@
   "depends_on": [
     "BG-vr3vxylj"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does dispatch --detach start its printed wait after the worker's own working event?",
+      "options": [
+        "hold up to BEGIN_SETTLE_S seconds for the working event, as begin does",
+        "wait for the work branch first, then settle"
+      ],
+      "recommendation": "hold up to BEGIN_SETTLE_S seconds for the working event, as begin does",
+      "do": {
+        "hold up to BEGIN_SETTLE_S seconds for the working event, as begin does": "BG-wzc2kg5b",
+        "wait for the work branch first, then settle": "BG-wzc2kg5b"
+      },
+      "class": "agents-rule",
+      "answer": "hold up to BEGIN_SETTLE_S seconds for the working event, as begin does",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-lhpvwh6l review"
   ],
