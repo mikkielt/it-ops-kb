@@ -1,0 +1,22 @@
+{
+  "id": "BG-dqkap5mv",
+  "kind": "bug",
+  "title": "kb/_self/backlog.md says the suite runs the lookup eval over the live kb, which no test does since test_live_kb.py was dropped",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "The checks paragraph of kb/_self/backlog.md no longer says the suite runs the lookup eval; it names what runs the eval now (the landing's eval step and the held-out gate files)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.exit(1 if 'The suite runs the lookup eval' in open('kb/_self/backlog.md',encoding='utf-8').read() else 0)"
+    ]
+  },
+  "repro_reason": "a wording claim about what the suite runs; the behaviour (no test runs rag.py eval) is shown by listing the test files, which no single command exercises",
+  "touches": [
+    "kb/_self/backlog.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
