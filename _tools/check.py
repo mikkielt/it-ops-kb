@@ -536,6 +536,71 @@ DOC_JOIN = re.compile(r"[ \t]*(?:\\\n[ \t]*)*[rRuU]?")  # between two string lit
 DOC_END = re.compile(r"[ \t]*(?:[#;\n]|\Z)")  # a docstring is a statement by itself, not the start of an expression
 
 
+FSTRING_PREFIX = re.compile(r"(?:^|\W)(?:rf|fr|f)\Z", re.I)  # what may stand before an f-string's quote
+
+
+def fstring_end(text, i, q, spec=False):
+    """Where an f-string whose opening quote `q` ends before `i` ends, read as Python 3.12 does: a replacement
+    field may hold the quote (`f"{d["a"]}"`), a string, a comment and nested fields in its format spec. The index
+    past the closing quote; with `spec` the index of the `}` that ends the format spec; None when it does not end."""
+    while i < len(text):
+        c = text[i]
+        if c == "\\":
+            i += 2
+        elif c == "{" and not spec and text.startswith("{{", i):
+            i += 2
+        elif c == "{":
+            i = field_end(text, i + 1, q)
+            if i is None:
+                return None
+        elif c == "}" and spec:
+            return i
+        elif text.startswith(q, i):
+            return None if spec else i + len(q)
+        elif c == "\n" and len(q) == 1:
+            return None
+        else:
+            i += 1
+    return None
+
+
+def field_end(text, i, q):
+    """The index past the `}` that ends the replacement field of an f-string, from `i` just past its `{`; None
+    when it does not end."""
+    depth = 0
+    while i < len(text):
+        c = text[i]
+        i += 1
+        if c in "([{":
+            depth += 1
+        elif c in ")]}":
+            if depth == 0 and c == "}":
+                return i
+            depth -= 1
+        elif c in "\"'":
+            i = string_end(text, i - 1)
+            if i is None:
+                return None
+        elif c == "#":
+            i = text.find("\n", i)
+            if i < 0:
+                return None
+        elif c == ":" and depth == 0:
+            i = fstring_end(text, i, q, True)
+            if i is None:
+                return None
+    return None
+
+
+def string_end(text, start):
+    """The index past the string literal whose opening quote is at `start`; None when it does not end."""
+    q = text[start] * 3 if text.startswith(text[start] * 3, start) else text[start]
+    if FSTRING_PREFIX.search(text, max(0, start - 3), start):
+        return fstring_end(text, start + len(q), q)
+    body = STRING_BODY[q].match(text, start + len(q))
+    return None if body is None else body.end()
+
+
 def code_comment_lines(path):
     """(line number, text) of every comment line and docstring line of a Python file, sorted; none when it is
     unreadable or does not tokenize (a string literal that is no docstring, a test fixture, is no citation). A
@@ -559,11 +624,9 @@ def code_comment_lines(path):
             events.append([start, end, False])
             pos = end
         elif c in "\"'":
-            q = c * 3 if text.startswith(c * 3, start) else c
-            body = STRING_BODY[q].match(text, start + len(q))
-            if body is None:
+            end = string_end(text, start)
+            if end is None:
                 return []
-            end = body.end()
             if doc_from is not None and DOC_GAP.fullmatch(text, doc_from, start):
                 events.append([start, end, True])
                 doc_from, join_from = None, end
@@ -585,11 +648,9 @@ def code_comment_lines(path):
                     events.append([h.start(), end, False])
                     pos = end
                 elif c in "\"'":
-                    q = c * 3 if text.startswith(c * 3, h.start()) else c
-                    body = STRING_BODY[q].match(text, h.start() + len(q))
-                    if body is None:
+                    pos = string_end(text, h.start())
+                    if pos is None:
                         return []
-                    pos = body.end()
                 elif c in "([{":
                     depth += 1
                 elif c in ")]}":
