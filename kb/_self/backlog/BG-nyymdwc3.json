@@ -2,7 +2,7 @@
   "id": "BG-nyymdwc3",
   "kind": "bug",
   "title": "coord.py wait --pid counts an exited but unreaped process as running",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-42b2cjm3",
   "priority": "P3",
   "rank": 0,
@@ -35,6 +35,19 @@
   ],
   "notes": "Sprint started 2026-10-26 on the operator's approval for the unattended run.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "cc1313f684b2bf5ef23efde53e7cdda73e6668f1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,time\nd=tempfile.mkdtemp(dir=\"/tmp\");st=os.path.join(d,\"c.sqlite\")\nz=s.Popen([\"true\"]);time.sleep(1)  # exited, not waited for: a zombie\np=s.run([sys.executable,\"_tools/coord.py\",\"--store\",st,\"wait\",\"--since\",\"0\",\"--timeout\",\"4\",\"--pid\",str(z.pid)],capture_output=True,text=True)\nz.wait();out=json.loads(p.stdout)\nprint(p.returncode,out[\"ended\"],out[\"timed_out\"])\nsys.exit(0 if z.pid in out[\"ended\"] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "26692db7f754486f"
+      }
+    ]
+  }
 }
