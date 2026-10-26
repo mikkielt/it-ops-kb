@@ -56,7 +56,9 @@
       },
       "class": "design",
       "answer": "Relax the parent section only where it holds heading lines, and read optional sections from the previous text too",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Check 0 is BG-hxp3f73q's repro and passes before the work on purpose: it pins that the fix keeps that case. The repro reads both clauses with four planted Doc texts.",

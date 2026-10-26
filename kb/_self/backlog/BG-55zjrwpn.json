@@ -1,0 +1,25 @@
+{
+  "id": "BG-55zjrwpn",
+  "kind": "bug",
+  "title": "A feedback flag on a fact added the day of its report stays after a later edit moves that fact",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "feedback_flags drops a flag whose reported line did not exist at the start of the report's day once a later edit moves another fact onto that line; a report older than the article's first commit and a renamed article keep their flag while the fact still sits on the line. Found by the SP-vlfcgmbu review's second pass (gaps 1 and 3 on BG-w4ompvsk); an edit before the report on the same day still drops the flag, since the report's day carries no time (gap 2).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,subprocess as s,sys,tempfile,json\nsys.path.insert(0,'_tools')\nn='\\n'\ndef mk():\n    d=tempfile.mkdtemp();st=tempfile.mkdtemp();os.makedirs(os.path.join(st,'2026-10'));return d,st\ndef w(d,p,t):\n    os.makedirs(os.path.dirname(os.path.join(d,p)) or d,exist_ok=True);open(os.path.join(d,p),'w').write(t)\ndef art(d,f,p='t/a.md'):w(d,p,'---'+n+'topic: t/a'+n+'sources: ZQ-aaaabbbb'+n+'---'+n+n+'# A'+n+n+'## Facts'+n+n+n.join(f)+n)\ndef g(d,*a,dt='2026-09-01T00:00:00'):s.run(['git','-C',d,'-c','user.name=c','-c','user.email=c@example.com']+list(a),capture_output=True,check=True,env=dict(os.environ,GIT_AUTHOR_DATE=dt,GIT_COMMITTER_DATE=dt))\ndef setup(d):\n    w(d,'_root.md','---'+n+'root: zzplant'+n+'id_prefix: ZQ'+n+'visibility: internal'+n+'description: planted'+n+'---'+n+n+'# zzplant'+n)\n    w(d,'_sources.csv','id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by'+n+'ZQ-aaaabbbb,https://learn.microsoft.com/x,X,Microsoft,,link,2025-01-10,2025-01-01,,t/a.md,'+n)\ndef report(st,day,path,ln):\n    e={'id':'e1','feedback':[{'lines':[{'line':'zzplant/%s:%d'%(path,ln),'issue':'wrong'}]}]}\n    if day is not None:e['day']=day\n    open(os.path.join(st,'2026-10','20261001T000000Z-aaaaaaaa.jsonl'),'w').write(json.dumps({'run':'x'})+n+json.dumps(e)+n)\ndef flags(d,st,path):\n    c='import sys;sys.path.insert(0,\"_tools\");import ql_base,kbfacts;ql_base.STORE=sys.argv[1];print(sorted(kbfacts.feedback_flags().get(\"zzplant/%s\",{})))'%path\n    p=s.run([sys.executable,'-c',c,st],env=dict(os.environ,KB_ROOTS=d),capture_output=True,text=True);return p.stdout.strip() or p.stderr[-200:]\nF=['- Fact alpha. [DOC ZQ-aaaabbbb]','- Fact beta. [DOC ZQ-aaaabbbb]']\nln=lambda d,p,k:[i+1 for i,l in enumerate(open(d+'/'+p).read().splitlines()) if k in l][0]\n\nd,st=mk();setup(d);art(d,F);g(d,'init','-q');g(d,'add','.');g(d,'commit','-qm','a')\nart(d,F+['- Fact new1. [DOC ZQ-aaaabbbb]','- Fact new2. [DOC ZQ-aaaabbbb]']);g(d,'add','.');g(d,'commit','-qm','b',dt='2026-10-01T08:00:00');nn=ln(d,'t/a.md','new2');report(st,'2026-10-01','t/a.md',nn)\nart(d,['- Fact zero. [DOC ZQ-aaaabbbb]']+F+['- Fact new1. [DOC ZQ-aaaabbbb]','- Fact new2. [DOC ZQ-aaaabbbb]']);g(d,'add','.');g(d,'commit','-qm','c',dt='2026-10-09T00:00:00')\nr=flags(d,st,'t/a.md');print('flag lines after a later shift of a fact added on the report day:',r,'reported line',nn);sys.exit(1 if str(nn) in r.strip('[]').split(', ') else 0)\n"
+    ]
+  },
+  "touches": [
+    "_tools/kbfacts.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-vlfcgmbu review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
