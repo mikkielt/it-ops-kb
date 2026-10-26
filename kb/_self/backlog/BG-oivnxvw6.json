@@ -44,7 +44,11 @@
         "per-interpreter option tables for python and node (known flags skipped, values of -W/-X/-r skipped, -c/-m/-e code), any unknown option or other interpreter's option leaves no script word": "BG-oivnxvw6",
         "accept only argv[1] when it is no option": "BG-oivnxvw6"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "per-interpreter option tables for python and node (known flags skipped, values of -W/-X/-r skipped, -c/-m/-e code), any unknown option or other interpreter's option leaves no script word",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
