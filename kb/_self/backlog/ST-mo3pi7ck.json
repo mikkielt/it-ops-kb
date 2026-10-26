@@ -2,7 +2,7 @@
   "id": "ST-mo3pi7ck",
   "kind": "story",
   "title": "Review sprint: Facts know when they were true",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-vlfcgmbu",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,7 @@
       ]
     }
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
