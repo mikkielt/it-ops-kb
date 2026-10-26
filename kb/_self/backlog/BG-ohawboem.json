@@ -2,7 +2,7 @@
   "id": "BG-ohawboem",
   "kind": "bug",
   "title": "A gate about the token counts of a model run (tokens per correct answer, input and output tokens) is classed secrets",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-mk6ikval",
   "priority": "P2",
   "rank": 0,
@@ -64,6 +64,28 @@
     "parked: SP-v64egscn close"
   ],
   "notes": "SP-v64egscn close (2026-10-20): seen again. ST-c3d3rijw's gate g1 ('How does the digest show tokens by model') was classed secrets and made blocking; the orchestrator answered it with its recommendation as a layout choice. bl_authority.gate_class still returns secrets for that planted gate today. A duplicate retro draft was folded into this bug instead of filed. Sprint SP-mk6ikval started 2026-10-26; item moved from draft to todo. Gate g1 (class secrets) answered with its recommendation by the orchestrator on the operator behalf (pre-approved by the operator for the 2026-10-26 run): a fixed list of unit nouns fails closed, so a bare tokens per user keeps the class.",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "deaba2ec97f1de09248917a33ac11546fdca2620",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0,\"_tools\")\nimport bl_authority as a\ndef cl(q,t):return a.class_reasons({\"touches\":t},{\"id\":\"g1\",\"question\":q,\"options\":[\"one\",\"two\"]})[0]\ncounts=[cl(q,[\"_tools/bench_report.py\"]) for q in (\"Show tokens per correct answer in the report?\",\"Sum input, output and cache tokens in the multi table?\",\"Is a token budget per run kept in the report?\",\"Show cache tokens beside the input tokens?\")]\nreal=[cl(q,[\"_tools/bench_report.py\"]) for q in (\"Rotate the API token of the service account?\",\"Where is the GITLAB_TOKEN kept?\",\"Store the credential file in _private?\")]\nprint(\"token count gates:\",counts,\"| API token and credential gates:\",real)\nsys.exit(0 if \"secrets\" not in counts and all(r==\"secrets\" for r in real) else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "9357067efb02cc78"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bl_authority as a;it={'touches':['_tools/bench_report.py']};qs=['Show tokens per correct answer in the report?','Sum input, output and cache tokens in the multi table?'];r=[a.class_reasons(it,dict(id='g1',question=q,options=['one','two']))[0] for q in qs];print(r);sys.exit(0 if 'secrets' not in r else 1)"
+        ],
+        "exit": 0,
+        "sha256": "307d74bb218f15d8"
+      }
+    ]
+  }
 }
