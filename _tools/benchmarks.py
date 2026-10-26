@@ -245,7 +245,7 @@
                                             neither a commit nor a release event of its holder), each landing stop (a
                                             planted code item with no code commit on the bare's main, with the land step the
                                             agent's line says stopped) and, with a shared coord store, each duplicate research
-                                            (two agents' facts of one claim for a research term while the other agent's dedup
+                                            (two agents' facts of one claim on the article of a research key while the other agent's dedup
                                             claim of it was live; with --coord isolated they are printed and counted, not
                                             failed on) and each canary found outside its owner (in another agent's
                                             output log, a commit of another author on the bare, or a coord store event of
