@@ -2,7 +2,7 @@
   "id": "BG-2yqkripi",
   "kind": "bug",
   "title": "The Jaeger article says JAEGER_LISTEN_HOST is meant to be 0.0.0.0 in a container and makes a snippet default the listening endpoints default, where the docs say it is useful when the container needs 0.0.0.0",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-sgfucsn6",
   "priority": "P3",
   "rank": 0,
@@ -49,6 +49,28 @@
   ],
   "notes": "Review gap (S4) of SP-f2o3aqm2, fresh-context reviewer 2026-10-24; parked, no fitness test or user report names it. Sprint start gate answered approve by the runner on the operator's behalf (pre-approved by the operator for the 2026-10-26 run).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "6ca706480c8c1bfe34d1e2a0db5929f7693095b0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,sys\nL=open(\"kb/public/logs/otel-collector-otlp-pipeline.md\",encoding=\"utf-8\").read().splitlines()\nbad=[n for n,l in enumerate(L,1) if \"JAEGER_LISTEN_HOST\" in l and re.search(r\"meant to be\",l)]\ngood=any(\"JAEGER_LISTEN_HOST\" in l and \"localhost\" in l and \"useful\" in l and \"0.0.0.0\" in l for l in L)\nprint(\"lines saying meant to be:\",bad,\"| a line giving localhost and useful when a container needs 0.0.0.0:\",good)\nsys.exit(0 if not bad and good else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "0561a3c44da8389e"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re, sys\nlines = open(\"kb/public/logs/otel-collector-otlp-pipeline.md\", encoding=\"utf-8\").read().splitlines()\nbad = [n for n, l in enumerate(lines, 1) if l.startswith(\"- \") and \"[DOC\" in l and \"JAEGER_LISTEN_HOST\" in l and re.search(r\"meant to be\", l)]\nprint(\"DOC lines saying JAEGER_LISTEN_HOST is meant to be 0.0.0.0:\", bad or \"none\")\nsys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "13fbdda567704a77"
+      }
+    ]
+  }
 }
