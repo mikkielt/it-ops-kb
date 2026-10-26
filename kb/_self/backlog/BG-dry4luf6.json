@@ -67,7 +67,7 @@
   "links": [
     "parked: SP-aoiqmnc6 review"
   ],
-  "notes": "Sprint SP-mk6ikval started 2026-10-26; item moved from draft to todo.",
+  "notes": "Sprint SP-mk6ikval started 2026-10-26; item moved from draft to todo. Gate g1 (class secrets) answered with its recommendation by the orchestrator on the operator behalf (pre-approved by the operator for the 2026-10-26 run): every tokenize.NAME attribute is blanked unless NAME holds a credential part, so the class stays closed for credential names; the check is rewritten to test the same goal clause with a touch that can reach design, because the original touch is rule-guarding and classes agents-rule whatever the words say.",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
 }
