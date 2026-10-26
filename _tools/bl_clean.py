@@ -6,6 +6,7 @@ on whether a leftover may go (kb/_self/backlog.md, Leftovers; kb/_self/tools.md)
   own TARGET --class C --drop                                                          clear the record
   tidy [--apply] [--json] [--older-than HOURS] [--disk-free-gb GB] [--class C]         list the recorded leftovers
   tidy --report                                                                        one line of counts and bytes a class
+  tidy --path PATH [--apply] ...                                                       only the recorded leftover at PATH
   tidy --decide KEY remove|keep                                                        record the operator's answer to a row
   tidy --class process [--apply]                                                       list, and end, the recorded processes
   tidy --remote [--json]                                                               list the merged code/<id> branches of the remote
@@ -53,6 +54,10 @@ candidate is gone. An uncommitted worktree is `keep` before it can ask, so a dir
 `tidy --report` reads only and prints one line, the count that would go and the bytes it frees, and the count kept, for each
 class; the bytes of all the rows share a `REPORT_SECONDS` walk, the figure `or more` past it, so the line comes within seconds
 on a clone with many worktrees (the SessionStart hook prints it and removes nothing).
+
+`tidy --path PATH` (repeatable) keeps only the recorded leftovers at those paths, listed or, with `--apply`, removed under the
+same verdict as every row, so a session removes its own worktree and no other's; a path no `own` record names is refused
+(exit 2) naming it, and nothing is removed. It takes neither `--report` nor `--class process`.
 
 `tidy --class process` adds the class `process`, which no other run lists: each pid an own record names, and each process in a
 checkout of the clone that no record names (`bl_procs.snapshot`; kept, never signalled, however old or orphaned: a parent of 1
@@ -1075,7 +1080,7 @@ def cmd_tidy(bl, a):
     """List the recorded leftovers with `safe_to_remove`'s verdict, reason and bytes (and with --apply remove the ones
     it clears), under the exit codes in the module docstring."""
     if a.decide:
-        if a.apply or a.json or a.report or a.remote or a.cls:
+        if a.apply or a.json or a.report or a.remote or a.cls or a.paths:
             raise Rejected("tidy: --decide records one answer: it takes no other option")
         decide(*a.decide)
         return 0
@@ -1086,16 +1091,27 @@ def cmd_tidy(bl, a):
     if a.remote:
         if a.apply:
             raise Rejected("tidy: --remote reads only: tidy deletes no remote branch")
-        if a.report or a.cls:
-            raise Rejected("tidy: --remote lists the merged remote branches: it takes neither --report nor --class")
+        if a.report or a.cls or a.paths:
+            raise Rejected("tidy: --remote lists the merged remote branches: it takes none of --report, --class, --path")
         return cmd_remote(bl, a)
+    if a.paths and (a.report or a.cls == PROCESS):
+        raise Rejected("tidy: --path keeps the recorded directories at those paths: it takes neither --report nor --class process")
     if a.apply and a.cls == PROCESS and bl_authority.in_agent_session():
         raise Rejected("tidy: --apply with --class process ends processes, which an agent session may not do: "
                        "the operator runs it from their own terminal")
     classes = (a.cls,) if a.cls else TIDY_CLASSES
     snap = take_snapshot(bl, a.older_than, a.disk_free_gb)
     try:
-        rows = plan(snap, coord_state(), budget=REPORT_SECONDS if a.report else None, classes=classes)
+        state = coord_state()
+        only = None
+        if a.paths:
+            wanted = {norm_path(p) for p in a.paths}
+            named = {r["path"] for r in state["owners"] if isinstance(r.get("path"), str)}
+            unnamed = [p for p in a.paths if norm_path(p) not in named]
+            if unnamed:
+                raise Rejected("tidy: --path: no own record names " + ", ".join(repr(p) for p in unnamed))
+            only = lambda cand: cand.get("path") in wanted and cand.get("record") is not None
+        rows = plan(snap, state, only=only, budget=REPORT_SECONDS if a.report else None, classes=classes)
         failed = apply_rows(snap, rows, sys.stderr if a.json else sys.stdout) if a.apply else 0
     except CoordLocked:
         say("tidy: the coord store stayed locked: nothing more was removed; run tidy again")
@@ -1132,6 +1148,9 @@ def args_tidy(p):
     p.add_argument("--class", dest="cls", choices=TIDY_CLASSES + (PROCESS,),
                    help="list only this class; `process` lists the processes an own record names (and those none names, "
                         "kept) and with --apply ends the ones it clears: refused in an agent session")
+    p.add_argument("--path", dest="paths", action="append", metavar="PATH",
+                   help="list, and with --apply remove, only the recorded leftover at this path (repeatable), under the same "
+                        "verdict as every row; a path no own record names is refused (exit 2)")
     p.add_argument("--remote", action="store_true",
                    help="list the code/<id> branches of the integration remote that are merged (reads only; deletes none)")
     p.add_argument("--decide", nargs=2, metavar=("KEY", "ANSWER"),
