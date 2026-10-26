@@ -4568,3 +4568,13 @@ _Agent: kb-research_
 - See claude/cross-session-messaging.md, claude/ci-and-headless.md.
 
 _Agent: kb-research_
+
+## QK-tools-coordinate-parallel-coding-agents-track. Which tools coordinate parallel coding agents, track their tasks or predict and resolve their merge conflicts, what do they exchange and what are their licences?
+- MCP Agent Mail (Rust rewrite; the Python original is deprecated) gives agents identities, mail and advisory file reservations with a TTL, enforced only by a Git pre-commit guard; Beads is a task graph with an atomic `bd update --claim`; Weave adds advisory entity claims with no expiry and a `weave_preview` dry-run merge; Herdr reports agent state. (`agents/coordination-tools.md`, `agents/herdr-agent-state.md`) [DOC S-d362rhhe, S-46ixkva7, S-ipq4eeyz, S-2lg3fy3j, S-ffm4okjz]
+- Conflict prediction: Clash simulates a three-way merge per worktree pair with `git merge-tree` and prints JSON (`has_merge_conflict`, exit 2 on conflicts); Weave previews an entity-level merge; Mergiraf resolves a conflict after it happens and keeps markers when unsure. (`agents/coordination-tools.md`) [DOC S-4afyfcvi, S-2lg3fy3j, S-l2373ghm]
+- Licences: Beads and Clash MIT, Weave MIT or Apache-2.0, Mergiraf GPLv3, Agent Mail MIT with a rider that grants no rights to OpenAI, Anthropic and parties acting for them. (`agents/coordination-tools.md`) [DOC S-quwo3n36, S-yfwvfjhn, S-2lg3fy3j, S-mczbffct, S-egysxiw3]
+- Conclusion: the tools exchange different things (reservations, task claims, conflict verdicts, agent states) and share no wire format; an Agent Mail reservation reduces to holder, globs, TTL and a reason, and conflict predictions come in each tool's own shape, so an exchange needs a thin contract and an adapter per tool, with the rider read first. [DER S-d362rhhe, S-4afyfcvi, S-2lg3fy3j, S-egysxiw3]
+- Open: whether the rider covers a user of Claude-based agents, how the tools behave inside Claude Code, and a sourced method for judging small benchmark arms against run-to-run variance. [UNK]
+- See agents/coordination-tools.md, agents/herdr-agent-state.md, agents/coordination-messages.md.
+
+_Agent: kb-research_

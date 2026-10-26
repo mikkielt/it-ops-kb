@@ -1377,6 +1377,53 @@ e18ec280b3ce,agents/coordination-messages.md,S-qdxfqzln,unlocated:no-match,,,,,2
 e526ce9ce84b,agents/coordination-messages.md,S-qdxfqzln,located,Orchestrate teams of Claude Code sessions > Use case examples > Run a parallel code review,distinct;lens;overlap;assign;don;prompt;each;teammat,7164ed4070d8d235,The prompt assigns each teammate a distinct lens so they don't overlap:,2026-10-16
 ef1ee75675e7,agents/coordination-messages.md,S2132,located,Manage costs effectively > Manage costs for your organization > Agent team token costs,ends;exit;continu;activ;consum;until;teammat;each,6bf7c12e1b6aec8a,Each active teammate continues consuming tokens until it exits or the session ends.,2026-10-16
 fed6555c1ade,agents/coordination-messages.md,S1935,located,Writing effective tools for agents — with agents > Principles for writing effective tools > Returning meaningful context from your tools,0-index;hallucination;index;precision;resolv;retrieval;schem;significantly,5a5d416d33e8d233,alphanumeric UUIDs to more semantically meaningful and interpretable language (or even a 0-indexed ID scheme) significantly improves Claude's precision in retrieval tasks by reducing hallucinations.,2026-10-16
+05613f70d4ee,agents/coordination-tools.md,S-mczbffct,located,Mergiraf,gplv3,f136572be74a600e,"If you want to support our work, thank you! See Liberapay. License: GPLv3",2026-10-26
+09163226bc59,agents/coordination-tools.md,S-d362rhhe,located,MCP Agent Mail (Rust) > File Reservations for Multi-Agent Editing,glob;pattern;ttl;reservation,dd335ec0fd7e60af,"Reservations are advisory, TTL-based, and support glob patterns.",2026-10-26
+0d435528c3fb,agents/coordination-tools.md,S-2lg3fy3j,located,,class;instead;sitter;tree-sitter;pars;keys;tree;function,729b01956b6c1731,"Resolves merge conflicts that Git can't by parsing code into functions, classes, and keys with tree-sitter, then merging those entities instead of lines.",2026-10-26
+14e54c85c854,agents/coordination-tools.md,S-2lg3fy3j,located,How weave land works > MCP Server,weave_preview;dry;dry-run;per-fil;verdict;preview;branch;two,6cba652cf1d534db,"weavepreview: dry-run a merge of two branches, as per-file verdicts, a",2026-10-26
+2268a1a9aefd,agents/coordination-tools.md,S-d362rhhe,located,MCP Agent Mail (Rust) > TL;DR,give;intent;outbox;signal;edit;leas;advisory;every,7440765d544af8b0,advisory file reservations (leases) to signal editing intent.,2026-10-26
+28026023b788,agents/coordination-tools.md,S-ipq4eeyz,located,bd - Beads > 🛠 Features,controll;version-controll;built;sql;version;databas;dolt,332e8423fa7cc90b,"Dolt-Powered: Version-controlled SQL database with cell-level merge, native branching, and built-in sync via Dolt remotes.",2026-10-26
+337d1547fbcb,agents/coordination-tools.md,S-2lg3fy3j,located,How weave land works > License,dual;dual-licen;licen;2.0;apach;mit;option,5690c895b46eb8d1,"Dual-licensed under MIT or Apache 2.0, at your option.",2026-10-26
+371b7d29dc24,agents/coordination-tools.md,S-egysxiw3,located,,mit;anthropic;open;openai;licens;rider,adfdc08ae6d0f9b3,MIT License (with OpenAI/Anthropic Rider),2026-10-26
+4a2ff105c276,agents/coordination-tools.md,S-ipq4eeyz,located,bd - Beads > 📖 Essential Commands,atomically;progress;assigne;updat;claim;task,0a49814f32bc0c97,bd update <id> --claim | Atomically claim a task (sets assignee + inprogress).,2026-10-26
+56de00dce03a,agents/coordination-tools.md,S-4afyfcvi,located,Table of Contents > Core Features > Check Command (Manual),error;exit;found;conflict,66474faaeb3d1bbf,"Exit codes: 0 = no conflicts, 2 = conflicts found, 1 = error.",2026-10-26
+58e5ce9647c0,agents/coordination-tools.md,S-2lg3fy3j,unlocated:no-match,,,,,2026-10-26
+58e5ce9647c0,agents/coordination-tools.md,S-4afyfcvi,unlocated:no-match,,,,,2026-10-26
+58e5ce9647c0,agents/coordination-tools.md,S-d362rhhe,unlocated:no-match,,,,,2026-10-26
+58e5ce9647c0,agents/coordination-tools.md,S-ffm4okjz,unlocated:no-match,,,,,2026-10-26
+58e5ce9647c0,agents/coordination-tools.md,S-ipq4eeyz,unlocated:no-match,,,,,2026-10-26
+58e5ce9647c0,agents/coordination-tools.md,S-l2373ghm,unlocated:no-match,,,,,2026-10-26
+591ab18871dd,agents/coordination-tools.md,S-2lg3fy3j,unlocated:no-match,,,,,2026-10-26
+591ab18871dd,agents/coordination-tools.md,S-egysxiw3,unlocated:no-match,,,,,2026-10-26
+591ab18871dd,agents/coordination-tools.md,S-mczbffct,unlocated:no-match,,,,,2026-10-26
+591ab18871dd,agents/coordination-tools.md,S-quwo3n36,unlocated:no-match,,,,,2026-10-26
+591ab18871dd,agents/coordination-tools.md,S-yfwvfjhn,unlocated:no-match,,,,,2026-10-26
+78f8c9875b44,agents/coordination-tools.md,S-4afyfcvi,located,Table of Contents > How It Works,merge-tre;tree;gix;library;pair;git;merg,a9cf03767e20202c,Clash uses git merge-tree (via the gix library) to perform three-way merges between worktree pairs without modifying your repository.,2026-10-26
+7c293d56a798,agents/coordination-tools.md,S-d362rhhe,unlocated:no-match,,,,,2026-10-26
+7c4effa69660,agents/coordination-tools.md,S-d362rhhe,located,MCP Agent Mail (Rust) > Multi-Agent Coordination Workflows > With Beads Task Tracking,reason;edit;reserv;surfac;reservation,eb4c4dd428b5c5f7,"Reserve edit surface: filereservationpaths(..., reason=""br-123"")",2026-10-26
+8829dc00777f,agents/coordination-tools.md,S-d362rhhe,located,MCP Agent Mail (Rust) > Design Philosophy,ledger;durabl;stat;sqlit;live;git,7e164e9730efb7a0,"SQLite for live state, Git for the durable ledger.",2026-10-26
+90b8c1aebe0b,agents/coordination-tools.md,S-d362rhhe,unlocated:no-match,,,,,2026-10-26
+9103c2e817d2,agents/coordination-tools.md,S-4afyfcvi,located,,early;coding;parallel;befor;work;agent;conflict,bb4afc242f5d484a,"AI coding agents (Claude Code, Codex, Cursor, etc.) in parallel - helping them identify potential conflicts early in the development process so they can work",2026-10-26
+91b04270b944,agents/coordination-tools.md,S-4afyfcvi,located,Table of Contents > Clash - The Saviour,every;writ;befor;hook;check;file;conflict,068baa985e7435a8,Guard file writes via hooks - automatic conflict check before every AI agent edit,2026-10-26
+91b0c808cd39,agents/coordination-tools.md,S-l2373ghm,located,Mergiraf > Aspirations > Don't sweep conflicts under the rug,caution;suspicious;marker;side;case;conflict;mergiraf,aa4d10fdc3eca166,Mergiraf does its best to err on the side of caution and retain conflict markers in the file when encountering suspicious cases.,2026-10-26
+934130781d68,agents/coordination-tools.md,S-2lg3fy3j,unlocated:no-match,,,,,2026-10-26
+934130781d68,agents/coordination-tools.md,S-4afyfcvi,unlocated:no-match,,,,,2026-10-26
+934130781d68,agents/coordination-tools.md,S-l2373ghm,unlocated:no-match,,,,,2026-10-26
+ab1c36b87eef,agents/coordination-tools.md,S-d362rhhe,located,MCP Agent Mail (Rust) > Design Philosophy,acquir;another;wait;leas;instead;report;conflict;releas,9a111bf21f53226a,Acquiring a reservation reports conflicts instead of waiting for another agent to release its lease.,2026-10-26
+b41c1d759468,agents/coordination-tools.md,S-ipq4eeyz,located,bd - Beads > 🛠 Features,based;collision;hash;hash-ba;multi-agent;multi-branch;prevent;merg,e03aef0ded606a34,Zero Conflict: Hash-based IDs (bd-a1b2) prevent merge collisions in multi-agent/multi-branch workflows.,2026-10-26
+b64b5aaeeb1f,agents/coordination-tools.md,S-46ixkva7,located,Repository navigation > About,coordination;over;coding;layer;advisory;leas;original;sqlit,031d2ad8d54bc0af,"Original Python FastMCP coordination layer for AI coding agents: identities, inboxes, searchable threads, and advisory file leases over FastMCP + Git + SQLite.",2026-10-26
+ba39dadbf72f,agents/coordination-tools.md,S-2lg3fy3j,located,How weave land works > How Weave Fixes This,crdt-back;layer;weave-crdt;back;live;crdt;agent;weav,e6c80e76c9797cb0,"(Weave separately ships a CRDT-backed coordination layer, weave-crdt, for tracking live multi-agent edits before they hit Git; see Architecture.)",2026-10-26
+bb253ed31ce4,agents/coordination-tools.md,S-yfwvfjhn,located,,charg;free;grant;hereby;obtain;copy;permission;person,c7aac74175622071,"Permission is hereby granted, free of charge, to any person obtaining a copy of this software",2026-10-26
+caf9c8e470d6,agents/coordination-tools.md,S-quwo3n36,located,,file,c7aac74175622071,"Permission is hereby granted, free of charge, to any person obtaining a copy of this software",2026-10-26
+cb3fa141520a,agents/coordination-tools.md,S-l2373ghm,located,Mergiraf,cherry;cherry-pick;pick;rebas;revert;git;merg,82e4acc31acc9414,"This will enhance git merge, revert, rebase, cherry-pick and more.",2026-10-26
+cb3fa141520a,agents/coordination-tools.md,S-mczbffct,located,Mergiraf,awar;driver;file;format;git;languag;merg;syntax,6301cd96bd666412,A syntax-aware git merge driver for a growing collection of programming languages and file formats.,2026-10-26
+df455a7bfd75,agents/coordination-tools.md,S-ipq4eeyz,located,bd - Beads > ⚡ Quick Start,unless;cursor;code;codex;agents.md;claud;integration;init,eb80d1205a13e8e1,"AGENTS.md by default so agents can discover the beads workflow, and also installs the project Claude Code, Codex, and Cursor integrations unless you pass --skip-agents",2026-10-26
+e7288718a8ca,agents/coordination-tools.md,S-d362rhhe,located,MCP Agent Mail (Rust) > File Reservations for Multi-Agent Editing,strand;task;own;stat;commit;shar;agent,7659eb4476709ffe,"exempt so shared task-state commits cannot be stranded, and an agent's own",2026-10-26
+ea323c9c0a42,agents/coordination-tools.md,S-2lg3fy3j,unlocated:no-match,,,,,2026-10-26
+ea323c9c0a42,agents/coordination-tools.md,S-d362rhhe,unlocated:no-match,,,,,2026-10-26
+ea323c9c0a42,agents/coordination-tools.md,S-ipq4eeyz,unlocated:no-match,,,,,2026-10-26
+eba09bff48de,agents/coordination-tools.md,S-egysxiw3,located,,benchmark;execut;making;host;availabl,b50f34c3a35940c6,"transferring, making available, hosting, deploying, executing, benchmarking,",2026-10-26
+fdb293009677,agents/coordination-tools.md,S-2lg3fy3j,located,How weave land works > Limitations,fall;over;parser;back;binary;type;line;file,5b418cc5fcb83275,"Files over 1MB, binary files, and file types with no parser fall back to Git's line-level",2026-10-26
 088d0da87452,agents/copilot-studio-feature-map.csv,S1977,unlocated:no-match,,,,,2026-10-10
 08c2f2e29ca5,agents/copilot-studio-feature-map.csv,S1960,unlocated:no-match,,,,,2026-10-10
 231684d5fe90,agents/copilot-studio-feature-map.csv,S1975,unlocated:no-match,,,,,2026-10-10
