@@ -2,7 +2,7 @@
   "id": "BG-w4ompvsk",
   "kind": "bug",
   "title": "A feedback flag survives a same-day edit that moves its fact and drops after an unrelated later edit",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-vlfcgmbu",
   "priority": "P2",
   "rank": 0,
@@ -47,5 +47,7 @@
     "kb/_self/usage.md"
   ],
   "notes": "Premise reproduced 2026-10-26 on main after BG-4x5qp2jh: the repro plants a git-tracked root and a store report; a same-day committed shift and an uncommitted shift after a report of today both keep the flag on line 14, which now holds another fact; check 0 commits an appended fact on a later day and the flag is gone. Fixing both likely needs the other option of BG-4x5qp2jh gate g1 (a fact-text hash kept with each reported line), a store format change: record it as a gate.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
