@@ -2,7 +2,7 @@
   "id": "BG-dry4luf6",
   "kind": "bug",
   "title": "A gate naming a tokenize module function (tokenize.generate_tokens, tokenize.tokenize) is still classed secrets",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-mk6ikval",
   "priority": "P2",
   "rank": 0,
@@ -45,5 +45,7 @@
   "links": [
     "parked: SP-aoiqmnc6 review"
   ],
-  "notes": "Sprint SP-mk6ikval started 2026-10-26; item moved from draft to todo."
+  "notes": "Sprint SP-mk6ikval started 2026-10-26; item moved from draft to todo.",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
