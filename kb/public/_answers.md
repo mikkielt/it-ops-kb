@@ -4512,3 +4512,14 @@ _Agent: kb-research_
 - See gitlab/multi-repository-layouts.md, python/process-orphans-and-cwd.md, python/stdlib-windows-portability.md.
 
 _Agent: kb-research_
+
+## QK-unit-ru-maxrss-python-s-os. What unit is ru_maxrss in the usage that Python's os.wait4 and resource.getrusage return on macOS and Linux, and what is the line format of macOS fs_usage -w -f filesys?
+- Python's `resource` page lists `ru_maxrss` as "maximum resident set size" with no unit and defers to `getrusage(2)`; `os.wait4` defers to `getrusage` too. [DOC S-2ua7dl2m, S-5brdhqgo]
+- The Linux man page gives KiB; Apple's page gives bytes. [DOC S-d3vrqlxp, S-l7f6hp46]
+- `fs_usage` lines run timestamp, call, `F=` descriptor, `B=` byte count, `[errno]`, path, elapsed time with an optional `W`, and process name; in wide mode the process name is followed by a dot and a thread id. [DOC S-iezgwy2f]
+- The source marks an `open` read access by `R` as the first mode character, lists `read`, `readv`, `pread` and `preadv`, and prints physical reads as `RdData`; the number after the process name is the trace event's thread id. [CODE S-bj2723hr: fs_usage.c#print_open, format_print]
+- Conclusion: `ru_maxrss` is KiB on Linux and bytes on macOS (one macOS run of our own agrees), so a benchmark converts per platform; and a per-process-class count from an `fs_usage` capture groups by the process name, never by the number after it, which is a thread id. [DER S-d3vrqlxp, S-l7f6hp46, S-iezgwy2f, S-bj2723hr]
+- Open: the Linux unit was not run; no `fs_usage` capture was run (it needs root), and whether `sh` and `zsh` operands bring back lines the default exclusions drop is unknown. [UNK]
+- See python/rusage-maxrss-units.md, python/macos-fs-usage-output.md.
+
+_Agent: kb-research_

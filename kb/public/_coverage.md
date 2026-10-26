@@ -334,11 +334,13 @@ Every topic of this root with its priority (the research order, not importance),
 | `python/fastapi-capability-dependencies` | P3 | partial | `python/fastapi-capability-dependencies.md` | 12 |
 | `python/imports-and-modules` | P3 | complete | `python/imports-and-modules.md` | 11 |
 | `python/interpreter-startup` | P3 | partial | `python/interpreter-startup.md` | 9 |
+| `python/macos-fs-usage-output` | P3 | partial | `python/macos-fs-usage-output.md` | 2 |
 | `python/maturin-pyo3-wheels` | P3 | partial | `python/maturin-pyo3-wheels.md` | 14 |
 | `python/mypy-strict` | P3 | partial | `python/mypy-strict.md` | 8 |
 | `python/percentile-nearest-rank` | P3 | partial | `python/percentile-nearest-rank.md` | 6 |
 | `python/process-orphans-and-cwd` | P3 | partial | `python/process-orphans-and-cwd.md` | 13 |
 | `python/ps-process-cpu` | P3 | partial | `python/ps-process-cpu.md` | 9 |
+| `python/rusage-maxrss-units` | P3 | partial | `python/rusage-maxrss-units.md` | 4 |
 | `python/sqlalchemy-asyncio-asyncpg` | P3 | complete | `python/sqlalchemy-asyncio-asyncpg.md` | 8 |
 | `python/stdlib-archive-read-errors` | P3 | partial | `python/stdlib-archive-read-errors.md` | 2 |
 | `python/stdlib-argparse-json` | P3 | complete | `python/stdlib-argparse-json.md` | 23 |
