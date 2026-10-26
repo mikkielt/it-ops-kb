@@ -1,0 +1,24 @@
+{
+  "id": "BG-wcgmj4zu",
+  "kind": "bug",
+  "title": "An item done in place (a review or research story) keeps run claimed after its sprint closes, and runs --reconcile calls it released",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "an item `done --commit` finishes in its own checkout, with no land, ends at run state landed, and `runs --reconcile` moves a run key whose item a sprint close deleted to the state its done commit shows, never to released",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json, os, re, shutil, subprocess, sys, tempfile\nR = os.getcwd(); T = os.path.realpath(tempfile.mkdtemp())\nS = os.path.join(T, \"coord.sqlite\")\nenv = {k: v for k, v in os.environ.items() if not k.startswith(\"GIT_\")}\nenv.update(KB_COORD_STORE=S, KB_SYNC_NO_TESTS=\"1\")\ndef sh(*a, cwd=None):\n    return subprocess.run(a, cwd=cwd or T, env=env, capture_output=True, text=True, timeout=300)\nO = os.path.join(T, \"origin.git\"); K = os.path.join(T, \"clone\")\nsh(\"git\", \"init\", \"-q\", \"--bare\", \"-b\", \"main\", O)\nsh(\"git\", \"clone\", \"-q\", O, K)\nfor k, v in ((\"user.email\", \"a@example.com\"), (\"user.name\", \"n\")):\n    sh(\"git\", \"config\", k, v, cwd=K)\ncfg = json.load(open(os.path.join(R, \"backlog.json\")))\ncfg[\"review_checks\"] = [{\"run\": [\"python3\", \"_tools/backlog.py\", \"check\"]}]\njson.dump(cfg, open(os.path.join(K, \"backlog.json\"), \"w\"))\nos.makedirs(os.path.join(K, \"kb\", \"_self\", \"backlog\"))\nshutil.copytree(os.path.join(R, \"_tools\"), os.path.join(K, \"_tools\"), ignore=shutil.ignore_patterns(\"__pycache__\", \"*.pyc\", \"fixtures\", \"test_*.py\"))\nsh(\"git\", \"add\", \".\", cwd=K); sh(\"git\", \"commit\", \"-q\", \"-m\", \"base\", cwd=K)\nsh(\"git\", \"push\", \"-q\", \"origin\", \"HEAD:main\", cwd=K); sh(\"git\", \"fetch\", \"-q\", cwd=K)\nbl = lambda *a: sh(sys.executable, os.path.join(R, \"_tools\", \"backlog.py\"), \"--root\", K, *a, cwd=K)\nout = bl(\"new\", \"sprint\", \"--title\", \"Planted sprint\", \"--goal\", \"g\", \"--commit\").stdout\nids = re.findall(r\"\\b(?:SP|ST)-[a-z0-9]{8}\\b\", out)\nsp = next((i for i in ids if i.startswith(\"SP-\")), None)\nreview = re.search(r\"review story (ST-[a-z0-9]{8})\", out)\nresearch = re.search(r\"research story (ST-[a-z0-9]{8})\", out)\nif not (sp and review and research):\n    print(\"check broken: new sprint printed no ids:\", out[-300:]); sys.exit(2)\nreview, research = review.group(1), research.group(1)\nbl(\"set\", research, \"--notes\", \"No outside facts: planted.\")\nsh(\"git\", \"commit\", \"-q\", \"-am\", \"notes\", cwd=K)\nbl(\"answer\", sp, \"start\", \"--answer\", \"approve\", \"--by\", \"operator\")\nbl(\"start\", sp)\nsh(\"git\", \"commit\", \"-q\", \"-am\", \"start\", cwd=K)\nsteps = []\nfor iid in (research, review):\n    steps.append(bl(\"claim\", iid, \"--by\", \"claude-0000aaaa\", \"--commit\"))\n    steps.append(bl(\"done\", iid, \"--commit\"))\nclosed = bl(\"close\", sp, \"--commit\")\nif closed.returncode != 0:\n    print(\"check broken: the planted sprint did not close:\", [s.returncode for s in steps], (closed.stdout + closed.stderr)[-400:]); sys.exit(2)\nproblems = []\nfor iid in (research, review):\n    g = sh(sys.executable, os.path.join(R, \"_tools\", \"coord.py\"), \"--store\", S, \"get\", \"run/\" + iid)\n    state = json.loads(g.stdout).get(\"value\") if g.returncode == 0 else None\n    if state not in (None, \"landed\"):\n        problems.append(\"run/%s is still %r after done in place and close\" % (iid, state))\nd = bl(\"runs\", \"--reconcile\")\nif re.search(r\"run claimed\\s+file no item file\", d.stdout):\n    problems.append(\"runs --reconcile leaves a closed sprint's item at run claimed: \" + d.stdout[-200:])\nprint(\"\\n\".join(problems) or \"ok\")\nsys.exit(1 if problems else 0)\n"
+    ]
+  },
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/bl_runs.py",
+    "kb/_self/backlog.md"
+  ],
+  "notes": "Seen 2026-10-26 on SP-wurbmsid and SP-eyhift2n: each review and research story finished with `done --commit` in the orchestrator's checkout stayed at run claimed; after `close` deleted the item files, `runs --reconcile` reported 0 reconciled and kbmon raised a run-drift alert; the orchestrator repaired them with `coord.py transition run/ID --to landed`. In the repro, reconcile moves one of the two to released, a state that claims the item was let go undone. Module: done in bl_land.py, runs in bl_runs.py; close (bl_close.py) needs no change if done moves the state.",
+  "filed_in": "clone-0ea70e5c"
+}
