@@ -1,0 +1,24 @@
+{
+  "id": "BG-xy2dopfo",
+  "kind": "bug",
+  "title": "The land push step of the kb is named _tools/kbgit.py sync --push, so its land.step token is no longer kbgit.py-sync-push",
+  "status": "draft",
+  "parent": "EP-iowijan3",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bl_land.land_push cuts an absolute path in the push command to its last part and keeps the program word of a relative one as before, so the kb's land.step token stays kbgit.py-sync-push for backlog.py ops, landings and kbmon",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,'_tools'); import bl_land; sys.exit(0 if bl_land.ops_token(bl_land.land_push()[0])=='kbgit.py-sync-push' else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
