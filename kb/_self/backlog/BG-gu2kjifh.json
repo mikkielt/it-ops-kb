@@ -24,6 +24,9 @@
     "README.md",
     "kb/_self/tools.md"
   ],
+  "depends_on": [
+    "ST-j7zmbbvs"
+  ],
   "relates_to": [
     "ST-rodj5ltd"
   ],
