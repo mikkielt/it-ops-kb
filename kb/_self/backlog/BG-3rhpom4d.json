@@ -2,7 +2,7 @@
   "id": "BG-3rhpom4d",
   "kind": "bug",
   "title": "bench_multi matches a research key's term in a fact's text, but dedup keys now hold term ids with a hash",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-n7f53pgv",
   "priority": "P2",
   "rank": 0,
@@ -29,5 +29,7 @@
   "links": [
     "parked: SP-c7oav2vn work"
   ],
-  "notes": "Orchestrator 2026-10-23: filed by BG-v53e2pef's worker; its repro (term_id of 'batch size' equals the raw term) can never pass once BG-v53e2pef's slug-plus-hash ids landed, so it needs a repro that runs bench_multi.duplicate_research on a planted fact before it is planned. Plan check 2026-10-26: the repro is now a planted run: worked_key and duplicate_research on stubbed facts that hold \"batch size\" under the dedup key research:public/x/y:batch-size-d2bd91 (coord.term_id), with the store and git reads stubbed; both miss the fact on the base, and the same stubs with the raw term key find it (sanity run at planning)."
+  "notes": "Orchestrator 2026-10-23: filed by BG-v53e2pef's worker; its repro (term_id of 'batch size' equals the raw term) can never pass once BG-v53e2pef's slug-plus-hash ids landed, so it needs a repro that runs bench_multi.duplicate_research on a planted fact before it is planned. Plan check 2026-10-26: the repro is now a planted run: worked_key and duplicate_research on stubbed facts that hold \"batch size\" under the dedup key research:public/x/y:batch-size-d2bd91 (coord.term_id), with the store and git reads stubbed; both miss the fact on the base, and the same stubs with the raw term key find it (sanity run at planning).",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
