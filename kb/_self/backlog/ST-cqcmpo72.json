@@ -2,9 +2,8 @@
   "id": "ST-cqcmpo72",
   "kind": "story",
   "title": "precheck shows conflict predictions from any external predictor beside its own file overlaps",
-  "status": "doing",
+  "status": "draft",
   "parent": "EP-zv3duelo",
-  "sprint": "SP-n7f53pgv",
   "priority": "P3",
   "rank": 0,
   "goal": "backlog.py precheck SP --conflicts FILE|- reads JSON lines {\"items\": [two branches or item ids], \"path\": P, \"kind\": \"textual\" or \"semantic\"} from any conflict predictor and prints each beside precheck's own overlap of planned files, naming the items by title and id; a line naming an item outside the sprint is listed apart; the contract is documented in backlog.md with no product named; precheck without --conflicts prints what it prints now.",
@@ -56,8 +55,9 @@
     "kb/_self/tools.md",
     "skills/sprint/SKILL.md"
   ],
-  "notes": "Plan check 2026-10-26: checks 0-1 plant a backlog of their own (backlog.py --root on a temp git repo: a sprint of two stories with failing checks and one story outside it). Check 0 runs precheck --conflicts with a predicted conflict between the two sprint stories and one with the outside story; check 1 passes before the work on purpose: it pins that precheck without --conflicts prints its two failing checks and summary line and no conflict line; check 2 reads the backlog.md paragraphs naming --conflicts for both kinds and no product. The goal names the JSON fields. On the base: --conflicts is an unrecognized argument: premise reproduced.",
-  "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-775f1f5d",
-  "operator": "op-f618a13e"
+  "links": [
+    "moved out: SP-n7f53pgv"
+  ],
+  "notes": "Plan check 2026-10-26: checks 0-1 plant a backlog of their own (backlog.py --root on a temp git repo: a sprint of two stories with failing checks and one story outside it). Check 0 runs precheck --conflicts with a predicted conflict between the two sprint stories and one with the outside story; check 1 passes before the work on purpose: it pins that precheck without --conflicts prints its two failing checks and summary line and no conflict line; check 2 reads the backlog.md paragraphs naming --conflicts for both kinds and no product. The goal names the JSON fields. On the base: --conflicts is an unrecognized argument: premise reproduced. Moved out of SP-n7f53pgv by the unattended orchestrator 2026-10-26: the worker ($0.76) raised two gates of class agents-rule (the item touches bl_precheck.py): g1 which planned-file overlap precheck --conflicts prints beside the predictions (recommended: pairs of open committed items sharing a path, kb/_self docs left out, only with --conflicts), g2 what --conflicts does with an invalid prediction line or a reference to no item (recommended: refuse naming the line; list unknown references with the outside-the-sprint predictions). They wait on the operator; work is on branch work/ST-cqcmpo72.",
+  "filed_in": "clone-0ea70e5c"
 }
