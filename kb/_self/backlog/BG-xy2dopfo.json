@@ -20,5 +20,9 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "links": [
+    "parked: SP-vmtfnkim review"
+  ],
+  "notes": "Found by the SP-vmtfnkim review on 2026-10-26 (BG-zoaoahj4's change to land_push): the kb's backlog.json names land_push as the relative _tools/kbgit.py sync --push, which gave the label kbgit.py sync --push through Path(argv[0]).name; the cut now applies to absolute arguments only, so the ops token is _tools-kbgit.py-sync-push and the history, backlog.py landings, kbmon's land: step and backlog.md (which names kbgit.py-sync-push) disagree with the rows written from that commit on. Fix direction: keep the program's last part for argv[0] and cut other absolute arguments.",
   "filed_in": "clone-0ea70e5c"
 }
