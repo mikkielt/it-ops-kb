@@ -21,6 +21,26 @@
     "kb/_self/coordination.md",
     "kb/_self/monitoring.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does digest label a multi-item intent whose items differ in state?",
+      "options": [
+        "state of the items that overlap the asked key (all items when none does)",
+        "one state per item on the line"
+      ],
+      "recommendation": "state of the items that overlap the asked key (all items when none does)",
+      "reason": "keeps one state= and age= pair that the coord hook and the sessions panel already parse",
+      "do": {
+        "state of the items that overlap the asked key (all items when none does)": "BG-n4pgkyos",
+        "one state per item on the line": "BG-n4pgkyos"
+      },
+      "class": "design",
+      "answer": "state of the items that overlap the asked key (all items when none does)",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-fp3hxl6q review"
   ],
