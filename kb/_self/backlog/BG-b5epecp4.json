@@ -2,7 +2,7 @@
   "id": "BG-b5epecp4",
   "kind": "bug",
   "title": "backlog.py --root DIR with a DIR that is no git clone leaves run states in the coord store of the tool's own clone, the host's real store",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-42b2cjm3",
   "priority": "P3",
   "rank": 0,
@@ -72,6 +72,19 @@
   ],
   "notes": "Found by the SP-lhpvwh6l review (S3): bl_clean.run_coord sets cwd and CLAUDE_PROJECT_DIR to the root, but coord.project_store() returns None outside a git clone and default_store() falls back to the script's own clone store. KB_COORD_STORE still wins and a run with no --root from a worktree of the same clone is unchanged. Reviewer fix hint: when coord.store_of(root) is None and KB_COORD_STORE is unset, return an error or pass --store under the root. Sibling of the landed BG-2x3pq6ve. Gate g1 answered with its recommendation by operator (pre-approved by the operator for the 2026-10-26 run). Gate g2 answered with its recommendation by operator (pre-approved by the operator for the 2026-10-26 run).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "manager-a5d08fe4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "3ac9cd2a2f1336853507632e7e24965a49e47935",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,tempfile,shutil,pathlib as P\nT=os.path.abspath(\"_tools\"); sys.path.insert(0,T)\nd=tempfile.mkdtemp()\nstub=P.Path(d)/\"stub.py\"\nstub.write_text(\"import sys,json\\nsys.path.insert(0,%r)\\nimport coord\\nprint(json.dumps({'store':coord.default_store()}))\\n\"%T)\nos.environ.pop(\"KB_COORD_STORE\",None)\nimport bl_base, bl_clean\nbl_base.OUTPUT_ROOT[0]=P.Path(d)\nbl_clean.COORD=stub\ncode,body,err=bl_clean.run_coord()\nstore=(body or {}).get(\"store\")\ninside=bool(store) and os.path.realpath(store).startswith(os.path.realpath(d))\nshutil.rmtree(d)\nprint(\"code\",code,\"store\",store,\"inside root\",inside)\nsys.exit(0 if (code!=0 or inside) else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "2842959551e4bb48"
+      }
+    ]
+  }
 }
