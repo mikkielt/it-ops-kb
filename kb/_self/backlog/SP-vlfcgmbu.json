@@ -3,7 +3,7 @@
   "kind": "sprint",
   "title": "Facts know when they were true",
   "status": "active",
-  "goal": "A fact line carries its validity window as a marker before its tag and a CODE fact its commit range, accepted by the content rules and the lint; pack and kb_pack answer as of a date with the facts valid then and say which they left out; a refresh closes a changed fact with an end date and adds the new one instead of rewriting it",
+  "goal": "each kf_ stage imports on its own, before kbfacts; an unrelated H2 added between the previous and the current text no longer fails section_unchanged; a feedback flag never shows on a fact the report did not name; the prior art on fact validity windows is researched into kb facts for the moved-out validity stories",
   "gates": [
     {
       "id": "start",

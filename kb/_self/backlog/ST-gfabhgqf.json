@@ -2,9 +2,8 @@
   "id": "ST-gfabhgqf",
   "kind": "story",
   "title": "A refresh closes a changed fact with an end date and adds the new one, instead of rewriting it",
-  "status": "todo",
+  "status": "draft",
   "parent": "EP-lrmcc2uf",
-  "sprint": "SP-vlfcgmbu",
   "priority": "P3",
   "rank": 0,
   "goal": "factdiff.py close PATH:LINE --on DATE|REV --text NEW, which /kb-refresh runs when the fact diff finds a fact's passage changed so the fact no longer holds, ends the old line's validity window at DATE (at REV for a CODE fact) and adds NEW after it with a window starting there, citing the same sources; doc2query rows keyed to the old line follow the new line; a pack with no as-of shows the new fact as current; an as-of before the change shows the old one",
@@ -70,6 +69,9 @@
     "BG-hxp3f73q",
     "ST-dnpg6e7d"
   ],
-  "notes": "Plan check 2026-10-26: the old check (factdiff.py anchors --stale) failed on the base for 136 unrelated stale anchors and is dropped. The goal names the command /kb-refresh runs, so a planted root can read it: checks 0-2 close a fact of a temporary root (KB_ROOTS) on 2025-06-01 and fail on the base (no close verb, no --as-of). Check 3 reads the skill text.",
+  "links": [
+    "moved out: SP-vlfcgmbu"
+  ],
+  "notes": "Plan check 2026-10-26: the old check (factdiff.py anchors --stale) failed on the base for 136 unrelated stale anchors and is dropped. The goal names the command /kb-refresh runs, so a planted root can read it: checks 0-2 close a fact of a temporary root (KB_ROOTS) on 2025-06-01 and fail on the base (no close verb, no --as-of). Check 3 reads the skill text. Moved out of SP-vlfcgmbu by the unattended orchestrator 2026-10-26: depends on ST-mp4pjor2, whose gates g2 and g3 (class agents-rule) wait on the operator.",
   "filed_in": "clone-0ea70e5c"
 }
