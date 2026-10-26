@@ -69,7 +69,8 @@ TLDS = ("com net org edu gov mil int info biz io ai co me dev app cloud ms tv us
         "local lan corp internal intra home arpa example test invalid localhost site online tech xyz").split()
 _HOST_NAME = (r"(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+(?:" + "|".join(TLDS) + r")(?![\w-]|\.[A-Za-z0-9])")
 HOST = re.compile(r"(?<![\w.@/\\-])" + _HOST_NAME, re.I)
-URL_HOST = re.compile(r"(?i)\bhttps?://(?:[^\s/@\"'<>]*@)?(" + _HOST_NAME + ")")
+# The user part may hold a placeholder (<secret> replaces the password before this rule runs).
+URL_HOST = re.compile(r"(?i)\bhttps?://(?:(?:[^\s/@\"'<>]|<[^\s/@<>]*>)*@)?(" + _HOST_NAME + ")")
 PASCAL = re.compile(r"(?:^|\.)[A-Z][a-z]")  # System.IO, Microsoft.Graph.Beta: .NET names, not hosts
 UNC = re.compile(r"(?<![\w\\])\\\\(?![?.]\\)([A-Za-z0-9._$-]+)((?:\\[^\\\s\"'<>|*?:]+)*)")
 DRIVE = re.compile(r"(?<![\w])[A-Za-z]:((?:[\\/]{1,2}[^\\/\r\n\t\"'<>|*?:]+(?=[\\/]))*(?:[\\/]{1,2}[^\\/\s\"'<>|*?:,;)]*)?)")
