@@ -2,7 +2,7 @@
   "id": "BG-v5lw37lb",
   "kind": "bug",
   "title": "tools.md's bl_authority.py row leaves out the DOC_SECRET exception to the token-named Markdown docs it blanks",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-sgfucsn6",
   "priority": "P2",
   "rank": 0,
@@ -38,5 +38,7 @@
     "parked: SP-4ppjbh4k review"
   ],
   "notes": "Sprint start gate answered approve by the runner on the operator's behalf (pre-approved by the operator for the 2026-10-26 run).",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "manager-a5d08fe4",
+  "operator": "op-f618a13e"
 }
