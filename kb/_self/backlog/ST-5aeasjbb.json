@@ -2,7 +2,7 @@
   "id": "ST-5aeasjbb",
   "kind": "story",
   "title": "Research sprint goal: One session's host cost, measured without a model",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3qowbedb",
   "goal_research": true,
   "priority": "P1",
@@ -22,6 +22,20 @@
     "kb/public/**"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-c5ef8aa4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "bdb965921ccb1f4ac1270358935f15e0a631889b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-5aeasjbb"
+        ],
+        "exit": 0,
+        "sha256": "892535abfeb7d0b9"
+      }
+    ]
+  }
 }
