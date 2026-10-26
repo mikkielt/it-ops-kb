@@ -190,6 +190,20 @@ def settle(clone):
         time.sleep(0.2)
 
 
+def pin_drift(clone):
+    """Make no item of the clone eligible for the intake hook's drift scan, so that hook does the same work in every replay.
+    The hook stops waiting for its detectors after INTAKE_HOOK_BUDGET_S, and its drift scan runs the checks of the draft or
+    todo items whose touches changed since their file did, within a wall-clock budget of its own: the checks that fit, and so
+    the processes started, move with the host's speed and load. One commit on the clone that changes the mode of each item file
+    (no content) makes the newest commit of every item file the clone's HEAD, so no item is eligible and the scan only
+    reads the items; what the real hook costs in a clone where checks do run is not measured here."""
+    item_dir = json.loads((Path(clone) / "backlog.json").read_text(encoding="utf-8"))["item_dir"]
+    files = git("ls-files", "--", item_dir, cwd=clone).splitlines()
+    git("update-index", "--chmod=+x", "--", *files, cwd=clone)
+    git("-c", "user.name=bench", "-c", "user.email=bench@example.com", "commit", "-q", "--no-verify", "-m",
+        "bench: the item files' mode", cwd=clone)
+
+
 def reset(clone):
     """The clone's working tree as the checkout left it, whatever a replay's hooks wrote, and the intake hook's drift
     cursor removed, so each replay's drift scan starts at the same item instead of where the replay before it stopped."""
@@ -209,8 +223,10 @@ class Replay:
         cmd = command.replace("${CLAUDE_PROJECT_DIR}", str(self.clone))
         rec = {"event": name, "tool": target if name.endswith("ToolUse") else "", "label": label(command), "async": is_async,
                "class": process_class("sh " + cmd, self.clone)}
+        rec["log"] = Path(self.env["BENCH_STARTS_DIR"]) / f"{len(self.roots)}.log"  # the processes this command's tree starts
         t0 = time.perf_counter()
-        p = subprocess.Popen(["sh", "-c", command], cwd=str(self.clone), env=self.env, stdin=subprocess.PIPE,
+        p = subprocess.Popen(["sh", "-c", command], cwd=str(self.clone), env={**self.env, "BENCH_STARTS_LOG": str(rec["log"])},
+                             stdin=subprocess.PIPE,
                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         sampler.add(p.pid, rec["class"])
         try:
@@ -252,11 +268,10 @@ class Replay:
         settle(self.clone)
         return self.summary(sampler, wall)
 
-    def started(self):
-        """The class of each process a Python program of the replay started (the sitecustomize's log)."""
-        log = Path(self.env["BENCH_STARTS_LOG"])
-        text = log.read_text(encoding="utf-8", errors="replace") if log.exists() else ""
-        return [process_class(" ".join(rec.split("\x1f")), self.clone) for rec in text.split("\x1e") if rec]
+    def started(self, rec):
+        """The command line of each process a Python program of one hook command's tree started (the sitecustomize's log)."""
+        text = rec["log"].read_text(encoding="utf-8", errors="replace") if rec["log"].exists() else ""
+        return [" ".join(r.split("\x1f")) for r in text.split("\x1e") if r]
 
     def summary(self, sampler, wall):
         """{class: {cpu_s, spawns, peak, rss_mean_mb}} with `all`, the hook commands' timings and the failed ones. A hook
@@ -271,8 +286,10 @@ class Replay:
             c["cpu_s"] += r["cpu_s"]
             c["spawns"] += 1
             c["peak"] = max(c["peak"], r["maxrss_mb"])
-        for cls in self.started():
-            cell(cls)["spawns"] += 1
+        for r in self.roots:
+            r["children"] = self.started(r)
+            for args in r["children"]:
+                cell(process_class(args, self.clone))["spawns"] += 1
         for cls, kb in sampler.seen.values():
             cell(cls)["peak"] = max(cell(cls)["peak"], kb / 1024)
         for tick in sampler.ticks:
@@ -297,6 +314,7 @@ def plant(b, clone, name):
     data = b.scratch / "session-load-data" / name
     shutil.rmtree(data, ignore_errors=True)
     (data / "querylog").mkdir(parents=True)
+    (data / "starts").mkdir()
     (data / "querylog" / "config.json").write_text(json.dumps({"mode": "local", "research": False}) + "\n", encoding="utf-8",
                                                    newline="\n")
     site = b.scratch / "session-load-site"
@@ -306,7 +324,7 @@ def plant(b, clone, name):
     path = os.pathsep.join(x for x in (str(site), os.environ.get("PYTHONPATH", "")) if x)
     return no_plugin_env({"CLAUDE_PLUGIN_ROOT": str(clone), "CLAUDE_PLUGIN_DATA": str(data), "CLAUDE_PROJECT_DIR": str(clone),
                           "KB_INDEX": str(clone / "_cache"), "KB_COORD_STORE": str(data / "coord.sqlite"),
-                          "BENCH_STARTS_LOG": str(data / "starts.log"), "PYTHONPATH": path,
+                          "BENCH_STARTS_DIR": str(data / "starts"), "PYTHONPATH": path,
                           "PATH": f"{fail}{os.pathsep}{os.environ.get('PATH', '')}"})
 
 
@@ -338,6 +356,7 @@ def s_session_load(b):
     need_sh()
     arms = list(getattr(b, "load_arms", None) or ARMS)
     clone = b.clone("session-load", "local")
+    pin_drift(clone)
     hooks = hook_commands(clone)
     replay(b, clone, hooks, "A", "working", "warm")  # the caches of Python, the pack index and git, not measured
     got = {(arm, phase): [] for arm in arms for phase in PHASES}
@@ -359,6 +378,15 @@ def s_session_load(b):
         b.row("session-load", f"{phase} replay", arm, "wall_s", statistics.median(r["wall_s"] for r in reps), len(reps))
         b.row("session-load", f"{phase} replay", arm, "hook_failures", statistics.median(len(r["failed"]) for r in reps),
               len(reps), note="hook commands that exited non-zero")
+    starts = {}
+    for (arm, phase), reps in got.items():
+        for i, r in enumerate(reps):
+            for h in r["hooks"]:
+                key = (arm, phase, h["label"])
+                starts.setdefault(key, [0] * len(reps))[i] += 1 + len(h["children"])
+    for (arm, phase, name), per in starts.items():
+        b.row("session-load", f"{phase} hook {name}", arm, "spawns", statistics.median(per), len(per),
+              note="the command and the processes Python programs of its tree started, per replay")
     timings = {}
     for (arm, phase), reps in got.items():
         for r in reps:

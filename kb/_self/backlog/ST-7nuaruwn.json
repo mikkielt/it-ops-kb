@@ -184,6 +184,26 @@
       "class": "design",
       "answer": "one unmeasured replay of arm A first, then the median of the reps for each row, every arm and phase once per rep",
       "by": "agent"
+    },
+    {
+      "id": "g8",
+      "kind": "provisional",
+      "question": "How is the intake hook's start count pinned, since its drift scan runs item checks within a wall-clock budget and starts as many processes as fit?",
+      "options": [
+        "one commit in the replay clone changes the mode of each item file, so no item is eligible and the scan runs no check; the real hook's cost with checks is not measured",
+        "changed-path filters in the clone's commit graph, so the scan is faster, but the checks it then runs still end at the budget",
+        "leave the clone as it is, the starts of both arms then move with the host's speed"
+      ],
+      "recommendation": "one commit in the replay clone changes the mode of each item file, so no item is eligible and the scan runs no check; the real hook's cost with checks is not measured",
+      "reason": "measured over three replays of each arm, the filters left the intake hook between 950 and 974 starts and this leaves it at 944 in every replay, so A minus C is the hooks C leaves out by construction",
+      "do": {
+        "one commit in the replay clone changes the mode of each item file, so no item is eligible and the scan runs no check; the real hook's cost with checks is not measured": "ST-7nuaruwn",
+        "changed-path filters in the clone's commit graph, so the scan is faster, but the checks it then runs still end at the budget": "ST-7nuaruwn",
+        "leave the clone as it is, the starts of both arms then move with the host's speed": "ST-7nuaruwn"
+      },
+      "class": "design",
+      "answer": "one commit in the replay clone changes the mode of each item file, so no item is eligible and the scan runs no check; the real hook's cost with checks is not measured",
+      "by": "agent"
     }
   ],
   "filed_in": "clone-0ea70e5c",
