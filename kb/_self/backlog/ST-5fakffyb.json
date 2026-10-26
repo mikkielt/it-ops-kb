@@ -1,0 +1,29 @@
+{
+  "id": "ST-5fakffyb",
+  "kind": "story",
+  "title": "session-load runs 1, 4 and 8 sessions at once and records what they cost together",
+  "status": "draft",
+  "parent": "EP-nxb7hjwd",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "python3 _tools/benchmarks.py run session-load --sessions N,N... replays N sessions of each arm at once (default 1), each with its own session id and throwaway clone, and writes for N above 1 the same rows with case '<phase> <class> xN' and a load_peak row, the host's 1-minute load at its highest during the run",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport csv, os, shutil, subprocess, tempfile\nT = tempfile.mkdtemp()\nB = os.path.join(T, 'bin'); os.mkdir(B)\nopen(os.path.join(B, 'claude'), 'w').write('#!/bin/sh\\nexit 1\\n')\nos.chmod(os.path.join(B, 'claude'), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ['PATH'])\nout = os.path.join(T, 'out.csv')\np = subprocess.run([sys.executable, '_tools/benchmarks.py', 'run', 'session-load', '--arms', 'A', '--sessions', '1,2', '--reps', '1', '--out', out],\n                   capture_output=True, text=True, env=ENV, timeout=1800)\nrows = list(csv.DictReader(open(out, encoding='utf-8'))) if os.path.exists(out) else []\nshutil.rmtree(T, ignore_errors=True)\nassert p.returncode == 0, ('run session-load --sessions 1,2 exit', p.returncode, p.stderr[-400:])\nval = {(r['case'], r['arm'], r['metric']): float(r['value']) for r in rows if r['scenario'] == 'session-load'}\nfor case in ('idle all', 'working all'):\n    one, two = val.get((case, 'A', 'cpu_s')), val.get((case + ' x2', 'A', 'cpu_s'))\n    assert one is not None and two is not None, ('no 1-session or 2-session cpu_s row', case)\n    assert two > one, ('2 sessions at once cost no more CPU than 1', case, one, two)\n    assert (case + ' x2', 'A', 'load_peak') in val, ('no load_peak row for 2 sessions', case)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_load.py",
+    "_tools/benchmarks.py",
+    "kb/_self/benchmarks.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-v5h7dpff"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

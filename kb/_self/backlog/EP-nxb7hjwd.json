@@ -1,0 +1,20 @@
+{
+  "id": "EP-nxb7hjwd",
+  "kind": "epic",
+  "title": "What one Claude Code session of this clone costs the host, and whether sessions no person watches can run lighter",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "benchmarks.csv holds a session-load record that gives, per process class (claude, kb hooks, kbmon pane, MCP servers, git and lsof children), the CPU seconds, peak and mean RSS, process starts per minute, file reads and sync hook latency of one session of this clone: interactive and headless, monitoring on and off, 1, 4 and 8 sessions at once; and the operator has decided from that record whether headless sprint runners and dispatched workers run with fewer hooks, keeping the coord lease, intents, asks, work rows and usage rows the orchestrator reads",
+  "relates_to": [
+    "ST-5bz4nwsf"
+  ],
+  "links": [
+    "kb/public/claude/mods.md:35 (mod hooks run in claude -p; nothing is drawn)",
+    "kb/public/agents/headless-agent-runtimes.md:56 (-p loads hooks, skills and MCP unless --bare)",
+    "kb/public/claude/hooks.md:197 (async hooks are not awaited)",
+    "kb/_self/reports/benchmarks.md (Query log hooks; Always-on cost)"
+  ],
+  "notes": "Premise, run before planning: the kbmon-pane mod returns at session.start when isInteractive is false (.claude/skills/kbmon-pane/hooks/register.tsx), and a 66 s process sample found kbmon only under interactive claude sessions; one python3 _tools/kbmon.py --once on a host at load 8 of 14 cores took about 14 CPU seconds and 535 MB peak RSS, run every 60 s by each interactive session's pane. Headless sessions run every project hook; bl_dispatch.claude_argv passes no --settings, unlike kbcommon.NO_HOOKS callers. Out of scope: one shared kbmon snapshot across interactive sessions (likely the larger saving; ST-5bz4nwsf is the pane's own cost). No new tests: the suite's ceiling is hard; every check is a scenario run on planted input with its output in a temporary directory. Arms: A every project hook; B A plus the kbmon pane's commands; C A without coord_hook and the querylog hooks; D no hook; worker A under bl_dispatch.worker_env. Record figures are named as the session-load record of a date, arm and warm or cold; harness records take 5 reps, paid ones 3.",
+  "filed_in": "clone-0ea70e5c"
+}

@@ -1,0 +1,84 @@
+{
+  "id": "ST-rodj5ltd",
+  "kind": "story",
+  "title": "A paid session-load record gives each arm's cost at 1, 4 and 8 Haiku 5.5 sessions, with the file reads of one capture",
+  "status": "draft",
+  "parent": "EP-nxb7hjwd",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/reports/benchmarks.csv holds a session-load record of paid Haiku 5.5 runs, arms A, C and D, phases idle and working, at 1, 4 and 8 sessions at once, 3 reps each, its spend under the cap the operator gave, with the file_reads rows of an fs_usage capture the operator made during one of its runs, and its table in kb/_self/reports/benchmarks.md",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport csv, subprocess\np = subprocess.run([sys.executable, '_tools/benchmarks.py', 'report', '--check'], capture_output=True, text=True, timeout=600)\nassert p.returncode == 0, ('report --check', p.returncode, p.stdout[-400:])\nrows = [r for r in csv.DictReader(open('kb/_self/reports/benchmarks.csv', encoding='utf-8')) if r['scenario'] == 'session-load']\npaid = [r for r in rows if 'haiku-5-5' in r['model']]\nfor arm in 'ACD':\n    for case in ('idle all', 'working all', 'idle all x4', 'working all x4', 'idle all x8', 'working all x8'):\n        assert [r for r in paid if r['arm'] == arm and r['case'] == case and r['metric'] == 'cpu_s' and r['runs'] == '3'], ('no 3-run paid row', arm, case)\nspend = [float(r['value']) for r in rows if r['metric'] == 'spend_usd']\nassert spend and max(spend) <= 4, ('no spend row, or a record spent over the $4 cap', spend)\nassert [r for r in rows if r['case'] == 'capture all' and r['metric'] == 'file_reads'], 'no file_reads row from a capture beside the record'\n"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/benchmarks.csv",
+    "kb/_self/reports/benchmarks.md",
+    "README.md"
+  ],
+  "depends_on": [
+    "ST-i5az334d",
+    "ST-57o3hmbo"
+  ],
+  "gates": [
+    {
+      "id": "spend",
+      "kind": "blocking",
+      "question": "What may the paid session-load record spend? 234 Haiku 5.5 runs (arms A, C, D; idle and working; 1, 4 and 8 sessions; 3 reps); planning estimate 1 to 2.50 US dollars, the --paid --dry-run plan gives the figure before the start",
+      "options": [
+        "Cap 4 USD, full matrix",
+        "Cap 2 USD, arms A and D only",
+        "No paid runs"
+      ],
+      "recommendation": "Cap 4 USD, full matrix",
+      "reason": "the operator asked for the full matrix, and the cap stays above the estimate with room for 8-session runs",
+      "do": {
+        "Cap 4 USD, full matrix": [
+          "python3",
+          "_tools/benchmarks.py",
+          "run",
+          "session-load",
+          "--paid",
+          "--arms",
+          "A,C,D",
+          "--sessions",
+          "1,4,8",
+          "--reps",
+          "3",
+          "--max-usd",
+          "4"
+        ],
+        "Cap 2 USD, arms A and D only": [
+          "python3",
+          "_tools/benchmarks.py",
+          "run",
+          "session-load",
+          "--paid",
+          "--arms",
+          "A,D",
+          "--sessions",
+          "1,4,8",
+          "--reps",
+          "3",
+          "--max-usd",
+          "2"
+        ],
+        "No paid runs": [
+          "python3",
+          "_tools/backlog.py",
+          "drop",
+          "ST-rodj5ltd",
+          "--why",
+          "no-paid-runs"
+        ]
+      },
+      "class": "design"
+    }
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

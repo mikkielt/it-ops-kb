@@ -1,0 +1,29 @@
+{
+  "id": "ST-i5az334d",
+  "kind": "story",
+  "title": "session-load --paid runs real Haiku 5.5 sessions per arm, with a dry-run plan and a spend cap",
+  "status": "draft",
+  "parent": "EP-nxb7hjwd",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "python3 _tools/benchmarks.py run session-load --paid starts, per arm, phase, session and rep, one claude -p of Haiku 5.5 (claude-haiku-5-5) with --max-budget-usd, in a throwaway clone whose settings are the arm's (A the project's, C without coord_hook and the querylog hooks, D kbcommon.NO_HOOKS), samples its process tree into the same rows as the replay with the model column set, and stops starting runs once --max-usd would be passed; session-load is in PLANNED, so --paid --dry-run prints the run count (234 runs for arms A,C,D, sessions 1,4,8, reps 3) and an estimate in US dollars and starts no claude",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, shutil, subprocess, tempfile\nT = tempfile.mkdtemp()\nB = os.path.join(T, 'bin'); os.mkdir(B)\nlog = os.path.join(T, 'argv.log')\nopen(os.path.join(B, 'claude'), 'w').write(\n    '#!/bin/sh\\nprintf \"%s\\\\037\" \"$@\" >> \"' + log + '\"\\nprintf \"\\\\036\" >> \"' + log + '\"\\n'\n    'echo \\'{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"total_cost_usd\":0.001,'\n    '\"usage\":{\"input_tokens\":10,\"output_tokens\":2}}\\'\\n')\nos.chmod(os.path.join(B, 'claude'), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ['PATH'])\ndef bench(*a):\n    return subprocess.run([sys.executable, '_tools/benchmarks.py', 'run', 'session-load', *a], capture_output=True, text=True, env=ENV, timeout=1800)\nd = bench('--paid', '--dry-run', '--arms', 'A,C,D', '--sessions', '1,4,8', '--reps', '3')\nran_dry = os.path.exists(log)\nout = os.path.join(T, 'out.csv')\np = bench('--paid', '--arms', 'A,D', '--sessions', '1', '--reps', '1', '--out', out)\ncalls = [ln.split('\\x1f') for ln in open(log).read().split('\\x1e') if ln] if os.path.exists(log) else []\nshutil.rmtree(T, ignore_errors=True)\nassert d.returncode == 0, ('--paid --dry-run exit', d.returncode, d.stderr[-400:])\nassert not ran_dry, 'the dry run started claude'\nassert '234 runs' in d.stdout and '$' in d.stdout, ('the plan names no 234 runs or no estimate', d.stdout[-400:])\nassert p.returncode == 0, ('--paid run exit', p.returncode, p.stderr[-400:])\nassert calls and all('-p' in c and 'claude-haiku-5-5' in c and '--max-budget-usd' in c for c in calls), ('a paid run is not a capped Haiku 5.5 claude -p', calls)\noff = [c for c in calls if any('disableAllHooks' in w for w in c)]\nassert len(off) == len(calls) // 2 >= 2, ('arm D, and only arm D, runs with disableAllHooks', len(off), len(calls))\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_load.py",
+    "_tools/benchmarks.py",
+    "kb/_self/benchmarks.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-5fakffyb"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

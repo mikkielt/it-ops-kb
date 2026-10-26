@@ -1,0 +1,67 @@
+{
+  "id": "ST-qqpcgqe7",
+  "kind": "story",
+  "title": "Sessions no person watches skip the hooks only a person reads, keeping the lease, asks and query-log rows",
+  "status": "draft",
+  "parent": "EP-nxb7hjwd",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A session started by backlog.py dispatch or begin, or a headless sprint runner started by the line the kb-sprint skill gives, runs as the operator's answer to the switch gate says; under the recommended answer the hooks a person reads (kb_hook, the change router, the session-start notices, the digest, horizon and intake hooks) exit at once in a session whose environment marks it unwatched, while coord_hook and the querylog capture and launch hooks run as before, so python3 _tools/benchmarks.py run session-load --arms A,worker shows the worker arm (arm A's hooks under bl_dispatch.worker_env's environment) starting fewer processes than arm A and still writing its coord session lease and query-log work rows",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport csv, os, shutil, subprocess, tempfile\nT = tempfile.mkdtemp()\nB = os.path.join(T, 'bin'); os.mkdir(B)\nopen(os.path.join(B, 'claude'), 'w').write('#!/bin/sh\\nexit 1\\n')\nos.chmod(os.path.join(B, 'claude'), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ['PATH'])\nout = os.path.join(T, 'out.csv')\np = subprocess.run([sys.executable, '_tools/benchmarks.py', 'run', 'session-load', '--arms', 'A,worker', '--reps', '1', '--out', out],\n                   capture_output=True, text=True, env=ENV, timeout=1800)\nrows = list(csv.DictReader(open(out, encoding='utf-8'))) if os.path.exists(out) else []\nshutil.rmtree(T, ignore_errors=True)\nassert p.returncode == 0, ('run session-load --arms A,worker exit', p.returncode, p.stderr[-400:])\nval = {(r['case'], r['arm'], r['metric']): float(r['value']) for r in rows if r['scenario'] == 'session-load'}\nfor case in ('idle all', 'working all'):\n    w, a = val.get((case, 'worker', 'spawns_per_min')), val.get((case, 'A', 'spawns_per_min'))\n    assert w is not None and a is not None and w < a, ('a worker session starts no fewer processes than arm A', case, w, a)\nassert val.get(('working all', 'worker', 'lease_written')) == 1, 'the worker session wrote no coord session lease'\nassert val.get(('working all', 'worker', 'work_rows'), 0) > 0, 'the worker session wrote no query-log work rows'\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_hook.py",
+    ".claude/hooks/kb_change_router.py",
+    ".claude/hooks/session_start.py",
+    "_tools/bl_dispatch.py",
+    "skills/sprint/SKILL.md",
+    "_tools/bench_load.py",
+    "AGENTS.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/plugin.md",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md",
+    "kb/_self/benchmarks.md"
+  ],
+  "depends_on": [
+    "ST-rodj5ltd"
+  ],
+  "gates": [
+    {
+      "id": "switch",
+      "kind": "blocking",
+      "question": "Should sessions no person watches (dispatched workers, headless sprint runners) run with fewer hooks, and which? Decide from the paid session-load record",
+      "options": [
+        "No switch",
+        "Lean: person-only hooks exit, coord and query-log hooks kept",
+        "Lean plus coord and capture off",
+        "All hooks off (disableAllHooks)"
+      ],
+      "recommendation": "Lean: person-only hooks exit, coord and query-log hooks kept",
+      "reason": "the orchestrator keeps the session lease that tidy and kbask read, intents, asks, work rows and cost; the other two lose those, and no switch keeps the measured cost",
+      "do": {
+        "No switch": [
+          "python3",
+          "_tools/backlog.py",
+          "drop",
+          "ST-qqpcgqe7",
+          "--why",
+          "no-switch"
+        ],
+        "Lean: person-only hooks exit, coord and query-log hooks kept": "ST-qqpcgqe7",
+        "Lean plus coord and capture off": "ST-qqpcgqe7",
+        "All hooks off (disableAllHooks)": "ST-qqpcgqe7"
+      },
+      "class": "querylog"
+    }
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
