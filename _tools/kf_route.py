@@ -5,7 +5,12 @@ only; kb/_self/tools.md, "How the lookup tools decide").
 
 `kbfacts.py` is the facade: it imports this module at its end, so every name here stays importable from it, and this
 module reads the ground (articles, ledgers, decisions, scope) from it and the ranking from `kf_index`. Import
-`kbfacts`, never this module first."""
+`kbfacts`; imported first, this module has the facade load it, so every module still holds the one copy `kbfacts`
+loads."""
+import sys
+if "kbfacts" not in sys.modules:  # imported first: the facade loads this stage under its name, then this copy reads it
+    sys.modules.pop(__name__, None)
+    import kbfacts
 import ast, json, math, os, re, subprocess, warnings
 import xml.etree.ElementTree as ET
 from collections import Counter, defaultdict

@@ -3,8 +3,12 @@ and `Prefix`), the index file's place and pruning, `store()`, `rank`, `search` a
 that feeds them (stdlib only; kb/_self/tools.md, "How the lookup tools decide").
 
 `kbfacts.py` is the facade: it imports this module at its end, so every name here stays importable from it, and this
-module reads the ground (units, tags, ledgers, decisions, aliases, the index directory) from it. Import `kbfacts`,
-never this module first."""
+module reads the ground (units, tags, ledgers, decisions, aliases, the index directory) from it. Import `kbfacts`;
+imported first, this module has the facade load it, so every module still holds the one copy `kbfacts` loads."""
+import sys
+if "kbfacts" not in sys.modules:  # imported first: the facade loads this stage under its name, then this copy reads it
+    sys.modules.pop(__name__, None)
+    import kbfacts
 import array, bisect, functools, hashlib, json, marshal, math, os, re, sqlite3, tempfile, threading, time
 from collections import Counter, defaultdict
 
