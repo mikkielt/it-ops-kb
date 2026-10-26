@@ -22,8 +22,5 @@
     "kb/_self/benchmarks.md",
     "kb/_self/tools.md"
   ],
-  "depends_on": [
-    "ST-v5h7dpff"
-  ],
   "filed_in": "clone-0ea70e5c"
 }

@@ -25,9 +25,6 @@
     "kb/_self/reports/benchmarks.csv",
     "README.md"
   ],
-  "depends_on": [
-    "ST-7nuaruwn"
-  ],
   "relates_to": [
     "ST-qqpcgqe7"
   ],
