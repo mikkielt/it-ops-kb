@@ -4,6 +4,7 @@
   "title": "session-load's live mode attributes the host's running Claude sessions' process trees to process classes",
   "status": "draft",
   "parent": "EP-nxb7hjwd",
+  "sprint": "SP-wv3ob5vy",
   "priority": "P3",
   "rank": 0,
   "goal": "python3 _tools/benchmarks.py run session-load --live samples for --window seconds the process trees of the running Claude Code sessions in this clone (interactive and headless told apart, as kbmon's sessions panel does) or of the roots --live-pids names, and writes arm live rows per process class (case 'live <class>', 'all' for their sum: cpu_s, rss_peak_mb, rss_mean_mb, spawns_per_min); its per-sample snapshot goes under _cache/ only, its path printed, and nothing it writes holds a session's prompt or a path outside the clone",

@@ -4,15 +4,16 @@
   "title": "A paid session-load record gives each arm's cost at 1, 4 and 8 Haiku 5.5 sessions, with the file reads of one capture",
   "status": "draft",
   "parent": "EP-nxb7hjwd",
+  "sprint": "SP-wv3ob5vy",
   "priority": "P3",
   "rank": 0,
-  "goal": "kb/_self/reports/benchmarks.csv holds a session-load record of paid Haiku 5.5 runs, arms A, C and D, phases idle and working, at 1, 4 and 8 sessions at once, 3 reps each, its spend under the cap the operator gave, with the file_reads rows of an fs_usage capture the operator made during one of its runs, and its table in kb/_self/reports/benchmarks.md",
+  "goal": "kb/_self/reports/benchmarks.csv holds a session-load record of paid Haiku 5.5 runs, arms A, C, D and the lean worker arm, phases idle and working, at 1, 4 and 8 sessions at once, 3 reps each, its spend under the cap the operator gave, with the file_reads rows of an fs_usage capture the operator made during one of its runs, and its table in kb/_self/reports/benchmarks.md",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport csv, subprocess\np = subprocess.run([sys.executable, '_tools/benchmarks.py', 'report', '--check'], capture_output=True, text=True, timeout=600)\nassert p.returncode == 0, ('report --check', p.returncode, p.stdout[-400:])\nrows = [r for r in csv.DictReader(open('kb/_self/reports/benchmarks.csv', encoding='utf-8')) if r['scenario'] == 'session-load']\npaid = [r for r in rows if 'haiku-5-5' in r['model']]\nfor arm in 'ACD':\n    for case in ('idle all', 'working all', 'idle all x4', 'working all x4', 'idle all x8', 'working all x8'):\n        assert [r for r in paid if r['arm'] == arm and r['case'] == case and r['metric'] == 'cpu_s' and r['runs'] == '3'], ('no 3-run paid row', arm, case)\nspend = [float(r['value']) for r in rows if r['metric'] == 'spend_usd']\nassert spend and max(spend) <= 4, ('no spend row, or a record spent over the $4 cap', spend)\nassert [r for r in rows if r['case'] == 'capture all' and r['metric'] == 'file_reads'], 'no file_reads row from a capture beside the record'\n"
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport csv, subprocess\np = subprocess.run([sys.executable, '_tools/benchmarks.py', 'report', '--check'], capture_output=True, text=True, timeout=600)\nassert p.returncode == 0, ('report --check', p.returncode, p.stdout[-400:])\nrows = [r for r in csv.DictReader(open('kb/_self/reports/benchmarks.csv', encoding='utf-8')) if r['scenario'] == 'session-load']\npaid = [r for r in rows if 'haiku-5-5' in r['model']]\nfor arm in ('A', 'C', 'D', 'worker'):\n    for case in ('idle all', 'working all', 'idle all x4', 'working all x4', 'idle all x8', 'working all x8'):\n        assert [r for r in paid if r['arm'] == arm and r['case'] == case and r['metric'] == 'cpu_s' and r['runs'] == '3'], ('no 3-run paid row', arm, case)\nspend = [float(r['value']) for r in rows if r['metric'] == 'spend_usd']\nassert spend and max(spend) <= 4, ('no spend row, or a record spent over the $4 cap', spend)\nassert [r for r in rows if r['case'] == 'capture all' and r['metric'] == 'file_reads'], 'no file_reads row from a capture beside the record'\n"
       ]
     }
   ],
@@ -23,7 +24,11 @@
   ],
   "depends_on": [
     "ST-i5az334d",
-    "ST-57o3hmbo"
+    "ST-57o3hmbo",
+    "BG-gu2kjifh",
+    "ST-nejgzptp",
+    "ST-66v7jwkw",
+    "ST-qqpcgqe7"
   ],
   "gates": [
     {
@@ -77,8 +82,36 @@
           "no-paid-runs"
         ]
       },
+      "class": "design",
+      "answer": "Cap 4 USD, full matrix",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "capture",
+      "kind": "blocking",
+      "question": "The record needs file reads from an fs_usage capture made with sudo beside one of its paid runs, which only the operator can run (sudo fs_usage -w -f filesys > capture.txt while the run is going, then python3 _tools/benchmarks.py run session-load --fs-usage capture.txt). Is the capture made?",
+      "options": [
+        "Capture made",
+        "Record without file reads"
+      ],
+      "recommendation": "Capture made",
+      "reason": "the operator chose to make it during the paid record",
+      "do": {
+        "Capture made": [
+          "python3",
+          "_tools/benchmarks.py",
+          "run",
+          "session-load",
+          "--fs-usage",
+          "capture.txt"
+        ],
+        "Record without file reads": "ST-rodj5ltd"
+      },
       "class": "design"
     }
   ],
+  "notes": "The lean worker arm adds a fourth arm: 312 runs, about 1.35 to 3.35 USD at the planning estimate, under the 4 USD cap the operator gave on 2026-10-26; the paid mode's --dry-run gives the figure before the start.",
   "filed_in": "clone-0ea70e5c"
 }
