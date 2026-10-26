@@ -46,12 +46,31 @@
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How does a backlog.py --root DIR that is no clone get its coord store under DIR?",
+      "options": [
+        "A kb-coord-home directory under DIR with a .git directory marker, served to coord.py as its project",
+        "KB_COORD_STORE set to a file under DIR"
+      ],
+      "recommendation": "A kb-coord-home directory under DIR with a .git directory marker, served to coord.py as its project",
+      "do": {
+        "A kb-coord-home directory under DIR with a .git directory marker, served to coord.py as its project": "BG-b5epecp4",
+        "KB_COORD_STORE set to a file under DIR": "BG-b5epecp4"
+      },
+      "class": "agents-rule",
+      "answer": "A kb-coord-home directory under DIR with a .git directory marker, served to coord.py as its project",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
     "parked: SP-lhpvwh6l review"
   ],
-  "notes": "Found by the SP-lhpvwh6l review (S3): bl_clean.run_coord sets cwd and CLAUDE_PROJECT_DIR to the root, but coord.project_store() returns None outside a git clone and default_store() falls back to the script's own clone store. KB_COORD_STORE still wins and a run with no --root from a worktree of the same clone is unchanged. Reviewer fix hint: when coord.store_of(root) is None and KB_COORD_STORE is unset, return an error or pass --store under the root. Sibling of the landed BG-2x3pq6ve. Gate g1 answered with its recommendation by operator (pre-approved by the operator for the 2026-10-26 run).",
+  "notes": "Found by the SP-lhpvwh6l review (S3): bl_clean.run_coord sets cwd and CLAUDE_PROJECT_DIR to the root, but coord.project_store() returns None outside a git clone and default_store() falls back to the script's own clone store. KB_COORD_STORE still wins and a run with no --root from a worktree of the same clone is unchanged. Reviewer fix hint: when coord.store_of(root) is None and KB_COORD_STORE is unset, return an error or pass --store under the root. Sibling of the landed BG-2x3pq6ve. Gate g1 answered with its recommendation by operator (pre-approved by the operator for the 2026-10-26 run). Gate g2 answered with its recommendation by operator (pre-approved by the operator for the 2026-10-26 run).",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
   "operator": "op-f618a13e"
