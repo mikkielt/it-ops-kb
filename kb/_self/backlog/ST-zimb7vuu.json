@@ -70,8 +70,7 @@
     "kb/_self/querylog.md"
   ],
   "depends_on": [
-    "ST-xvdk32ag",
-    "BG-oez5e2ua"
+    "ST-xvdk32ag"
   ],
   "gates": [
     {
