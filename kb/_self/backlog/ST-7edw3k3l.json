@@ -2,7 +2,7 @@
   "id": "ST-7edw3k3l",
   "kind": "story",
   "title": "Research sprint goal: Coordination any agent can use, and whether it pays",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-n7f53pgv",
   "goal_research": true,
   "priority": "P1",
@@ -41,6 +41,20 @@
     }
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-775f1f5d",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "4611aa5ce14352440c6fa83391b00acb8c657b4b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-7edw3k3l"
+        ],
+        "exit": 0,
+        "sha256": "bc9a4e09954de4c0"
+      }
+    ]
+  }
 }
