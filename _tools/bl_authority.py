@@ -91,6 +91,12 @@ TOKEN_COUNT = re.compile(
 # the stem of a file name (`LIMIT_TOKENS.json`); one with a credential word (`API_TOKENS`) or a secret word
 # (`SECRET_TOKENS`, `PRIVATE_TOKENS`, `KEY_TOKENS`) among its parts is no count, so it stays in the text searched.
 TOKEN_IDENT = re.compile(r"\b(?:[A-Z0-9]+_)+TOKENS(?:_[A-Z0-9]+)*\b(?!\.\w)")
+# A lower-case snake_case code identifier that ends in `token` or `tokens` with at least one other part before it
+# (`bare_token`, `def_tokens`, `read_token`), not the stem of a file name: the name of a function or variable, no
+# credential. One with a credential, secret or service part among its parts (`api_token`, `gitlab_token`) stays in the
+# text searched, as does one in upper case (`GITLAB_TOKEN`) or in mixed case, or after a credential word (`API bare_token`).
+SNAKE_TOKEN_IDENT = re.compile(r"\b(?:[a-z0-9]+_)+tokens?\b(?!\.\w)")
+SERVICE_PART = re.compile(r"^(?:gitlab|github|glab|slack|npm|pypi|aws|azure|bot|service|deploy|runner|registry|user|admin)$")
 # A credential word inside a matched phrase (`overlap of the API tokens`, `overlap of the deploy tokens`) keeps the
 # class, as one right before it does.
 CRED_INSIDE = re.compile(rf"\b(?:{CRED_WORDS}|deploy)\b", re.I)
@@ -142,14 +148,17 @@ def without_unit_lists(text, question_cred=False):
 
 
 def without_token_counts(text):
-    """The text with each token-count phrase, each upper-case identifier of token counts, each Markdown doc name that
-    holds `token` and each word of the Python `tokenize` module replaced by a space: what the `secrets` words are
+    """The text with each token-count phrase, each upper-case identifier of token counts, each snake_case code
+    identifier such as `bare_token`, each Markdown doc name that holds `token` and each word of the Python `tokenize` module replaced by a space: what the `secrets` words are
     searched in, so a model's token counts, a constant such as `DISPATCH_BASE_TOKENS`, the ops-row `phase token`, a doc
     such as `token-efficiency.md` and `the tokenize module` are no secret. A doc name that holds a secrets word beside
     `token` (`bearer-token.md`, `ssh-token.md`) is kept."""
     text = TOKENIZE_WORD.sub(" ", text)
     text = TOKEN_DOC.sub(
         lambda m: m.group(0) if names_secret(m.group(0)) or DOC_SECRET.search(m.group(0)) else " ", text)
+    text = SNAKE_TOKEN_IDENT.sub(
+        lambda m: m.group(0) if CRED_BEFORE.search(text[:m.start()]) or any(
+            CRED_PART.match(q) or SERVICE_PART.match(q) for q in m.group(0).split("_")) else " ", text)
     text = TOKEN_IDENT.sub(
         lambda m: m.group(0) if any(CRED_PART.match(p) for p in m.group(0).split("_")) else " ", text)
     return TOKEN_COUNT.sub(lambda m: m.group(0) if m.group("cred") or CRED_INSIDE.search(m.group(0)) else " ", text)
