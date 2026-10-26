@@ -50,6 +50,28 @@
   "relates_to": [
     "EP-6iiony54"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "The delivery's bring() runs the store check on the copied files and kbgit.py sync --push runs it again on the rebased tree: run it once per delivery, or keep both?",
+      "options": [
+        "keep both runs, each now cheap",
+        "skip the sync gate's run after a delivery that bring() checked"
+      ],
+      "recommendation": "keep both runs, each now cheap",
+      "reason": "bring() judges the files before learn and apply, the sync gate the tree after the rebase on the remote branch, and a skip needs a marker that the gate would have to trust",
+      "do": {
+        "keep both runs, each now cheap": "BG-24kutvrd",
+        "skip the sync gate's run after a delivery that bring() checked": "BG-24kutvrd"
+      },
+      "class": "push",
+      "answer": "keep both runs, each now cheap",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "notes": "From the 2026-10-24 telemetry and query-log analysis: sync.gate rows 2026-10-16 to 24: 2,746 gates, 726 ran querylog.py check; median 112 s, p90 172 s, max 572 s, 25.2 of 32.7 gate-hours, all under the host main lock (kg_sync.py:1039 runs the whole sync_rounds inside kg_lock.guarded); 42 transcript lines show a push waiting on 'the host main lock held by ... kbgit.py sync --push'. The per-day median grew from 88 s (10-16) to 174 s (10-24) with the store. Direct run today: querylog.py check = 185 s wall, one core, problems=0. cProfile of ql_store.store_problems: 198 s, ops_sidecar_problems 187 s, leak_problems 184 s, redact.scan called 1,438,233 times (153 s own time), each call also stats the pointer-file directories (kbcommon._pointer_files, _private_patterns: 1.44M isdir calls). ql_deliver.py:672 runs the same check again before the sync that runs it a second time. land.step kbgit.py-sync-push: 156 of 1,162 steps took over 60 s (6.1 h). Saves about 25 of the 33 hours of sync-gate time a week (77%), roughly 3 minutes per gate that touches the store. Also in the item's scope, not read by the repro: the gate and the delivery's bring() run the store check once per delivery, not twice, and redact.scan does not stat the private-pattern directories on every call (cache them per process); a planted run file is cheap, a timing on the committed store is host-load dependent.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "manager-a5d08fe4",
