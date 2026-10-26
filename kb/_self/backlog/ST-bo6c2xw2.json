@@ -2,7 +2,7 @@
   "id": "ST-bo6c2xw2",
   "kind": "story",
   "title": "kbwho never overwrites an operators file it cannot parse, and writes it readable by its owner only",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-mk6ikval",
   "priority": "P2",
   "rank": 0,
@@ -37,5 +37,5 @@
   "links": [
     "parked: SP-czs3jk57 review"
   ],
-  "notes": "Premise: the check fails on the base: an operators file that does not parse is rewritten, and written with mode 0o644."
+  "notes": "Premise: the check fails on the base: an operators file that does not parse is rewritten, and written with mode 0o644. Sprint SP-mk6ikval started 2026-10-26; item moved from draft to todo."
 }

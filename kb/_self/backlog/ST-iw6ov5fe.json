@@ -2,7 +2,7 @@
   "id": "ST-iw6ov5fe",
   "kind": "story",
   "title": "Review sprint: Guards and redaction: leak scan, redact, gate classes, operator ids",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-mk6ikval",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,6 @@
       ]
     }
   ],
+  "notes": "Sprint SP-mk6ikval started 2026-10-26; item moved from draft to todo.",
   "filed_in": "clone-0ea70e5c"
 }

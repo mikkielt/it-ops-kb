@@ -2,7 +2,7 @@
   "id": "BG-tvkjpp5y",
   "kind": "bug",
   "title": "census leak_problems scans the new_rows fields",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-mk6ikval",
   "priority": "P3",
   "rank": 0,
@@ -39,5 +39,5 @@
   "links": [
     "parked: SP-ovwzbc7u review"
   ],
-  "notes": "Found by the SP-ovwzbc7u review on 2026-10-23: leak_problems builds its fields from outcome notes, gap texts and conflict texts only, while new_rows go to the tracked _sources.csv through kbid.add_source, which has no leak check, so a planted GUID in a new_rows title returns no problem. The other leak_problems of ql_deliver.py and ql_store.py are separate functions and stay."
+  "notes": "Found by the SP-ovwzbc7u review on 2026-10-23: leak_problems builds its fields from outcome notes, gap texts and conflict texts only, while new_rows go to the tracked _sources.csv through kbid.add_source, which has no leak check, so a planted GUID in a new_rows title returns no problem. The other leak_problems of ql_deliver.py and ql_store.py are separate functions and stay. Sprint SP-mk6ikval started 2026-10-26; item moved from draft to todo."
 }
