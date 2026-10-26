@@ -1046,9 +1046,11 @@ def detached_line(bl, iid, proc, log, scratch, since=0):
 
 def start_detached(bl, a, iid, scratch):
     """Start the dispatch with `spawn_detached`, print its pid, the log and the `coord.py wait --pid` command (after the
-    worker's own `working` event, held for up to BEGIN_SETTLE_S seconds) and return."""
+    worker's own `working` event: first up to BEGIN_WAIT_S seconds for its work branch, then up to BEGIN_SETTLE_S for
+    the event, as `begin` does) and return."""
     before = coord_cursor(iid)  # a `working` event at or below it is an earlier dispatch's, not this worker's
     proc, log = spawn_detached(bl, a, iid, scratch)
+    begin_wait(bl, iid, proc.pid)
     say(detached_line(bl, iid, proc, log, scratch, coord_cursor(iid, proc.pid, BEGIN_SETTLE_S, before)))
     return 0
 
@@ -1212,7 +1214,7 @@ def cmd_dispatch(bl, a):
     return run_worker(bl, iid, argv, wt, brief, scratch, "dispatched", f"brief {brief}")
 
 
-BEGIN_WAIT_S = 60  # seconds `begin` waits for a detached dispatch to make its work branch
+BEGIN_WAIT_S = 60  # seconds `begin` and `dispatch --detach` wait for a detached dispatch to make its work branch
 BEGIN_SETTLE_S = 10  # seconds `begin` and `dispatch --detach` hold for the worker's `working` event, which the printed wait must start after
 
 
