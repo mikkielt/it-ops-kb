@@ -55,6 +55,24 @@
     "ST-teivhsxq",
     "ST-oykcufk5"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "What term names a whole-topic research claim, and how is a topic over 80 characters held in a key?",
+      "options": [
+        "WHOLE term, topic cut to 73 characters plus a hash",
+        "keep * and refuse the key"
+      ],
+      "recommendation": "WHOLE term, topic cut to 73 characters plus a hash",
+      "reason": "upper case is outside every term id, and the hash keeps two long topics apart",
+      "do": {
+        "WHOLE term, topic cut to 73 characters plus a hash": "BG-ctp52w3e",
+        "keep * and refuse the key": "BG-ctp52w3e"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "parked: SP-c7oav2vn review",
     "moved out: SP-n7f53pgv"
