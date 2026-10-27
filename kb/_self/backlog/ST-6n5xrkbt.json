@@ -75,6 +75,48 @@
     "ST-deyyxb4c",
     "ST-wu4lbbjs"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does the code that turns a task's text into pack questions live?",
+      "options": [
+        "rag.py: task_questions and task_pack beside pack, which kb_mcp.py already imports",
+        "a new kf_ stage module, imported by the kbfacts facade"
+      ],
+      "recommendation": "rag.py: task_questions and task_pack beside pack, which kb_mcp.py already imports",
+      "reason": "the facade kbfacts.py is outside the item's touches",
+      "do": {
+        "rag.py: task_questions and task_pack beside pack, which kb_mcp.py already imports": "ST-6n5xrkbt",
+        "a new kf_ stage module, imported by the kbfacts facade": "ST-6n5xrkbt"
+      },
+      "class": "agents-rule",
+      "answer": "rag.py: task_questions and task_pack beside pack, which kb_mcp.py already imports",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How does a task's text become pack questions and share the budget?",
+      "options": [
+        "title plus each body sentence or list item, at most 6, budget split evenly with a 200-token floor per question, later questions left out with a line saying so",
+        "the whole text as one question at the full budget"
+      ],
+      "recommendation": "title plus each body sentence or list item, at most 6, budget split evenly with a 200-token floor per question, later questions left out with a line saying so",
+      "reason": "one question per ask keeps each verdict and kb lacks line separate",
+      "do": {
+        "title plus each body sentence or list item, at most 6, budget split evenly with a 200-token floor per question, later questions left out with a line saying so": "ST-6n5xrkbt",
+        "the whole text as one question at the full budget": "ST-6n5xrkbt"
+      },
+      "class": "secrets",
+      "answer": "title plus each body sentence or list item, at most 6, budget split evenly with a 200-token floor per question, later questions left out with a line saying so",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "moved out: SP-n7f53pgv"
   ],
