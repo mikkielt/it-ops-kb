@@ -83,6 +83,21 @@
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How does --max-false-good count and report?",
+      "options": [
+        "count failing rows with verdict good where the row wants weak or none, accept N >= 0, print false_good=K max=N after the totals",
+        "count every failing row with verdict good, no summary line"
+      ],
+      "recommendation": "count failing rows with verdict good where the row wants weak or none, accept N >= 0, print false_good=K max=N after the totals",
+      "do": {
+        "count failing rows with verdict good where the row wants weak or none, accept N >= 0, print false_good=K max=N after the totals": "ST-q5o7z2mf",
+        "count every failing row with verdict good, no summary line": "ST-q5o7z2mf"
+      },
+      "class": "agents-rule"
     }
   ],
   "notes": "Planner (SP-jwvaq2hu): the goal names kb/public/_retrieval/lookup_heldout.csv only as the file the review reads; the item never edits it (held-out rows are never moved or reworded), so it stays out of the touches. AGENTS.md is in the touches only because the docs map ties rag.py to it; its 4 KB cap holds. Planner (SP-jwvaq2hu): after ST-ztsewht6, which also edits AGENTS.md. Check 2 passes before the work: maintaining.md already says held-out rows are never moved out, and the check pins that rule.",

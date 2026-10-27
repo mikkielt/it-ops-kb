@@ -26,6 +26,21 @@
         "python3",
         "_tools/tests.py"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval",
+        "--file",
+        "kb/public/_retrieval/lookup_heldout.csv",
+        "--root",
+        "public",
+        "--min",
+        "86",
+        "--max-false-good",
+        "8"
+      ]
     }
   ],
   "research_checks": [
