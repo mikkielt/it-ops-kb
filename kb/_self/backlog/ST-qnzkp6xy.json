@@ -2,7 +2,7 @@
   "id": "ST-qnzkp6xy",
   "kind": "story",
   "title": "An operator-class gate answer recorded from an agent session says so, and horizon and the sprint review list it for re-confirmation",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-fn7letri",
   "priority": "P1",
@@ -72,5 +72,7 @@
     }
   ],
   "notes": "Planner (SP-fn7letri): check 1 (test_authority.py) passes before the work and pins the critical operator-only authority test, which the work extends; check 0 reads the three modules for the new field.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-557596e3",
+  "operator": "op-f618a13e"
 }
