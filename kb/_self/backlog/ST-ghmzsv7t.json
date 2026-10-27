@@ -37,7 +37,11 @@
         "skip experiment 2, record why"
       ],
       "recommendation": "skip experiment 2, record why",
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "yes, token file given to the worker",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "filed_in": "clone-0ea70e5c"

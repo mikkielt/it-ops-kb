@@ -44,7 +44,11 @@
         "keep 60 s"
       ],
       "recommendation": "factor 2 on both Linux jobs (120 s)",
-      "class": "ceiling"
+      "class": "ceiling",
+      "answer": "keep 60 s",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "filed_in": "clone-0ea70e5c"

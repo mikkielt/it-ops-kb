@@ -46,7 +46,11 @@
         "not yet"
       ],
       "recommendation": "done, both",
-      "class": "design"
+      "class": "design",
+      "answer": "done, both",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "filed_in": "clone-0ea70e5c"
