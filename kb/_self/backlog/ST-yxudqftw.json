@@ -2,7 +2,7 @@
   "id": "ST-yxudqftw",
   "kind": "story",
   "title": "Index and query tokenize Unicode text the same way: CamelCase splits on any letter case, text is NFC, matching is casefolded",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-7vyrared",
   "sprint": "SP-iir3d2tu",
   "priority": "P2",
@@ -152,6 +152,57 @@
   ],
   "notes": "Premise (run at plan time, commit 459853b lineage): CAMEL.findall('PobierzŁącze') -> ['Pobierz', 'cze']; CAMEL.findall('GetEntityÜbersicht') -> ['Get', 'Entity', 'bersicht']; WORD.findall of NFD 'Könige' -> ['Ko', 'nige'] while the NFC form -> ['Könige']; 'Straße'.lower()=='strasse' is False, .casefold() is True. All reproduce. Baseline: rag.py eval -> questions=774 passed=774 verdict_ok=774 found_ok=774. Readers beyond kbfacts: kf_index.py lower()s query words at many sites and its index cache is keyed on the CAMEL/WORD patterns; kf_route.py lower()s question words; every other caller of terms/key_terms inherits the change and needs no edit. re has no \\p{Lu}: the split needs a scan by str.isupper/islower or an explicit class. Checks 3 (rag.py eval) and 4 (perfcheck ids) each passes before the work and pin behaviour that must stay unchanged (the public eval shares and the collected test ids); every other check fails before the work with a one-line reason, not a traceback. Checks 0 to 2 read the public kbfacts.terms/key_terms/stem, which the index and the query both use, so the index side is covered through the same functions.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-557596e3",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "53f967b6c1990a06cd315023927ea6bdb5c9ce16",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0, '_tools')\nimport kbfacts as k\nt1, t2 = set(k.terms('PobierzŁącze')), set(k.terms('GetEntityÜbersicht'))\nbad = [w for w in (k.stem('pobierz'), k.stem('łącze')) if w not in t1] + [w for w in (k.stem('entity'), k.stem('übersicht')) if w not in t2]\nbad and sys.exit('identifier parts missing: %s (terms %s / %s)' % (bad, sorted(t1), sorted(t2)))"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys, unicodedata as u\nsys.path.insert(0, '_tools')\nimport kbfacts as k\nnfd = u.normalize('NFD', 'Könige')\na, b, ka, kb = k.terms(nfd), k.terms('Könige'), k.key_terms(nfd), k.key_terms('Könige')\n(a == b and ka == kb) or sys.exit('decomposed and composed Könige differ: terms %s vs %s, key terms %s vs %s' % (a, b, ka, kb))"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0, '_tools')\nimport kbfacts as k\na, b, ka, kb = k.terms('Straße'), k.terms('strasse'), k.key_terms('Straße'), k.key_terms('strasse')\n(a == b and ka == kb) or sys.exit('Straße and strasse differ: terms %s vs %s, key terms %s vs %s' % (a, b, ka, kb))"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval"
+        ],
+        "exit": 0,
+        "sha256": "8e3585180c54d213"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/perfcheck.py",
+          "ids",
+          "--base",
+          "origin/main"
+        ],
+        "exit": 0,
+        "sha256": "32d3595b9fb32181"
+      }
+    ]
+  }
 }
