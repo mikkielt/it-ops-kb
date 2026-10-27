@@ -23,6 +23,29 @@
   "depends_on": [
     "BG-hh3lvb5z"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How long does a detached --resume hold for the resumed worker's own working event, which its process posts only after it reads the session?",
+      "options": [
+        "BEGIN_SETTLE_S plus BEGIN_WAIT_S for a resume (70 s), the branch wait it skips",
+        "a longer BEGIN_SETTLE_S for every detached dispatch",
+        "no bound, hold until the process ends"
+      ],
+      "recommendation": "BEGIN_SETTLE_S plus BEGIN_WAIT_S for a resume (70 s), the branch wait it skips",
+      "do": {
+        "BEGIN_SETTLE_S plus BEGIN_WAIT_S for a resume (70 s), the branch wait it skips": "BG-oez5e2ua",
+        "a longer BEGIN_SETTLE_S for every detached dispatch": "BG-oez5e2ua",
+        "no bound, hold until the process ends": "BG-oez5e2ua"
+      },
+      "class": "agents-rule",
+      "answer": "BEGIN_SETTLE_S plus BEGIN_WAIT_S for a resume (70 s), the branch wait it skips",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-42b2cjm3 review",
     "moved out: SP-hxxn6fnv"
