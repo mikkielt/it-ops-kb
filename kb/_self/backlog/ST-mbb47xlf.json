@@ -2,7 +2,7 @@
   "id": "ST-mbb47xlf",
   "kind": "story",
   "title": "The project settings allow the five scripts the skills tell agents to run, so headless workers are not refused",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-m5m67goe",
   "priority": "P2",
   "rank": 0,
@@ -28,6 +28,19 @@
   ],
   "notes": "No other rule of the settings changes: the review reads the diff of .claude/settings.json.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-557596e3",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "c92f2bd292e61bea1a092ef1efd66872370455f8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport json, subprocess\np = subprocess.run([sys.executable, '_tools/backlog.py', 'selfcheck', '--json'], capture_output=True, text=True, timeout=600)\nassert p.returncode in (0, 1) and p.stdout.strip(), ('selfcheck --json', p.returncode, p.stderr[-300:])\nchecks = {c['name']: c for c in json.loads(p.stdout)['checks']}\nassert checks['allow-rules']['state'] == 'ok', ('selfcheck allow-rules', checks['allow-rules']['detail'])\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
