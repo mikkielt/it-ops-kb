@@ -2,7 +2,7 @@
   "id": "BG-ddvtdc5v",
   "kind": "bug",
   "title": "bench_multi still tests a whole-topic research key's term as * but coord names it WHOLE, and compares a key's topic to the article path though a topic over 80 characters is cut and hashed in the key",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-jxf76aa2",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,7 @@
     "kb/_self/tools.md"
   ],
   "notes": "2026-10-27: into SP-jxf76aa2; caused by BG-ctp52w3e's WHOLE term and hashed long topics.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
