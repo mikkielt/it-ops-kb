@@ -2,7 +2,7 @@
   "id": "ST-lb4k4oga",
   "kind": "story",
   "title": "Setup asks whether the kb server lists the coord tools, and kb_mcp.py --register-local --coord-tools on|off records the choice",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-jxf76aa2",
   "priority": "P2",
   "rank": 0,
@@ -101,6 +101,46 @@
   ],
   "notes": "Planning 2026-10-27: carries BG-xwarblkp (stale coord-tools docs) since both edit the same docs; that bug closes when this lands.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-775f1f5d",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "948b27562d5a4d721055c4e4bae88a0fe943786c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess,sys,tempfile,shutil\nd=tempfile.mkdtemp();out={}\ntry:\n    for v in ('on','off'):\n        r=subprocess.run([sys.executable,'_tools/kb_mcp.py','--register-local','--coord-tools',v,'--project',d,'--dry-run'],capture_output=True,text=True,timeout=120)\n        kb=[l for l in r.stdout.splitlines() if l.startswith('kb:')]\n        out[v]=(r.returncode,kb[0] if kb else '')\n        print(v,r.returncode,(kb[0] if kb else r.stderr.strip()[-200:])[:300])\nfinally: shutil.rmtree(d,ignore_errors=True)\nok=out['on'][0]==0 and out['off'][0]==0 and 'KB_COORD_TOOLS' not in out['on'][1] and '\"KB_COORD_TOOLS\": \"0\"' in out['off'][1]\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "49f6308af7169a6a"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,sys\nt=open('.claude/skills/kb-setup/SKILL.md').read();s=t[t.index('## 4. MCP servers'):];s=s[:s.index('\\n## ',5)]\nok='--coord-tools' in s and 'KB_COORD_TOOLS' in s and 'AskUserQuestion' in s\nprint('step 4 asks coord tools:',ok);sys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "978d918f2060355c"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;ok=all('--coord-tools' in open(p).read() for p in ('kb/_self/plugin.md','kb/_self/tools.md'));print('docs name --coord-tools:',ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "bf94b66d08b60238"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,re;t=open('kb/_self/plugin.md').read()+open('kb/_self/alternatives.md').read();b=[p for p in ('KB_COORD_TOOLS=1','by meaning') if p in t];print(b);sys.exit(1 if b else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      }
+    ]
+  }
 }
