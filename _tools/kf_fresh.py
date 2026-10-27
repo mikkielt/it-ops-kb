@@ -31,61 +31,117 @@ _SCOPED = [0]  # scans of _sources.csv for some ids made by ledger_rows
 _PROVIDER_ROWS = []
 
 
-def _quote_state(line, state):
-    """The state of csv's reader after `line`, given the state before it: 0 at the start of a field, 1 in an unquoted
-    field, 2 in a quoted field (the record goes on in the next line), 3 after a quote met in a quoted field. A quote
-    opens a quoted field only at the start of a field, so a bare one (`5" pipe`) opens none, and a pair inside a
-    quoted field is a literal quote: the count of quotes in a record tells neither."""
-    for c in line:
-        if state == 2:
-            if c == '"':
-                state = 3
-        elif c in ",\r\n":
-            state = 0
-        elif state == 3:
-            state = 2 if c == '"' else 1
-        else:
-            state = 2 if state == 0 and c == '"' else 1
-    return state
+def _row_dict(head, row):
+    """`row` as csv.DictReader makes it for the header `head`."""
+    out = dict(zip(head, row))
+    out.update(dict.fromkeys(head[len(row):]))  # a missing field is None, the extra ones a list under None
+    if len(row) > len(head):
+        out[None] = row[len(head):]
+    return out
 
 
-def _ledger_rows(path, column, sids):
-    """The rows of the csv at `path` whose `column` is in `sids` (every row when None), as csv.DictReader makes them,
-    read by scanning its text: a record whose leading fields hold no quote is matched on its field with no csv parse,
-    so only a row of a wanted source is ever parsed. A record with a quote (a quoted field may hold a comma or a
-    newline) is joined to the end of its quoted field (_quote_state) and parsed to be sure."""
+def _scan_rows(path, column, sids):
+    """The rows of the csv at `path` whose `column` is in `sids` (every row when None), as csv.DictReader makes them:
+    the file is read by csv's own reader, which takes a quoted field that holds a comma or a newline whole, and a
+    dict is built only for a row of a wanted source."""
     rows = []
     try:
         with open(path, encoding="utf-8-sig", newline="") as f:
-            head = next(csv.reader([f.readline()]), [])
+            reader = csv.reader(f)
+            head = next(reader, [])
             if column not in head:
                 return rows
-            col, record, state = head.index(column), "", 0
-
-            def take(rec):
-                parts = rec.split(",", col + 1)
-                if sids is not None and not any(p[:1] == '"' for p in parts[:col + 1]) and not (
-                        len(parts) > col and parts[col].rstrip("\r\n") in sids):
-                    return  # unquoted leading fields: the key is read as it stands, a quoted one only a parse tells
-                row = next(csv.reader([rec]), [])
-                if row and (sids is None or len(row) > col and row[col] in sids):
-                    out = dict(zip(head, row))
-                    out.update(dict.fromkeys(head[len(row):]))  # a missing field is None, the extra ones a list under None
-                    if len(row) > len(head):
-                        out[None] = row[len(head):]
-                    rows.append(out)
-            for line in f:
-                if record or '"' in line:
-                    record += line
-                    state = _quote_state(line, state)
-                    if state == 2:  # inside a quoted field: the record goes on in the next line
-                        continue
-                    line, record, state = record, "", 0
-                take(line)
-            if record:  # a quoted field left open at the end of the file, read as csv does
-                take(record)
+            col = head.index(column)
+            rows = [_row_dict(head, row) for row in reader
+                    if row and (sids is None or len(row) > col and row[col] in sids)]
     except (OSError, UnicodeDecodeError, csv.Error):
         pass
+    return rows
+
+
+def _record_offsets(path, column):
+    """(head, {value of `column`: [byte offset of each record that holds it]}) of the csv at `path`, read through csv's
+    own reader so a record with a quoted newline is one; raises OSError, UnicodeDecodeError or csv.Error."""
+    where, state = {}, [0]
+    with open(path, "rb") as f:
+        def lines():
+            for raw in iter(f.readline, b""):
+                yield raw.decode("utf-8-sig" if f.tell() == len(raw) else "utf-8")
+        reader = csv.reader(lines())
+        head = next(reader, [])
+        if column not in head:
+            return head, where
+        col = head.index(column)
+        while True:
+            start = f.tell()
+            row = next(reader, None)
+            if row is None:
+                break
+            if len(row) > col and row:
+                where.setdefault(row[col], []).append(start)
+    return head, where
+
+
+def _ledger_index(path, column):
+    """(head, {value: [offsets]}) of the csv at `path` for `column` from the index directory's file for it, written
+    for the file's mtime and size, else read now (_record_offsets) and written there for the next process; None when
+    there is no index directory or the file does not read. Best effort: a cache that does not write costs a read."""
+    try:
+        st = os.stat(path)
+    except OSError:
+        return None
+    sig = [st.st_mtime_ns, st.st_size, column]
+    d = index_dir()
+    memo = os.path.join(d, "ledger-" + hashlib.sha1(os.path.abspath(path).encode()).hexdigest()[:12] + ".json") if d else None
+    try:
+        with open(memo, encoding="utf-8") as f:
+            got = json.load(f)
+        if got.get("sig") == sig:
+            return got["head"], got["at"]
+    except (OSError, TypeError, ValueError, KeyError, AttributeError):
+        pass
+    try:
+        head, where = _record_offsets(path, column)
+    except (OSError, UnicodeDecodeError, csv.Error):
+        return None
+    if memo:
+        tmp = None
+        try:
+            os.makedirs(d, exist_ok=True)
+            fd, tmp = tempfile.mkstemp(prefix=".ledger-", suffix=".tmp", dir=d)
+            with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as f:
+                json.dump({"sig": sig, "head": head, "at": where}, f)
+            os.replace(tmp, memo)
+            tmp = None
+        except OSError:
+            pass
+        finally:
+            if tmp:
+                remove_file(tmp)
+    return head, where
+
+
+def _ledger_rows(path, column, sids):
+    """The rows of the csv at `path` whose `column` is in `sids` (every row when None), as csv.DictReader makes them.
+    For some ids the rows are read at the byte offsets a record index of the file gives (_ledger_index), one csv
+    record each, so a ledger of thousands of rows costs the rows asked for; every row, or a file that cannot be
+    indexed, is read whole (_scan_rows)."""
+    got = _ledger_index(path, column) if sids is not None else None
+    if got is None:
+        return _scan_rows(path, column, sids)
+    head, where = got
+    if column not in head:
+        return []
+    col, rows = head.index(column), []
+    try:
+        with open(path, "rb") as f:
+            for off in sorted(o for sid in sids for o in where.get(sid, ())):  # the file's order
+                f.seek(off)
+                row = next(csv.reader(iter(lambda: f.readline().decode("utf-8"), "")), [])
+                if len(row) > col and row[col] in sids:
+                    rows.append(_row_dict(head, row))
+    except (OSError, UnicodeDecodeError, csv.Error):
+        return _scan_rows(path, column, sids)
     return rows
 
 

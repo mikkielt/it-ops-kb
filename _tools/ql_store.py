@@ -12,7 +12,7 @@ local store laid out the same way), their readers and writers, and the gates `qu
                                       operational row of the spool (ql_capture.OPS_EVENTS): names, exit codes,
                                       milliseconds, item ids, short shas and test file names, never free text
 """
-import datetime, hashlib, json, re, shutil, subprocess
+import datetime, hashlib, json, os, re, shutil, subprocess
 from pathlib import Path
 from urllib.parse import urlsplit, urlunsplit
 
@@ -118,6 +118,27 @@ def run_files(store):
     """The run files of a store: <yyyy-mm>/<run-id>.jsonl (findings/ has its own layout)."""
     store = Path(store)
     return sorted(p for p in store.glob("*/*.jsonl") if p.parent.name != FINDINGS) if store.is_dir() else []
+
+
+def run_stats(store):
+    """[(month directory, file name, mtime_ns, size)] of the store's run files in run_files' order, from one directory
+    scan: the stat of each file comes with its listing, so a signature of the store costs no stat call of its own per
+    file and builds no Path."""
+    out = []
+    try:
+        with os.scandir(store) as months:
+            for m in months:
+                if m.name == FINDINGS or not m.is_dir():
+                    continue
+                with os.scandir(m.path) as runs:
+                    for r in runs:
+                        if r.name.endswith(".jsonl") and r.is_file():
+                            st = r.stat()
+                            out.append((m.name, r.name, st.st_mtime_ns, st.st_size))
+    except OSError:
+        pass
+    out.sort()
+    return out
 
 
 def findings_files(store):
