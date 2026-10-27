@@ -2,7 +2,7 @@
   "id": "ST-6n5xrkbt",
   "kind": "story",
   "title": "One call turns a task's title and body into a context pack: the cited fact lines and what the kb lacks",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-66qfpegm",
   "sprint": "SP-jxf76aa2",
   "priority": "P2",
@@ -79,5 +79,7 @@
     "moved out: SP-n7f53pgv"
   ],
   "notes": "Plan check 2026-10-26: goal narrowed: the code locations at an ingested repository's pinned commit are left out, since they need the code map of ST-q4fbmomg, which left SP-acysfnxr with its gate ST-teivhsxq g1 (agents-rule) open; the dependency on ST-q4fbmomg is dropped and a later item adds the code locations. Check 0 runs rag.py task on stdin and on a file (same output, a fact line, the coverage line first, a smaller --budget gives less), check 1 a task with one kb part and one unknown part (kb has / kb lacks), check 2 kb_task_context over MCP against the CLI's cited lines, check 3 the help and the tool description for a tracker name. On the base: no task subcommand and no kb_task_context: premise reproduced. Moved out of SP-n7f53pgv by the unattended orchestrator 2026-10-26: the worker raised g1 (class agents-rule, the item touches AGENTS.md): where the task-to-questions code lives (recommended: rag.py task_questions and task_pack beside pack), and g2 (classed secrets by a misclass, BG-huguh6sn): how a task text becomes pack questions and shares the budget (recommended: title plus each body sentence or list item, at most 6, budget split evenly with a 200-token floor). They wait on the operator; work is on branch work/ST-6n5xrkbt.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
