@@ -17,6 +17,7 @@
       "recommendation": "approve"
     }
   ],
+  "notes": "Planner: the clause 'the Linux CI jobs judge the suite's time by the policy the operator chose' is met in the tree: ST-jpm6tisw g1 answered 'keep 60 s', so the jobs keep today's 60 s; ST-jpm6tisw left out.",
   "creator": "op-f618a13e",
   "filed_in": "clone-0ea70e5c"
 }

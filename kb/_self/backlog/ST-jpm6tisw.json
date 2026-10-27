@@ -51,5 +51,6 @@
       "role": "interactive"
     }
   ],
+  "notes": "Orchestrator 2026-10-28: left out of SP-kkov6bbz: g1 was answered 'keep 60 s', so the factor-2 goal and its check have nothing to carry; the operator drops or rewords it.",
   "filed_in": "clone-0ea70e5c"
 }

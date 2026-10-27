@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "kbmon's session silence metric and alert cover every live session, past the 30 kept rows, and can be narrowed to workers",
   "status": "draft",
+  "sprint": "SP-kkov6bbz",
   "priority": "P3",
   "rank": 0,
   "goal": "kbmon.sessions.silent counts every live session, not only the 30 rows SESSIONS_KEPT keeps (newest first), and the point carries the role so an alert rule can fire for workers only. Found by the SP-hxxn6fnv review (two S3 gaps on ST-xvdk32ag).",
@@ -15,11 +16,22 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "kbmon.sessions.silent counts every live session, not only the 30 rows SESSIONS_KEPT keeps (newest first)",
+      "check": 0
+    },
+    {
+      "clause": "the point carries the role so an alert rule can fire for workers only. Found by the SP-hxxn6fnv review (two S3 gaps on ST-xvdk32ag)",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/mon_sessions.py",
     "_tools/mon_export.py",
     "otel/kbmon.rules.yml",
-    "kb/_self/monitoring.md"
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
   ],
   "links": [
     "parked: SP-hxxn6fnv review"

@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "The sync push gate judges a pushed range by its tip, so a commit that adds a leak-scan shape and a later one that removes it passes the gate and then blocks publish for good",
   "status": "draft",
+  "sprint": "SP-kkov6bbz",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -14,6 +15,16 @@
       "import os, shutil, subprocess, sys, tempfile\ndef sh(*a, cwd=None, env=None):\n    return subprocess.run(a, cwd=cwd, env=env, capture_output=True, text=True)\nt = tempfile.mkdtemp()\nc, o = t + \"/c\", t + \"/o.git\"\nos.mkdir(c)\ntar = subprocess.run([\"git\", \"archive\", \"HEAD\"], capture_output=True, check=True).stdout\nsubprocess.run([\"tar\", \"-x\", \"-C\", c], input=tar, check=True)\nenv = dict(os.environ, KB_SYNC_NO_TESTS=\"1\", GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\nfor cmd in ([\"init\", \"-q\", \"-b\", \"main\"], [\"add\", \"-A\"], [\"commit\", \"-q\", \"-m\", \"base\", \"--no-verify\"]):\n    sh(\"git\", *cmd, cwd=c, env=env)\nsh(\"git\", \"init\", \"-q\", \"--bare\", o)\nsh(\"git\", \"fetch\", \"-q\", c, \"main:main\", cwd=o)\nfor cmd in ([\"remote\", \"add\", \"origin\", o], [\"fetch\", \"-q\", \"origin\"], [\"branch\", \"-q\", \"--set-upstream-to=origin/main\", \"main\"]):\n    sh(\"git\", *cmd, cwd=c, env=env)\nd = c + \"/kb/_self/backlog\"\nname = sorted(x for x in os.listdir(d) if x.endswith(\".json\"))[0]\npath, iid = d + \"/\" + name, name[:-5]\nwith open(path, encoding=\"utf-8\") as f:\n    clean = f.read()\nhome = \"/\".join((\"\", \"Users\", \"realperson\", \"docs\"))\nbad = clean.replace(\"\\\"goal\\\": \\\"\", \"\\\"goal\\\": \\\"\" + home + \" \", 1)\nfor text in (bad, clean):\n    with open(path, \"w\", encoding=\"utf-8\") as f:\n        f.write(text)\n    sh(\"git\", \"commit\", \"-q\", \"-am\", \"chore(backlog): plant\\n\\nKB-Work: \" + iid, \"--no-verify\", cwd=c, env=env)\ntip = sh(\"git\", \"rev-parse\", \"origin/main\", cwd=c, env=env).stdout.strip()\nlook = sh(sys.executable, \"-I\", \"-c\", \"import sys; sys.path.insert(0, \\\"_tools\\\"); import kbpublic as k; print(k.history_refusals(\\\"HEAD\\\", sys.argv[1], k.tree_files(\\\"HEAD\\\", \\\".\\\"), \\\".\\\")[1])\", tip, cwd=c, env=env)\nr = sh(sys.executable, \"_tools/kbgit.py\", \"sync\", \"--push\", cwd=c, env=env)\nrefused = r.returncode != 0 and \"leak\" in (r.stdout + r.stderr).lower()\nprint(\"publish check of the range:\", look.stdout.strip()[:140])\nprint(\"sync --push exit\", r.returncode, \"| refused for a leak:\", refused)\nshutil.rmtree(t, ignore_errors=True)\nsys.exit(0 if refused else 1)\n"
     ]
   },
+  "clauses": [
+    {
+      "clause": "kbgit.py sync --push refuses a range up..HEAD in which any commit adds a leak-scan hit (the verdict publish gives each commit, kbpublic.leak_verdicts with the allowlist of the commit and of HEAD), naming the commit and the file and never the value, even when a later commit of the range removes the hit",
+      "check": 0
+    },
+    {
+      "clause": "a range with no such commit pushes as before",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kg_sync.py",
     "_tools/kbpublic.py",
