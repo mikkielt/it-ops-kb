@@ -34,7 +34,7 @@ Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-self:stale
    - a pattern that matches no file names a renamed or removed file: point it at the new path or drop the row.
 2. `python3 _tools/selfdoc.py stale --since <REV>` (or without `--since` for `all`): one `STALE <doc> (since <ref>): <files>` line per doc.
 3. For each listed file, see what changed: `git diff <ref> -- <file>`. For a tool, also read its docstring and flags (`python3 _tools/<tool> --help`). For a skill or hook, read the file. Note only changes a reader of the doc would act on: a new or renamed command, flag, exit code, rule, file, skill or default; a changed behaviour or number.
-4. `python3 _tools/selfdoc.py map <path>` answers the reverse question: which docs describe a file you are about to change.
+4. `python3 _tools/selfdoc.py map <path>` answers the reverse question: which docs describe a file you are about to change. `python3 _tools/kbingest.py impact . --since <REV>` answers it for a whole change: the docs the docs map ties to the files changed since REV (the same docs as `selfdoc.py map` names) and the kb `CODE` facts that moved; in a host project it reads that project's own `docs_map`.
 
 ## 2. Update each doc
 Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-self:update`.
