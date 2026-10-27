@@ -16,6 +16,9 @@ nothing at load, `mon_sessions` (its age text) and `mon_status` (`short_name`) w
                   `announce.needs_you_after_min` minutes old, `overlap ST-… (s-…) with ST-… (s-…), undecided for 12m`),
                   `finished` (each item of the sessions panel's `stalled` list with the `finished-alive` signal: its worker's work is
                   recorded as done and the worker's process still runs past the grace period, `ST-… finished, its worker still runs`),
+                  `stalled-claim` (each claimed item whose session in the sessions panel (`item` set, so it holds a claim) or whose
+                  working run in the coord panel has been silent for over STALLED_CLAIM_S, the limit of the `KbmonRunStalled` rule,
+                  once per item, longest first: `ST-… claim silent 1h05m`; a session with no item, idle or not, has none),
                   `blocked` (an active sprint with items left, none ready and
                   none in progress), `delivery` (the query log's last delivery was refused, with the gate that failed),
                   `orphan` (each process of class `orphan`, oldest first), `disk` (under LOW_DISK_PCT percent free, from the byte counts as the host alert reads them; none for a total of 0 bytes) and
@@ -31,9 +34,10 @@ The list reads only the panels' data, so a saved snapshot gives the same line. I
 
 PANELS = ("sprint", "querylog", "sessions", "host")
 COORD_PANEL = "coord"
-KINDS = ("gate", "run", "ask", "prompt", "overlap", "finished", "blocked", "delivery", "orphan", "disk", "fast-forward")
-MANY = {"gate": "gates", "run": "runs", "ask": "asks", "prompt": "prompts", "overlap": "overlaps", "finished": "finished workers", "blocked": "blocked sprints", "delivery": "deliveries", "orphan": "orphans", "disk": "disk",
+KINDS = ("gate", "run", "ask", "prompt", "overlap", "finished", "stalled-claim", "blocked", "delivery", "orphan", "disk", "fast-forward")
+MANY = {"gate": "gates", "run": "runs", "ask": "asks", "prompt": "prompts", "overlap": "overlaps", "finished": "finished workers", "stalled-claim": "stalled claims", "blocked": "blocked sprints", "delivery": "deliveries", "orphan": "orphans", "disk": "disk",
         "fast-forward": "fast-forward"}  # the noun after `+N more`
+STALLED_CLAIM_S = 3600  # seconds of silence from which a claim's session or run is stalled (monitoring.md, `KbmonRunStalled`)
 LOW_DISK_PCT = 10  # the host panel's alert threshold
 SHOWN = 3  # entries of one kind the line names before it counts the rest
 WHY_CHARS = 100  # characters of a refusal's or a fast-forward cause in the line
@@ -146,6 +150,21 @@ def finished_entries(data):
             if isinstance(r, dict) and r.get("item") and "finished-alive" in (r.get("signals") or [])]
 
 
+def stalled_claim_entries(sessions, coord):
+    """The `stalled-claim` entries from the sessions panel's data SESSIONS and the coord panel's data COORD (None when it is
+    not read): an item named by a session with `silent_s` over STALLED_CLAIM_S, else by a working run with `silent_s` over it."""
+    import mon_sessions
+    silent = {}
+    for s in (sessions or {}).get("sessions") or []:
+        if isinstance(s, dict) and s.get("item") and number(s.get("silent_s")) > STALLED_CLAIM_S:
+            silent[s["item"]] = max(silent.get(s["item"], 0), number(s["silent_s"]))
+    for r in (coord or {}).get("runs") or []:
+        if isinstance(r, dict) and r.get("item") and r.get("state") == "working" and number(r.get("silent_s")) > STALLED_CLAIM_S:
+            silent[r["item"]] = max(silent.get(r["item"], 0), number(r["silent_s"]))
+    return [{"kind": "stalled-claim", "text": f"{item} claim silent {mon_sessions.age_text(secs)}", "item": item, "silent_s": int(secs)}
+            for item, secs in sorted(silent.items(), key=lambda kv: (-kv[1], kv[0]))]
+
+
 def delivery_entries(data):
     last = data.get("last_delivery")
     if not isinstance(last, dict) or last.get("outcome") != "refused":
@@ -198,6 +217,8 @@ def entries(snap):
         data = data_of(snap, name)
         if data is not None:
             out += found(data)
+    if data_of(snap, "sessions") is not None:
+        out += stalled_claim_entries(data_of(snap, "sessions"), data_of(snap, COORD_PANEL))
     return sorted(out, key=lambda e: KINDS.index(e["kind"]))  # stable: the panel's order within a kind
 
 

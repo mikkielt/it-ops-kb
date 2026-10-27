@@ -61,6 +61,54 @@
   "relates_to": [
     "ST-qzknmm7z"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which land.step rows after a land.end does landing_steps ignore?",
+      "options": [
+        "after a land.end of exit 0 only",
+        "after any land.end"
+      ],
+      "recommendation": "after a land.end of exit 0 only",
+      "reason": "a retry after a failed landing writes land.step rows again and stays visible",
+      "do": {
+        "after a land.end of exit 0 only": "ST-kxnlpycw",
+        "after any land.end": "ST-kxnlpycw"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Where does the 10-minute transcript test and the own-record read live, given bl_clean imports bl_procs?",
+      "options": [
+        "classify takes recorded and fresh pids; bl_procs reads the own records itself, kbmon's sessions panel supplies the fresh pids from its session binding",
+        "bl_procs reads sessions through a callback or ~/.claude session files"
+      ],
+      "recommendation": "classify takes recorded and fresh pids; bl_procs reads the own records itself, kbmon's sessions panel supplies the fresh pids from its session binding",
+      "do": {
+        "classify takes recorded and fresh pids; bl_procs reads the own records itself, kbmon's sessions panel supplies the fresh pids from its session binding": "ST-kxnlpycw",
+        "bl_procs reads sessions through a callback or ~/.claude session files": "ST-kxnlpycw"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "What does mon_needs count as a silent claimed unit for stalled-claim?",
+      "options": [
+        "a sessions-panel session with an item, or a coord working run, silent over 3600 s, once per item",
+        "only coord working runs"
+      ],
+      "recommendation": "a sessions-panel session with an item, or a coord working run, silent over 3600 s, once per item",
+      "do": {
+        "a sessions-panel session with an item, or a coord working run, silent over 3600 s, once per item": "ST-kxnlpycw",
+        "only coord working runs": "ST-kxnlpycw"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "notes": "Planner (SP-fn7letri): check 1 (kbmon sessions panel) passes before the work and pins that the panel still renders; clauses 1 and 2 (landing_steps after land.end, role_of) are read only through that panel, so the worker's report gives a planted replay for each (a land.step row after land.end; a session with no live worker).",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-557596e3",
