@@ -2,7 +2,7 @@
   "id": "ST-qzknmm7z",
   "kind": "story",
   "title": "kbmon's session silence metric and alert cover every live session, past the 30 kept rows, and can be narrowed to workers",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-kkov6bbz",
   "priority": "P3",
   "rank": 0,
@@ -57,6 +57,19 @@
     "parked: SP-hxxn6fnv review"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-557596e3",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "fafb4ea876a989186413ab0130a6e9f7879eccfe",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import mon_sessions as m;print(m.SESSIONS_KEPT);import inspect;s=inspect.getsource(m);sys.exit(0 if \"silent_all\" in s or \"sorted(\" in s and \"silent_s\" in s and \"reverse=True\" in s else 1)"
+        ],
+        "exit": 0,
+        "sha256": "f4ccd05b3271c386"
+      }
+    ]
+  }
 }
