@@ -55,7 +55,12 @@
       ],
       "recommendation": "Leave it out until a root has a concrete name that is wrongly rewritten",
       "reason": "because it widens a guard that is being hardened right now, and the cost of using the shipped placeholders is low",
-      "class": "push"
+      "class": "push",
+      "answer": "Build it after the redaction stories in flight land",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     },
     {
       "id": "g2",
