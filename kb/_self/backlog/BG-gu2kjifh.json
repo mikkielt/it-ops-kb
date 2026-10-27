@@ -2,7 +2,7 @@
   "id": "BG-gu2kjifh",
   "kind": "bug",
   "title": "session-load's rss_mean_mb averages each class over only the samples it was alive in, so means are not comparable across classes and arms",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-nxb7hjwd",
   "sprint": "SP-m5m67goe",
   "priority": "P2",
@@ -61,6 +61,19 @@
   ],
   "notes": "Found by the fresh-context review of SP-3qowbedb (gap report in the sprint's review scratch); the operator chose to park it under EP-nxb7hjwd. Fix before the paid session-load record (ST-rodj5ltd) where it changes a figure. The live repro (arms A,B at the default window) failed twice from a shell and passed under precheck's isolated home, so the repro drives bench_load.Replay.summary on two planted ticks instead. The docs (kb/_self/benchmarks.md, the report's setup) say what the mean is over, as selfdoc stale requires with the code.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-557596e3",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "67ca18e9c0a70acd8d5f9c4e9a34197748690628",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nfrom types import SimpleNamespace as NS\nsys.path.insert(0, '_tools')\nimport bench_load\nfake = NS(roots=[], panes=[], clone='.', pane_runs=0, started=lambda r: [])\n# two sampler ticks: the pane's kbmon alive in the first only, a kb tool in the second only\nsampler = NS(ticks=[{'kbmon': 700 * 1024}, {'kb-tools': 100 * 1024}], seen={})\nout = bench_load.Replay.summary(fake, sampler, 1.0)['classes']\nkbmon, whole = out['kbmon']['rss_mean_mb'], out['all']['rss_mean_mb']\nassert abs(whole - 400) < 1e-6, ('all mean over both ticks', whole)\nassert kbmon <= whole and abs(kbmon - 350) < 1e-6, ('a class mean is not over every tick of its phase (a tick without it counts 0)', kbmon, whole)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
