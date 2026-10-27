@@ -128,7 +128,11 @@
         "fnmatch patterns over row ids in the corpus file, each pattern and each failing row checked both ways, with a max count per guard": "ST-yl6b2ues",
         "one id per gap row": "ST-yl6b2ues"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "fnmatch patterns over row ids in the corpus file, each pattern and each failing row checked both ways, with a max count per guard",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Planner (SP-fn7letri): check 1 (the leak and redact test files) passes before the work and pins the critical leak guard; the corpus and known_gap list land inside those test functions. Depends on BG-juf5gvt4 (SP-m5m67goe), which also edits _tools/test_redact.py. Check 2 builds its fake secrets at run time.",
