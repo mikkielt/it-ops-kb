@@ -60,6 +60,50 @@
     "ST-zimb7vuu",
     "ST-af6okckb"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which planned-file overlap does precheck --conflicts print beside the predictions, and when?",
+      "options": [
+        "pairs of open committed items whose touches share a path, kb/_self docs left out as check leaves them, printed only with --conflicts",
+        "the same pairs including kb/_self docs, printed only with --conflicts",
+        "the same pairs printed on every precheck run"
+      ],
+      "recommendation": "pairs of open committed items whose touches share a path, kb/_self docs left out as check leaves them, printed only with --conflicts",
+      "reason": "the same rule as check's unordered-overlap warning, and a run without the flag stays as it was",
+      "do": {
+        "pairs of open committed items whose touches share a path, kb/_self docs left out as check leaves them, printed only with --conflicts": "ST-cqcmpo72",
+        "the same pairs including kb/_self docs, printed only with --conflicts": "ST-cqcmpo72",
+        "the same pairs printed on every precheck run": "ST-cqcmpo72"
+      },
+      "class": "agents-rule",
+      "answer": "pairs of open committed items whose touches share a path, kb/_self docs left out as check leaves them, printed only with --conflicts",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "What does precheck --conflicts do with a line that is no valid prediction, and with a reference that names no backlog item?",
+      "options": [
+        "refuse the run naming the line number, and list a reference that names no item with the outside-the-sprint predictions",
+        "skip the bad line with a warning"
+      ],
+      "recommendation": "refuse the run naming the line number, and list a reference that names no item with the outside-the-sprint predictions",
+      "reason": "a predictor's malformed output is shown, not hidden, and a branch of no item is not the sprint's",
+      "do": {
+        "refuse the run naming the line number, and list a reference that names no item with the outside-the-sprint predictions": "ST-cqcmpo72",
+        "skip the bad line with a warning": "ST-cqcmpo72"
+      },
+      "class": "agents-rule",
+      "answer": "refuse the run naming the line number, and list a reference that names no item with the outside-the-sprint predictions",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "moved out: SP-n7f53pgv"
   ],
