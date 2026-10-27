@@ -132,7 +132,12 @@
         "After any single equals sign, shapes with the real prefixes and minimum lengths": "ST-xllrtqlt",
         "Only after a name ending in a credential word": "ST-xllrtqlt"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "After any single equals sign, shapes with the real prefixes and minimum lengths",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "notes": "Planner (SP-jwvaq2hu): check 1 (test_redact.py) passes before the work and pins the critical redaction test the corpus extends; check 2 builds the four cloud key shapes at run time (no secret-shaped literal in the item).",
