@@ -20,6 +20,28 @@
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the printed detach line stop claiming the log ends at 'worker of ID exited'?",
+      "options": [
+        "reword the printed line: the exit lines start at that line",
+        "reorder dispatch output so the exit line is printed last"
+      ],
+      "recommendation": "reword the printed line: the exit lines start at that line",
+      "reason": "it is the smaller change and touches no output order a reader of the log relies on",
+      "do": {
+        "reword the printed line: the exit lines start at that line": "BG-hh3lvb5z",
+        "reorder dispatch output so the exit line is printed last": "BG-hh3lvb5z"
+      },
+      "class": "agents-rule",
+      "answer": "reword the printed line: the exit lines start at that line",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-vxdacfpl review",
     "moved out: SP-hxxn6fnv"
