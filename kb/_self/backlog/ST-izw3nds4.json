@@ -1,0 +1,106 @@
+{
+  "id": "ST-izw3nds4",
+  "kind": "story",
+  "title": "fetch.py text unpacks MSI, CAB, WIM and similar archives through a table of extractor commands run in the map sandbox, and a root may add rows",
+  "status": "draft",
+  "parent": "EP-7vyrared",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A table maps a file extension to an argv command and an output directory under _cache/ or _private/. fetch.py text URL runs the matching command in the sandbox kbingest map uses (allow-list environment, timeout, offline, no program or path inside the clone), reads the extracted files as it reads zip members (caps, printable strings for binaries, cut markers) and removes the directory. A root may add rows in its own _extractors.csv. Without a matching row, or when the program is not installed, text exits 2 naming the extension and the program it needs; zip, tar, gzip and spreadsheet routes are unchanged. Synthetic archives only in the fixtures.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_fetch_extract.py"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "fetch"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_kbingest_guards.py"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/perfcheck.py",
+        "ids",
+        "--base",
+        "origin/main"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/fetch.py",
+    "_tools/kbingest.py",
+    "_tools/kbsandbox.py",
+    "_tools/test_kbingest_guards.py",
+    "_tools/test_fetch_extract.py",
+    "_tools/fetch_extractors.csv",
+    "_tools/fixtures/extract/**",
+    "kb/_self/tools.md",
+    "kb/_self/web-sources.md",
+    "kb/_self/content-rules.md"
+  ],
+  "depends_on": [
+    "ST-yxudqftw",
+    "ST-zkhku3sg"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where do the sandbox helpers (scrub_env, NETWORK_OFF, tool_exe, run_tool, kill_tree) live so fetch.py and kbingest.py share them?",
+      "options": [
+        "A new module kbsandbox.py that both import, moved out of kbingest.py without a change of behaviour",
+        "fetch.py imports kbingest",
+        "Copy the few helpers into fetch.py"
+      ],
+      "recommendation": "A new module kbsandbox.py that both import, moved out of kbingest.py without a change of behaviour",
+      "reason": "because one sandbox with one test is safer than two, and fetch.py should not load a 2300-line module to unpack a file",
+      "class": "design"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Which extractor programs does the shipped table name for MSI, CAB and WIM, and what does it do when none is installed?",
+      "options": [
+        "One cross-platform program (7z) for all three, and text exits 2 naming 7z when it is absent",
+        "The platform's own tools (expand.exe, DISM, msiexec) on Windows and 7z elsewhere"
+      ],
+      "recommendation": "One cross-platform program (7z) for all three, and text exits 2 naming 7z when it is absent",
+      "reason": "because msiexec and DISM can run installer logic or need administrator rights, while 7z only lists and extracts",
+      "class": "design"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Which roots may add rows in _extractors.csv, given a row names a program this machine will run on a downloaded file?",
+      "options": [
+        "Internal roots only; the program must be found on PATH outside every clone; each run prints the program it started",
+        "Every served root",
+        "No root: the table in the repository is the only one"
+      ],
+      "recommendation": "Internal roots only; the program must be found on PATH outside every clone; each run prints the program it started",
+      "reason": "because a team trusts its own root's rows, while a public or fetched root would let its content choose what runs on every machine that serves it",
+      "do": {
+        "Internal roots only; the program must be found on PATH outside every clone; each run prints the program it started": "ST-izw3nds4",
+        "Every served root": "ST-izw3nds4",
+        "No root: the table in the repository is the only one": "ST-izw3nds4"
+      },
+      "class": "design"
+    }
+  ],
+  "notes": "Premise (run at plan time): fetch.read_text('https://example.test/a.cab', b'MSCF...' + 199 raw bytes, 'application/vnd.ms-cab-compressed') returns None (a cab matches no route), and text_cmd then prints 'no text in this content' and exits 2. Reproduces: read_text only routes PDF (pdftotext), PK zip and xlsx, gzip, bzip2/xz/ustar tar, else to_text. Reusable pieces exist in kbingest.py: scrub_env (allow-list environment), NETWORK_OFF, tool_exe (refuses a program inside the worktree), run_tool and kill_tree (timeout, process group); fetch.py imports none of them and only _pdf_text starts a process, with no scrubbed environment. Zip and tar members are today read in memory only and never written out; the new route writes untrusted archive contents to disk, so it needs caps on total bytes, file count and depth, refusal of absolute and parent paths and of symbolic links in the output, and removal of the directory in a finally. The plan puts the shared sandbox helpers in a new module kbsandbox.py that kbingest.py and fetch.py both import (the gate decides). Overlap: none live on fetch.py or kbingest.py. Shares kb/_self/tools.md with S2 and S3 of this epic: land them one at a time. Premise refinement (run at plan time, synthetic bodies): a zip-based MSIX (PK header) already reads through the zip route (AppxManifest.xml printed), so MSIX does not reproduce as a gap, and an .intunewin whose outer container is a zip (from memory, not checked here) is likewise covered for its plain members; do not list them as new rows. A CAB body (MSCF) and a WIM body (MSWIM) return None (text exits 2). An MSI body (OLE compound header d0cf11e0) is worse: read_text returns the raw bytes decoded as replacement-character text and text exits 0, a wrong answer rather than a refusal. The story must therefore also make an OLE compound file with no extractor row exit 2 instead of printing junk.",
+  "filed_in": "clone-0ea70e5c"
+}

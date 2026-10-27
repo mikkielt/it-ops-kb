@@ -1,0 +1,79 @@
+{
+  "id": "ST-eimj36y3",
+  "kind": "story",
+  "title": "A root may list its own placeholder names in _root.md while the leak shapes stay the same for every root",
+  "status": "draft",
+  "parent": "EP-7vyrared",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "_root.md may carry placeholders: a short list of extra example names (a root's own fictitious host, user and device names) that redact and the leak scan treat as placeholders for that root's files only. The set of leak shapes, the shipped placeholders and the scan of every other root, the tools and the docs are unchanged; a root's extra name that matches a leak shape other than as an exact placeholder is refused when the root loads.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_redact.py"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_leaks.py"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/perfcheck.py",
+        "ids",
+        "--base",
+        "origin/main"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/redact.py",
+    "_tools/kbcommon.py",
+    "_tools/test_redact.py",
+    "_tools/test_leaks.py",
+    "kb/_self/querylog.md",
+    "kb/_self/tools.md",
+    "kb/_self/plugin.md"
+  ],
+  "depends_on": [
+    "ST-nqqxjvzm"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Is a per-root placeholder set worth building, given the shipped placeholders cover the shapes and the scan guards what may be published?",
+      "options": [
+        "Build it after the redaction stories in flight land",
+        "Leave it out until a root has a concrete name that is wrongly rewritten"
+      ],
+      "recommendation": "Leave it out until a root has a concrete name that is wrongly rewritten",
+      "reason": "because it widens a guard that is being hardened right now, and the cost of using the shipped placeholders is low",
+      "class": "push"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "If it is built, what may a root's extra placeholder be?",
+      "options": [
+        "A user name only, and only for logon and profile-path shapes, listed in _root.md and checked at load against every shape",
+        "Any name of any shape"
+      ],
+      "recommendation": "A user name only, and only for logon and profile-path shapes, listed in _root.md and checked at load against every shape",
+      "reason": "because the premise shows no other shape needs it and a narrow list cannot open a hole for the other shapes",
+      "do": {
+        "A user name only, and only for logon and profile-path shapes, listed in _root.md and checked at load against every shape": "ST-eimj36y3",
+        "Any name of any shape": "ST-eimj36y3"
+      },
+      "class": "design"
+    }
+  ],
+  "notes": "Premise (run at plan time, synthetic names): redact.redact rewrites a logon shape with a fictitious domain user other than the shipped placeholder to the shipped one, and a Windows profile path with such a user to the shipped user; kbcommon.leak_hits flags the same profile path as a home folder. A fictitious user a root already uses as its example name is therefore rewritten or refused unless it is the one shipped placeholder (jan.kowalski). Reproduces for logon and profile-path shapes; it does not reproduce for a device name like PL-LT-00999, a bare user name or an email on corp.example.com (neither tool touches them), so the need is for user names in logon and profile-path shapes only. PLACEHOLDERS is one module-level dict in redact.py; the live-repository scan is the existing leak scan of every tracked file, which the story's checks must still pass with no root setting anything. Overlap, order: live sessions work ST-yl6b2ues (leak gate) and ST-xllrtqlt (redactor) in SP-fn7letri and SP-jwvaq2hu on _tools/redact.py, _tools/kbcommon.py, _tools/test_redact.py, _tools/test_leaks.py, kb/_self/querylog.md, kb/_self/plugin.md and kb/_self/tools.md. This story starts only after those land.",
+  "filed_in": "clone-0ea70e5c"
+}

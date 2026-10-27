@@ -1,0 +1,90 @@
+{
+  "id": "ST-yxudqftw",
+  "kind": "story",
+  "title": "Index and query tokenize Unicode text the same way: CamelCase splits on any letter case, text is NFC, matching is casefolded",
+  "status": "draft",
+  "parent": "EP-7vyrared",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbfacts splits identifiers with non-ASCII capitals (PobierzŁącze -> pobierz, łącze; GetEntityÜbersicht -> get, entity, übersicht), normalizes index text and query to NFC so a decomposed Könige is one word, and compares words casefolded so Straße meets strasse. No setting; ASCII text tokenizes exactly as before, the public eval shares and the collected test ids do not change.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.path.insert(0,'_tools'); import kbfacts as k; assert k.CAMEL.findall('PobierzŁącze')==['Pobierz','Łącze'], k.CAMEL.findall('PobierzŁącze'); assert k.CAMEL.findall('GetEntityÜbersicht')==['Get','Entity','Übersicht']"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,unicodedata as u; sys.path.insert(0,'_tools'); import kbfacts as k; a=u.normalize('NFD','Könige'); assert k.terms(a)==k.terms(u.normalize('NFC',a))==k.key_terms(a)[:0]+k.terms('Könige'), k.terms(a); assert k.terms('Straße')==k.terms('strasse'), k.terms('Straße')"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/perfcheck.py",
+        "ids",
+        "--base",
+        "origin/main"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbfacts.py",
+    "_tools/kf_index.py",
+    "_tools/kf_route.py",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the CamelCase split recognise non-ASCII capitals, given the stdlib re has no Unicode property classes?",
+      "options": [
+        "Scan with str.isupper/islower (stdlib only, one small function replacing the CAMEL regex use)",
+        "Spell out Latin-1 and Latin Extended-A/B capital ranges in the regex"
+      ],
+      "recommendation": "Scan with str.isupper/islower (stdlib only, one small function replacing the CAMEL regex use)",
+      "reason": "because it covers every script with case and needs no range table to maintain",
+      "class": "design"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Does casefolding and NFC apply to identifier-like tokens (path#symbol, CODE symbols, version ids) as well as to prose words?",
+      "options": [
+        "Prose words and split identifier parts only; ids, paths and symbols are compared as written",
+        "Every token"
+      ],
+      "recommendation": "Prose words and split identifier parts only; ids, paths and symbols are compared as written",
+      "reason": "because a code symbol's case is part of its name and the code map matches it exactly",
+      "class": "secrets"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Does casefolding and NFC apply to identifier-like words (path#symbol, CODE symbols, version ids) as well as to prose words?",
+      "options": [
+        "Prose words and split identifier parts only; ids, paths and symbols are compared as written",
+        "Every word"
+      ],
+      "recommendation": "Prose words and split identifier parts only; ids, paths and symbols are compared as written",
+      "reason": "because a code symbol's case is part of its name and the code map matches it exactly",
+      "class": "design"
+    }
+  ],
+  "notes": "Premise (run at plan time, commit 459853b lineage): CAMEL.findall('PobierzŁącze') -> ['Pobierz', 'cze']; CAMEL.findall('GetEntityÜbersicht') -> ['Get', 'Entity', 'bersicht']; WORD.findall of NFD 'Könige' -> ['Ko', 'nige'] while the NFC form -> ['Könige']; 'Straße'.lower()=='strasse' is False, .casefold() is True. All reproduce. Baseline: rag.py eval -> questions=774 passed=774 verdict_ok=774 found_ok=774. Readers beyond kbfacts: kf_index.py lower()s query words at many sites and its index cache is keyed on the CAMEL/WORD patterns; kf_route.py lower()s question words; every other caller of terms/key_terms inherits the change and needs no edit. re has no \\p{Lu}: the split needs a scan by str.isupper/islower or an explicit class.",
+  "filed_in": "clone-0ea70e5c"
+}

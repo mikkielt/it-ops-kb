@@ -6,5 +6,24 @@
   "priority": "P2",
   "rank": 0,
   "goal": "A root can opt in, by data it owns, to non-English prose, to code in a language without a toolchain mapper, to archive formats the kb cannot unpack today, and to its own rule for what counts as an answer; a root that opts into nothing is served exactly as before (public eval and test ids unchanged).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/perfcheck.py",
+        "ids",
+        "--base",
+        "origin/main"
+      ]
+    }
+  ],
+  "notes": "Order (operator): S1 Unicode first, then S2 language profiles and S3 pattern code maps (independent), then S4 archive extractors, then S5 evidence policy, optional S6 placeholders. Dependencies added beyond that order are for shared files: S3 before S4 (kbingest.py), S2 before S5 (kbcommon.py load_root and the _root.md parse), S5 before S6. Every story is opt-in; with nothing set a root is served as today and the public eval shares and test ids stay unchanged. Naming: capability only, synthetic fixtures and placeholders only. Out of scope: embeddings, doc2query for other languages, a new CLI facade.",
   "filed_in": "clone-0ea70e5c"
 }

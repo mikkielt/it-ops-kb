@@ -1,0 +1,78 @@
+{
+  "id": "ST-zkhku3sg",
+  "kind": "story",
+  "title": "kbingest map reads PowerShell and Lua with a table of patterns and no toolchain, so where, path#symbol and drift work for them",
+  "status": "draft",
+  "parent": "EP-7vyrared",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A PatternMapper, a Mapper subclass driven by a per-language table (file extensions; definition, reference and import regexes), reads source files from the scratch worktree without starting any process, and records symbols with references, imports and entry points in the same map format as the toolchain mappers. First rows: PowerShell (.ps1, .psm1, .psd1: function, class, enum, Import-Module, dot-sourcing) and Lua (function, local function, require). kbingest map --lang powershell,lua and where NAME answer from synthetic fixtures; a repository without such files, and every existing mapper's output, is unchanged.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,shutil,subprocess,sys,tempfile; sys.path.insert(0,'_tools'); import kbingest; kbingest.run_tool=lambda *a,**k: (_ for _ in ()).throw(AssertionError('a pattern mapper started a process')); d=tempfile.mkdtemp(); g=lambda *a: subprocess.run(['git','-C',d,*a],check=True,capture_output=True); g('init','-q'); [shutil.copy(os.path.join('_tools/fixtures/patterns',f),d) for f in ('sample.ps1','sample.lua')]; g('add','.'); g('-c','user.name=jan.kowalski','-c','user.email=jan.kowalski','commit','-qm','x'); m=os.path.join(tempfile.mkdtemp(),'m.json'); assert kbingest.main(['map',d,'--lang','powershell,lua','--out',m])==0; names={s['name'] for s in json.load(open(m))['symbols']}; assert {'Get-Widget','load_map'}<=names, names"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_kbingest_guards.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbingest.py",
+    "_tools/test_kbingest_guards.py",
+    "_tools/fixtures/patterns/**",
+    "_tools/kbingest_patterns.csv",
+    "kb/_self/tools.md",
+    ".claude/skills/kb-ingest/SKILL.md"
+  ],
+  "depends_on": [
+    "ST-yxudqftw"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does the per-language pattern table live, and may a repository or root add rows?",
+      "options": [
+        "A CSV beside kbingest.py (_tools/kbingest_patterns.csv), changed only in this repository's code lane",
+        "A dict in kbingest.py",
+        "A CSV that a root or the ingested repository may also extend"
+      ],
+      "recommendation": "A CSV beside kbingest.py (_tools/kbingest_patterns.csv), changed only in this repository's code lane",
+      "reason": "because rows are data a reviewer reads without the Python, and a row the ingested repository supplies would let untrusted text choose the regexes run on itself",
+      "class": "agents-rule"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How is a table regex kept from running away on a hostile source file, given the mapper may start no process?",
+      "options": [
+        "Match line by line with a line-length cap, refuse rows with nested quantifiers when the table loads, and stop a file after a match-count cap",
+        "Run each file's matching in a child process with a timeout"
+      ],
+      "recommendation": "Match line by line with a line-length cap, refuse rows with nested quantifiers when the table loads, and stop a file after a match-count cap",
+      "reason": "because it needs no process and the bound is checked once at load",
+      "class": "agents-rule"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "What counts as a reference to a symbol the pattern mapper found?",
+      "options": [
+        "A whole-word match of the defined name in another line of a mapped file, case-insensitive for PowerShell and case-sensitive for Lua",
+        "Definitions only, no references"
+      ],
+      "recommendation": "A whole-word match of the defined name in another line of a mapped file, case-insensitive for PowerShell and case-sensitive for Lua",
+      "reason": "because where and drift need references to say what a change touches, and the language rule matches how each language resolves names",
+      "class": "agents-rule"
+    }
+  ],
+  "notes": "Premise (run at plan time): kbingest.MAPPERS languages are dotnet, go, node, python, rust, typescript. python3 _tools/kbingest.py map . --lang powershell exits 2 with: refused: unknown language powershell (known: dotnet, go, node, python, rust, typescript). Reproduces. build_map runs a mapper only after tool_exe(m.tool) finds a program on PATH outside the worktree and a version probe runs; a pattern mapper has no tool, so build_map needs a branch that skips both and records the table's revision under doc[tools]. Fixture names the first check expects: functions Get-Widget (sample.ps1) and load_map (sample.lua) in _tools/fixtures/patterns/ (synthetic, placeholders only). The map goes through redact_leaks as before. The table is read from untrusted repository files with regexes from a data file, so the story needs a bounded match (line length cap, no nested quantifiers in a row, checked when the table loads).",
+  "filed_in": "clone-0ea70e5c"
+}
