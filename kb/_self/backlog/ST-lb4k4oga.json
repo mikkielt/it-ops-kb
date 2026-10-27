@@ -92,7 +92,11 @@
         "replace the registered kb server (remove at local scope, then add) so the choice is recorded": "ST-lb4k4oga",
         "skip it as already registered, like the other servers": "ST-lb4k4oga"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "replace the registered kb server (remove at local scope, then add) so the choice is recorded",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Planning 2026-10-27: carries BG-xwarblkp (stale coord-tools docs) since both edit the same docs; that bug closes when this lands.",
