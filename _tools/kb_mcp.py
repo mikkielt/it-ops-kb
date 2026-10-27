@@ -133,7 +133,7 @@ TOOLS = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, TOOLS)
 import rag, kbcommon, kbfacts, kbpublic, mon_base  # noqa: E402
 
-NAME, VERSION = "kb", "1.7.0"
+NAME, VERSION = "kb", "1.8.0"
 MODERN = "2026-07-28"
 LEGACY = ("2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05")
 SUPPORTED = [MODERN, *LEGACY]
@@ -171,6 +171,9 @@ TOOL_LIST = [
          "root": ROOT,
          "include_invalidated": {"type": "boolean", "default": False,
                                  "description": "also invalidated decisions, with why"},
+         "as_of": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                   "description": "YYYY-MM-DD: rank only the facts whose validity window holds the date, the verdict "
+                                  "read over them, and say how many matching facts it left out"},
          "revalidate": {"type": "boolean",
                         "description": "true: check every printed fact's cited sources against their pages now "
                                        "(network, within a time budget; the team's own server only): each line is "
@@ -379,8 +382,12 @@ def kb_pack(args):
         root = root_of(args)
         if revalidate is not True and revalidate is not False:  # unasked: a source past its lifetime, where this server may ask
             revalidate = "stale" if not limited() and os.environ.get("KB_NO_REVALIDATE") != "1" else False
-        res = kbfacts.pack_many(questions, budget, domain_of(args), fmt_of(args, "detailed"), root,
-                                args.get("include_invalidated") is True, revalidate=revalidate)
+        try:
+            res = kbfacts.pack_many(questions, budget, domain_of(args), fmt_of(args, "detailed"), root,
+                                    args.get("include_invalidated") is True, revalidate=revalidate,
+                                    as_of=args.get("as_of") or None)
+        except ValueError as e:
+            raise ToolError(str(e))
         text = res["text"]
         if root == kbfacts.SELF_ROOT:
             kbfacts.record_self(text, budget, res, questions)

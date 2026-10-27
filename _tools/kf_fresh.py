@@ -12,6 +12,7 @@ if "kbfacts" not in sys.modules:  # imported first: the facade loads this stage 
     import kbfacts
 import csv, hashlib, json, os, re, tempfile, time
 from collections import defaultdict
+from datetime import date
 
 import kbcommon, kbid
 import kbfacts  # keep_pack reads pack_store() through the facade, so a caller that replaces it redirects the packs
@@ -416,7 +417,7 @@ PART_BUDGET_MIN = 800  # tokens per part of a 3+ part pack
 
 
 def pack_many(questions, budget=1200, domain=None, fmt="detailed", root=None, invalidated=False, item=None,
-              revalidate=False):
+              revalidate=False, as_of=None):
     """One pack per question (1-6), each with its own coverage verdict, and one shared source footer:
     {verdict (the worst), results, text}. A part of a kind a tool decides is answered by that tool (pack_routed).
     `revalidate` (rag.py pack --revalidate, kb_pack's revalidate): True checks the printed fact lines against their
@@ -429,17 +430,22 @@ def pack_many(questions, budget=1200, domain=None, fmt="detailed", root=None, in
     each part gets 2 * budget / n tokens, at least PART_BUDGET_MIN (never more than budget): measured on the eval set,
     800 tokens keep 98% of the expected article's fact lines that 1200 print, and a 6-part pack shrinks by a third.
     `route` is the overall route of the parts, printed as the pack's first line: `web` when every part routes web,
-    else `split` when any part routes; None (no line) when none does. One question gives its pack's route."""
+    else `split` when any part routes; None (no line) when none does. One question gives its pack's route.
+    `as_of` (YYYY-MM-DD; rag.py pack --as-of, kb_pack's as_of) ranks only the facts whose validity window holds the date
+    in every part (pack), and answers no part from the experts (pack_routed); a date that is not an existing
+    YYYY-MM-DD raises ValueError."""
     from kf_route import pack_routed  # the routed stage builds on this module: imported when a pack is asked for
+    if as_of is not None and not (isinstance(as_of, str) and re.fullmatch(r"\d{4}-\d\d-\d\d", as_of) and date.fromisoformat(as_of)):
+        raise ValueError(f"as_of {as_of!r} is not a date (YYYY-MM-DD)")
     qs = [q.strip() for q in questions if q and q.strip()][:MAX_QUESTIONS]
     if len(qs) == 1:
-        res = pack_routed(qs[0], budget, domain, fmt=fmt, root=root, invalidated=invalidated, item=item)
+        res = pack_routed(qs[0], budget, domain, fmt=fmt, root=root, invalidated=invalidated, item=item, as_of=as_of)
         one = {"verdict": res["verdict"], "route": res["route"], "results": [res], "text": res["text"]}
-        one = handled(one, qs, budget, domain, fmt, root, invalidated, item)
+        one = handled(one, qs, budget, domain, fmt, root, invalidated, item, as_of=as_of)
         return revalidate_pack(one, revalidate == "stale") if revalidate else one
     part = budget if len(qs) < 3 else max(min(budget, PART_BUDGET_MIN), 2 * budget // len(qs))
-    results = [pack_routed(q, part, domain, fmt=fmt, footer=False, root=root, invalidated=invalidated, item=item)
-               for q in qs]
+    results = [pack_routed(q, part, domain, fmt=fmt, footer=False, root=root, invalidated=invalidated, item=item,
+                           as_of=as_of) for q in qs]
     routes = [r["route"] for r in results if r["route"]]
     route = None if not routes else "web" if all(r["route"] == "web" for r in results) else "split"
     out, seen, srcs = ([f"route: {route}"] if route else []), set(), []
@@ -454,7 +460,7 @@ def pack_many(questions, budget=1200, domain=None, fmt="detailed", root=None, in
     order = ("none", "weak", "good")
     many = {"verdict": min((r["verdict"] for r in results), key=order.index), "route": route, "results": results,
             "text": "\n".join(out).rstrip()}
-    many = handled(many, qs, budget, domain, fmt, root, invalidated, item)
+    many = handled(many, qs, budget, domain, fmt, root, invalidated, item, as_of=as_of)
     return revalidate_pack(many, revalidate == "stale") if revalidate else many
 
 
@@ -474,15 +480,16 @@ def kb_commit():
 
 
 def pack_handle(questions, budget=1200, domain=None, fmt="detailed", root=None, invalidated=False, item=None,
-                commit=None):
+                commit=None, as_of=None):
     """`P-<8 hex>`: the hash of the questions, the pack arguments and the kb commit, so one pack on one commit has one
     handle on every server and in the tools, with no session. `revalidate` is no argument of it: stdio and kb_http.py
-    differ in what they revalidate, not in the pack they answer."""
+    differ in what they revalidate, not in the pack they answer. An `as_of` date is part of the key when given (a pack
+    without one keeps the handle it always had)."""
     qs = [q.strip() for q in questions if q and q.strip()][:MAX_QUESTIONS]
     item = item.get("id") if isinstance(item, dict) else item  # pack_many's brief (item_brief) or its id
     key = json.dumps([qs, budget, domain or None, fmt, root or None, bool(invalidated), item or None,
                       kb_commit() if commit is None else commit],
-                     ensure_ascii=False, separators=(",", ":"))
+                     ensure_ascii=False, separators=(",", ":")) + (f"as_of={as_of}" if as_of else "")
     return "P-" + hashlib.sha1(key.encode("utf-8")).hexdigest()[:8]
 
 
@@ -524,7 +531,8 @@ def keep_pack(handle, questions, text, commit):
             remove_file(tmp)
 
 
-def handled(res, questions, budget=1200, domain=None, fmt="detailed", root=None, invalidated=False, item=None):
+def handled(res, questions, budget=1200, domain=None, fmt="detailed", root=None, invalidated=False, item=None,
+            as_of=None):
     """`res` (pack_many's or pack_routed's result) with a last line `pack: P-<8 hex>` (pack_handle) added to `text`
     and the handle in `res["pack"]`, and the offline pack stored (keep_pack). A weak or none pack gets one line
     above the handle, `feedback: kb_feedback(pack="P-<8 hex>", outcome="missed")` (a good pack none): the call an agent
@@ -532,7 +540,7 @@ def handled(res, questions, budget=1200, domain=None, fmt="detailed", root=None,
     (kbcommon.serving(): --roots, kb_http.py), which does not list kb_feedback. Never raises."""
     try:
         commit = kb_commit()
-        handle = pack_handle(questions, budget, domain, fmt, root, invalidated, item, commit)
+        handle = pack_handle(questions, budget, domain, fmt, root, invalidated, item, commit, as_of)
         hint = res.get("verdict") in ("weak", "none") and not kbcommon.serving()
         ask = f'feedback: kb_feedback(pack="{handle}", outcome="missed")\n' if hint else ""
         res["text"] = f"{res['text']}\n{ask}pack: {handle}"

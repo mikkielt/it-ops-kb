@@ -85,6 +85,84 @@
     "ST-q4fbmomg",
     "ST-zhpor7fy"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Does a pack asked as of a date answer a question of a kind a tool decides (a count, a decision id) from that tool?",
+      "options": [
+        "No: an as-of pack skips the experts and ranks facts, since the experts read the kb as it is now",
+        "Yes: the experts answer as they do without a date"
+      ],
+      "recommendation": "No: an as-of pack skips the experts and ranks facts, since the experts read the kb as it is now",
+      "do": {
+        "No: an as-of pack skips the experts and ranks facts, since the experts read the kb as it is now": "ST-dnpg6e7d",
+        "Yes: the experts answer as they do without a date": "ST-dnpg6e7d"
+      },
+      "class": "agents-rule",
+      "answer": "No: an as-of pack skips the experts and ranks facts, since the experts read the kb as it is now",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "What does the as-of line count as left out?",
+      "options": [
+        "The best-ranked matching facts: of the top 40, those scoring at least 0.4 of the best, that the date excludes",
+        "Every matching fact the date excludes, however weak its match"
+      ],
+      "recommendation": "The best-ranked matching facts: of the top 40, those scoring at least 0.4 of the best, that the date excludes",
+      "do": {
+        "The best-ranked matching facts: of the top 40, those scoring at least 0.4 of the best, that the date excludes": "ST-dnpg6e7d",
+        "Every matching fact the date excludes, however weak its match": "ST-dnpg6e7d"
+      },
+      "class": "agents-rule",
+      "answer": "The best-ranked matching facts: of the top 40, those scoring at least 0.4 of the best, that the date excludes",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "Where does a pack without as-of print a fact whose window has ended?",
+      "options": [
+        "After the article's other facts, under one no-longer-valid mark line",
+        "In place, with the mark on the fact's own line"
+      ],
+      "recommendation": "After the article's other facts, under one no-longer-valid mark line",
+      "do": {
+        "After the article's other facts, under one no-longer-valid mark line": "ST-dnpg6e7d",
+        "In place, with the mark on the fact's own line": "ST-dnpg6e7d"
+      },
+      "class": "agents-rule",
+      "answer": "After the article's other facts, under one no-longer-valid mark line",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g4",
+      "kind": "blocking",
+      "question": "Does the kb server's VERSION move for the new kb_pack as_of argument, and does an as-of date treat a fact with no date window as valid?",
+      "options": [
+        "Yes: VERSION 1.8.0, and a fact with no window or only a commit window holds every date",
+        "No: VERSION stays, and a fact with no window is valid only from its source's retrieval date"
+      ],
+      "recommendation": "Yes: VERSION 1.8.0, and a fact with no window or only a commit window holds every date",
+      "do": {
+        "Yes: VERSION 1.8.0, and a fact with no window or only a commit window holds every date": "ST-dnpg6e7d",
+        "No: VERSION stays, and a fact with no window is valid only from its source's retrieval date": "ST-dnpg6e7d"
+      },
+      "class": "agents-rule",
+      "answer": "Yes: VERSION 1.8.0, and a fact with no window or only a commit window holds every date",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "moved out: SP-vlfcgmbu"
   ],

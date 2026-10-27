@@ -323,12 +323,13 @@ def routed(question, domain=None, root=None, fmt="detailed", footer=True, invali
 
 
 def pack_routed(question, budget=1200, domain=None, max_articles=4, fmt="detailed", footer=True, root=None,
-                invalidated=False, item=None, st=None):
+                invalidated=False, item=None, st=None, as_of=None):
     """routed() when an expert answers the question, else pack() with the same arguments: the one entry the lookup
-    tools (rag.py pack, kb_pack, kb_ask.py, the kb: hook) call. A brief for a backlog item (`item`), a store view (`st`)
-    and the rule docs (root `_self`) are never routed."""
-    res = None if item or st is not None else routed(question, domain, root, fmt, footer, invalidated)
-    return res or pack(question, budget, domain, max_articles, fmt, footer, root, invalidated, item, st)
+    tools (rag.py pack, kb_pack, kb_ask.py, the kb: hook) call. A brief for a backlog item (`item`), a store view (`st`),
+    the rule docs (root `_self`) and a pack `as_of` a date (the experts answer from the kb as it is now) are never
+    routed."""
+    res = None if item or st is not None or as_of else routed(question, domain, root, fmt, footer, invalidated)
+    return res or pack(question, budget, domain, max_articles, fmt, footer, root, invalidated, item, st, as_of=as_of)
 
 
 # ---------------------------------------------------------------- topics for code (host workspace signals)
