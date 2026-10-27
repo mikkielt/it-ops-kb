@@ -2,7 +2,8 @@
   "id": "BG-okcqnkq7",
   "kind": "bug",
   "title": "selfdoc check names a heading Plan of kb/_self/backlog.md that is a bold item, not a heading",
-  "status": "draft",
+  "status": "dropped",
+  "sprint": "SP-jxf76aa2",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",
@@ -14,5 +15,9 @@
       "check"
     ]
   },
+  "touches": [
+    "kb/_self/tools.md"
+  ],
+  "notes": "Fixed on main by 565a057a0 (orchestrator) before this item reached main; closed in SP-jxf76aa2. Dropped: fixed on main by 565a057a0 (tools.md row points at the Sprints heading) before this item reached main; its repro passes",
   "filed_in": "clone-0ea70e5c"
 }
