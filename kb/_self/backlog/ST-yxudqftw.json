@@ -91,7 +91,11 @@
       ],
       "recommendation": "Prose words and split identifier parts only; ids, paths and symbols are compared as written",
       "reason": "because a code symbol's case is part of its name and the code map matches it exactly",
-      "class": "design"
+      "class": "design",
+      "answer": "Prose words and split identifier parts only; ids, paths and symbols are compared as written",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Premise (run at plan time, commit 459853b lineage): CAMEL.findall('PobierzŁącze') -> ['Pobierz', 'cze']; CAMEL.findall('GetEntityÜbersicht') -> ['Get', 'Entity', 'bersicht']; WORD.findall of NFD 'Könige' -> ['Ko', 'nige'] while the NFC form -> ['Könige']; 'Straße'.lower()=='strasse' is False, .casefold() is True. All reproduce. Baseline: rag.py eval -> questions=774 passed=774 verdict_ok=774 found_ok=774. Readers beyond kbfacts: kf_index.py lower()s query words at many sites and its index cache is keyed on the CAMEL/WORD patterns; kf_route.py lower()s question words; every other caller of terms/key_terms inherits the change and needs no edit. re has no \\p{Lu}: the split needs a scan by str.isupper/islower or an explicit class.",
