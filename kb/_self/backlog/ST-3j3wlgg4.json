@@ -2,7 +2,7 @@
   "id": "ST-3j3wlgg4",
   "kind": "story",
   "title": "A test.run row says whether the run breached, against which limit and on how many workers, and tests.py --changed sees a rename out of _tools",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-jwvaq2hu",
   "priority": "P2",
@@ -50,5 +50,7 @@
     "ST-xllrtqlt"
   ],
   "notes": "Planner (SP-jwvaq2hu): after ST-xllrtqlt, which also edits _tools/test_redact.py (the report's item 8 after item 3); check 1 (the ops-row and ceiling tests) passes before the work and pins those critical formats.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-557596e3",
+  "operator": "op-f618a13e"
 }
