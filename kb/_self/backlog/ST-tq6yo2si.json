@@ -53,7 +53,11 @@
         "leave held claims out": "ST-tq6yo2si",
         "include held claims as peers": "ST-tq6yo2si"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "leave held claims out",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -71,7 +75,11 @@
         "only an item id, so an item-less peer cannot be settled": "ST-tq6yo2si",
         "the peer's topic only": "ST-tq6yo2si"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "the peer's topic or its session label",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
