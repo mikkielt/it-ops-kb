@@ -2,7 +2,7 @@
   "id": "ST-d4lwbr2o",
   "kind": "story",
   "title": "Three small paid probes settle the code map's docs-map result, the cost of concurrent same-article research and the distill model's name recall",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-jwvaq2hu",
   "priority": "P2",
@@ -49,6 +49,9 @@
     "kb/_self/reports/name-recall.csv",
     "README.md"
   ],
+  "depends_on": [
+    "ST-6zg57xiu"
+  ],
   "gates": [
     {
       "id": "g1",
@@ -67,6 +70,6 @@
       "role": "interactive"
     }
   ],
-  "notes": "Planner (SP-jwvaq2hu): check 0 (report --check) passes before the work and pins that benchmarks.md and README stay true to the csv; the worker runs each probe's --dry-run first and records its estimate beside the cap before paying.",
+  "notes": "Planner (SP-jwvaq2hu): check 0 (report --check) passes before the work and pins that benchmarks.md and README stay true to the csv; the worker runs each probe's --dry-run first and records its estimate beside the cap before paying. Planner (SP-jwvaq2hu): after ST-6zg57xiu, the last session-load item of SP-m5m67goe's chain that also writes benchmarks.csv, benchmarks.md and README.md.",
   "filed_in": "clone-0ea70e5c"
 }

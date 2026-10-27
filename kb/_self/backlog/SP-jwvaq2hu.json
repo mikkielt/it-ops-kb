@@ -2,7 +2,7 @@
   "id": "SP-jwvaq2hu",
   "kind": "sprint",
   "title": "Redaction parity, honest test rows, run ownership and held quality",
-  "status": "planned",
+  "status": "active",
   "goal": "the query-log redactor catches a long token after an equals sign and the common cloud key shapes; a test.run row says whether the run breached, against which limit and on how many workers and tests.py --changed sees a rename out of _tools; claim and land refuse when coord answers that another owner holds the item's run and stay fail-open when coord is silent; every sprint review holds the held-out fitness rate at 86 of 99 with at most 8 false good; the kb's docs say which authority boundaries are enforced and which are convention, with two free experiments; three small paid probes settle the code map's docs-map result, the cost of concurrent same-article research and the distill model's name recall",
   "gates": [
     {
@@ -14,9 +14,14 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
+  "notes": "Start gate answered approve with --by operator by the orchestrator session under the operator's pre-approval of 2026-10-27, scoped to that unattended run: sprints built only from EP-n4dci4w7's named stories and the named related drafts.",
   "creator": "op-f618a13e",
   "filed_in": "clone-0ea70e5c"
 }
