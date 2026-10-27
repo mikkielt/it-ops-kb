@@ -58,7 +58,11 @@
         "Also a session with a live lease and intent but no process; leave the work's own sprint (or its item's sprint) out of the plans": "ST-hjl7dhyh",
         "Only sessions with a process; list every sprint including the work's own": "ST-hjl7dhyh"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Also a session with a live lease and intent but no process; leave the work's own sprint (or its item's sprint) out of the plans",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -74,7 +78,11 @@
         "Six, then 'and N more'": "ST-hjl7dhyh",
         "Every holder": "ST-hjl7dhyh"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Six, then 'and N more'",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
