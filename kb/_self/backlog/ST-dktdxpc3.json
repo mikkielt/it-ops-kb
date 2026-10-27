@@ -55,7 +55,11 @@
         "File _cache/kbmon/shared.json, default max age 60 s, the mod passes 55 s (REFRESH_MS less 5 s), snapshot stamped with the time its run began, code in kbmon.py": "ST-dktdxpc3",
         "Mod passes exactly REFRESH_MS, code in a new mon_shared.py": "ST-dktdxpc3"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "File _cache/kbmon/shared.json, default max age 60 s, the mod passes 55 s (REFRESH_MS less 5 s), snapshot stamped with the time its run began, code in kbmon.py",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Premise, measured in SP-3qowbedb's record: one kbmon.py --once of the pane costs about 8 CPU seconds and 690-730 MB peak (session-load arm B, 3 refreshes in a 150 s window), and each interactive session runs it every 60 s on its own; the reviewer measured one --once at 10.8 s user CPU and 493 MB under /usr/bin/time -l at load about 6. Arm B of session-load measures the saving. The notices the mod derives from a frame (needs-you rows, alert receipts) stay per session; the review reads register.tsx's diff for it.",
