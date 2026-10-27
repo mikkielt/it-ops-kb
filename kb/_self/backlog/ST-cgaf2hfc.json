@@ -86,7 +86,11 @@
         "The command line writes its shell's pid and the session's exit code to files in the scratch directory, which dispatch polls": "ST-cgaf2hfc",
         "Dispatch waits for the launcher process to exit and reads the session's exit from it": "ST-cgaf2hfc"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "The command line writes its shell's pid and the session's exit code to files in the scratch directory, which dispatch polls",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -101,7 +105,11 @@
         "Once per snapshot with a 5 second limit; a line gives pid or session, the pid wins, and the state shows as agent_state after the role": "ST-cgaf2hfc",
         "Cached between snapshots and bound by session id only": "ST-cgaf2hfc"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Once per snapshot with a 5 second limit; a line gives pid or session, the pid wins, and the state shows as agent_state after the role",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
