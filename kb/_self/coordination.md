@@ -154,6 +154,60 @@ Steer a session by its session id or item id, never `any`, so only the session m
 - **Cleanup:** paths are normalised (no `\\?\` prefix, case and drive letter folded, a junction treated as a link), the process table comes from PowerShell, a directory a process holds is detected by a rename probe where the table is unreadable, and removal makes read-only files writable.
 - **kbmon:** the sessions panel lists a process on Windows only when its command line names a checkout, and dispatch runs show their liveness as null. The coord panel is the same on every OS.
 
+## The coordination guarantee, its failure policy and each lock's role
+
+**Does coord fence a stale worker? No.** coord gives advisory leases and events, and git arbitrates accepted state (the push compare-and-swap, the landing lock and the merge request), so no fencing token exists: a token fences only where the protected resource checks it, and no non-git resource takes a coord token. A worker whose lease has ended, whose claim was released or whose session is gone is not stopped by coord; what it can change in accepted state, git checks.
+
+- **What coord guarantees.** A write is one transaction, a lease runs its full length from the moment it was taken, a stale token is refused on `renew` and `release`, and `put` writes only at the revision it read. It guarantees nothing about a holder whose lease ended: no tool asks coord before it runs `git`, and no `renew` is needed for a worker to commit.
+- **What arbitrates accepted state.** A push of the integration main is a compare-and-swap that git decides: a push the remote rejects because it moved is tried again after a pause, never forced (`kbgit.py sync --push`, `kg_sync.py`). The `code/<id>` branch is pushed with `--force-with-lease` naming the tip the pusher last saw, or the absence of the branch. The landing lock and the host main lock serialise the steps that move the main, and the merge request of `code/<id>` is where code is accepted. The item file's `claimed_by` is committed text, so two claims of one item meet as a rebase conflict at `land`.
+- **Why not a token in coord.** A token helps where the resource compares it. The resource here is a git ref, which already compares the old value; a coord-held item lease would add a second arbiter that disagrees with git after a crash. The run state `run/ITEM` is a record of what happened, which `backlog.py runs` compares to git and `runs --reconcile` rewrites.
+
+### What each consumer does on exit 1, exit 2 and silence
+
+coord exits 1 when the condition failed (a key held, a revision moved on, an absent key), 2 for a bad argument or an unreachable store or server, and says nothing when it is killed, times out or finds nothing to report (a `wait` that reaches S exits 0 with `timed_out` true). The policy is **fail open** for announcements and run states, and a **refusal only on positive evidence**: a consumer refuses what a live record shows to be a conflict and never what it could not read.
+
+- **The coord hook** ends every error in silence and exit 0 and blocks no tool call. A `renew` that exited 1 drops the token; one that could not run (exit 2, the 8 second limit) keeps it and is tried a minute later. An overlap informs, the operator decides.
+- **Announcements** (`backlog.py set ... --sprint`, `new ... --sprint`, the intent a claim posts) say a coord failure on one line and never fail the command; `announce.to_other_sessions` false posts nothing.
+- **Run states** (`claim`, `release`, `dispatch`, `stage-back`, `land` through `move_run` and `enter_run`): exit 1 or 2 from `transition` is said as a warning and the step goes on, and `runs --reconcile` repairs the key later. The positive evidence that refuses is narrow: `enter_run` stops a `land` or `stage-back` when the key holds the other tool's state (`staging` for a `land`, `landing` for a `stage-back`), or its own state with a process record of the item that runs; a record that does not run is taken over. A store that is locked or unreadable gives `run_holder` no pid, so nothing is refused. Any other state (`released`, `working`, `failed`) warns and continues: the run state does not decide whether a branch may land.
+- **`kbask.py ask`** refuses (exit 1) only when `bl_peers.reach` says `ended`; `live` and `unknown` pass, and a host that cannot list its processes or read the store gives `unknown`. An ask needs the store to be written: a coord that fails the `put` is exit 2.
+- **`backlog.py claim`** refuses on the item file's `claimed_by` and on the checkout's claims ledger (another session's doing item in the same checkout), both records of git or the git directory; its refusal reads no coord state.
+- **Cleanup** (`tidy`, `kbask.py cleanup`) fails safe toward keeping: no owner record keeps the path, a live lease or claim that names it keeps it, a store that stays locked is exit 3 and an unreadable one exit 2, and nothing is removed on either.
+- **kbmon** shows `absent`, `timeout` or `error` for the coord panel and creates no store; it stops nothing.
+- **A held lock file** (the claims ledger, landing, host main and host test locks) is refused on positive evidence too: a live holder is waited for up to a bound, and a holder whose pid no longer runs is cleared (the ledger's lock after 60 seconds, the distill lock after an hour and never by signalling the pid).
+
+### The peer states
+
+`backlog.py peers` (`bl_peers.live_peers`) and `kbask.py ask` (`bl_peers.reach`) derive a session's state from the live `claude` processes of the clone, the live intents and presence leases of one `coord.py digest` and the `intent` events the store keeps; nothing stores a state.
+
+- **live**: a Claude Code process of the clone is bound to the session id (by the claims ledger of its checkout, the intent of its item, or the one hook session of its checkout that holds a presence lease). `reach` returns `live`; `peers` prints `live` with the session's role.
+- **ended**: no process is bound to it, and it either announced an intent (a live one, or an `intent` event the store keeps after `SessionEnd` released the lease) or the asker is no live session of the clone. `reach` returns `ended` with the items its intents named and the live sessions that work on them; `peers` prints `ended` (role `no process seen`) for a session whose lease and intent are still held with no process. `kbask.py ask` refuses an ask to it.
+- **unknown**: the session left no trace and a live asker may be seeing it start, a process of the clone is bound to no session id (it may be the target), or the host is Windows, which lists no process by working directory, or the processes or the store cannot be read. `reach` returns `unknown` and the ask is sent.
+- **lease-expired**: the presence lease `session/<id>` ran out (six hours without a Bash, Skill, Edit or Write event, or a release at `SessionEnd`). The digest then drops the session's intents, so `peers` lists it only while a process is bound; `reach` takes it from the `intent` events the store keeps: `ended` when every process of the clone is bound to another session, `unknown` when one is bound to none (a session silent for six hours looks the same), `live` when a process is still bound to its id by the ledger or the item. No code names this state or stores it, and no quiet period follows an expiry: only announcements, `peers` and cleanup's keep rule read the presence lease, so no correctness decision rests on it.
+
+### Every lock, lease and claim, and what it is for
+
+A lock is **efficiency** when it only saves work or avoids a surprise (a duplicate research, a clash seen late) and a wrong or missing answer costs time; **correctness** when a wrong or missing answer could lose or corrupt accepted state or a person's work. The coord leases are all efficiency; the correctness ones are git's and the file locks, and the guard column names the check that holds each.
+
+| Lock, lease or claim | Where | Role | Guard of a correctness one |
+|---|---|---|---|
+| `research:TOPIC:TERM` and `code:` claims, `dedup` | coord | efficiency | none: a duplicate fact costs tokens |
+| claim of a backlog item id, its `claim`, `release`, `dup_of` events | coord | efficiency | none |
+| presence lease `session/<id>` | coord | efficiency (what `digest`, `peers` and kbmon read) | none: a missing lease hides an intent |
+| `wait/PID/ITEM` leases, imported `reservation/` leases | coord | efficiency (shown, block nothing) | none |
+| run state `run/ITEM`, `own/process` records | coord | efficiency (a record of what ran; the two refusals above are on positive evidence) | `backlog.py runs` lists each drift from git (exit 1), `runs --reconcile` heals it |
+| `remediate/ALERT` claim | coord | efficiency (one watcher for an alert) | none |
+| `clean/KEY` claim, `own/` records, `tidy-answer/` | coord | correctness (a removal deletes work) | `safe_to_remove` keeps on doubt; `tidy --apply` exits 1 when a claim appeared on a candidate |
+| coord store write: `BEGIN IMMEDIATE`, token compare, `put` revision | coord | correctness of the store itself | stale tokens refused, one racing claim wins; `benchmarks.py multi fitness` replays the claim and ask cases |
+| item `claimed_by`, the checkout's claims ledger and its `ledger_lock` | item file in git, git directory | correctness (two claims of one item, a claim commit on another session's branch) | `cmd_claim` refuses before it writes; a second claim meets a rebase conflict at `land` |
+| landing lock `kb-landing.lock` | the clone's git directory | correctness (one landing at a time) | holder pid liveness, stale takeover, a bounded wait that stops `land` at step `landing lock`; the `verify` step finds the done commit on the main |
+| host main lock `kb-main.lock` | host lock directory | correctness (the integration main moves in one step at a time) | same mechanism as the landing lock, git network calls bounded so a hung ssh frees it |
+| push compare-and-swap of the main, `--force-with-lease` of `code/<id>` | git remote | correctness (accepted state) | git's own rejection of a non-fast-forward or a changed lease; `test_prepush_e2e.py` and `test_sync_e2e.py` plant the refusals (code straight to the main, a history with the query log) |
+| merge request of `code/<id>` | git host | correctness (where code is accepted) | the host's merge rules; `test_prepush_e2e.py` plants a code commit straight to the main, which is refused |
+| `distill.lock` of the query log | spool directory | correctness (one distill writes the store) | stale after an hour, taken over without signalling the pid |
+| host test lock `kb-tests.lock` | host lock directory | efficiency (parallel suite runs load the host into false timeouts) | none |
+
+Of the correctness rows only the push and sync gates have a standing test; the file locks, the claim refusals and the coord store are held by their own recovery code and by a planted check when their code changes (`kb/_self/backlog.md`, Definition of done).
+
 ## Failure modes and how kbmon shows them
 
 - **No store yet.** The coord panel is `absent` with the path it looked at, and kbmon does not create the file; a `coord.py` command does.
