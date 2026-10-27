@@ -2,7 +2,7 @@
   "id": "ST-u6jyv4ch",
   "kind": "story",
   "title": "claim and land refuse when coord answers that another owner holds the item's run, and stay fail-open when coord is silent",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-jwvaq2hu",
   "priority": "P2",
@@ -107,6 +107,19 @@
   ],
   "notes": "Planner (SP-jwvaq2hu): check 0 reads cmd_claim and enter_run for the run-key read; the goal names planted repros in a scratch clone with a local bare origin (no test id) for each refusal and fail-open path, so the worker report gives each repro command and its exit.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-557596e3",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "c88414c210f14793f0ab049c9c12a8f6f3a3b7e0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import inspect,bl_items,bl_land;a=inspect.getsource(bl_items.cmd_claim);b=inspect.getsource(bl_land.enter_run);ok=('run/' in a or 'run_state' in a or 'take_run' in a) and 'released' in b;print(ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "a9ac0c3ac83c40e1"
+      }
+    ]
+  }
 }
