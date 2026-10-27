@@ -256,7 +256,8 @@ def leak_hits(text, allow=None):
     out = [("secret", m.group(0)) for m in re.finditer(secrets_rx(), text)
            if m.group(0).lower() not in allow.get("secret", ())]
     out += [("home", m.group(0)) for m in re.finditer(LEAK_HOME, text)
-            if re.split(r"[/\\]+", m.group(0))[-1].lower() not in HOME_GENERIC]
+            if re.split(r"[/\\]+", m.group(0))[-1].lower() not in HOME_GENERIC
+            and m.group(0).lower() not in allow.get("home", ())]
     out += [("ip", m.group(0)) for m in re.finditer(LEAK_IPV4, text)
             if m.group(0) not in allow.get("ip", ()) and all(int(x) < 256 for x in m.group(0).split("."))]
     out += [("email", m.group(0)) for m in re.finditer(LEAK_EMAIL, text)

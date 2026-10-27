@@ -1,5 +1,5 @@
 # Reviewed exceptions for _tools/tests.py: values that look like leaks but are not, and deliberate absent paths. Format: <kind> <value>  # reason
-# kinds: guid, ip, email, secret, path. Matching ignores case. Add an entry only after checking the value is public
+# kinds: guid, ip, email, secret, home, path. Matching ignores case. Add an entry only after checking the value is public
 # or a documented placeholder; tenant ids, object ids and real addresses never belong here.
 
 ip    10.20.30.40    # example address in a pseudonymization test question (agents/eval-question-baseline.csv)
@@ -241,3 +241,6 @@ email smurawski@chef.io                     # Author:: header of Chef's MIT-lice
 email noreply@github.com                    # GitHub's documented web-commit author address, names no one (_gaps.md)
 email git@gitlab.com                        # GitLab's documented SSH user, not a mailbox (_gaps.md)
 email hugo@python.org                       # python.org's published sigstore identity of a release manager (census of S-jzqdphnx)
+home  C:\Users\jan        # placeholder Windows path with the folder jan in a backlog filing example (decoded)
+home  C:\\Users\\jan      # the same placeholder path, JSON-escaped once
+home  C:\\\\Users\\\\jan  # the same placeholder path, JSON-escaped twice
