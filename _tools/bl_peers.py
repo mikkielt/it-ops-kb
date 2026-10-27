@@ -127,7 +127,8 @@ def open_asks(root, targets):
 
 def reach(root, target, asker, store=None):
     """(state, items, successors) for the session id TARGET as the session id ASKER (None for none) sees it from the clone ROOT:
-    `live` when a Claude Code process of the clone is bound to it, `ended` when none is and it either announced an intent or
+    `live` when a Claude Code process of the clone is bound to it, `ended` when none is and it either announced an intent
+    (a live one, or an intent event the coord store still holds after `SessionEnd` released the lease and the intent) or
     the asker is no live session of the clone (a caller that is none cannot be told apart from a session that never ran),
     else `unknown` (it left no trace and a live asker may be seeing it start). Windows lists no process by working directory,
     so it is always `unknown`, as is a clone with a process no session id binds (it may be the target). ITEMS are the items
@@ -143,6 +144,9 @@ def reach(root, target, asker, store=None):
     try:
         live = mon_sessions.live_sessions(root)
         found = read_found(root, False)
+        past = []
+        if not any(f.get("session") == target for f in found["intents"]) and target not in {s["session"] for s in live}:
+            past = read_found(root, True).get("intent_at", {}).get(target, [])  # intent events outlive the released lease
     except Exception:  # a host that cannot list its processes or read the store leaves the ask allowed
         return "unknown", [], []
     finally:
@@ -154,9 +158,9 @@ def reach(root, target, asker, store=None):
     if target in ids:
         return "live", [], []
     intents = [f for f in found["intents"] if f.get("session") == target]
-    if any(s["session"] is None for s in live) or not (intents or asker not in ids):
+    if any(s["session"] is None for s in live) or not (intents or past or asker not in ids):
         return "unknown", [], []
-    items = list(dict.fromkeys(i for f in intents for i in split_list(f.get("item"))))
+    items = list(dict.fromkeys([i for f in intents for i in split_list(f.get("item"))] + [i for row in past for i in row[1]]))
     successors = []
     for s in live:
         sid = s["session"]
