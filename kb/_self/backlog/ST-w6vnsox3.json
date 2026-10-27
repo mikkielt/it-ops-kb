@@ -41,7 +41,11 @@
         "Allowlist the path": "ST-w6vnsox3",
         "Make jan a generic home name": "ST-w6vnsox3"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "Allowlist the path",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Why this shape: kbpublic.leak_verdicts allows the allowlist of the commit and of the projection, so a value reviewed and allowlisted later passes the older commits that added it (kb/_self/git.md, Public home). But kbcommon.leak_hits reads the allowlist for secret, ip, email and guid only; a home hit is dropped only by HOME_GENERIC, so no allowlist row can clear it today. Cause of the hit: the home pattern reads the user folder of C:, Users, jan@corp.example.com as the folder jan (the match stops at the @), and only jan.kowalski is generic. The three raw spellings the scan reads in the old filing: decoded, JSON-escaped once (the goal) and twice (the repro string); the allowlist matches the whole lowercased match. Not a rewrite: the commit is on origin/main, publish --rewrite only replaces what was pushed to the public home directly, and the projection never filters content. A later commit already reworded the file (d8609788f9), so HEAD is clean, but publish judges the old commit by what it added. Test: the leak guard is critical, so extend the existing planted-leak test in _tools/test_leaks.py (a home row in the allowlist passes, a real-looking path still flagged), no new test id or file, within _tools/tests_ceiling.json, never a raise. Docs: the docs map names kb/_self/tools.md for _tools/kbcommon.py; at planning tools.md is claimed by BG-xao6jaon (kbtail) and ST-7nuaruwn (bench_load) in sprints SP-7ba3r4ec and SP-3qowbedb, and BG-23wnhrgc (draft, touches _tools/kbcommon.py) is a different defect in the same file: start after those release tools.md, or add the docs when they have landed. If the operator answers the generic-name option, the goal changes to a HOME_GENERIC entry (and the redactor reads it too: _tools/redact.py). After it lands run kbgit.py publish --dry-run on a host with the public remote: a planning scan of the lines added since 2026-10-19 found no other hit than bc14f216937a.",
