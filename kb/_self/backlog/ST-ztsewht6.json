@@ -41,6 +41,24 @@
     "kb/_self/plugin.md",
     "kb/_self/token-efficiency.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "The goal's 200 ms bound needs the kb: pack faster, but the pack's time (about 250 ms of a 440 ms kb: prompt) sits in _tools/kf_fresh.py (_ledger_rows scans of _anchors.csv and _fetch_state.csv) and _tools/kbfacts.py feedback_flags (about 100 ms, via ql_store.run_files), outside the touches; a prompt without kb: already takes about 20 ms. Widen the touches?",
+      "options": [
+        "widen the touches to _tools/kf_fresh.py, _tools/kbfacts.py, _tools/ql_store.py and the tests that pin them",
+        "keep the touches and drop the item"
+      ],
+      "recommendation": "widen the touches to _tools/kf_fresh.py, _tools/kbfacts.py, _tools/ql_store.py and the tests that pin them",
+      "reason": "with both reads stubbed the pack takes 39 ms and the hook about 100 ms in all",
+      "do": {
+        "widen the touches to _tools/kf_fresh.py, _tools/kbfacts.py, _tools/ql_store.py and the tests that pin them": "ST-ztsewht6",
+        "keep the touches and drop the item": "ST-ztsewht6"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "notes": "Check 1 passes before the work by design: it pins kb_hook's answers so the speed-up cannot drop them. The worker measures the sync_ms figure's run-to-run spread before relying on the 200 ms bound (the planning rule ST-7qait5zh files).",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-557596e3",
