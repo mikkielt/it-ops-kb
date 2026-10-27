@@ -114,7 +114,11 @@
         "a sessions-panel session with an item, or a coord working run, silent over 3600 s, once per item": "ST-kxnlpycw",
         "only coord working runs": "ST-kxnlpycw"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "a sessions-panel session with an item, or a coord working run, silent over 3600 s, once per item",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Planner (SP-fn7letri): check 1 (kbmon sessions panel) passes before the work and pins that the panel still renders; clauses 1 and 2 (landing_steps after land.end, role_of) are read only through that panel, so the worker's report gives a planted replay for each (a land.step row after land.end; a session with no live worker).",
