@@ -20,6 +20,26 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does kbtail report a live session whose transcript it cannot find?",
+      "options": [
+        "one line naming each such session (role and item)",
+        "one line counting them, as for no session id"
+      ],
+      "recommendation": "one line naming each such session (role and item)",
+      "reason": "the goal allows either, and a name tells which session lost its transcript",
+      "do": {
+        "one line naming each such session (role and item)": "BG-64p5omk4",
+        "one line counting them, as for no session id": "BG-64p5omk4"
+      },
+      "class": "design",
+      "answer": "one line naming each such session (role and item)",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-hxxn6fnv review"
   ],
