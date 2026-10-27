@@ -13,14 +13,21 @@
       "run": [
         "python3",
         "-c",
-        "import sys; sys.path.insert(0,'_tools'); import kbfacts as k; assert k.CAMEL.findall('PobierzŁącze')==['Pobierz','Łącze'], k.CAMEL.findall('PobierzŁącze'); assert k.CAMEL.findall('GetEntityÜbersicht')==['Get','Entity','Übersicht']"
+        "import sys\nsys.path.insert(0, '_tools')\nimport kbfacts as k\nt1, t2 = set(k.terms('PobierzŁącze')), set(k.terms('GetEntityÜbersicht'))\nbad = [w for w in (k.stem('pobierz'), k.stem('łącze')) if w not in t1] + [w for w in (k.stem('entity'), k.stem('übersicht')) if w not in t2]\nbad and sys.exit('identifier parts missing: %s (terms %s / %s)' % (bad, sorted(t1), sorted(t2)))"
       ]
     },
     {
       "run": [
         "python3",
         "-c",
-        "import sys,unicodedata as u; sys.path.insert(0,'_tools'); import kbfacts as k; a=u.normalize('NFD','Könige'); assert k.terms(a)==k.terms(u.normalize('NFC',a))==k.key_terms(a)[:0]+k.terms('Könige'), k.terms(a); assert k.terms('Straße')==k.terms('strasse'), k.terms('Straße')"
+        "import sys, unicodedata as u\nsys.path.insert(0, '_tools')\nimport kbfacts as k\nnfd = u.normalize('NFD', 'Könige')\na, b, ka, kb = k.terms(nfd), k.terms('Könige'), k.key_terms(nfd), k.key_terms('Könige')\n(a == b and ka == kb) or sys.exit('decomposed and composed Könige differ: terms %s vs %s, key terms %s vs %s' % (a, b, ka, kb))"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport kbfacts as k\na, b, ka, kb = k.terms('Straße'), k.terms('strasse'), k.key_terms('Straße'), k.key_terms('strasse')\n(a == b and ka == kb) or sys.exit('Straße and strasse differ: terms %s vs %s, key terms %s vs %s' % (a, b, ka, kb))"
       ]
     },
     {
@@ -38,6 +45,32 @@
         "--base",
         "origin/main"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbfacts splits identifiers with non-ASCII capitals (PobierzŁącze -> pobierz, łącze",
+      "check": 0
+    },
+    {
+      "clause": "GetEntityÜbersicht -> get, entity, übersicht), normalizes index text and query to NFC so a decomposed Könige is one word",
+      "check": 0
+    },
+    {
+      "clause": "GetEntityÜbersicht -> get, entity, übersicht), normalizes index text and query to NFC so a decomposed Könige is one word",
+      "check": 1
+    },
+    {
+      "clause": "compares words casefolded so Straße meets strasse. No setting",
+      "check": 2
+    },
+    {
+      "clause": "ASCII text tokenizes exactly as before, the public eval shares and the collected test ids do not change",
+      "check": 3
+    },
+    {
+      "clause": "ASCII text tokenizes exactly as before, the public eval shares and the collected test ids do not change",
+      "check": 4
     }
   ],
   "touches": [
@@ -99,6 +132,6 @@
       "role": "interactive"
     }
   ],
-  "notes": "Premise (run at plan time, commit 459853b lineage): CAMEL.findall('PobierzŁącze') -> ['Pobierz', 'cze']; CAMEL.findall('GetEntityÜbersicht') -> ['Get', 'Entity', 'bersicht']; WORD.findall of NFD 'Könige' -> ['Ko', 'nige'] while the NFC form -> ['Könige']; 'Straße'.lower()=='strasse' is False, .casefold() is True. All reproduce. Baseline: rag.py eval -> questions=774 passed=774 verdict_ok=774 found_ok=774. Readers beyond kbfacts: kf_index.py lower()s query words at many sites and its index cache is keyed on the CAMEL/WORD patterns; kf_route.py lower()s question words; every other caller of terms/key_terms inherits the change and needs no edit. re has no \\p{Lu}: the split needs a scan by str.isupper/islower or an explicit class.",
+  "notes": "Premise (run at plan time, commit 459853b lineage): CAMEL.findall('PobierzŁącze') -> ['Pobierz', 'cze']; CAMEL.findall('GetEntityÜbersicht') -> ['Get', 'Entity', 'bersicht']; WORD.findall of NFD 'Könige' -> ['Ko', 'nige'] while the NFC form -> ['Könige']; 'Straße'.lower()=='strasse' is False, .casefold() is True. All reproduce. Baseline: rag.py eval -> questions=774 passed=774 verdict_ok=774 found_ok=774. Readers beyond kbfacts: kf_index.py lower()s query words at many sites and its index cache is keyed on the CAMEL/WORD patterns; kf_route.py lower()s question words; every other caller of terms/key_terms inherits the change and needs no edit. re has no \\p{Lu}: the split needs a scan by str.isupper/islower or an explicit class. Checks 3 (rag.py eval) and 4 (perfcheck ids) pass before the work and pin behaviour that must stay unchanged (the public eval shares and the collected test ids); every other check fails before the work with a one-line reason, not a traceback. Checks 0 to 2 read the public kbfacts.terms/key_terms/stem, which the index and the query both use, so the index side is covered through the same functions.",
   "filed_in": "clone-0ea70e5c"
 }
