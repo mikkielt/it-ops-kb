@@ -75,6 +75,50 @@
     "ST-q4fbmomg",
     "ST-zhpor7fy"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does the closed fact's window start when the fact had no window?",
+      "options": [
+        "earliest date its cited sources give, else the pinned commit of its CODE source, --from overrides",
+        "the retrieval date of its first cited source",
+        "always require --from"
+      ],
+      "recommendation": "earliest date its cited sources give, else the pinned commit of its CODE source, --from overrides",
+      "do": {
+        "earliest date its cited sources give, else the pinned commit of its CODE source, --from overrides": "ST-gfabhgqf",
+        "the retrieval date of its first cited source": "ST-gfabhgqf",
+        "always require --from": "ST-gfabhgqf"
+      },
+      "class": "agents-rule",
+      "answer": "earliest date its cited sources give, else the pinned commit of its CODE source, --from overrides",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "What follows the closed fact's keys: its doc2query rows and anchor rows?",
+      "options": [
+        "doc2query rows move to the new bullet, anchor rows follow the old line's new text, the new bullet is left to anchor",
+        "doc2query rows are copied to the new bullet and kept for the old one",
+        "doc2query rows are pruned and the new bullet regenerated"
+      ],
+      "recommendation": "doc2query rows move to the new bullet, anchor rows follow the old line's new text, the new bullet is left to anchor",
+      "do": {
+        "doc2query rows move to the new bullet, anchor rows follow the old line's new text, the new bullet is left to anchor": "ST-gfabhgqf",
+        "doc2query rows are copied to the new bullet and kept for the old one": "ST-gfabhgqf",
+        "doc2query rows are pruned and the new bullet regenerated": "ST-gfabhgqf"
+      },
+      "class": "agents-rule",
+      "answer": "doc2query rows move to the new bullet, anchor rows follow the old line's new text, the new bullet is left to anchor",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "moved out: SP-vlfcgmbu"
   ],
