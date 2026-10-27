@@ -2,7 +2,7 @@
   "id": "ST-q5o7z2mf",
   "kind": "story",
   "title": "Every sprint review holds the held-out fitness rate at 86 of 99 with at most 8 false good, so token and time savings cannot hide a quality loss",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-jwvaq2hu",
   "priority": "P2",
@@ -86,5 +86,7 @@
     }
   ],
   "notes": "Planner (SP-jwvaq2hu): the goal names kb/public/_retrieval/lookup_heldout.csv only as the file the review reads; the item never edits it (held-out rows are never moved or reworded), so it stays out of the touches. AGENTS.md is in the touches only because the docs map ties rag.py to it; its 4 KB cap holds. Planner (SP-jwvaq2hu): after ST-ztsewht6, which also edits AGENTS.md. Check 2 passes before the work: maintaining.md already says held-out rows are never moved out, and the check pins that rule.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-557596e3",
+  "operator": "op-f618a13e"
 }
