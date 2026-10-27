@@ -78,7 +78,8 @@ HOME = re.compile(r"(?<![\w.])/(?:Users|home)/([^/\s\"'<>|]+)((?:/[^/\s\"'<>|]+)
 COMPUTER = re.compile(r"(?<![\w.\\/@-])[A-Z][A-Z0-9]*(?:-[A-Z0-9]+){0,3}(?![\w.\\-])")
 SERVERISH = re.compile(r"SRV|SVR|SERVER|SQL|EXCH|DC\d|FS\d")
 ID_LIKE = re.compile(r"CVE-\d{4}-\d+|KB\d+|RFC\d+|MS\d\d-\d+|PL-[A-Z]+-\d+|S(?:-\d+)+")
-TOKEN = re.compile(r"(?<![A-Za-z0-9+_=])[A-Za-z0-9+_]{%d,}={0,2}(?![A-Za-z0-9+_=])" % ENTROPY_MIN_LEN)
+# A token may follow a single `=` (key=<token>); it does not start inside a word or after a run of `=`.
+TOKEN = re.compile(r"(?<![A-Za-z0-9+_])(?<!==)[A-Za-z0-9+_]{%d,}={0,2}(?![A-Za-z0-9+_=])" % ENTROPY_MIN_LEN)
 WORD_PIECES = re.compile(r"[A-Z]?[a-z]+|[A-Z]+(?![a-z])|\d+")
 SECRETS = [re.compile(f"(?i:{p[4:]})" if p.startswith("(?i)") else p) for p in kbcommon.SECRETS]
 # The assignment, header and url-password shapes are kbcommon's (the leak scan reads them too): one owner, so the

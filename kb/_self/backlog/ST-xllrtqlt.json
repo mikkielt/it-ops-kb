@@ -57,6 +57,89 @@
   "depends_on": [
     "ST-yl6b2ues"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does kbcommon.SECRETS gain the Google API key, Stripe live key, npm token and SendGrid shapes?",
+      "options": [
+        "One entry with the AWS key id as alternatives",
+        "Four new entries, with test_leaks.secret_plants extended"
+      ],
+      "recommendation": "One entry with the AWS key id as alternatives",
+      "reason": "test_leaks.secret_plants and its count test pair one plant per entry and that file is outside the touches",
+      "do": {
+        "One entry with the AWS key id as alternatives": "ST-xllrtqlt",
+        "Four new entries, with test_leaks.secret_plants extended": "ST-xllrtqlt"
+      },
+      "class": "secrets",
+      "answer": "One entry with the AWS key id as alternatives",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Is the Entra client-secret shape added as a fixed-prefix pattern?",
+      "options": [
+        "Not added",
+        "Added as a pattern with the Q~ marker"
+      ],
+      "recommendation": "Not added",
+      "reason": "Microsoft Learn's Purview page (purview/sit-defn-azure-ad-client-secret) gives only a charset of letters, digits, dash, underline, dot and tilde and up to 40 characters, with no fixed marker, and the kb holds no fact or source row for one; the TOKEN rule after key= already covers such a value",
+      "do": {
+        "Not added": "ST-xllrtqlt",
+        "Added as a pattern with the Q~ marker": "ST-xllrtqlt"
+      },
+      "class": "secrets",
+      "answer": "Not added",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "On which matrix is the leak count measured, since the corpus matrix holds no long value and the lead's 93 of 360 cannot be reproduced on it?",
+      "options": [
+        "Add a test-side matrix of the corpus's long value over its keys, separators and quoting depths",
+        "Add the long value to the corpus matrix"
+      ],
+      "recommendation": "Add a test-side matrix of the corpus's long value over its keys, separators and quoting depths",
+      "reason": "it leaks 1 of 128 before and 0 of 128 after, while a long value in the corpus matrix would add about 100 rows the scan misses and break its known-gap maximum",
+      "do": {
+        "Add a test-side matrix of the corpus's long value over its keys, separators and quoting depths": "ST-xllrtqlt",
+        "Add the long value to the corpus matrix": "ST-xllrtqlt"
+      },
+      "class": "design",
+      "answer": "Add a test-side matrix of the corpus's long value over its keys, separators and quoting depths",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "blocking",
+      "question": "Where may a long token start after an equals sign, and how long are the cloud shapes?",
+      "options": [
+        "After any single equals sign, shapes with the real prefixes and minimum lengths",
+        "Only after a name ending in a credential word"
+      ],
+      "recommendation": "After any single equals sign, shapes with the real prefixes and minimum lengths",
+      "reason": "the words filter keeps identifiers, the rewrite rate on engineering text measured 0.66% before and after, and npm needs only 30 characters so the planted value passes",
+      "do": {
+        "After any single equals sign, shapes with the real prefixes and minimum lengths": "ST-xllrtqlt",
+        "Only after a name ending in a credential word": "ST-xllrtqlt"
+      },
+      "class": "secrets",
+      "answer": "After any single equals sign, shapes with the real prefixes and minimum lengths",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "notes": "Planner (SP-jwvaq2hu): check 1 (test_redact.py) passes before the work and pins the critical redaction test the corpus extends; check 2 builds the four cloud key shapes at run time (no secret-shaped literal in the item).",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-557596e3",
