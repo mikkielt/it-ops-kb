@@ -8,6 +8,11 @@ on:
     branches: ["**"]
     tags: ["**"]
   workflow_dispatch:
+    inputs:
+      write_bytecode:
+        description: "Let Python write .pyc files in this run (drops PYTHONDONTWRITEBYTECODE), to compare both arms of a timing"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -17,22 +22,32 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  PYTHONDONTWRITEBYTECODE: "1"
+  # An empty value counts as unset for Python, so a dispatch with write_bytecode true writes .pyc files.
+  PYTHONDONTWRITEBYTECODE: ${{ !inputs.write_bytecode && '1' || '' }}
 
 jobs:
   # The full image has git, so the git scenarios run instead of skipping; a full clone keeps the history the KB-*
-  # commit trailers check reads.
+  # commit trailers check reads. The runner's CPU and the versions print before the tests, the log names the ten
+  # slowest tests, and the trailers check runs whatever the tests did.
   kb-tests:
     runs-on: ubuntu-latest
     container: python:3.14
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - run: pip install --quiet uv
-      - run: python3 _tools/tests.py
-      - run: python3 _tools/kbgit.py check-trailers
+      - name: Runner and versions
+        run: |
+          nproc
+          grep -m1 "model name" /proc/cpuinfo
+          python3 --version
+          uv run --quiet --frozen python -m pytest --version
+      - run: python3 _tools/tests.py --durations 10
+      - if: always()
+        run: python3 _tools/kbgit.py check-trailers
 
   # The public home never gets the query log's store or a root's observed signals (kb/_self/git.md, Public home): a
   # pushed ref whose history touches kb/_querylog or any _logs.csv fails. Runs only where the repository variable KB_PUBLIC_HOME is `true`; a clone hosted

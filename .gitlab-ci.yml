@@ -39,7 +39,7 @@ kb-tests:
   script:
     - git config --global --add safe.directory "$CI_PROJECT_DIR"
     - pip install --quiet uv
-    - python3 _tools/tests.py
+    - python3 _tools/tests.py --durations=10
     - python3 _tools/kbgit.py check-trailers
   rules:
     - when: manual
