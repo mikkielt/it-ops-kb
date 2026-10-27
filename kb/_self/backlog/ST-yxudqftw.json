@@ -58,7 +58,11 @@
       ],
       "recommendation": "Scan with str.isupper/islower (stdlib only, one small function replacing the CAMEL regex use)",
       "reason": "because it covers every script with case and needs no range table to maintain",
-      "class": "design"
+      "class": "design",
+      "answer": "Scan with str.isupper/islower (stdlib only, one small function replacing the CAMEL regex use)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
