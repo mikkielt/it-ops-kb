@@ -2,7 +2,7 @@
   "id": "ST-qnzkp6xy",
   "kind": "story",
   "title": "An operator-class gate answer recorded from an agent session says so, and horizon and the sprint review list it for re-confirmation",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-fn7letri",
   "priority": "P1",
@@ -92,6 +92,28 @@
   ],
   "notes": "Planner (SP-fn7letri): check 1 (test_authority.py) passes before the work and pins the critical operator-only authority test, which the work extends; check 0 reads the three modules for the new field.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-557596e3",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "4256f969d6adda82c6c3198f7285f36302161f81",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import inspect,bl_items,bl_check,bl_view;ok=all('agent_session' in inspect.getsource(m) for m in (bl_items,bl_check,bl_view));print(ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "a9ac0c3ac83c40e1"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "_tools/test_authority.py"
+        ],
+        "exit": 0,
+        "sha256": "363defa289d15709"
+      }
+    ]
+  }
 }
