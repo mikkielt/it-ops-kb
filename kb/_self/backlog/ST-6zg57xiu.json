@@ -2,7 +2,7 @@
   "id": "ST-6zg57xiu",
   "kind": "story",
   "title": "session-load measures the intake hook's real cost at session start, its drift scan running item checks",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nxb7hjwd",
   "sprint": "SP-m5m67goe",
   "priority": "P2",
@@ -54,5 +54,7 @@
     "ST-qqpcgqe7"
   ],
   "notes": "Premise from ST-7nuaruwn's first record (before g8's pin): the SessionStart intake hook's drift scan took about 50 s and 50 CPU seconds per session start in a replay clone, against under 15 starts for every other hook; the pinned record leaves it out (gate g8 of ST-7nuaruwn). The hook files nothing in a linked worktree under .claude/worktrees/ (kb/_self/backlog.md), so dispatched workers skip it; sessions in the main checkout, interactive or headless, pay it. Its figure goes into the switch decision of ST-qqpcgqe7. Operator chose on 2026-10-26: keep the pin and measure this apart. The pinned arm comparison (arms A, C, D) stays as it is; the sprint review's done reruns its checks.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-557596e3",
+  "operator": "op-f618a13e"
 }
