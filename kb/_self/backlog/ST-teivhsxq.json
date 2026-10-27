@@ -66,7 +66,11 @@
         "By name across the repository's kept Python files, the first 100 per symbol with references_total": "ST-teivhsxq",
         "Resolved through imports and scopes, unlimited": "ST-teivhsxq"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "By name across the repository's kept Python files, the first 100 per symbol with references_total",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
