@@ -2,7 +2,7 @@
   "id": "BG-xtbnda2h",
   "kind": "bug",
   "title": "bench_repro.match_facts pairs no paraphrase of one fact, so duplicate research and dup_facts miss differently worded duplicates",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-jxf76aa2",
   "priority": "P2",
   "rank": 0,
@@ -68,6 +68,28 @@
   ],
   "notes": "Planning 2026-10-27: goal narrowed to what the repro and the negative check read; found by the SP-n7f53pgv review (S2 on ST-f5lbn3aw). The matcher feeds the repro benchmark too, so a looser match changes its figures.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-775f1f5d",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "127e2aca60281951e4b3c22a125fdb52e334f09f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bench_repro as R\nf=lambda t:{'path':'public/x/y.md','text':t+' [DOC S-aaaa]','at':1.0,'ids':['S-aaaa'],'doc':['S-aaaa']}\nm=R.match_facts([f('The export job sends 512 records in each request and retries a failed batch three times.')],[f('The import job reads at most 64 files per folder and skips hidden files.')])\nprint(m);sys.exit(0 if m==[] else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bench_repro as R\nf=lambda t:{'path':'public/x/y.md','text':t+' [DOC S-aaaa]','at':1.0,'ids':['S-aaaa'],'doc':['S-aaaa']}\nm=R.match_facts([f('The export job sends 512 records in each request and retries a failed batch three times.')],[f('Each export request carries up to 512 records; a failed batch is retried three times.')])\nprint(m);sys.exit(0 if m else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "98032dee64f730f6"
+      }
+    ]
+  }
 }
