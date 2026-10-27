@@ -2,7 +2,7 @@
   "id": "ST-dnpg6e7d",
   "kind": "story",
   "title": "pack answers as of a date or a release, with the facts valid then, and says which it left out",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-lrmcc2uf",
   "sprint": "SP-jxf76aa2",
   "priority": "P2",
@@ -89,5 +89,7 @@
     "moved out: SP-vlfcgmbu"
   ],
   "notes": "Plan check 2026-10-26: every check plants a temporary root (KB_ROOTS) with a fact valid 2020-2022 and one valid from 2023 and fails on the base (no --as-of, no as_of, no mark). Check 1 reads kb_pack over MCP; the clause maps to check 0, the CLI. Goal narrowed: as of a release or a revision for CODE facts' commit ranges is left out, since no check can tell whether a revision lies in a source repository's range without that repository; a later item carries it. Moved out of SP-vlfcgmbu by the unattended orchestrator 2026-10-26: depends on ST-mp4pjor2, whose gates g2 and g3 (class agents-rule) wait on the operator.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
