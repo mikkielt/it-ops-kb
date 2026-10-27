@@ -13,21 +13,63 @@
       "run": [
         "python3",
         "-c",
-        "import os,subprocess,sys; env=dict(os.environ,KB_ROOTS='_tools/fixtures/lang/de'); o=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','lang-de','--format','concise','Wie lade ich X im Kartenskript?'],env=env,capture_output=True,text=True,check=True).stdout; assert 'coverage: good' in o, o[:400]"
+        "import os, sys\nsys.path.insert(0, '_tools')\nimport kbcommon\nmiss = [d for d in ('de', 'pl') if not os.path.isdir('_tools/lang/' + d)]\nmiss and sys.exit('no profile data under _tools/lang/ for %s' % miss)\ntry:\n    de, pub = kbcommon.load_root('_tools/fixtures/lang/de'), kbcommon.load_root('kb/public')\nexcept kbcommon.RootError as e:\n    sys.exit('root not loadable: %s' % e)\nlangs = lambda r: tuple(getattr(r, 'languages', ()) or ())\nlangs(de) == ('de',) or sys.exit('lang-de languages are %s, want (de,)' % (langs(de),))\nlangs(pub) == ('en',) or sys.exit('the public root languages are %s, want the default (en,)' % (langs(pub),))"
       ]
     },
     {
       "run": [
         "python3",
         "-c",
-        "import os,subprocess,sys; env=dict(os.environ,KB_ROOTS='_tools/fixtures/lang/pl'); o=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','lang-pl','--format','concise','Jak wczytać X w skrypcie mapy?'],env=env,capture_output=True,text=True,check=True).stdout; assert 'coverage: good' in o, o[:400]"
+        "import os, re, subprocess, sys\nsys.path.insert(0, '_tools')\nDE, PL, OWN, BAD = ('_tools/fixtures/lang/' + n for n in ('de', 'pl', 'own', 'bad'))\ndef pack(roots, root, q):\n    env = dict(os.environ, KB_ROOTS=os.pathsep.join(roots))\n    r = subprocess.run([sys.executable, '_tools/rag.py', 'pack', '--root', root, '--format', 'concise', q], env=env, capture_output=True, text=True)\n    return r.stdout\ndef head(o):\n    return o.splitlines()[0] if o else '(no output)'\n\no = pack([OWN], 'lang-own', 'Ka lodu zu mapa?')\n'coverage: good' in o or sys.exit('a root-owned profile (stop words ka, zu) did not give good: ' + head(o))"
       ]
     },
     {
       "run": [
         "python3",
         "-c",
-        "import os,subprocess,sys; env=dict(os.environ,KB_ROOTS='_tools/fixtures/lang/de'); o=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','lang-de','--format','concise','Wie lösche ich Y im Kartenskript?'],env=env,capture_output=True,text=True,check=True).stdout; assert 'coverage: none' in o, o[:400]"
+        "import os, re, subprocess, sys\nsys.path.insert(0, '_tools')\nDE, PL, OWN, BAD = ('_tools/fixtures/lang/' + n for n in ('de', 'pl', 'own', 'bad'))\ndef pack(roots, root, q):\n    env = dict(os.environ, KB_ROOTS=os.pathsep.join(roots))\n    r = subprocess.run([sys.executable, '_tools/rag.py', 'pack', '--root', root, '--format', 'concise', q], env=env, capture_output=True, text=True)\n    return r.stdout\ndef head(o):\n    return o.splitlines()[0] if o else '(no output)'\n\nq = 'Wie lade ich Kartenskript jak?'\nonly, both = head(pack([DE], 'lang-de', q)), head(pack([DE, PL], 'lang-de', q))\n'jak' in only or sys.exit('with only lang-de served, jak should be listed as not in the kb: ' + only)\n'jak' not in both or sys.exit('with lang-pl served, jak (a Polish stop word) should not be a key word: ' + both)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, re, subprocess, sys\nsys.path.insert(0, '_tools')\nDE, PL, OWN, BAD = ('_tools/fixtures/lang/' + n for n in ('de', 'pl', 'own', 'bad'))\ndef pack(roots, root, q):\n    env = dict(os.environ, KB_ROOTS=os.pathsep.join(roots))\n    r = subprocess.run([sys.executable, '_tools/rag.py', 'pack', '--root', root, '--format', 'concise', q], env=env, capture_output=True, text=True)\n    return r.stdout\ndef head(o):\n    return o.splitlines()[0] if o else '(no output)'\n\nroots = [DE, PL]\nbad = []\nfor root, q in (('lang-de', 'Wie lade ich Kartenskripte?'), ('lang-de', 'Wie lade ich ein Kartenskript?'), ('lang-pl', 'Jak wczytać skrypty mapy?')):\n    o = pack(roots, root, q)\n    'coverage: good' in o or bad.append('%s %r: %s' % (root, q, head(o)))\nbad and sys.exit('inflected questions not good with both roots served: ' + '; '.join(bad))"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, re, subprocess, sys\nsys.path.insert(0, '_tools')\nDE, PL, OWN, BAD = ('_tools/fixtures/lang/' + n for n in ('de', 'pl', 'own', 'bad'))\ndef pack(roots, root, q):\n    env = dict(os.environ, KB_ROOTS=os.pathsep.join(roots))\n    r = subprocess.run([sys.executable, '_tools/rag.py', 'pack', '--root', root, '--format', 'concise', q], env=env, capture_output=True, text=True)\n    return r.stdout\ndef head(o):\n    return o.splitlines()[0] if o else '(no output)'\n\no = pack([DE], 'lang-de', 'Wie heisst die Koenigin einer Karte?')\n'coverage: good' in o or sys.exit('folded spelling Koenigin did not meet Königin: ' + head(o))"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, re, subprocess, sys\nsys.path.insert(0, '_tools')\nDE, PL, OWN, BAD = ('_tools/fixtures/lang/' + n for n in ('de', 'pl', 'own', 'bad'))\ndef pack(roots, root, q):\n    env = dict(os.environ, KB_ROOTS=os.pathsep.join(roots))\n    r = subprocess.run([sys.executable, '_tools/rag.py', 'pack', '--root', root, '--format', 'concise', q], env=env, capture_output=True, text=True)\n    return r.stdout\ndef head(o):\n    return o.splitlines()[0] if o else '(no output)'\n\n'coverage: good' in pack([DE], 'lang-de', 'Wie lade ich X im Kartenskript?') or sys.exit('the present fact is not good, so a none proves nothing')\no = pack([DE], 'lang-de', 'Wie lösche ich Y im Kartenskript?')\n'coverage: none' in o or sys.exit('a fact the root lacks should be none: ' + head(o))"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport kbcommon\ntry:\n    kbcommon.load_root('_tools/fixtures/lang/bad')\nexcept kbcommon.RootError as e:\n    m = str(e)\n    ok = all(w in m for w in ('xx', 'de', 'pl'))\n    ok or sys.exit('refusal does not name the code xx and the codes de, pl: ' + m[:300])\nelse:\n    sys.exit('a root naming a language with no profile was accepted')"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, re, subprocess, sys\nsys.path.insert(0, '_tools')\nDE, PL, OWN, BAD = ('_tools/fixtures/lang/' + n for n in ('de', 'pl', 'own', 'bad'))\ndef pack(roots, root, q):\n    env = dict(os.environ, KB_ROOTS=os.pathsep.join(roots))\n    r = subprocess.run([sys.executable, '_tools/rag.py', 'pack', '--root', root, '--format', 'concise', q], env=env, capture_output=True, text=True)\n    return r.stdout\ndef head(o):\n    return o.splitlines()[0] if o else '(no output)'\n\nfor code_, root in (('de', 'lang-de'), ('pl', 'lang-pl')):\n    f = '_tools/fixtures/lang/%s/_retrieval/lookup_heldout.csv' % code_\n    os.path.exists(f) or sys.exit('no held-out file ' + f)\n    r = subprocess.run([sys.executable, '_tools/rag.py', 'eval', '--root', root, '--file', f], env=dict(os.environ, KB_ROOTS='_tools/fixtures/lang/' + code_), capture_output=True, text=True)\n    m = re.search(r'questions=(\\d+) passed=(\\d+)', r.stdout)\n    (r.returncode == 0 and m and int(m.group(1)) >= 3 and m.group(1) == m.group(2)) or sys.exit('%s held-out eval: exit %s, %s' % (root, r.returncode, (r.stdout or r.stderr).strip()[-200:]))"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, re, subprocess, sys\nsys.path.insert(0, '_tools')\nDE, PL, OWN, BAD = ('_tools/fixtures/lang/' + n for n in ('de', 'pl', 'own', 'bad'))\ndef pack(roots, root, q):\n    env = dict(os.environ, KB_ROOTS=os.pathsep.join(roots))\n    r = subprocess.run([sys.executable, '_tools/rag.py', 'pack', '--root', root, '--format', 'concise', q], env=env, capture_output=True, text=True)\n    return r.stdout\ndef head(o):\n    return o.splitlines()[0] if o else '(no output)'\n\nbad = []\nfor root, q in (('lang-de', 'Wie lade ich X im Kartenskript?'), ('lang-pl', 'Jak wczytać X w skrypcie mapy?')):\n    o = pack([DE, PL], root, q)\n    'coverage: good' in o or bad.append('%s: %s' % (root, head(o)))\nbad and sys.exit('a fact the root holds should be good: ' + '; '.join(bad))"
       ]
     },
     {
@@ -45,6 +87,52 @@
         "--base",
         "origin/main"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "_root.md may carry languages: en, de (default en = today's behaviour, byte-identical packs for every existing root). Per-language data under _tools/lang/<code>/ for de and pl (stop words, suffix rules, optional folding variants such as ö/oe and ł/l)",
+      "check": 0
+    },
+    {
+      "clause": "a root may bring its own profile in the same format under its _retrieval/lang/<code>/. Stop words are the union of the served roots' languages",
+      "check": 1
+    },
+    {
+      "clause": "a root may bring its own profile in the same format under its _retrieval/lang/<code>/. Stop words are the union of the served roots' languages",
+      "check": 2
+    },
+    {
+      "clause": "each indexed unit is stemmed by its own root's profile and the query once per root it is matched against",
+      "check": 3
+    },
+    {
+      "clause": "a folding variant counts as present like an alias and is never a key word. A root naming a code with no profile is refused, naming the code and the codes that exist. A tiny German and a tiny Polish fixture root, with their own held-out questions and eval outside the public held-out file, answer good where the fact is present and none where it is not",
+      "check": 4
+    },
+    {
+      "clause": "a folding variant counts as present like an alias and is never a key word. A root naming a code with no profile is refused, naming the code and the codes that exist. A tiny German and a tiny Polish fixture root, with their own held-out questions and eval outside the public held-out file, answer good where the fact is present and none where it is not",
+      "check": 5
+    },
+    {
+      "clause": "a folding variant counts as present like an alias and is never a key word. A root naming a code with no profile is refused, naming the code and the codes that exist. A tiny German and a tiny Polish fixture root, with their own held-out questions and eval outside the public held-out file, answer good where the fact is present and none where it is not",
+      "check": 6
+    },
+    {
+      "clause": "a folding variant counts as present like an alias and is never a key word. A root naming a code with no profile is refused, naming the code and the codes that exist. A tiny German and a tiny Polish fixture root, with their own held-out questions and eval outside the public held-out file, answer good where the fact is present and none where it is not",
+      "check": 7
+    },
+    {
+      "clause": "a folding variant counts as present like an alias and is never a key word. A root naming a code with no profile is refused, naming the code and the codes that exist. A tiny German and a tiny Polish fixture root, with their own held-out questions and eval outside the public held-out file, answer good where the fact is present and none where it is not",
+      "check": 8
+    },
+    {
+      "clause": "the public eval shares and the test ids stay unchanged",
+      "check": 9
+    },
+    {
+      "clause": "the public eval shares and the test ids stay unchanged",
+      "check": 10
     }
   ],
   "touches": [
@@ -113,6 +201,6 @@
       "role": "interactive"
     }
   ],
-  "notes": "Premise (run at plan time): kbfacts.key_terms('How do I load X in a usermap?') -> ['load', 'usermap']; key_terms('Wie lade ich X im Kartenskript?') -> ['wie', 'lade', 'ich', 'im', 'kartenskript'] (wie, ich, im count as key words); key_terms('Kartenskripte laden Karten') -> ['kartenskript', 'laden', 'karten'] (no German suffix stripped: laden stays laden). Reproduces at the key-word level. The pack-level good-versus-none verdict was not re-run: it needs the fixture root this story adds (no German root exists to run it on). _meta() in kbcommon.py reads one flat key: value per line, so languages needs a list parse. The index unit cache key already hashes STOP, kbid.STOP and the token patterns (kf_index.py _weigh_data), so profile data must enter that hash and INDEX_VERSION bumps. Existing readers of kbfacts.STOP (bench_pool, factdiff, kbid, kbtools, ql_apply, ql_learn) keep the English base set and need no edit if the union is a new function. Overlap: ST-q5o7z2mf (sprint SP-jwvaq2hu) touches _tools/rag.py, AGENTS.md, kb/_self/tools.md; this story touches kb/_self/tools.md too, so land after it or rebase. Operator 2026-10-27: g1 refuse an unknown code; g2 de and pl shipped plus a root's own profile under its _retrieval/; g3 the fixture roots keep their own held-out file. Planner (SP-iir3d2tu): after ST-yl6b2ues (both edit _tools/kbcommon.py); ST-xllrtqlt edits kbcommon.SECRETS, a different section, so the landing rebase merges it.",
+  "notes": "Premise (plan time): key_terms('Wie lade ich X im Kartenskript?') -> ['wie','lade','ich','im','kartenskript'] (wie, ich, im count as key words) and key_terms('Kartenskripte laden Karten') strips no German suffix; the English question gives ['load','usermap']. Reproduces at the key-word level; the pack-level verdict needs this story's fixture. _meta() reads flat key: value lines, so languages needs a list parse. The unit cache key hashes STOP and the token patterns (kf_index.py _weigh_data): profile data enters that hash and INDEX_VERSION bumps. Readers of kbfacts.STOP keep the English base set if the union is a new function.\nOperator 2026-10-27: g1 refuse an unknown code; g2 de and pl shipped plus a root's own profile under _retrieval/; g3 fixture roots keep their own held-out file. Order: after ST-yl6b2ues (kbcommon.py) and ST-q5o7z2mf (tools.md).\nChecks 9 (rag.py eval) and 10 (perfcheck ids) pass before the work and pin behaviour that must stay unchanged; every other check fails before it with a one-line reason.\nContract the checks read: Root.languages is a tuple (('en',) default); fixtures _tools/fixtures/lang/{de,pl,own,bad} as roots lang-de, lang-pl, lang-own (code qq, stop words ka, zu; fact 'Lodu mapa `LoadMap`.'), bad (languages: xx). de facts: 'Ein Kartenskript laden Sie mit `LoadMap`.', 'Die Königin einer Karte heißt `MapQueen`.'; pl fact 'Skrypt mapy wczytuje się funkcją `LoadMap`.', stop word jak; each of de, pl has _retrieval/lookup_heldout.csv with 3 or more passing rows; nothing about deleting.",
   "filed_in": "clone-0ea70e5c"
 }
