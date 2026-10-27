@@ -60,7 +60,12 @@
     "kb/_self/querylog.md",
     "kb/_self/git.md",
     "kb/_self/plugin.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/public/agents/api-tokens-issue-and-store.md",
+    "kb/public/auth/issuer-token-rotation.md",
+    "kb/public/security/kali-default-account-vm-containers.md",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
   ],
   "depends_on": [
     "BG-juf5gvt4"
@@ -163,7 +168,7 @@
       "role": "interactive"
     }
   ],
-  "notes": "Planner (SP-fn7letri): check 1 (the leak and redact test files) passes before the work and pins the critical leak guard; the corpus and known_gap list land inside those test functions. Depends on BG-juf5gvt4 (SP-m5m67goe), which also edits _tools/test_redact.py. Check 2 builds its fake secrets at run time.",
+  "notes": "Planner (SP-fn7letri): check 1 (the leak and redact test files) passes before the work and pins the critical leak guard; the corpus and known_gap list land inside those test functions. Depends on BG-juf5gvt4 (SP-m5m67goe), which also edits _tools/test_redact.py. Check 2 builds its fake secrets at run time. Operator 2026-10-27: g3 back to the recommended scope (vendor exports and pinned snapshots skip the new shapes, keep the old secret scan); reword the three kb/public prose lines the new shapes hit, keeping each fact's meaning, tag and source.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-557596e3",
   "operator": "op-f618a13e"
