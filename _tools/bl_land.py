@@ -2244,6 +2244,44 @@ def move_run(iid, state, who, **fields):
     return moved
 
 
+CLAIM_HELD = ("claimed", "working", "blocked", "returned", "failed", "staging", "landing", "refused")  # run states of a run in progress: a claim by another owner is refused while the key holds one
+CLAIMER_STEP = "by:"  # the claimed event's `step` field starts with this, then the claimer's ops token
+
+
+def run_claimer(iid):
+    """The claimer the newest `claimed` progress event of the item names in its step (ops token), '' when coord cannot be
+    read, the item has no such event or the event names none."""
+    code, body, _ = bl_clean.run_coord("wait", "--kind", "progress", "--item", iid, "--since", "0", "--timeout", "0")
+    events = body.get("events") if code == 0 and isinstance(body, dict) else None
+    for event in reversed(events if isinstance(events, list) else []):
+        fields = event.get("fields") if isinstance(event, dict) and isinstance(event.get("fields"), dict) else {}
+        if fields.get("state") == "claimed":
+            step = str(fields.get("step") or "")
+            return step[len(CLAIMER_STEP):] if step.startswith(CLAIMER_STEP) else ""
+    return ""
+
+
+def take_claim(iid, by, mine=False):
+    """Move the item's run state to `claimed` for BY, in one coord transition that records BY in the event (`run_claimer`).
+    Raises Refused, changing nothing, when the key holds a state of CLAIM_HELD for another claimer (MINE: the item file
+    of this checkout already names BY, which stands in for a claimer the event does not name). The same BY again is no
+    news. A coord that cannot be reached, or a state the table never moves from (landed), is said and never refuses."""
+    token = ops_token(by)
+    moved, held, why = take_run(iid, "claimed", "claim", step=f"{CLAIMER_STEP}{token}")
+    if moved:
+        return True
+    if held in CLAIM_HELD:
+        owner = run_claimer(iid) or (token if mine else "")
+        if owner == token:
+            return False
+        raise Refused(f"claim refuses {iid} for {by}: its run state is {held}, held by "
+                      f"{owner or 'an owner the run state does not name'}; wait for that run to end, or, when it died, "
+                      f"run python3 _tools/backlog.py runs --reconcile (it moves the state to released); nothing was changed")
+    if held != "claimed":
+        say(f"claim: run state of {iid} not moved to claimed: {why} (backlog.py runs --reconcile repairs it)")
+    return False
+
+
 RUN_TOOLS = {"staging": "stage-back", "landing": "land"}  # the tool that holds each of the two states while it runs
 RUN_HEALED = {"staging": "returned", "landing": "refused"}  # where `runs --reconcile` moves a key nothing holds
 
@@ -2300,7 +2338,8 @@ def enter_run(iid, state, who, **fields):
     ENTERED is true when the key is STATE for this run, moved to it or found there with no live holder (a stage-back or
     land that died; the move this run ends with then closes it); REFUSAL is a text, and the run does not start, when the
     key holds the other tool's state or STATE with a live process record of the item. A coord that cannot be reached or
-    a state the table never moves from (failed, working) is said, and the run goes on as before."""
+    a state the table never moves from (failed, landed, none) is said, and the run goes on as before. A land also refuses
+    a key at released, and at working while a process record of a worker runs."""
     moved, held, why = take_run(iid, state, who, **fields)
     if moved:
         return True, ""
@@ -2315,6 +2354,15 @@ def enter_run(iid, state, who, **fields):
                            f"end; nothing was changed")
         say(f"{who}: the run state of {iid} was left at {state} by a {who} that is gone: taken over")
         return True, ""
+    if state == "landing" and held == "released":
+        return False, (f"the run state of {iid} is released: its run was given up, so the branch is not landed; claim the "
+                       f"item again (backlog.py claim {iid}), or, when the state is wrong, run python3 _tools/backlog.py "
+                       "runs --reconcile; nothing was changed")
+    if state == "landing" and held == "working":
+        pid = run_holder(iid)
+        if pid:
+            return False, (f"the run state of {iid} is working: a worker of pid {pid} is running on it; wait for it to "
+                           f"end; nothing was changed")
     say(f"{who}: run state of {iid} not moved to {state}: {why} (backlog.py runs --reconcile repairs it)")
     return False, ""
 

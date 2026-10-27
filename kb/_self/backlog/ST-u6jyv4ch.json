@@ -62,6 +62,39 @@
   "relates_to": [
     "EP-nij36lt7"
   ],
+  "gates": [
+    {
+      "id": "claimer",
+      "kind": "blocking",
+      "question": "How does a claim learn which --by holds the run key run/ID, since the key holds only a state?",
+      "options": [
+        "the claimed event's step field carries by:<ops token of --by>, read from the newest claimed event",
+        "a second coord key run-by/ID written after the transition"
+      ],
+      "recommendation": "the claimed event's step field carries by:<ops token of --by>, read from the newest claimed event",
+      "reason": "(one atomic transition, so two concurrent claims leave no gap in which the winner is unnamed)",
+      "do": {
+        "the claimed event's step field carries by:<ops token of --by>, read from the newest claimed event": "ST-u6jyv4ch",
+        "a second coord key run-by/ID written after the transition": "ST-u6jyv4ch"
+      },
+      "class": "secrets"
+    },
+    {
+      "id": "scope",
+      "kind": "blocking",
+      "question": "Which tools refuse a run at released or at working with a live worker pid, and what does a claim do when the key names no claimer?",
+      "options": [
+        "land only (stage-back keeps its warning); a claim for another --by refuses when no claimer is named",
+        "land and stage-back both; a claim proceeds when no claimer is named"
+      ],
+      "recommendation": "land only (stage-back keeps its warning); a claim for another --by refuses when no claimer is named",
+      "do": {
+        "land only (stage-back keeps its warning); a claim for another --by refuses when no claimer is named": "ST-u6jyv4ch",
+        "land and stage-back both; a claim proceeds when no claimer is named": "ST-u6jyv4ch"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "notes": "Planner (SP-jwvaq2hu): check 0 reads cmd_claim and enter_run for the run-key read; the goal names planted repros in a scratch clone with a local bare origin (no test id) for each refusal and fail-open path, so the worker report gives each repro command and its exit.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-557596e3",

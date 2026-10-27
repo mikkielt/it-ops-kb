@@ -22,7 +22,7 @@ from bl_check import (
 )  # bl_intake: the module refused_command_errors reads check_program_refusal from, so `new` and `check` agree
 from bl_land import (
     REOPENED_REFS, RESEARCH_DEFAULT_GOAL, cleanup_gate_do, clauses_left_behind, move_run, prune_reopened_refs,
-    run_check, own_failure,
+    run_check, own_failure, take_claim,
 )  # move_run: bl_land owns the run-state move, since bl_land cannot import bl_items without a cycle
 from bl_view import (
     is_near, similar,
@@ -371,6 +371,9 @@ def cmd_claim(bl, a):
             raise Refused(f"claim refuses {bl.label(iid)} for {a.by}: another session ({here[busy[0]].get('by')}) works "
                           f"in this checkout ({top}) on {', '.join(bl.label(i) for i in busy)}; each session works in its "
                           "own worktree (git worktree add), so its claim commits never land on another session's branch")
+        # the coord key run/<id> (shared by every tree and clone) is taken before anything is written: a run another owner
+        # holds refuses the claim here, and the transition itself lets one of two concurrent claims win
+        take_claim(iid, a.by, mine=it.get("status") == "doing" and it.get("claimed_by") == a.by)
         it.update(status="doing", claimed_by=a.by)
         it.pop("operator", None)
         who = operator_who()[0]
@@ -385,7 +388,6 @@ def cmd_claim(bl, a):
         except OSError:
             pass  # the record guards the next claim; a checkout it cannot be written in is not refused for it
     say(f"claimed {bl.label(iid)} for {a.by}")
-    move_run(iid, "claimed", "claim")
     commit_written(bl, a, "claim", iid)
     return 0
 
