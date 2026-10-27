@@ -2,7 +2,7 @@
   "id": "ST-xllrtqlt",
   "kind": "story",
   "title": "The query-log redactor catches a long token after an equals sign and the common cloud key shapes",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-jwvaq2hu",
   "priority": "P1",
@@ -142,6 +142,37 @@
   ],
   "notes": "Planner (SP-jwvaq2hu): check 1 (test_redact.py) passes before the work and pins the critical redaction test the corpus extends; check 2 builds the four cloud key shapes at run time (no secret-shaped literal in the item).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-557596e3",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "fb6a30e0a23e871ea98f08e0c30737388bab813b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import redact as r;v='Zx9Qm4'+'Lp7Rt2Vb8Nc5Kd3Wf6Hj';s='token='+v;g='AI'+'zaSyD'+'Qm4Lp7Rt2Vb8Nc5Kd3Wf6Hj01234567';ok=v not in r.redact(s) and g not in r.redact('key '+g);print(ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "a9ac0c3ac83c40e1"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "_tools/test_redact.py"
+        ],
+        "exit": 0,
+        "sha256": "30f960adc47da400"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import kbcommon as k;t='Qm4Lp7Rt2Vb8Nc5Kd3Wf6Hj01';vals=['AI'+'za'+'SyD'+t+'2345678','sk_'+'live_'+t,'npm_'+t+'Ab9x8Yz7Wq','SG'+'.'+t[:22]+'.'+t+'Ab9x8Yz7Wq6Vu5Ts4Rp'];miss=[v[:6] for v in vals if not k.leak_hits('key '+v)];print(miss);sys.exit(0 if not miss else 1)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      }
+    ]
+  }
 }
