@@ -20,6 +20,24 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the rebase stop make its remedy work as printed once land removed the worker's worktree?",
+      "options": [
+        "Print the git worktree add line before the remedy line",
+        "Keep the order and reword the remedy to say run the git worktree add first"
+      ],
+      "recommendation": "Print the git worktree add line before the remedy line",
+      "reason": "the commands then run top to bottom as printed",
+      "do": {
+        "Print the git worktree add line before the remedy line": "BG-uoswts7n",
+        "Keep the order and reword the remedy to say run the git worktree add first": "BG-uoswts7n"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "parked: SP-basca7ae review"
   ],

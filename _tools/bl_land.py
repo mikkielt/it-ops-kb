@@ -1926,6 +1926,15 @@ def worktree_back(root, released, branch, iid):
                    f"  git worktree add {shlex.quote(where(path))} {branch}" for path in released)
 
 
+def stop_with_worktree_back(text, back):
+    """TEXT, a stop's message, with BACK (`worktree_back`) put before its `remedy:` line when it has one, else after
+    it: the remedy sends the worker to the worktree, so the `git worktree add` that makes it exist is read first."""
+    found = re.search(r"^remedy: ", text, re.M)
+    if not back or not found:
+        return text + back
+    return f"{text[:found.start()]}{back.lstrip(chr(10))}\n{text[found.start():]}"
+
+
 def land_once(bl, a):
     """Land a finished item's branch under the clone's landing lock (`bl_close.landing_lock`: landings of one clone run
     one at a time, a second one says which item holds the lock and waits): `land_locked`."""
@@ -2100,7 +2109,7 @@ def land_locked(bl, a):
         raise land_stop("fetch and rebase", str(e) + worktree_back(root, released, branch, iid)) from None
     except Refused as e:  # a stop after the worker's worktree was removed: the branch keeps every commit
         if released:
-            raise Refused(str(e) + worktree_back(root, released, branch, iid)) from None
+            raise Refused(stop_with_worktree_back(str(e), worktree_back(root, released, branch, iid))) from None
         raise
     finally:  # the landing worktree goes, whatever happened; an in-place landing is back where land started
         returned = True
