@@ -42,7 +42,8 @@
     "kb/_self/token-efficiency.md",
     "_tools/kf_fresh.py",
     "_tools/kbfacts.py",
-    "_tools/ql_store.py"
+    "_tools/ql_store.py",
+    "_tools/test_redact.py"
   ],
   "gates": [
     {
@@ -66,7 +67,7 @@
       "role": "interactive"
     }
   ],
-  "notes": "Check 1 passes before the work by design: it pins kb_hook's answers so the speed-up cannot drop them. The worker measures the sync_ms figure's run-to-run spread before relying on the 200 ms bound (the planning rule ST-7qait5zh files).",
+  "notes": "Check 1 passes before the work by design: it pins kb_hook's answers so the speed-up cannot drop them. The worker measures the sync_ms figure's run-to-run spread before relying on the 200 ms bound (the planning rule ST-7qait5zh files). Operator 2026-10-27 (g1): widen the touches to kf_fresh.py, kbfacts.py, ql_store.py and the test that pins them (test_redact.py, per referrers).",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-557596e3",
   "operator": "op-f618a13e"
