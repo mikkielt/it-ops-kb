@@ -2,7 +2,7 @@
   "id": "ST-nzddxh5q",
   "kind": "story",
   "title": "Research sprint goal: Redaction parity, honest test rows, run ownership and held quality",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-jwvaq2hu",
   "goal_research": true,
   "priority": "P1",
@@ -44,6 +44,20 @@
     }
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-557596e3",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "be02f5238ccfe51b261417f72cf4f67711f3e4c2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-nzddxh5q"
+        ],
+        "exit": 0,
+        "sha256": "7a2931c241039528"
+      }
+    ]
+  }
 }
