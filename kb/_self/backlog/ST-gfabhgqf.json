@@ -2,7 +2,7 @@
   "id": "ST-gfabhgqf",
   "kind": "story",
   "title": "A refresh closes a changed fact with an end date and adds the new one, instead of rewriting it",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-lrmcc2uf",
   "sprint": "SP-jxf76aa2",
   "priority": "P3",
@@ -79,5 +79,7 @@
     "moved out: SP-vlfcgmbu"
   ],
   "notes": "Plan check 2026-10-26: the old check (factdiff.py anchors --stale) failed on the base for 136 unrelated stale anchors and is dropped. The goal names the command /kb-refresh runs, so a planted root can read it: checks 0-2 close a fact of a temporary root (KB_ROOTS) on 2025-06-01 and fail on the base (no close verb, no --as-of). Check 3 reads the skill text. Moved out of SP-vlfcgmbu by the unattended orchestrator 2026-10-26: depends on ST-mp4pjor2, whose gates g2 and g3 (class agents-rule) wait on the operator.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
