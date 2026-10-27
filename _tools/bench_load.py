@@ -30,6 +30,7 @@ WINDOW_S = 150  # seconds of a phase of arm B: the pane's first run at FIRST_MS 
 CAPTURE_CLASSES = ("kb-tools", "git", "lsof", "claude", "fseventsd", "other")  # the classes of an fs_usage capture, by process name
 FS_COMMAND = "sudo fs_usage -w -f filesys > fs_usage.txt"  # what the operator runs by hand; no check or run of the tool calls sudo
 READ_CALLS = ("read", "readv", "pread", "preadv", "RdData")  # descriptor reads and physical reads
+DESCRIPTOR_CALLS = ("read", "readv", "pread", "preadv")  # the descriptor reads among them; RdData is the disk read
 OPEN_CALLS = ("open", "open_extended", "open_dprotected_np", "openat")  # a read when the mode string starts with R
 FS_LINE = re.compile(r"^\s*\d\d:\d\d:\d\d(?:\.\d+)?\s+(\S+)\s*(.*?)\s+\d+\.\d+(?:\s+W)?\s+(\S.*?)\.\d+\s*$")  # call, fields and path, process
 SAMPLE_S = 0.02  # the sampler's pause between two `ps` listings
@@ -465,9 +466,13 @@ def capture_class(name):
 def read_capture(path):
     """Count the file reads of a capture of `fs_usage -w -f filesys` per process class (kb/public/python/macos-fs-usage-output.md).
     A read is an open whose mode string starts with R, a read, readv, pread or preadv, or an RdData; a write, a WrData and
-    any other call is left out. Returns {"classes": {class: [reads, set of paths]}, "paths": set, "lines": n, "unread": n};
-    raises ValueError when no line of the file has the shape of a wide fs_usage line."""
-    per, every, lines, unread = {c: [0, set()] for c in CAPTURE_CLASSES}, set(), 0, 0
+    any other call is left out. One read of one file can show as an open, a descriptor read and a disk read, so each
+    class also counts the three kinds apart. A RdData line prints a /dev token before an optionally empty path, and a
+    line with no path adds none to the paths. Returns {"classes": {class: {"reads", "opens", "descriptor", "disk": n,
+    "paths": set}}, "paths": set, "lines": n, "unread": n}; raises ValueError when no line of the file has the shape of a
+    wide fs_usage line."""
+    per = {c: {"reads": 0, "opens": 0, "descriptor": 0, "disk": 0, "paths": set()} for c in CAPTURE_CLASSES}
+    every, lines, unread = set(), 0, 0
     with open(path, encoding="utf-8", errors="replace") as f:
         for ln in f:
             m = FS_LINE.match(ln)
@@ -478,15 +483,17 @@ def read_capture(path):
             call = re.sub(r"(?:_nocancel)?(?:\[[^\]]*\])?$", "", m.group(1))
             mid = m.group(2)
             mode = re.search(r"\(([^)\s]*)\)", mid)
-            if not (call in READ_CALLS or (call in OPEN_CALLS and mode and mode.group(1)[:1] == "R")):
+            is_open = call in OPEN_CALLS and bool(mode) and mode.group(1)[:1] == "R"
+            if not (call in READ_CALLS or is_open):
                 continue
             cell = per[capture_class(m.group(3))]
-            cell[0] += 1
+            cell["reads"] += 1
+            cell["opens" if is_open else "disk" if call == "RdData" else "descriptor"] += 1
             where = re.sub(r"^(?:(?:[A-Z]=\S+|\([^)\s]*\)|\[[^\]]*\])\s*)+", "", mid)
             if call == "RdData":
-                where = re.sub(r"^/dev/\S+\s+", "", where)
+                where = re.sub(r"^/dev/\S+(?:\s+|$)", "", where)
             if where:
-                cell[1].add(where.strip())
+                cell["paths"].add(where.strip())
                 every.add(where.strip())
     if not lines:
         raise ValueError(f"{path}: no line of a wide fs_usage capture (a timestamp, the call, the fields, the time and process.thread)")
@@ -494,14 +501,19 @@ def read_capture(path):
 
 
 def capture_rows(b):
-    """The rows of `run session-load --fs-usage FILE`: per process class and for all, `file_reads` and `distinct_paths`."""
+    """The rows of `run session-load --fs-usage FILE`: per process class and for all, `file_reads`, its three kinds
+    (`opens_read`, `descriptor_reads`, `disk_reads`) and `distinct_paths`."""
     got = b.capture
     note = (f"open for reading (mode starts R), read, readv, pread, preadv and RdData lines of a capture of fs_usage -w -f filesys, "
-            f"writes left out; {got['lines']} lines read, {got['unread']} not of that shape; a path is the last 28 bytes fs_usage prints")
+            f"writes left out; {got['lines']} lines read, {got['unread']} not of that shape; a path is the last 28 bytes fs_usage prints; "
+            "one read of one file can show as an open, a descriptor read and a disk read, so the three kinds do not add up to the files read")
+    kinds = (("file_reads", "reads"), ("opens_read", "opens"), ("descriptor_reads", "descriptor"), ("disk_reads", "disk"))
     for cls in (*CAPTURE_CLASSES, "all"):
-        reads, paths = (sum(c[0] for c in got["classes"].values()), got["paths"]) if cls == "all" else got["classes"][cls]
-        b.row("session-load", f"capture {cls}", "capture", "file_reads", reads, 1, note=note if cls == "all" else "")
-        b.row("session-load", f"capture {cls}", "capture", "distinct_paths", len(paths), 1)
+        cells = list(got["classes"].values()) if cls == "all" else [got["classes"][cls]]
+        for metric, key in kinds:
+            b.row("session-load", f"capture {cls}", "capture", metric, sum(c[key] for c in cells), 1,
+                  note=note if cls == "all" and metric == "file_reads" else "")
+        b.row("session-load", f"capture {cls}", "capture", "distinct_paths", len(got["paths"] if cls == "all" else cells[0]["paths"]), 1)
 
 
 def s_session_load(b):
