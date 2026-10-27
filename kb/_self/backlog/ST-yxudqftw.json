@@ -2,7 +2,7 @@
   "id": "ST-yxudqftw",
   "kind": "story",
   "title": "Index and query tokenize Unicode text the same way: CamelCase splits on any letter case, text is NFC, matching is casefolded",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-7vyrared",
   "sprint": "SP-iir3d2tu",
   "priority": "P2",
@@ -133,5 +133,7 @@
     }
   ],
   "notes": "Premise (run at plan time, commit 459853b lineage): CAMEL.findall('PobierzŁącze') -> ['Pobierz', 'cze']; CAMEL.findall('GetEntityÜbersicht') -> ['Get', 'Entity', 'bersicht']; WORD.findall of NFD 'Könige' -> ['Ko', 'nige'] while the NFC form -> ['Könige']; 'Straße'.lower()=='strasse' is False, .casefold() is True. All reproduce. Baseline: rag.py eval -> questions=774 passed=774 verdict_ok=774 found_ok=774. Readers beyond kbfacts: kf_index.py lower()s query words at many sites and its index cache is keyed on the CAMEL/WORD patterns; kf_route.py lower()s question words; every other caller of terms/key_terms inherits the change and needs no edit. re has no \\p{Lu}: the split needs a scan by str.isupper/islower or an explicit class. Checks 3 (rag.py eval) and 4 (perfcheck ids) each passes before the work and pin behaviour that must stay unchanged (the public eval shares and the collected test ids); every other check fails before the work with a one-line reason, not a traceback. Checks 0 to 2 read the public kbfacts.terms/key_terms/stem, which the index and the query both use, so the index side is covered through the same functions.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-557596e3",
+  "operator": "op-f618a13e"
 }
