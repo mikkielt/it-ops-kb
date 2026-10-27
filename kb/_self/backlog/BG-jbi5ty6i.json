@@ -2,7 +2,7 @@
   "id": "BG-jbi5ty6i",
   "kind": "bug",
   "title": "The graded-overlap bullet's failed-agent counts have no benchmark row and say 1 of 4 isolated full-overlap runs where the records show 3",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-jxf76aa2",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,7 @@
     "parked: SP-n7f53pgv review"
   ],
   "notes": "Planning 2026-10-27: goal narrowed to the repro; also worth fixing in passing: the reading's 110 USD total is the cost metric while its rule says USD figures are the usd metric.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
