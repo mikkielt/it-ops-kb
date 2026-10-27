@@ -37,6 +37,11 @@
       a timeout, a non-zero exit, an output that is not JSON and a file that does not parse are notes, not errors.
       Python is mapped with `python -I -B -m ast` and an isolated `python -I -B -c` that reads definitions and names
       with the ast module, in a subprocess per file; another language is a Mapper subclass added to MAPPERS.
+      PowerShell (.ps1 .psm1 .psd1) and Lua (.lua) need no toolchain: a PatternMapper reads their files line by line
+      with the regexes of _tools/kbingest_patterns.csv (definitions, imports, entry points; a reference is a whole-word
+      match of a defined name on another line, case-insensitive for PowerShell) and starts no process; its `tools` entry
+      is `patterns` and the table's revision. A table row that could run away (a repeated group that holds a
+      quantifier or an alternation) refuses its language when the table loads; a line over 1000 characters is skipped.
       Go and Cargo run at the root; .NET (`dotnet msbuild -getProperty -getItem`, never `-target` or `-restore`, and
       never `dotnet package list`), npm (`npm ls --all --json --package-lock-only`) and TypeScript (`tsc
       --showConfig`, `--listFilesOnly`) run per project directory. `tsc` is the one on PATH, never `npx` and never
@@ -111,7 +116,7 @@ Answers: which docs and kb CODE facts a change since a revision makes stale, fro
 Answers: where a symbol is defined, who uses it and what imports a package, from the pinned code map
 Use: python3 _tools/kbingest.py survey REPO | map | where NAME | drift | impact REPO --since REV | url
 """
-import argparse, contextlib, csv, getpass, json, os, posixpath, re, shutil, signal, socket, subprocess, sys, tempfile
+import argparse, contextlib, csv, getpass, hashlib, json, os, posixpath, re, shutil, signal, socket, subprocess, sys, tempfile
 from pathlib import Path
 from typing import NamedTuple
 from urllib.parse import quote, unquote, urlsplit
@@ -1915,7 +1920,171 @@ class TypeScriptMapper(Mapper):
         ctx.add_package(cfg, folder, **extra)
 
 
-MAPPERS = [PythonMapper(), GoMapper(), CargoMapper(), DotnetMapper(), NodeMapper(), TypeScriptMapper()]
+PATTERN_TABLE = Path(__file__).resolve().parent / "kbingest_patterns.csv"  # changed only in this repository's code lane
+PATTERN_COLUMNS = ("language", "extensions", "case", "word", "role", "kind", "pattern")
+PATTERN_GROUPS = {"def": "name", "import": "module", "entry": None}  # the named group a role's regex must capture
+PATTERN_MAX_LINE = 1000  # characters of a line a table regex is run on; a longer line is not read
+PATTERN_MAX_MATCHES = 2000  # matches of a file's rows before the file is left unfinished with a note
+PATTERN_MAX_REGEX = 200  # characters of one table regex
+
+
+def nested_quantifier(pattern):
+    """True when PATTERN repeats (`*`, `+`, `{`) a group that holds a quantifier or an alternation, the shape of a
+    regex that can run away on a hostile line. A class and an escape are skipped; `(?` is group syntax."""
+    held, i, n = [], 0, len(pattern)  # per open group: does it hold a quantifier or an alternation
+    while i < n:
+        c = pattern[i]
+        if c == "\\":
+            i += 1
+        elif c == "[":
+            i += 2 if pattern[i + 1:i + 2] == "^" else 1
+            i += 1 if pattern[i:i + 1] == "]" else 0
+            while i < n and pattern[i] != "]":
+                i += 2 if pattern[i] == "\\" else 1
+        elif c == "(":
+            held.append(False)
+            i += 1 if pattern[i + 1:i + 2] == "?" else 0
+        elif c == ")":
+            inner = held.pop() if held else False
+            if inner and pattern[i + 1:i + 2] in ("*", "+", "{"):
+                return True
+            if held and inner:
+                held[-1] = True
+        elif c in "*+?{|" and held:
+            held[-1] = True
+        i += 1
+    return False
+
+
+def pattern_row(row, number):
+    """(rule, why): the compiled rule of one table row, or None and the reason it is refused."""
+    if None in row or any(not (row.get(k) or "").strip() for k in PATTERN_COLUMNS):
+        return None, f"row {number}: a column is missing or empty"
+    role, case = row["role"], row["case"]
+    if role not in PATTERN_GROUPS or case not in ("sensitive", "insensitive"):
+        return None, f"row {number}: role {role!r} or case {case!r} unknown"
+    pattern = row["pattern"]
+    if len(pattern) > PATTERN_MAX_REGEX:
+        return None, f"row {number}: a regex over {PATTERN_MAX_REGEX} characters"
+    if nested_quantifier(pattern):
+        return None, f"row {number}: a repeated group holds a quantifier or an alternation"
+    try:
+        regex = re.compile(pattern, re.I if case == "insensitive" else 0)
+    except re.error as e:
+        return None, f"row {number}: regex does not compile ({e})"
+    group = PATTERN_GROUPS[role]
+    if group and group not in regex.groupindex:
+        return None, f"row {number}: a {role} regex needs the group (?P<{group}>...)"
+    return (role, row["kind"], regex), None
+
+
+def load_patterns(path=PATTERN_TABLE):
+    """([PatternMapper], {language: why}) of the table at PATH. A language with a refused row is refused whole, so a
+    half-read language never maps; a missing table refuses every language under `table`."""
+    try:
+        data = Path(path).read_bytes()
+        rows = list(csv.DictReader(data.decode("utf-8-sig").splitlines()))
+    except (OSError, UnicodeDecodeError, csv.Error) as e:
+        return [], {"table": f"{Path(path).name}: not read ({type(e).__name__})"}
+    revision = hashlib.sha256(data).hexdigest()[:12]
+    by_lang, refused = {}, {}
+    for number, row in enumerate(rows, 2):
+        lang = (row.get("language") or "").strip().lower()
+        if not lang or lang in refused:
+            continue
+        rule, why = pattern_row(row, number)
+        shape = tuple((row.get(k) or "").strip() for k in ("extensions", "case", "word"))
+        spec = by_lang.setdefault(lang, {"shape": shape, "rules": []})
+        if rule is None:
+            refused[lang] = why
+        elif shape != spec["shape"]:
+            refused[lang] = f"row {number}: extensions, case or word differ from the language's first row"
+        elif not re.fullmatch(r"\\w|\[[\\\w.-]+\]", shape[2]):
+            refused[lang] = f"row {number}: word is not one character class"
+        elif not all(x.startswith(".") and len(x) > 1 for x in shape[0].split()):
+            refused[lang] = f"row {number}: extensions are not .ext words"
+        else:
+            spec["rules"].append(rule)
+    mappers = [PatternMapper(lang, spec["shape"], spec["rules"], revision) for lang, spec in by_lang.items()
+               if lang not in refused]
+    return mappers, refused
+
+
+class PatternMapper(Mapper):
+    """A language read from its source files with the regexes of a table row set (`kbingest_patterns.csv`), no
+    program started and no toolchain needed. A file is read line by line (a line over PATTERN_MAX_LINE characters is
+    skipped; PATTERN_MAX_MATCHES stops a file); a definition is a `def` row's match, an import an `import` row's, an
+    entry point an `entry` row's. A reference is a whole-word match of a defined name on another line of a mapped
+    file, matched by name and never resolved, case-folded for a case-insensitive language."""
+    tool = ""
+
+    def __init__(self, language, shape, rules, revision):
+        extensions, case, word = shape
+        self.language, self.name, self.revision = language, "patterns", revision
+        self.extensions = tuple(extensions.lower().split())
+        self.fold = str.lower if case == "insensitive" else str
+        self.word, self.rules = re.compile(word + "+"), rules
+
+    def files(self, rows):
+        return sorted(path for path, _kind in rows if path.lower().endswith(self.extensions))
+
+    def read(self, ctx, rel):
+        p = ctx.readable(rel)
+        if p is None:
+            return None
+        try:
+            return p.read_bytes().decode("utf-8-sig", "replace").splitlines()
+        except OSError as e:
+            ctx.note(f"{rel}: not read ({type(e).__name__})")
+            return None
+
+    def map(self, ctx, files):
+        defs, mapped = [], []
+        for n, rel in enumerate(files):
+            if n >= MAP_MAX_FILES:
+                ctx.note(f"stopped after {MAP_MAX_FILES} files ({len(files) - n} not mapped)")
+                break
+            lines = self.read(ctx, rel)
+            if lines is None:
+                continue
+            mapped.append(rel)
+            mods, entries, matches, long_lines = set(), set(), 0, 0
+            for number, line in enumerate(lines, 1):
+                if len(line) > PATTERN_MAX_LINE:
+                    long_lines += 1
+                    continue
+                for role, kind, regex in self.rules:
+                    m = regex.search(line)
+                    if m is None:
+                        continue
+                    matches += 1
+                    if role == "def":
+                        defs.append((m.group("name"), kind, rel, number))
+                    elif role == "import":
+                        mods.add(m.group("module"))
+                    elif kind not in entries:
+                        entries.add(kind)
+                        ctx.add_entry_point(rel, kind)
+                if matches >= PATTERN_MAX_MATCHES:
+                    ctx.note(f"{rel}: stopped at line {number} after {PATTERN_MAX_MATCHES} matches")
+                    break
+            if long_lines:
+                ctx.note(f"{rel}: {long_lines} lines over {PATTERN_MAX_LINE} characters not read")
+            ctx.add_imports(rel, mods)
+        names = {self.fold(d[0]) for d in defs}
+        uses = {}
+        for rel in mapped:  # a second read: only the defined names are kept, so memory follows the definitions
+            for number, line in enumerate(self.read(ctx, rel) or (), 1):
+                if len(line) <= PATTERN_MAX_LINE:
+                    for token in {self.fold(t) for t in self.word.findall(line)} & names:
+                        uses.setdefault(token, []).append((rel, number))
+        for name, kind, rel, line in sorted(defs, key=lambda d: (d[2], d[3], d[0])):
+            ctx.add_symbol(name, kind, rel, line, [u for u in uses.get(self.fold(name), ()) if u != (rel, line)])
+
+
+PATTERN_MAPPERS, PATTERN_REFUSED = load_patterns()
+MAPPERS = [PythonMapper(), GoMapper(), CargoMapper(), DotnetMapper(), NodeMapper(), TypeScriptMapper(),
+           *PATTERN_MAPPERS]
 
 
 @contextlib.contextmanager
@@ -1966,7 +2135,7 @@ def build_map(repo, commit, rev, rows, langs=None, timeout=MAP_TIMEOUT, base_env
             if not files:
                 continue
             ctx = MapCtx(root, env, timeout, m.language, links)
-            exe, inside = tool_exe(m.tool, env, root)
+            exe, inside = tool_exe(m.tool, env, root) if m.tool else ("", False)  # a pattern mapper has no program
             if exe is None:
                 ctx.note(f"toolchain not installed: {m.name} ({len(files)} {m.language} files not mapped)")
             elif inside:
@@ -1975,11 +2144,14 @@ def build_map(repo, commit, rev, rows, langs=None, timeout=MAP_TIMEOUT, base_env
             elif (why := m.preflight(ctx, files)) is not None:
                 ctx.note(why)
             else:
-                v = run_tool([m.tool, *m.version_args], root, env, timeout)
-                ok = v.rc == 0 and not v.timed_out and not v.missing
-                doc["tools"][m.language] = {"tool": m.name, "version": first_line(v) if ok else "unknown"}
-                if not ok:
-                    ctx.note(f"{m.name}: version not read")
+                if not m.tool:  # the table's revision stands for the version; no process is started
+                    doc["tools"][m.language] = {"tool": m.name, "version": f"table {m.revision}"}
+                else:
+                    v = run_tool([m.tool, *m.version_args], root, env, timeout)
+                    ok = v.rc == 0 and not v.timed_out and not v.missing
+                    doc["tools"][m.language] = {"tool": m.name, "version": first_line(v) if ok else "unknown"}
+                    if not ok:
+                        ctx.note(f"{m.name}: version not read")
                 try:
                     m.map(ctx, files)
                 except Exception as e:  # noqa: BLE001 - a mapper's bug must not lose the other languages' maps
@@ -2066,7 +2238,8 @@ def cmd_map(a):
     langs = {x.strip().lower() for x in a.lang.split(",") if x.strip()} if a.lang else None
     known = {m.language for m in MAPPERS}
     if langs and langs - known:
-        print(f"refused: unknown language {', '.join(sorted(langs - known))} (known: {', '.join(sorted(known))})")
+        refused = "".join(f"; pattern table refused {k}: {v}" for k, v in sorted(PATTERN_REFUSED.items()))
+        print(f"refused: unknown language {', '.join(sorted(langs - known))} (known: {', '.join(sorted(known))}{refused})")
         return 2
     try:
         doc = map_commit(repo, commit, a.rev, langs, a.timeout, a.max_bytes)

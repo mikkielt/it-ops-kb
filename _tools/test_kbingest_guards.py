@@ -152,6 +152,30 @@ def map_redacts_leaks_and_keeps_the_rest():
     assert notes[0] == "fine" and len(notes) == 3 and all("redacted" in n for n in notes[1:])
 
 
+def pattern_mapper_starts_no_process_and_bounds_the_table(tmp_path, monkeypatch):
+    """The pattern table is code run on an untrusted file: a row that can run away is refused when it loads, a line over
+    the cap is not read, and mapping starts no process."""
+    head = "language,extensions,case,word,role,kind,pattern\n"
+    row = "x,.x,sensitive,\\w,def,function,%s\n"
+    for bad in ("^(a+)+(?P<name>b)", "^(?:a|b)*(?P<name>c)", "^(?P<name>\\w+)(?:\\s+x*)+"):
+        table = tmp_path / "bad.csv"
+        table.write_text(head + (row % ('"' + bad + '"')), encoding="utf-8")
+        found, refused = kbingest.load_patterns(table)
+        assert not found and "quantifier" in refused["x"], (bad, refused)
+    table = tmp_path / "ok.csv"
+    table.write_text(head + (row % "^def\\s+(?P<name>\\w+)"), encoding="utf-8")
+    assert [m.language for m in kbingest.load_patterns(table)[0]] == ["x"]
+
+    def boom(*a, **k):
+        raise AssertionError("a pattern mapper started a process")
+
+    monkeypatch.setattr(kbingest, "run_tool", boom)
+    r = commit_files(tmp_path / "hostile", {"a.ps1": "function " + "A" * 5000 + " {\n}\nfunction Kept-One {\n}\n"})
+    doc, _ = map_doc(r, tmp_path / "hostile.json", "--lang", "powershell")
+    assert [s["name"] for s in doc["symbols"]] == ["Kept-One"], doc["symbols"]
+    assert any("lines over" in n["note"] for n in doc["notes"]), doc["notes"]
+
+
 def test_survey_leaves_out_and_keeps_and_map_redacts_leaks_and_keeps_the_rest(tmp_path):
     survey_leaves_out_and_keeps(tmp_path)
     map_redacts_leaks_and_keeps_the_rest()
@@ -162,3 +186,4 @@ def test_map_never_runs_a_planted_ast_module_or_a_program_inside_the_worktree_an
     map_never_runs_a_planted_ast_module(tmp_path)
     map_never_runs_a_program_inside_the_worktree(tmp_path)
     map_child_environment_is_scrubbed(tmp_path, monkeypatch)
+    pattern_mapper_starts_no_process_and_bounds_the_table(tmp_path, monkeypatch)
