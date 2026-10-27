@@ -1,0 +1,53 @@
+{
+  "id": "ST-c6ao5unb",
+  "kind": "story",
+  "title": "Merged code/* branches leave the integration remote at merge, and the ones left from before are removed once from the operator's terminal",
+  "status": "draft",
+  "parent": "EP-n4dci4w7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The operator removes the code/* wildcard protection on the integration project, so the auto-merging request's remove_source_branch deletes the branch at merge (GitLab never deletes a protected source branch; 1379 merged code/* branches, all protected, on 2026-10-27); the next landed code item leaves no code/<id> head. The ones left from before go once, staged, run by the operator in a terminal: a read-only manifest (tip sha, the rule that admits it, merge request iid and state, item status; exclusions for an open or unmerged request, a tip pushed after the newest merged request, a tip not an ancestor of the integration main fetched at manifest time, merged under 24 h ago, a live claim or landing lock) with a dry-run summary and its sha256, then batches of at most 50 compare-and-delete pushes (git push --force-with-lease=refs/heads/code/X:SHA origin :refs/heads/code/X), 5 s apart, stopping at the first unexpected rejection, logged to _cache/; recovery pushes a tip back from the manifest. No agent deletes a branch; kb/_self/git.md describes the retention and the cleanup. Evidence: reliability-authority-review.md BR-1 and section 7 item 12.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;p=subprocess.run(['git','ls-remote','origin','refs/heads/code/*'],capture_output=True,text=True,timeout=60,check=True);n=len(p.stdout.splitlines());print(n,'code/* heads');sys.exit(0 if n<50 else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/git.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How is the cause fixed: GitLab never deletes a protected code/* source branch at merge?",
+      "options": [
+        "unprotect code/*",
+        "land deletes its own merged branch with compare-and-delete",
+        "canary first, then choose"
+      ],
+      "recommendation": "unprotect code/*",
+      "class": "delete",
+      "answer": "unprotect code/*",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Has the operator removed the code/* protection and run the one-time staged cleanup from a terminal?",
+      "options": [
+        "done, both",
+        "protection removed, cleanup not yet",
+        "not yet"
+      ],
+      "recommendation": "done, both",
+      "class": "design"
+    }
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

@@ -34,7 +34,11 @@
         "the clone whose kb_mcp.py a host's registered kb server runs (kb_status registered:)"
       ],
       "recommendation": "git config kb.maintainerClone in the user's global git config, set once per machine by kb-setup",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "a plugin userConfig option the operator sets at install",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -45,7 +49,11 @@
         "commit it on a branch in the clone and print the land command for the maintainer"
       ],
       "recommendation": "land it through the clone's land_push from the throwaway worktree, as a content commit",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "land it through the clone's land_push from the throwaway worktree, as a content commit",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Observed 2026-10-23 in a host-project session (a workspace that installs the plugin) filing BG-3brdh3kd: the session first cloned upstream afresh under the host, then had to find the maintainer's clone by scanning disk for the remote, saw it checked out on an orchestrator branch 153 commits behind main with live worktrees, judged that sync --push would rebase that branch, added a worktree on freshly fetched origin/main by hand and re-filed the item there; five manual steps and one discarded clone. Premise: python3 _tools/backlog.py --root <clone> new bug ... writes into the clone's checked-out branch and lands nothing (new -h names no target or landing option beyond --commit). A host user who is not the maintainer stays on ST-lnxywo7s's issue route."

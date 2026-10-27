@@ -1,0 +1,37 @@
+{
+  "id": "ST-xllrtqlt",
+  "kind": "story",
+  "title": "The query-log redactor catches a long token after an equals sign and the common cloud key shapes",
+  "status": "draft",
+  "parent": "EP-n4dci4w7",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "redact.redact replaces a token of 20 or more characters holding a letter and a digit after key= (today the TOKEN lookbehind at redact.py:81 refuses an = before it, so token=<32 chars> survives while token: is caught), keeping the words filter so identifiers stay; kbcommon.SECRETS gains the Google API key (AIza), Stripe live key (sk_live_), npm token (npm_) and SendGrid (SG.) shapes, and the Entra client-secret shape only after it is confirmed against Microsoft Learn (a kb fact or source row). Measured on ST-yl6b2ues's corpus: the key x separator x value matrix leaks at most 12 of 360 (93 today), utility rows unchanged, the rewrite rate on engineering text at most 0.8% (0.7% today). Key-name and command-flag forms (cmdkey, net use, sqlcmd -P, XML Password) are out of scope. Stored entries that fail check after the widening are re-redacted with querylog.py reredact as querylog.md says. Evidence: reliability-authority-review.md RD-2.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import redact as r;v='Zx9Qm4'+'Lp7Rt2Vb8Nc5Kd3Wf6Hj';s='token='+v;g='AI'+'zaSyD'+'Qm4Lp7Rt2Vb8Nc5Kd3Wf6Hj01234567';ok=v not in r.redact(s) and g not in r.redact('key '+g);print(ok);sys.exit(0 if ok else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_redact.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/redact.py",
+    "_tools/kbcommon.py",
+    "_tools/test_redact.py",
+    "_tools/fixtures/redact/**",
+    "kb/_self/querylog.md"
+  ],
+  "depends_on": [
+    "ST-yl6b2ues"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

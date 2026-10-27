@@ -1,0 +1,44 @@
+{
+  "id": "ST-moy5v7tm",
+  "kind": "story",
+  "title": "The Linux CI suite's median and p90 time and the bytecode-cache effect are measured on GitHub runners",
+  "status": "draft",
+  "parent": "EP-n4dci4w7",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "Once ST-awqyqc6q's workflow is on the public home, ten workflow_dispatch runs of kb at main, then five with write_bytecode true and five false (gh workflow run kb -f write_bytecode=...; Actions minutes on the public repository, no model spend, approved by the operator 2026-10-27), are read with gh run view --log; kb/_self/reports/ci-linux-timing.md records per run the run id, sha, CPU model, nproc, pytest time, tests.py seconds and the ten slowest tests, then the median and p90 per arm and whether the two CPU models explain the two timing modes. The bytecode change is recommended only if it saves 10% or more of the median. Nothing is pushed to GitHub but through kbgit.py publish. Evidence: reliability-authority-review.md CI-1, CI-2, CI-8.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,re;t=open('kb/_self/reports/ci-linux-timing.md').read();n=len(set(re.findall(r'\\b4[0-9]{10}\\b',t)));print(n,'runs');sys.exit(0 if n>=20 and 'p90' in t and 'median' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/ci-linux-timing.md",
+    "kb/_self/README.md"
+  ],
+  "depends_on": [
+    "ST-awqyqc6q"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "May the session dispatch 20 workflow_dispatch runs of kb on the public home (Actions minutes, no model spend)?",
+      "options": [
+        "approve 20 runs",
+        "defer"
+      ],
+      "recommendation": "approve 20 runs",
+      "class": "design",
+      "answer": "approve 20 runs",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

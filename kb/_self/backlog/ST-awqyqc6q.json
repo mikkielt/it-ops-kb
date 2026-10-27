@@ -1,0 +1,39 @@
+{
+  "id": "ST-awqyqc6q",
+  "kind": "story",
+  "title": "A GitHub test run names its ten slowest tests and its runner's CPU, runs the trailers check whatever the tests say, and can be dispatched with or without bytecode files",
+  "status": "draft",
+  "parent": "EP-n4dci4w7",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "In .github/workflows/kb.yml the kb-tests job prints nproc, the CPU model line of /proc/cpuinfo and the Python and pytest versions before the tests, runs python3 _tools/tests.py --durations 10, has timeout-minutes 15, and runs kbgit.py check-trailers even when the tests step failed (its own job or if: always()); workflow_dispatch takes a boolean input write_bytecode (default false) that drops PYTHONDONTWRITEBYTECODE for that run, so a measurement can compare both arms without a second branch; the GitLab kb-tests job passes --durations=10 too. kb/_self/git.md stops describing a check-lanes CI job (both CI files lost it in 4726d09e5f) and says check-lanes runs by hand. Evidence: reliability-authority-review.md CI-5, CI-6, CI-8, DOC-1.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('.github/workflows/kb.yml').read();sys.exit(0 if all(w in t for w in ('--durations','timeout-minutes','nproc','write_bytecode','check-trailers')) and ('always()' in t or 'needs:' in t) else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('.gitlab-ci.yml').read();sys.exit(0 if t.count('--durations')>=2 else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    ".github/workflows/kb.yml",
+    ".gitlab-ci.yml",
+    "kb/_self/git.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

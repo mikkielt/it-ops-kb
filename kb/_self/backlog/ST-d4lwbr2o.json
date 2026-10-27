@@ -1,0 +1,52 @@
+{
+  "id": "ST-d4lwbr2o",
+  "kind": "story",
+  "title": "Three small paid probes settle the code map's docs-map result, the cost of concurrent same-article research and the distill model's name recall",
+  "status": "draft",
+  "parent": "EP-n4dci4w7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Approved by the operator on 2026-10-27, each under its own cap: (1) ten more Haiku runs per arm of the multi scenario's code lookups (about USD 0.40), recorded in kb/_self/reports/benchmarks.csv, so the code map's docs-map win (4,1,4,1,4 of 4 vs 0 of 4) is either stable or not; (2) one Haiku same-article research pair, concurrent vs sequential (about USD 5, cap USD 8), recorded the same way with rebase_s and claims; (3) 50 synthetic questions (25 with Polish and English person, company or team names, 25 with product names only) through the distill task's exact prompt and model (under USD 1), recall and false-flag rate written to kb/_self/reports/name-recall.csv with the prompt's commit. benchmarks.md's tables are regenerated and README's figures kept true (report --check). No other paid run. Evidence: reliability-authority-review.md section 4 and RD-5.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "report",
+        "--check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,sys;r=list(csv.DictReader(open('kb/_self/reports/name-recall.csv')));print(len(r));sys.exit(0 if len(r)>=50 else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/benchmarks.csv",
+    "kb/_self/reports/benchmarks.md",
+    "kb/_self/reports/name-recall.csv",
+    "README.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "May these three paid probes run, each under its cap (about USD 0.40, 5 with a USD 8 cap, and under 1)?",
+      "options": [
+        "approve all three",
+        "approve the two under USD 1 only",
+        "defer"
+      ],
+      "recommendation": "approve all three",
+      "class": "design",
+      "answer": "approve all three",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

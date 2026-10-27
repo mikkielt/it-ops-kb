@@ -1,0 +1,34 @@
+{
+  "id": "ST-u6jyv4ch",
+  "kind": "story",
+  "title": "claim and land refuse when coord answers that another owner holds the item's run, and stay fail-open when coord is silent",
+  "status": "draft",
+  "parent": "EP-n4dci4w7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py claim exits 1 naming the state and runs --reconcile when the coord run key run/ID holds claimed, working, blocked, returned, failed, staging, landing or refused for a different --by (today cmd_claim reads only this checkout's item file and claims ledger, bl_items.py:329-390, and move_run is silent, bl_land.py:2216-2222); the same --by again exits 0; land stops at a step named run state with nothing changed when the key is released, or working with a live worker pid (today enter_run, bl_land.py:2276-2297, warns and goes on); an unreachable store or key none keeps today's warning; a second land of a landed code item still finishes. Planted repros in a scratch clone with a local bare origin prove it (no test id); two concurrent claims on a fresh store: exactly one succeeds. Extends EP-nij36lt7 (run states in coord). Evidence: reliability-authority-review.md CO-1, CO-2.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import inspect,bl_items,bl_land;a=inspect.getsource(bl_items.cmd_claim);b=inspect.getsource(bl_land.enter_run);ok=('run/' in a or 'run_state' in a or 'take_run' in a) and 'released' in b;print(ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md",
+    "kb/_self/coordination.md"
+  ],
+  "depends_on": [
+    "ST-qnzkp6xy",
+    "ST-ur767dzs",
+    "ST-5uhzyvrd"
+  ],
+  "relates_to": [
+    "EP-nij36lt7"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

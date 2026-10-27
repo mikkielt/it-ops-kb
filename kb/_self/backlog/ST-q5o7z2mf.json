@@ -1,0 +1,62 @@
+{
+  "id": "ST-q5o7z2mf",
+  "kind": "story",
+  "title": "Every sprint review holds the held-out fitness rate at 86 of 99 with at most 8 false good, so token and time savings cannot hide a quality loss",
+  "status": "draft",
+  "parent": "EP-n4dci4w7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "rag.py eval gains --max-false-good N (exit 1 when more than N failing rows are a false good: the verdict good where the row wants weak or none), and backlog.json review_checks runs python3 _tools/rag.py eval --file kb/public/_retrieval/lookup_heldout.csv --root public --min 86 --max-false-good 8 once per sprint review (about 8 s, not per landing). The thresholds only go up; the held-out file is refreshed by adding real query-log misses and never by moving failing rows out (maintaining.md). Extends EP-gzr4mmkm (fitness tests). Evidence: reliability-authority-review.md FT-1.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval",
+        "--file",
+        "kb/public/_retrieval/lookup_heldout.csv",
+        "--root",
+        "public",
+        "--min",
+        "86",
+        "--max-false-good",
+        "8"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,sys;d=json.load(open('backlog.json'));s=json.dumps(d.get('review_checks'));ok='lookup_heldout' in s and '--max-false-good' in s;print(ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/rag.py",
+    "backlog.json",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ],
+  "relates_to": [
+    "EP-gzr4mmkm"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "What held-out threshold does each sprint review hold?",
+      "options": [
+        "ratchet at 86 of 99 passing and at most 8 false good",
+        "a lower floor while the 8 false good are worked",
+        "no threshold"
+      ],
+      "recommendation": "ratchet at 86 of 99 passing and at most 8 false good",
+      "class": "design",
+      "answer": "ratchet at 86 of 99 passing and at most 8 false good",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
