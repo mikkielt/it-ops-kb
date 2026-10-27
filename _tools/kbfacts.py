@@ -1237,6 +1237,65 @@ def git_log_day(path):
     return time.strftime("%Y-%m-%d") if dirty else (commits[0][1] if commits else "")
 
 
+def _flag_reports(store, files):
+    """[(path, line, issue, day)] of every report line of the run files `files` (ql_store.run_stats): each entry id
+    once (its first run file, as ql_store.store_entries reads them). The entries of a file are kept, with their
+    report lines, in a cache file of the index directory under the file's stat, so a process parses only the run
+    files that changed since the last one (best effort: no cache, or an unwritable one, parses them all)."""
+    import ql_store
+    cache = index_dir()
+    cache = os.path.join(cache, "flags-" + hashlib.sha1(str(store).encode()).hexdigest()[:12] + ".json") if cache else None
+    known = {}
+    try:
+        with open(cache, encoding="utf-8") as f:
+            known = json.load(f)
+    except (OSError, TypeError, ValueError):
+        pass
+    if not isinstance(known, dict):
+        known = {}
+    kept, seen, reps = {}, set(), []
+    for month, name, mtime, size in files:
+        key = month + "/" + name
+        got = known.get(key)
+        if not (isinstance(got, list) and len(got) == 3 and got[0] == mtime and got[1] == size):
+            entries = []
+            try:
+                objs = ql_store.load_run(os.path.join(store, month, name))[1:]
+            except (OSError, ValueError):
+                objs = []
+            for _, e in objs:
+                if isinstance(e.get("id"), str):
+                    lines = [[path, int(n), x["issue"], e.get("day") or ""]
+                             for rep in e.get("feedback") or [] for x in rep.get("lines") or []
+                             for path, _, n in [str(x.get("line", "")).rpartition(":")]
+                             if x.get("issue") in FLAG_ISSUES and path and n.isdigit()]
+                    entries.append([e["id"], lines])
+            got = [mtime, size, entries]
+        kept[key] = got
+        for eid, lines in got[2]:
+            if eid not in seen:
+                seen.add(eid)
+                reps += [tuple(x) for x in lines]
+    if cache and kept != known:
+        tmp = None
+        try:
+            os.makedirs(os.path.dirname(cache), exist_ok=True)
+            fd, tmp = tempfile.mkstemp(prefix=".flags-", suffix=".tmp", dir=os.path.dirname(cache))
+            with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as f:
+                json.dump(kept, f)
+            os.replace(tmp, cache)
+            tmp = None
+        except OSError:
+            pass
+        finally:
+            if tmp:
+                try:
+                    os.unlink(tmp)
+                except OSError:
+                    pass
+    return reps
+
+
 def feedback_flags():
     """{qualified path: {line: {issue: [reports, first day]}}} of the lines that a feedback report of the committed
     query-log store (ql_base.STORE, read at the call) names with an issue of FLAG_ISSUES: the entries' `feedback`
@@ -1249,23 +1308,9 @@ def feedback_flags():
     if not os.path.isdir(store):
         return {}
     import ql_store
-    files = ql_store.run_files(store)
-    sig = []
-    for p in files:
-        try:
-            st = p.stat()
-            sig.append((str(p), st.st_mtime_ns, st.st_size))
-        except OSError:
-            continue
-    if _FLAGS[0] != sig:
-        reps = []
-        for _, e in ql_store.store_entries(store):
-            for rep in e.get("feedback") or []:
-                for x in rep.get("lines") or []:
-                    path, _, n = str(x.get("line", "")).rpartition(":")
-                    if x.get("issue") in FLAG_ISSUES and path and n.isdigit():
-                        reps.append((path, int(n), x["issue"], e.get("day") or ""))
-        _FLAGS[:] = [sig, reps]
+    files = ql_store.run_stats(store)
+    if _FLAGS[0] != files:
+        _FLAGS[:] = [files, _flag_reports(store, files)]
     out = {}
     for path, n, issue, day in _FLAGS[1]:
         if not line_holds(path, n, day):
