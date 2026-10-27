@@ -4,6 +4,7 @@
   "title": "Three small paid probes settle the code map's docs-map result, the cost of concurrent same-article research and the distill model's name recall",
   "status": "draft",
   "parent": "EP-n4dci4w7",
+  "sprint": "SP-jwvaq2hu",
   "priority": "P2",
   "rank": 0,
   "goal": "Approved by the operator on 2026-10-27, each under its own cap: (1) ten more Haiku runs per arm of the multi scenario's code lookups (about USD 0.40), recorded in kb/_self/reports/benchmarks.csv, so the code map's docs-map win (4,1,4,1,4 of 4 vs 0 of 4) is either stable or not; (2) one Haiku same-article research pair, concurrent vs sequential (about USD 5, cap USD 8), recorded the same way with rebase_s and claims; (3) 50 synthetic questions (25 with Polish and English person, company or team names, 25 with product names only) through the distill task's exact prompt and model (under USD 1), recall and false-flag rate written to kb/_self/reports/name-recall.csv with the prompt's commit. benchmarks.md's tables are regenerated and README's figures kept true (report --check). No other paid run. Evidence: reliability-authority-review.md section 4 and RD-5.",
@@ -22,6 +23,24 @@
         "-c",
         "import csv,sys;r=list(csv.DictReader(open('kb/_self/reports/name-recall.csv')));print(len(r));sys.exit(0 if len(r)>=50 else 1)"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "Approved by the operator on 2026-10-27, each under its own cap: (1) ten more Haiku runs per arm of the multi scenario's code lookups (about USD 0.40), recorded in kb/_self/reports/benchmarks.csv, so the code map's docs-map win (4,1,4,1,4 of 4 vs 0 of 4) is either stable or not",
+      "check": 0
+    },
+    {
+      "clause": "(2) one Haiku same-article research pair, concurrent vs sequential (about USD 5, cap USD 8), recorded the same way with rebase_s and claims",
+      "check": 0
+    },
+    {
+      "clause": "(3) 50 synthetic questions (25 with Polish and English person, company or team names, 25 with product names only) through the distill task's exact prompt and model (under USD 1), recall and false-flag rate written to kb/_self/reports/name-recall.csv with the prompt's commit. benchmarks.md's tables are regenerated and README's figures kept true (report --check). No other paid run. Evidence: reliability-authority-review.md section 4 and RD-5",
+      "check": 1
+    },
+    {
+      "clause": "(3) 50 synthetic questions (25 with Polish and English person, company or team names, 25 with product names only) through the distill task's exact prompt and model (under USD 1), recall and false-flag rate written to kb/_self/reports/name-recall.csv with the prompt's commit. benchmarks.md's tables are regenerated and README's figures kept true (report --check). No other paid run. Evidence: reliability-authority-review.md section 4 and RD-5",
+      "check": 0
     }
   ],
   "touches": [
@@ -48,5 +67,6 @@
       "role": "interactive"
     }
   ],
+  "notes": "Planner (SP-jwvaq2hu): check 0 (report --check) passes before the work and pins that benchmarks.md and README stay true to the csv; the worker runs each probe's --dry-run first and records its estimate beside the cap before paying.",
   "filed_in": "clone-0ea70e5c"
 }

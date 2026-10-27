@@ -4,6 +4,7 @@
   "title": "The kb's docs say which authority boundaries are enforced and which are convention, with two free experiments on worker credentials and check isolation",
   "status": "draft",
   "parent": "EP-n4dci4w7",
+  "sprint": "SP-jwvaq2hu",
   "priority": "P2",
   "rank": 0,
   "goal": "kb/_self/maintaining.md states, in the present tense, that sessions and headless workers act with the operator's ambient forge and publish credentials, that permission deny rules match command text and do not bound a program (Claude Code permissions docs), and that an item's check may run inline Python (bl_intake.py check programs), so the OS user and its credentials are the boundary on a single-operator host. Two free experiments are run and their outcome added to kb/_self/reports/reliability-authority-review.md (section 10): (1) in a throwaway git root, a planted item whose check runs glab auth status goes through backlog.py done, showing whether a check reaches the network and credentials; (2) one headless worker with a Developer-role forge token, set only in that worker's environment, takes one draft item through claim, work, done, sync and merge, naming the first step that needs more. Nothing in the clone's settings, credentials or permission rules is changed. Overlaps ST-mbb47xlf on maintaining.md. Evidence: reliability-authority-review.md AU-2 to AU-4.",
@@ -21,6 +22,31 @@
         "_tools/selfdoc.py",
         "check"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/_self/reports/reliability-authority-review.md',encoding='utf-8').read();s=t[t.index('## 10.'):];ok=s.lower().count('outcome')>=2;print(ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb/_self/maintaining.md states, in the present tense, that sessions and headless workers act with the operator's ambient forge and publish credentials, that permission deny rules match command text and do not bound a program (Claude Code permissions docs)",
+      "check": 0
+    },
+    {
+      "clause": "that an item's check may run inline Python (bl_intake.py check programs), so the OS user and its credentials are the boundary on a single-operator host. Two free experiments are run and their outcome added to kb/_self/reports/reliability-authority-review.md (section 10): (1) in a throwaway git root, a planted item whose check runs glab auth status goes through backlog.py done, showing whether a check reaches the network and credentials",
+      "check": 0
+    },
+    {
+      "clause": "that an item's check may run inline Python (bl_intake.py check programs), so the OS user and its credentials are the boundary on a single-operator host. Two free experiments are run and their outcome added to kb/_self/reports/reliability-authority-review.md (section 10): (1) in a throwaway git root, a planted item whose check runs glab auth status goes through backlog.py done, showing whether a check reaches the network and credentials",
+      "check": 2
+    },
+    {
+      "clause": "(2) one headless worker with a Developer-role forge token, set only in that worker's environment, takes one draft item through claim, work, done, sync and merge, naming the first step that needs more. Nothing in the clone's settings, credentials or permission rules is changed. Overlaps ST-mbb47xlf on maintaining.md. Evidence: reliability-authority-review.md AU-2 to AU-4",
+      "check": 2
     }
   ],
   "touches": [
@@ -44,5 +70,6 @@
       "role": "interactive"
     }
   ],
+  "notes": "Planner (SP-jwvaq2hu): check 2 asks section 10 of the review report to state an outcome for each of the two experiments (the word outcome twice; today none); check 1 (selfdoc.py check) passes before the work and pins docs consistency. Experiment 2 uses the Developer-role token file the operator gave (g1); a worker that cannot find it stops that experiment with a report.",
   "filed_in": "clone-0ea70e5c"
 }

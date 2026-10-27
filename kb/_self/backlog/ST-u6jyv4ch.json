@@ -4,6 +4,7 @@
   "title": "claim and land refuse when coord answers that another owner holds the item's run, and stay fail-open when coord is silent",
   "status": "draft",
   "parent": "EP-n4dci4w7",
+  "sprint": "SP-jwvaq2hu",
   "priority": "P2",
   "rank": 0,
   "goal": "backlog.py claim exits 1 naming the state and runs --reconcile when the coord run key run/ID holds claimed, working, blocked, returned, failed, staging, landing or refused for a different --by (today cmd_claim reads only this checkout's item file and claims ledger, bl_items.py:329-390, and move_run is silent, bl_land.py:2216-2222); the same --by again exits 0; land stops at a step named run state with nothing changed when the key is released, or working with a live worker pid (today enter_run, bl_land.py:2276-2297, warns and goes on); an unreachable store or key none keeps today's warning; a second land of a landed code item still finishes. Planted repros in a scratch clone with a local bare origin prove it (no test id); two concurrent claims on a fresh store: exactly one succeeds. Extends EP-nij36lt7 (run states in coord). Evidence: reliability-authority-review.md CO-1, CO-2.",
@@ -16,11 +17,42 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "backlog.py claim exits 1 naming the state and runs --reconcile when the coord run key run/ID holds claimed, working, blocked, returned, failed, staging, landing or refused for a different --by (today cmd_claim reads only this checkout's item file and claims ledger, bl_items.py:329-390",
+      "check": 0
+    },
+    {
+      "clause": "move_run is silent, bl_land.py:2216-2222)",
+      "check": 0
+    },
+    {
+      "clause": "the same --by again exits 0",
+      "check": 0
+    },
+    {
+      "clause": "land stops at a step named run state with nothing changed when the key is released, or working with a live worker pid (today enter_run, bl_land.py:2276-2297, warns and goes on)",
+      "check": 0
+    },
+    {
+      "clause": "an unreachable store or key none keeps today's warning",
+      "check": 0
+    },
+    {
+      "clause": "a second land of a landed code item still finishes. Planted repros in a scratch clone with a local bare origin prove it (no test id)",
+      "check": 0
+    },
+    {
+      "clause": "two concurrent claims on a fresh store: exactly one succeeds. Extends EP-nij36lt7 (run states in coord). Evidence: reliability-authority-review.md CO-1, CO-2",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/bl_items.py",
     "_tools/bl_land.py",
     "kb/_self/backlog.md",
-    "kb/_self/coordination.md"
+    "kb/_self/coordination.md",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "ST-qnzkp6xy",
@@ -30,5 +62,6 @@
   "relates_to": [
     "EP-nij36lt7"
   ],
+  "notes": "Planner (SP-jwvaq2hu): check 0 reads cmd_claim and enter_run for the run-key read; the goal names planted repros in a scratch clone with a local bare origin (no test id) for each refusal and fail-open path, so the worker report gives each repro command and its exit.",
   "filed_in": "clone-0ea70e5c"
 }
