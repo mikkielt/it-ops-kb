@@ -82,7 +82,11 @@
         "the commits REV..NEW (git diff --name-only REV NEW), the working tree left out": "ST-zhpor7fy",
         "REV to the working tree, untracked files included": "ST-zhpor7fy"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "the commits REV..NEW (git diff --name-only REV NEW), the working tree left out",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -98,7 +102,11 @@
         "doc line adds a tab and the changed files; fact line adds drift's kind, source id, pointer and detail; exit 1 when any line printed": "ST-zhpor7fy",
         "the bare key only; exit 0 always": "ST-zhpor7fy"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "doc line adds a tab and the changed files; fact line adds drift's kind, source id, pointer and detail; exit 1 when any line printed",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
