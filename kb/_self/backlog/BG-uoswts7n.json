@@ -35,7 +35,11 @@
         "Print the git worktree add line before the remedy line": "BG-uoswts7n",
         "Keep the order and reword the remedy to say run the git worktree add first": "BG-uoswts7n"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Print the git worktree add line before the remedy line",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
