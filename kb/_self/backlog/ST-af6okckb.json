@@ -2,7 +2,7 @@
   "id": "ST-af6okckb",
   "kind": "story",
   "title": "Spend is attributed to the item and to the kb topic or code module it served, ranked by topic, and exported to OpenTelemetry",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-jxf76aa2",
   "priority": "P2",

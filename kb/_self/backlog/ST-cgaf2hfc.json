@@ -2,7 +2,7 @@
   "id": "ST-cgaf2hfc",
   "kind": "story",
   "title": "Workers start through a launcher command the operator sets, and kbmon reads agent states from an external source through a JSON contract",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-jxf76aa2",
   "priority": "P3",

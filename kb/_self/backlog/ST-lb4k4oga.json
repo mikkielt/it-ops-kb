@@ -2,7 +2,7 @@
   "id": "ST-lb4k4oga",
   "kind": "story",
   "title": "Setup asks whether the kb server lists the coord tools, and kb_mcp.py --register-local --coord-tools on|off records the choice",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-jxf76aa2",
   "priority": "P2",
   "rank": 0,

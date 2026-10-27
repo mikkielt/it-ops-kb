@@ -2,7 +2,7 @@
   "id": "BG-uoswts7n",
   "kind": "bug",
   "title": "A land stopped at rebase prints its resume remedy before the git worktree add that makes it work",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-jxf76aa2",
   "priority": "P2",
   "rank": 0,

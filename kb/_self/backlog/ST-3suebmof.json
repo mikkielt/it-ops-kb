@@ -2,7 +2,7 @@
   "id": "ST-3suebmof",
   "kind": "story",
   "title": "Putting items in a sprint posts the session's plan to coord, so other sessions see it before any claim",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-zv3duelo",
   "sprint": "SP-jxf76aa2",
   "priority": "P1",

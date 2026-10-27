@@ -2,7 +2,7 @@
   "id": "BG-jbi5ty6i",
   "kind": "bug",
   "title": "The graded-overlap bullet's failed-agent counts have no benchmark row and say 1 of 4 isolated full-overlap runs where the records show 3",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-jxf76aa2",
   "priority": "P2",
   "rank": 0,

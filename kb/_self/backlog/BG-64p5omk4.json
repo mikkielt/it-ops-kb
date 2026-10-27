@@ -2,7 +2,7 @@
   "id": "BG-64p5omk4",
   "kind": "bug",
   "title": "kbtail skips a live session whose transcript it cannot find, with no line",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-jxf76aa2",
   "priority": "P2",
   "rank": 0,

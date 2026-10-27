@@ -2,7 +2,7 @@
   "id": "ST-teivhsxq",
   "kind": "story",
   "title": "kbingest map records each symbol's definition and its references, file by file, at the pinned commit",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-rpzrctui",
   "sprint": "SP-jxf76aa2",
   "priority": "P1",

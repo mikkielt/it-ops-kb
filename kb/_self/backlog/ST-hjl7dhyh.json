@@ -2,7 +2,7 @@
   "id": "ST-hjl7dhyh",
   "kind": "story",
   "title": "backlog.py peers lists the other live sessions' plans, files and sprints and names each file a plan shares with them",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-zv3duelo",
   "sprint": "SP-jxf76aa2",
   "priority": "P1",

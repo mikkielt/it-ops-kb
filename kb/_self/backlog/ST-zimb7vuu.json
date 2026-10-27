@@ -2,7 +2,7 @@
   "id": "ST-zimb7vuu",
   "kind": "story",
   "title": "A session whose work is recorded as done but whose process stays alive is flagged, and stopped after a grace period when the operator's policy allows",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-jxf76aa2",
   "priority": "P2",

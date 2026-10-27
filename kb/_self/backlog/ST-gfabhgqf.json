@@ -2,7 +2,7 @@
   "id": "ST-gfabhgqf",
   "kind": "story",
   "title": "A refresh closes a changed fact with an end date and adds the new one, instead of rewriting it",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-lrmcc2uf",
   "sprint": "SP-jxf76aa2",
   "priority": "P3",
