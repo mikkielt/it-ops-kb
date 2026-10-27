@@ -38,6 +38,42 @@
     "ST-hjl7dhyh",
     "ST-hqko4k2x"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which files does a posted plan name, and how many intents may it post?",
+      "options": [
+        "open items' files, every chunk",
+        "all items' files, every chunk",
+        "open items' files, first chunk only"
+      ],
+      "recommendation": "open items' files, every chunk",
+      "reason": "done and dropped items plan no work, and the planner posted several intents by hand for a long sprint",
+      "do": {
+        "open items' files, every chunk": "ST-3suebmof",
+        "all items' files, every chunk": "ST-3suebmof",
+        "open items' files, first chunk only": "ST-3suebmof"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How does peers show a session's items, so a plan's sprint is named by its title?",
+      "options": [
+        "id and title (from this clone's item files, else the integration main's)",
+        "id only"
+      ],
+      "recommendation": "id and title (from this clone's item files, else the integration main's)",
+      "reason": "a sprint filed but not yet pushed is on no main, and the id alone names nothing to read",
+      "do": {
+        "id and title (from this clone's item files, else the integration main's)": "ST-3suebmof",
+        "id only": "ST-3suebmof"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "moved out: SP-basca7ae"
   ],

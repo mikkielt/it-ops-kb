@@ -20,15 +20,20 @@ planned together. Standard library only; imports `bl_base`, `bl_cli`, `bl_plan` 
 modules where it reads the sessions. It registers its own subcommand when imported.
 """
 import os
+import re
 from pathlib import Path
 
 import bl_cli
-from bl_base import Backlog, glob_re, need, resolved_touch, say, scope
+from bl_base import Backlog, glob_re, need, operator_who, resolved_touch, say, scope
+from bl_clean import run_coord
 from bl_plan import history_ref, shared_doc, touch_files, touches_meet
 from bl_view import items_at
 
 
 HOLDERS_SHOWN = 6  # the holders one shared-file line names; a doc most items name would fill the screen
+PLAN_TOUCH_CHARS = 120  # the width of an intent's touch field (coord.py refuses more)
+PLAN_WORD = re.compile(r"[A-Za-z0-9_.:/#@*?-]+")  # what coord accepts in a touch path
+PLAN_SESSION = re.compile(r"[A-Za-z0-9_.:/#@-]{1,120}")  # what coord accepts as a field value
 
 
 def args_peers(p):
@@ -133,6 +138,60 @@ def shares(touches, holders, files):
     return out
 
 
+def item_label(bl, main, iid):
+    """The item's id and title as this clone's item files give it, else as the integration main's, else the bare id."""
+    for known in (bl, main):
+        if iid in known.items:
+            return known.label(iid)
+    return iid
+
+
+def plan_chunks(touches):
+    """[[path]] of the whole paths of TOUCHES that fit a coord intent's touch field, each list at most PLAN_TOUCH_CHARS
+    characters joined by commas, in order; a path coord refuses (an unusual character, or alone over the width) is left out."""
+    out, size = [], 0
+    for path in dict.fromkeys(touches):
+        if not PLAN_WORD.fullmatch(path) or len(path) > PLAN_TOUCH_CHARS:
+            continue
+        if out and size + 1 + len(path) <= PLAN_TOUCH_CHARS:
+            out[-1].append(path)
+            size += 1 + len(path)
+        else:
+            out.append([path])
+            size = len(path)
+    return out
+
+
+def post_plan(bl, sid):
+    """Post this session's plan for sprint SID to coord: one `intent` event with the session (`CLAUDE_CODE_SESSION_ID`), the
+    sprint as its item, the topic `plan` and, as touch, the files of the sprint's open items (their scopes), several events
+    when those exceed the field's width. Posts nothing, and says nothing, without a session id, for an unknown sprint, with
+    `announce.to_other_sessions` false, or when coord cannot be run; a coord failure is said on one line and never fails
+    the command. Returns the number of events posted."""
+    own = os.environ.get("CLAUDE_CODE_SESSION_ID") or None
+    if not own or bl.items.get(sid, {}).get("kind") != "sprint" or not PLAN_SESSION.fullmatch(own):
+        return 0
+    try:
+        import kbsettings
+        if not kbsettings.effective(bl.root)["coordination"]["announce"]["to_other_sessions"]:
+            return 0
+    except Exception:  # bad settings files leave the default: announce
+        pass
+    items = [i for i in sorted(bl.sprint_items(sid)) if bl.items[i].get("status") not in ("done", "dropped")]
+    touches = [t for i in items for t in scope(bl, i) if isinstance(t, str) and t]
+    oid = operator_who()[0]
+    posted = 0
+    for chunk in plan_chunks(touches):
+        extra = ["--field", "operator=" + oid] if oid else []
+        code, _body, err = run_coord("post", "--kind", "intent", "--field", "session=" + own, "--field", "item=" + sid,
+                                     "--field", "topic=plan", "--field", "touch=" + ",".join(chunk), *extra)
+        if code:
+            say(f"plan: no coord intent posted for {sid}: {err or 'coord.py exited ' + str(code)}")
+            break
+        posted += 1
+    return posted
+
+
 def cmd_peers(bl, a):
     """`peers`: see the module docstring. Exit 1 when the work shares a non-doc file, else 0; 2 for an unknown id."""
     work, skip_items, skip_sprint = work_of(bl, a)
@@ -150,7 +209,7 @@ def cmd_peers(bl, a):
     for s in sessions:
         touch = list(dict.fromkeys(s["touch"] + [t for i in s["items"] for t in item_touches(main.items, i)]))
         say(f"session {s['label']}  {s['role'] or 'session'}" + (f"  topic {', '.join(s['topics'])}" if s["topics"] else "")
-            + (f"  items {', '.join(s['items'])}" if s["items"] else ""))
+            + (f"  items {', '.join(item_label(bl, main, i) for i in s['items'])}" if s["items"] else ""))
         if touch:
             say("  files " + ", ".join(touch))
         holders.append((f"session {s['label']}", touch))

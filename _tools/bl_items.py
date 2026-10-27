@@ -27,6 +27,7 @@ from bl_land import (
 from bl_view import (
     is_near, similar,
 )
+from bl_peers import post_plan
 from bl_plan import (
     docs_after_code, has_scope, host_gates, stale_touches, tracked_files,
 )
@@ -206,6 +207,8 @@ def cmd_new(bl, a):
     for row in filter(is_near, similar(bl, f"{it['title']} {it.get('goal', '')}", exclude={it["id"]})):
         say(f"  warning: near-duplicate of open {bl.label(row[2])} (word overlap {row[0]:.2f}); "
             "drop this one if it is the same work")
+    if a.sprint:
+        post_plan(bl, a.sprint)
     commit_written(bl, a, "file", it["id"])
     return 0
 
@@ -846,6 +849,8 @@ def cmd_set(bl, a):
         say(f"set {labels}: {', '.join(named)}")
     else:
         say(f"set {labels}: unchanged")
+    if a.sprint:
+        post_plan(bl, a.sprint)
     commit_written(bl, a, "set", " ".join(ids), ids=ids)
     return 0
 
