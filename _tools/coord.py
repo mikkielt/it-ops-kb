@@ -26,6 +26,11 @@
                                                      naming the state and the states it may move to, and writes nothing
   coord.py digest --key K ... --lines N              print at most N lines (plain text, not JSON), newest first, of the
                                                      live intents and claims that overlap a key K (repeatable)
+  coord.py export-intents                            print each live intent as one JSON line (session, items, topics, touch globs,
+                                                     operator, seq, at), oldest first, for an external coordination service
+  coord.py import-reservations FILE|-                read JSON lines of holder, paths (globs), expires_in (seconds) and source
+                                                     and lease each path as reservation/SOURCE/HOLDER/PATH until it expires;
+                                                     `digest` lists one that meets a key (local store only; exit 2 writes none)
   coord.py wait --since N --timeout S [--kind KIND] [--item IDS] [--pid PID ...]
                                                      print the events after sequence N, blocking until one arrives or
                                                      S seconds pass; --kind keeps one kind, --item the events whose
@@ -234,6 +239,9 @@ LIST_VALUES = {("intent", "item"): ID_LIST, ("intent", "topic"): ID_LIST, ("inte
 INTENT_SECONDS = 86400
 TEAM_KEYS = "team/"  # a team's keys: team/<team>/<name>, written by that team's operators alone behind `serve`
 SESSION_LEASE = "session/"  # the presence lease of a session: key session/<id>, held while the session lives
+RESERVATIONS = "reservation/"  # an imported external reservation: key reservation/<source>/<holder>/<path glob>
+RESERVATION_SOURCE = "external"  # the source of a reservation line that names none
+RESERVATION_PATHS = 50  # globs one reservation line may name
 MAX_FIELDS = 8
 POLL_SECONDS = 0.05
 RECHECK_SECONDS = 1.0
@@ -737,8 +745,11 @@ def one_line(text, limit=80):
     return re.sub(r"[\x00-\x1f\x7f-\x9f]", "", re.sub(r"\s+", "_", str(text)))[:limit]
 
 
-def digest(args, clock):
-    """The live intents and claims that overlap the keys, newest first, as at most N lines of text (no JSON)."""
+def live_state(args, clock):
+    """(now, the held leases, the live intents as (at, seq, fields, items), the latest progress move of each item as
+    (seq, state, at)) of the store: the rows `digest` and `export-intents` read. An intent is live when it was posted within
+    INTENT_SECONDS, its session (when it names one) still holds `session/<id>` and a later progress event has not set every
+    item of it to a state of FINISHED."""
     con = connect(args.store)
     now = clock()
     try:
@@ -758,13 +769,80 @@ def digest(args, clock):
             continue
         items = [i for i in fields.get("item", "").split(",") if i]
         found.append((row["at"], row["seq"], fields, items))
-    lines = []
     live = {row["key"] for row in claims}
+    kept = [(at, seq, fields, items) for at, seq, fields, items in found
+            if not ("session" in fields and SESSION_LEASE + fields["session"] not in live)
+            and not (items and all(i in state and state[i][0] > seq and state[i][1] in FINISHED for i in items))]
+    return now, claims, kept, state
+
+
+def export_intents(args, clock):
+    """Each live intent as one JSON line, oldest first: session, items, topics, touch (the globs), operator (empty
+    when the intent carries none), seq and at. The lines an external coordination service reads as the claims this store holds."""
+    _now, _claims, intents, _state = live_state(args, clock)
+    split = lambda fields, name: [v for v in fields.get(name, "").split(",") if v]
+    return "\n".join(json.dumps({"session": fields.get("session", ""), "items": items, "topics": split(fields, "topic"),
+                                 "touch": split(fields, "touch"), "operator": fields.get("operator", ""), "seq": seq, "at": round(at, 3)},
+                                sort_keys=True, ensure_ascii=False)
+                     for at, seq, fields, items in sorted(intents, key=lambda row: row[1]))
+
+
+def reservation_key(source, holder, path):
+    return f"{RESERVATIONS}{source}/{holder}/{path}"
+
+
+def reservation_lines(text):
+    """The reservations in JSON-lines TEXT as (source, holder, path, seconds) rows; any line that does not meet the contract
+    (an object of holder, paths, expires_in and optionally source) exits 2 naming its number, and nothing is written."""
+    rows = []
+    for number, line in enumerate(text.splitlines(), 1):
+        if not line.strip():
+            continue
+        bad = lambda why: Refused({"ok": False, "error": f"line {number}: {why}"}, 2)
+        try:
+            entry = json.loads(line)
+        except ValueError:
+            raise bad("not JSON")
+        if not isinstance(entry, dict) or not {"holder", "paths", "expires_in"} <= set(entry) or set(entry) - {"holder", "paths", "expires_in", "source"}:
+            raise bad("an object of holder, paths, expires_in and optionally source")
+        source = entry.get("source", RESERVATION_SOURCE)
+        for name, value in (("holder", entry["holder"]), ("source", source)):
+            if not isinstance(value, str) or not FIELD_VALUE.fullmatch(value) or "/" in value:
+                raise bad(f"{name} is an id of 1 to 120 characters of letters, digits and _ . : # @ -")
+        paths = entry["paths"]
+        if not isinstance(paths, list) or not 1 <= len(paths) <= RESERVATION_PATHS or not all(
+                isinstance(p, str) and GLOB_LIST.fullmatch(p) and "," not in p for p in paths):
+            raise bad(f"paths is a list of 1 to {RESERVATION_PATHS} globs of up to 120 characters of letters, digits and _ . : / # @ * ? -")
+        seconds_left = entry["expires_in"]
+        if isinstance(seconds_left, bool) or not isinstance(seconds_left, (int, float)) or not math.isfinite(seconds_left) or seconds_left <= 0:
+            raise bad("expires_in is a number of seconds above 0")
+        rows += [(source, entry["holder"], path, float(seconds_left)) for path in dict.fromkeys(paths)]
+    return rows
+
+
+def import_reservations(args, clock):
+    """Store each reservation of the JSON lines in FILE (`-`: stdin) as one lease per path, key
+    `reservation/SOURCE/HOLDER/PATH`, that expires after its `expires_in` seconds and shows in `digest` for a key that meets its
+    path. The same source, holder and path again renews that lease. A line that breaks the contract writes nothing."""
+    try:
+        text = sys.stdin.read() if args.file == "-" else Path(args.file).read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as error:
+        raise Refused({"ok": False, "error": f"{args.file}: {error.__class__.__name__}"}, 2)
+    rows = reservation_lines(text)
+    with Tx(args.store) as con:
+        now = clock()
+        end_leases(con, now)
+        for source, holder, path, left in rows:
+            key = reservation_key(source, holder, path)
+            take(con, key, holder, secrets.token_hex(16), left, now)
+    return {"ok": True, "imported": len(rows), "holders": sorted({holder for _s, holder, _p, _l in rows})}
+
+
+def digest(args, clock):
+    """The live intents and claims that overlap the keys, newest first, as at most N lines of text (no JSON)."""
+    now, claims, found, state = live_state(args, clock)
+    lines = []
     for at, seq, fields, items in found:
-        if "session" in fields and SESSION_LEASE + fields["session"] not in live:
-            continue
-        if items and all(i in state and state[i][0] > seq and state[i][1] in FINISHED for i in items):
-            continue
         values = [v for n in ("item", "topic", "touch") for v in fields.get(n, "").split(",") if v]
         if not any(overlaps(v, k) for v in values for k in args.key):
             continue
@@ -774,7 +852,13 @@ def digest(args, clock):
         now_states = sorted({move[1] for move in moves})
         lines.append((at, text + (f" state={'/'.join(now_states)} age={int(now - max(move[2] for move in moves))}s" if moves else "")))
     for row in claims:
-        if any(overlaps(row["key"], k) for k in args.key):
+        if row["key"].startswith(RESERVATIONS):
+            source, _slash, rest = row["key"][len(RESERVATIONS):].partition("/")
+            path = rest.partition("/")[2]
+            if path and any(overlaps(path, k) for k in args.key):
+                lines.append((row["expires"] - row["ttl"], f"reservation {one_line(path)} holder={one_line(row['holder'])} "
+                                                           f"source={one_line(source)} left={int(row['expires'] - now)}s"))
+        elif any(overlaps(row["key"], k) for k in args.key):
             cost = budget_view(row["key"], row["budget"])
             spent = (f" budget_usd={cost['budget_usd']} spend_usd={cost['spend_usd']}"
                      + (" over budget" if cost["over_budget"] else "")) if row["budget"] is not None else ""
@@ -1093,6 +1177,7 @@ def build_parser(parser_class=argparse.ArgumentParser, remote=False):
     p = sub.add_parser("digest", parents=parents)
     p.add_argument("--key", action="append", required=True, metavar="K", help="an item id, topic key or path; repeatable")
     p.add_argument("--lines", type=not_negative, required=True, help="at most this many lines")
+    sub.add_parser("export-intents", parents=parents)
     p = sub.add_parser("wait", parents=parents)
     p.add_argument("--since", type=not_negative, required=True, help="the highest sequence the caller has seen (0: all)")
     p.add_argument("--timeout", type=seconds, required=True, help="seconds to block when no event is past SINCE")
@@ -1111,6 +1196,8 @@ def build_parser(parser_class=argparse.ArgumentParser, remote=False):
     p.add_argument("--code", type=code_target, action="append", default=[], metavar="REPO:PATH[#SYMBOL]",
                    help="a code target to claim beside the research terms; a claim on a path covers its symbols; repeatable")
     if not remote:
+        p = sub.add_parser("import-reservations", parents=parents)
+        p.add_argument("file", metavar="FILE|-", help="JSON lines of holder, paths, expires_in and source; - reads standard input")
         p = sub.add_parser("serve", parents=parents)
         p.add_argument("--bind", required=True, metavar="[HOST:]PORT", help="host (default 127.0.0.1) and port (0: a free one)")
         p.add_argument("--keys", required=True, metavar="DIR", help="one file per operator, named for it, holding its token")
@@ -1118,7 +1205,8 @@ def build_parser(parser_class=argparse.ArgumentParser, remote=False):
 
 
 COMMANDS = {"claim": claim, "renew": renew, "release": release, "get": get, "put": put, "list": listing,
-            "post": post, "transition": transition, "digest": digest, "wait": wait, "dedup": dedup}
+            "post": post, "transition": transition, "digest": digest, "wait": wait, "dedup": dedup,
+            "export-intents": export_intents, "import-reservations": import_reservations}
 
 
 def run(args, clock):

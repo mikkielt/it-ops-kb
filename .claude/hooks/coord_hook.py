@@ -55,7 +55,8 @@ Only a refusal (exit 1: the token no longer holds the lease) drops the token. A 
 was refused or could not run, or a renew was refused) claims the lease afresh at its next tool event, and a claim that
 fails again waits a minute for the next, so a live session shows in other sessions' digests again.
 
-An overlap is another live session's (or a held item claim) whose items or touches meet this session's, read from
+An overlap is another live session's (or a held item claim, or an imported external reservation, which has no item
+and shows by its holder, its source and the paths it shares) whose items or touches meet this session's, read from
 `coord.py digest`: this session's own intent and lease are left out, the intents of one session are merged, and each overlap
 is shown once per session (the state file keeps what was shown). The settings come from `kbsettings.effective` for the
 workspace of the event's cwd (its git top-level): announce.when names the moments (start, claim, midrun, edit; a moment it
@@ -474,13 +475,14 @@ def announce(sid, items, topic=None, touch=""):
 def overlaps(sid, keys, dispatched=None):
     """The other sessions whose items or touches meet keys, newest first, from `coord.py digest`: one entry for each
     session (its intents merged: items, touch paths, run states with the age of the latest move, operator) and one
-    for each held item claim (items = [the key], holder). This session's own intents, leases and claims are left out.
+    for each held item claim (items = [the key], holder) and for each (source, holder) of imported reservations that meet
+    keys (source set, touch = the reserved globs). This session's own intents, leases and claims are left out.
     A worker passes the item of its `work/<id>` branch as dispatched: the claim intent and the claim the dispatching
     session made for that item are no overlap."""
     if not keys:
         return []
     args = ["digest", "--lines", str(DIGEST_LINES)] +[a for k in keys[:30] for a in ("--key", k)]
-    found, by_session = [], {}
+    found, by_session, by_reservation = [], {}, {}
     for line in coord(*args)[1].splitlines():
         words = line.split()
         fields = dict(w.split("=", 1) for w in words[1:] if "=" in w)
@@ -508,7 +510,20 @@ def overlaps(sid, keys, dispatched=None):
             left = fields.get("left", "")
             found.append({"session": None, "holder": fields.get("holder"), "items": [words[1]], "touch": [], "states": [],
                           "age": None, "operator": None, "left": left[:-1] if left[:-1].isdigit() else None})
+        elif words[:1] == ["reservation"] and len(words) > 1:
+            who = (fields.get("source"), fields.get("holder"))
+            entry = by_reservation.get(who)
+            if entry is None:
+                left = fields.get("left", "")
+                entry = {"session": None, "holder": who[1], "source": who[0], "items": [], "touch": [], "states": [], "age": None,
+                         "operator": None, "left": left[:-1] if left[:-1].isdigit() else None}
+                found.append(entry)
+                by_reservation[who] = entry
+            entry["touch"] += [t for t in [words[1]] if t not in entry["touch"]]
     for entry in found:
+        if entry.get("source"):
+            entry["id"] = "reservation:" + safe(entry["source"]) + ":" + label(entry["holder"], True) + ":" + ",".join(sorted(entry["touch"]))
+            continue
         who = entry["session"] or entry.get("holder") or "intent"
         entry["id"] = (("claim:" if "holder" in entry else "") + label(who) + ":" + ",".join(sorted(entry["items"])))
     return found
@@ -590,8 +605,15 @@ def redacted_lines(lines):
 
 def entry_lines(entry, ws, mine, mine_touch, strategy):
     """The two lines of one overlap: who works on what in which run state, sharing which files; the suggested strategy
-    with its command, then the others."""
+    with its command, then the others. An external reservation (an entry with a source) has no run state or item: its
+    second line says to wait for its lease or ask its holder outside coord."""
     items = entry["items"]
+    if entry.get("source"):
+        shared = [t for t in entry["touch"] if any(meets(t, k) for k in mine_touch)]
+        files = ("; shares " + ", ".join(shared[:4]) + (f" and {len(shared) - 4} more" if len(shared) > 4 else "")) if shared else ""
+        left = f", lease left {span(entry['left'])}" if entry.get("left") else ""
+        return [f"coord: {label(entry['holder'], True)} holds an external reservation from {safe(entry['source'])}{left}{files}",
+                "  suggested: wait for the reservation to end or ask its holder outside coord; no session of this store answers for it"]
     title = shown_title(item_info(ws, items[0]).get("title")) if items else ""
     names = (items[0] + (f' "{title}"' if title else "") + "".join(", " + i for i in items[1:3])) if items else "no item"
     who = label(entry["session"], False) if entry["session"] else label(entry.get("holder") or "intent", True)
