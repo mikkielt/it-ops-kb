@@ -2,7 +2,7 @@
   "id": "ST-cgaf2hfc",
   "kind": "story",
   "title": "Workers start through a launcher command the operator sets, and kbmon reads agent states from an external source through a JSON contract",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-jxf76aa2",
   "priority": "P3",
@@ -76,5 +76,7 @@
     "moved out: SP-hxxn6fnv"
   ],
   "notes": "Plan check 2026-10-26: check 0 dispatches a fake claude in a temp clone with a launcher that records its argv and runs the command, and once with none; check 1 plants two sessions and an agent_states command naming one by pid (idle) and one by session id (done) and reads kbmon --root; both fail on the base (the launcher is never called, no state on a row). The goal now names the placeholders {dir} and {command} and narrows \"beside the presence lease\" to the session's row of the sessions panel. Moved out of SP-hxxn6fnv by the unattended orchestrator 2026-10-26: the worker ($1.16) raised two gates of class agents-rule (the item touches bl_dispatch.py and bl_base.py): g1 how dispatch follows a session a launcher starts when the launcher returns at once (recommended: the command line writes its shell pid and exit code to scratch files that dispatch polls), g2 how kbmon runs the agent_states command and binds lines to sessions (recommended: once per snapshot, 5 s limit, pid wins, shown as agent_state after the role). They wait on the operator; work is on branch work/ST-cgaf2hfc.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
