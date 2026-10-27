@@ -2,7 +2,7 @@
   "id": "ST-5uhzyvrd",
   "kind": "story",
   "title": "land says a worker's work rows are late, not missing, while a distill is taking its session",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-m5m67goe",
   "priority": "P3",
   "rank": 0,
@@ -32,6 +32,19 @@
   ],
   "notes": "From the retrospective of SP-3qowbedb; the operator accepted it at the close.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-557596e3",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "aa80f7fd31d098d6e392246434d4061e2b150ed6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, shutil, tempfile\nT = tempfile.mkdtemp()\nos.environ['CLAUDE_PLUGIN_DATA'] = T\nos.environ['CLAUDE_PLUGIN_ROOT'] = os.getcwd()\nsys.path.insert(0, '_tools')\nimport ql_base, bl_land\nq = os.path.join(T, 'querylog')\nos.makedirs(os.path.join(q, 'spool'))\nlock = ql_base.acquire(q)\ntry:\n    assert lock is not None, 'could not plant a held distill lock'\n    out = bl_land.ops_work_rows('.', 'ST-wg27eqbp')\nfinally:\n    if lock is not None:\n        ql_base.release(lock)\n    shutil.rmtree(T, ignore_errors=True)\nassert out and out[0].startswith('land:') and 'late' in out[0] and 'distill' in out[0], ('a landing while distill holds the lock warns of missing rows instead of saying they are late', out)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
