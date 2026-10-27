@@ -3,7 +3,7 @@ research story's check by done's rules (`research_rows`, `unanswered_questions`,
 `precheck`, which runs a sprint's checks once before any work and warns of each that passes already, with the clause
 mapping it prints (`clause_map`), and `item_commits`, the commits an item's trailers name, which both read.
 
-Standard library only; imports `bl_base`, `bl_check`, `bl_cli`, `bl_intake` and `bl_plan` and never `bl_land` or
+Standard library only; imports `bl_base`, `bl_check`, `bl_cli`, `bl_intake`, `bl_peers` and `bl_plan` and never `bl_land` or
 `backlog`: `bl_land` imports this module, so every name the other modules read as `bl_land.NAME` stays importable
 from there. It registers `researched` and `precheck` with `bl_cli` itself when imported (`backlog.py`'s USAGE puts each in
 its usage position)."""
@@ -11,6 +11,7 @@ import csv, datetime, importlib, io, json, re, shlex, sys
 
 import bl_cli
 import bl_intake
+import bl_peers
 import bl_plan
 from bl_base import (
     CLAUSE_SPLIT, Refused, clause_commands, git, goal_clauses, id_re, item_file, need, research_story, run_check, say,
@@ -463,8 +464,10 @@ def cmd_precheck(bl, a):
     research story has landed, so the orchestrator runs it again then. It warns of an open goal research story whose
     goal has a numbered piece behind a lead-in of more than QUESTION_LEAD_WORDS words (`joined_lead_in`): `researched`
     reads that lead-in together with the first question, so the planner moves it to the notes or ends it with a
-    semicolon. kb-sprint plan runs it before the start gate is
-    asked, so start stays fast."""
+    semicolon. It warns of each committed item's file other than a kb/_self doc that another live session's plan or
+    another active or planned sprint's item also plans (`bl_peers.peer_overlaps`), naming the item, the file and the
+    other work as undecided until a depends_on between the two items or a `coordinate` event between them settles it.
+    kb-sprint plan runs it before the start gate is asked, so start stays fast."""
     sid = need(bl, a.sprint)
     if bl.items[sid].get("kind") != "sprint":
         raise Refused(f"precheck needs a sprint: {bl.label(sid)} is a {bl.items[sid].get('kind')}")
@@ -506,6 +509,11 @@ def cmd_precheck(bl, a):
                 f"(more than {QUESTION_LEAD_WORDS}: {lead[:60]}...) together with its first question, so the pack of "
                 "the whole piece is weak: move the lead-in to the item's notes, or end it with a semicolon, before "
                 "the start gate")
+    for iid, path, others in bl_peers.peer_overlaps(bl, sid, precheck_items(bl, sid)):
+        more = f" and {len(others) - bl_peers.HOLDERS_SHOWN} more" if len(others) > bl_peers.HOLDERS_SHOWN else ""
+        say(f"warning: {bl.label(iid)}: {path} is also planned by {', '.join(others[:bl_peers.HOLDERS_SHOWN])}{more}: undecided; "
+            f"order the two (set {iid} --add-depends OTHER) or settle it (kbask.py coordinate {iid} OTHER STRATEGY, OTHER "
+            "the other item, topic or session) before the start")
     for iid in precheck_items(bl, sid):
         late = after_merge_proof(bl, iid)
         if late:
