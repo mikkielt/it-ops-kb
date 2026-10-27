@@ -2,7 +2,7 @@
   "id": "ST-ztsewht6",
   "kind": "story",
   "title": "kb_hook answers a prompt without kb: in at most 200 ms, so a prompt's wait on the hooks drops",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-nxb7hjwd",
   "sprint": "SP-wpttdu7u",
   "priority": "P2",
@@ -69,6 +69,28 @@
   ],
   "notes": "Check 1 passes before the work by design: it pins kb_hook's answers so the speed-up cannot drop them. The worker measures the sync_ms figure's run-to-run spread before relying on the 200 ms bound (the planning rule ST-7qait5zh files). Operator 2026-10-27 (g1): widen the touches to kf_fresh.py, kbfacts.py, ql_store.py and the test that pins them (test_redact.py, per referrers).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-557596e3",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "e6c26da5c0247aef863918b2539fbf87542de91e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport csv, os, shutil, subprocess, tempfile\nCASE, BOUND_MS = 'UserPromptSubmit _tools/kb_hook.py', 200\nT = tempfile.mkdtemp()\nB = os.path.join(T, 'bin'); os.mkdir(B)\nopen(os.path.join(B, 'claude'), 'w').write('#!/bin/sh\\nexit 1\\n')\nos.chmod(os.path.join(B, 'claude'), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ['PATH'])\nout = os.path.join(T, 'out.csv')\np = subprocess.run([sys.executable, '_tools/benchmarks.py', 'run', 'session-load', '--arms', 'A', '--reps', '3', '--out', out],\n                   capture_output=True, text=True, env=ENV, timeout=1800)\nrows = list(csv.DictReader(open(out, encoding='utf-8'))) if os.path.exists(out) else []\nshutil.rmtree(T, ignore_errors=True)\nassert p.returncode == 0, ('run session-load exit', p.returncode, p.stderr[-400:])\ngot = [float(r['value']) for r in rows if r['scenario'] == 'session-load' and r['arm'] == 'A' and r['metric'] == 'sync_ms' and r['case'] == CASE]\nassert got, ('no sync_ms row for', CASE)\nassert got[0] <= BOUND_MS, (CASE, 'sync_ms', got[0], 'over', BOUND_MS)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport json, subprocess\ndef ask(text):\n    p = subprocess.run([sys.executable, '_tools/kb_hook.py', '--test', text], capture_output=True, text=True, timeout=300)\n    assert p.returncode == 0, ('kb_hook --test', text, p.returncode, p.stderr[-300:])\n    return p.stdout.strip()\nkb = json.loads(ask('kb: how often does an Intune device check in'))\nassert kb.get('decision') == 'block' and 'coverage:' in kb.get('reason', '') and 'pack: P-' in kb['reason'], ('a kb: prompt is no longer answered from a pack', str(kb)[:300])\nplain = ask('please rename the variable in this function')\nassert plain in ('', 'null'), ('a prompt without a prefix now gets output from kb_hook', plain[:200])\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
