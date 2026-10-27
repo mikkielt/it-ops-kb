@@ -107,7 +107,7 @@ else `unanchored`) and the terms of its `kb lacks:` lines, lowercased and mapped
 shares at least half of the smaller of the two term sets; the shared terms count as covered. A claim under the caller's own
 holder name is its own only when `--token` is that claim's token (the one an earlier `dedup` printed): the same name from a
 session that holds no such token is another holder. A question whose pack names no lack term claims the topic as a whole
-(`research:TOPIC:*`, listed in `claimed` with `uncovered` empty): it overlaps every other holder's claim on the topic, and
+(`research:TOPIC:WHOLE`, listed in `claimed` with `uncovered` empty): it overlaps every other holder's claim on the topic, and
 another holder's whole-topic claim covers every term of a later question on it. In one transaction `dedup`
 claims every term not covered (one lease, one token, shown once, for the keys in `claimed`) and prints `topic`, `terms`,
 `uncovered`, `overlaps` (each: `holder`, `topic`, shared `terms`), `held` (each uncovered term another live claim
@@ -169,6 +169,7 @@ import sqlite3
 import subprocess
 import sys
 import time
+import unicodedata
 import urllib.parse
 from fnmatch import fnmatchcase
 from pathlib import Path
@@ -177,7 +178,9 @@ HERE = Path(__file__).resolve().parent
 BUSY_SECONDS = 30
 PACK_SECONDS = 120
 RESEARCH = "research:"  # a research claim's key: research:<anchor topic>:<lack term>
-WHOLE = "*"  # the term of a research claim on a topic as a whole: research:<anchor topic>:*
+WHOLE = "WHOLE"  # the term of a research claim on a topic as a whole: research:<anchor topic>:WHOLE (upper case: no term id is)
+KEY_TOPIC = 80  # the most characters of an anchor topic a research key holds; a longer one is cut and hashed, which leaves the term room
+PLAIN_LETTERS = str.maketrans({"ł": "l", "đ": "d", "ø": "o", "ß": "ss", "æ": "ae", "œ": "oe", "ð": "d", "þ": "th"})
 HOLDER_ENV = "KB_COORD_HOLDER"
 DEDUP_SECONDS = 3600
 SCHEMA = (
@@ -815,16 +818,26 @@ def fingerprint(question, topic=None):
 def term_id(term, room):
     """A lack term as an id a claim key takes, within ROOM characters: lowercased, each run of characters outside letters,
     digits and `_ . -` a `-`, and, when that changed the term (or cut it), a short hash of the term after it, so two terms
-    never share an id. WHOLE and a term that is already an id stay as they are."""
+    never share an id. A letter with an accent is its plain letter in the slug (`ł` and a few others by table), so a
+    non-ASCII term keeps a readable form. WHOLE and a term that is already an id stay as they are."""
     if term == WHOLE or (re.fullmatch(r"[a-z0-9_.-]+", term) and len(term) <= room):
         return term
-    slug = re.sub(r"[^a-z0-9_.-]+", "-", term.lower()).strip("-")
+    plain = unicodedata.normalize("NFKD", term.lower().translate(PLAIN_LETTERS))
+    slug = re.sub(r"[^a-z0-9_.-]+", "-", plain.encode("ascii", "ignore").decode("ascii")).strip("-")
     tag = hashlib.sha256(term.encode("utf-8")).hexdigest()[:6]
     return f"{slug[:max(0, room - len(tag) - 1)].rstrip('-')}-{tag}".lstrip("-")
 
 
+def topic_key(topic):
+    """The anchor topic as a research key holds it: as it is within KEY_TOPIC characters, else cut with a six-character
+    hash of the whole topic after it."""
+    if len(topic) <= KEY_TOPIC:
+        return topic
+    return f"{topic[:KEY_TOPIC - 7]}-{hashlib.sha256(topic.encode('utf-8')).hexdigest()[:6]}"
+
+
 def research_key(topic, term):
-    return f"{RESEARCH}{topic}:{term}"
+    return f"{RESEARCH}{topic_key(topic)}:{term}"
 
 
 def dedup(args, clock):
@@ -836,7 +849,7 @@ def dedup(args, clock):
     mapped to an id (`term_id`) first, so a key, a claim event and a dedup event hold only the characters a claim key takes."""
     holder = holder_name(args)
     topic, found = fingerprint(args.question, args.topic)
-    room = max(8, 120 - len(research_key(topic, "")))
+    room = 120 - len(research_key(topic, ""))
     terms = []
     for word in found:
         if term_id(word, room) not in terms:
@@ -850,7 +863,7 @@ def dedup(args, clock):
         for row in con.execute("SELECT key, holder, token FROM entries WHERE holder IS NOT NULL AND substr(key, 1, ?) = ? ORDER BY key",
                                (len(RESEARCH), RESEARCH)):
             their_topic, _colon, term = row["key"][len(RESEARCH):].partition(":")
-            if their_topic != topic:
+            if their_topic != topic_key(topic):
                 continue
             if row["holder"] == holder and args.token and row["token"] == args.token:
                 own.add(term)
