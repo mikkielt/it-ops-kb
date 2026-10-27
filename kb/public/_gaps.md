@@ -2530,3 +2530,15 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## agents/coordination-messages
 
 - **A sourced method for telling whether two arms of a few runs differ beyond run-to-run variance.** Looked 2026-10-26 with a pack on shared coordination stores and duplicate work (coverage weak: the kb holds the multi-agent post's lack of a duplicate-work metric, not a method for comparing small arms). The repository's own benchmark reports define a spread from recorded ranges (`kb/_self/reports/`); no external source was read for a method for four records an arm. Needs a statistics source on range or interval overlap for small samples if the benchmark is to cite one. [UNK] (topic: agents/coordination-messages)
+
+## python/stdlib-unicode-normalization
+
+- **Whether `str.casefold` output stays in NFC, and whether letters such as Polish `ł` have a canonical decomposition.** Looked 2026-10-27 in the `unicodedata` and `str.casefold` pages of the Python 3 docs (S-dbbduccf, S-lyf4dv2j): neither says. Needs the Unicode Standard's case folding section and the Unicode character database (decomposition of U+0142), or a run of `unicodedata.normalize("NFD", "ł")` on a named Python version. [UNK] (topic: python/stdlib-unicode-normalization)
+
+## arch/snowball-stemmers-german-polish
+
+- **A Polish stop word list with a licence a tool may copy.** Looked 2026-10-27 at `snowballstem.org/algorithms/polish/stop.txt` (HTTP 404) and the algorithms index (S-s5bi7urp); no other list was searched. Needs the Snowball repository's data files or another openly licensed Polish list, with its licence read. [UNK] (topic: arch/snowball-stemmers-german-polish)
+
+## windows/7zip-archive-formats
+
+- **What the 7-Zip Extra console build unpacks, the console program's name on each OS and the command line that unpacks into a folder.** Looked 2026-10-27 at the 7-Zip home and download pages (S-3jko5ux3, S-e46qx3w3) and the GitHub release (S-wcdfw5eg): they name the packages but not these. Needs the help file shipped in the package (`7-zip.chm`) or a run of the console program on a named version. [UNK] (topic: windows/7zip-archive-formats)

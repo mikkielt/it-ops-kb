@@ -2,8 +2,8 @@
 topic: windows/powershell-static-analysis
 priority: P3
 applies_to: "PowerShell 7.5 and Windows PowerShell 5.1 (#Requires, module manifests, Import-PowerShellDataFile, Get-Command); System.Management.Automation.Language parser API (SDK 7.4 to 7.6); PSScriptAnalyzer 1.18+"
-retrieved_utc: 2026-10-21
-sources: [S-oodal3ol, S-iass75od, S-3olari7o, S-62qzauot, S-k7hdd27i, S-6jyt4xkf, S-tsdqt57s, S-gw24iv7o, S-f3ndzkct, S-jhjw7ppr, S-oeqxq56y, S-o6gamymj, S-ffmai4hf, S-g6na73gp, S-yx6xgjzj, S-f4p734lc, S-z65pkysn, S-ia7is5xj, S-4bjgu6jw, S-ouafwanl, S-vbfv4per]
+retrieved_utc: 2026-10-27
+sources: [S-fnw4oowm, S-uorl5u7d, S-qphsbe72, S-oodal3ol, S-iass75od, S-3olari7o, S-62qzauot, S-k7hdd27i, S-6jyt4xkf, S-tsdqt57s, S-gw24iv7o, S-f3ndzkct, S-jhjw7ppr, S-oeqxq56y, S-o6gamymj, S-ffmai4hf, S-g6na73gp, S-yx6xgjzj, S-f4p734lc, S-z65pkysn, S-ia7is5xj, S-4bjgu6jw, S-ouafwanl, S-vbfv4per]
 status: complete
 ---
 
@@ -54,6 +54,11 @@ familiar commands (`Import-Module`, `Test-ModuleManifest`, `Get-Command` with an
 - `Import-Module -Name` (position 0, so `Import-Module Example.Tools` names a module) takes module names or file names and does not permit wildcards; without a path the module is looked up in `$Env:PSModulePath`. [DOC S-iass75od]
 - A mapper that matches PowerShell code by its module imports therefore reads four places: `#Requires -Modules` and `ScriptRequirements.RequiredModules`, `using module` statements, `Import-Module` command elements found with `FindAll` over `CommandAst` (the first argument, when it is a constant), and manifest `RequiredModules`; a module name held in a variable or built at run time is not visible without executing the script. [DER S-6jyt4xkf, S-oodal3ol, S-iass75od, S-tsdqt57s: the four documented import forms; variables are not `using`-legal and `-Name` takes a string]
 - A mapper that must not execute repository code can read a PowerShell repository's pins and public surface from the parser (`ScriptRequirements`, `FindAll` for `FunctionDefinitionAst`) and `Import-PowerShellDataFile` on each `.psd1`, and treat an explicit `FunctionsToExport` list as the module's public commands; a wildcard or missing list leaves the surface known only after an import, which it avoids. [DER S-oeqxq56y, S-ffmai4hf, S-o6gamymj, S-f3ndzkct, S-tsdqt57s, S-jhjw7ppr: the read-only APIs versus the importing commands]
+- Dot sourcing is a fifth way one PowerShell file pulls in another: a dot and a space before a script path (`. .\sample.ps1`) run it in the current scope, so the functions, aliases and variables it creates are added to that scope and override existing ones. [DOC S-fnw4oowm, S-uorl5u7d]
+- The space after the dot is required, because it tells the dot-sourcing operator apart from the `.` that stands for the current directory. [DOC S-fnw4oowm]
+- The `enum` statement declares an enumeration: `enum <name> { <label> [= <int>] ... }`, optionally behind attributes such as `[Flags()]`; a label holds letters, underscores and digits and does not start with a digit, and a label with no value takes the next integer. [DOC S-qphsbe72]
+- An enumeration's underlying type is `[int]` unless the definition names another integral type with `enum <name> : <type> { ... }`, which PowerShell accepts since 6.2; a single member is written `[<enum-name>]::<label>`. [DOC S-qphsbe72]
+- A mapper that reads PowerShell by text patterns therefore takes `enum <Name>` as a type definition beside `function` and `class`, and a statement that starts with a dot and a space as a reference to the file named after it; a path built from a variable cannot be resolved without running the script. [DER S-fnw4oowm, S-qphsbe72: the two documented forms; variables are read only at run time]
 
 ## Reference
 - about_Requires: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_requires?view=powershell-7.5

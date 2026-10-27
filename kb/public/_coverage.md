@@ -93,6 +93,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `arch/heartbeat-dead-man-monitors` | P3 | partial | `arch/heartbeat-dead-man-monitors.md` | 7 |
 | `arch/http-rate-limit-429-retry-after` | P3 | partial | `arch/http-rate-limit-429-retry-after.md` | 10 |
 | `arch/incus-test-bed` | P3 | partial | `arch/incus-test-bed.md` | 6 |
+| `arch/lua-modules-and-functions` | P3 | complete | `arch/lua-modules-and-functions.md` | 1 |
 | `arch/oxigraph-embedded-rdf` | P3 | partial | `arch/oxigraph-embedded-rdf.md` | 29 |
 | `arch/podman-api-socket` | P3 | partial | `arch/podman-api-socket.md` | 5 |
 | `arch/podman-images-registries` | P3 | partial | `arch/podman-images-registries.md` | 4 |
@@ -108,6 +109,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `arch/puppet-modules-facts-hiera` | P3 | partial | `arch/puppet-modules-facts-hiera.md` | 9 |
 | `arch/puppet-windows-nodes` | P3 | partial | `arch/puppet-windows-nodes.md` | 12 |
 | `arch/rust-clippy-criterion-gates` | P3 | partial | `arch/rust-clippy-criterion-gates.md` | 16 |
+| `arch/snowball-stemmers-german-polish` | P3 | partial | `arch/snowball-stemmers-german-polish.md` | 4 |
 | `arch/sse-last-event-id-cursors` | P3 | partial | `arch/sse-last-event-id-cursors.md` | 5 |
 | `arch/uuidv7-identifiers` | P3 | complete | `arch/uuidv7-identifiers.md` | 3 |
 | `arch/wireguard-hub-and-spoke` | P3 | complete | `arch/wireguard-hub-and-spoke.md` | 3 |
@@ -351,6 +353,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `python/stdlib-cprofile-pstats` | P3 | partial | `python/stdlib-cprofile-pstats.md` | 4 |
 | `python/stdlib-datetime-iso-week` | P3 | complete | `python/stdlib-datetime-iso-week.md` | 2 |
 | `python/stdlib-os-loadavg` | P3 | partial | `python/stdlib-os-loadavg.md` | 7 |
+| `python/stdlib-unicode-normalization` | P3 | partial | `python/stdlib-unicode-normalization.md` | 2 |
 | `python/stdlib-urllib-errors` | P3 | partial | `python/stdlib-urllib-errors.md` | 6 |
 | `python/stdlib-windows-portability` | P3 | partial | `python/stdlib-windows-portability.md` | 44 |
 | `python/testcontainers-postgres-pytest` | P3 | partial | `python/testcontainers-postgres-pytest.md` | 15 |
@@ -434,12 +437,13 @@ Every topic of this root with its priority (the research order, not importance),
 | `windows/windows-365` | P2 | complete | `windows/windows-365.md` | 19 |
 | `windows/windows-update-management` | P2 | complete | `windows/windows-update-management.md`, `windows/windows-update-management.csv` | 19 |
 | `windows/winget` | P2 | complete | `windows/winget.md`, `windows/winget-policies.csv` | 14 |
+| `windows/7zip-archive-formats` | P3 | partial | `windows/7zip-archive-formats.md` | 3 |
 | `windows/cmd-exe-syntax-quoting-redirection` | P3 | partial | `windows/cmd-exe-syntax-quoting-redirection.md` | 12 |
 | `windows/cmd-exe-variables-expansion-errorlevel` | P3 | partial | `windows/cmd-exe-variables-expansion-errorlevel.md` | 11 |
 | `windows/dev-drive` | P3 | partial | `windows/dev-drive.md` | 6 |
 | `windows/openssh-estate-deployment` | P3 | partial | `windows/openssh-estate-deployment.md` | 10 |
 | `windows/openssh-key-management` | P3 | partial | `windows/openssh-key-management.md` | 5 |
-| `windows/powershell-static-analysis` | P3 | complete | `windows/powershell-static-analysis.md` | 21 |
+| `windows/powershell-static-analysis` | P3 | complete | `windows/powershell-static-analysis.md` | 24 |
 | `windows/process-parent-and-command-line` | P3 | partial | `windows/process-parent-and-command-line.md` | 10 |
 | `windows/robocopy` | P3 | partial | `windows/robocopy.md` | 3 |
 | `windows/windows-sandbox` | P3 | complete | `windows/windows-sandbox.md` | 4 |

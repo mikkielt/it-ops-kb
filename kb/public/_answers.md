@@ -4622,3 +4622,14 @@ _Agent: kb-research_
 - See gitlab/github-actions-workflow-syntax.md, python/pytest.md.
 
 _Agent: kb-research_
+
+## QK-sprint-s-tool-changes-non-english. What do the sprint's tool changes for non-English text, PowerShell and Lua files and MSI, CAB and WIM archives need to know from outside the kb?
+- `unicodedata.normalize` takes NFC, NFKC, NFD or NFKD, and `str.casefold` folds `ß` to `ss` where `lower` does not, so index and query meet when both are normalized to one form and casefolded. [DOC S-dbbduccf, S-lyf4dv2j]
+- Snowball publishes a German and a Polish stemmer and a German stop list under the 3-clause BSD licence; no Polish stop list is at the same place. [DOC S-k2zlxtqe, S-fxygye2y, S-clmrkdlz, S-h5kd4vwq]
+- PowerShell files add `enum` definitions and dot-sourcing (a dot, a space and a path) to the `function`, `class` and `Import-Module` forms a pattern table reads; Lua adds `require` with a quoted name (either call form), `function` and `local function`. [DOC S-qphsbe72, S-fnw4oowm, S-uorl5u7d, S-ztiy5c7d]
+- 7-Zip 26.05 unpacks MSI and CAB (unpack only) and WIM (also packs); its GitHub release lists a SHA-256 digest for each file, and the download page has a console build for Windows (Extra), Linux and macOS. [DOC S-3jko5ux3, S-e46qx3w3, S-wcdfw5eg]
+- Conclusion: the Unicode, language-profile, pattern-table and extractor-table items can name the knowledge they need from these topics; the evidence-policy and placeholder-name items rest on the kb's own rules and need no outside fact. [DER S-lyf4dv2j, S-k2zlxtqe, S-ztiy5c7d, S-3jko5ux3: the four topics above]
+- Open: whether `casefold` output stays in NFC and how `ł` decomposes, a Polish stop list with a copyable licence, and what the 7-Zip Extra console build unpacks and how it is called. [UNK]
+- See python/stdlib-unicode-normalization.md, arch/snowball-stemmers-german-polish.md, windows/powershell-static-analysis.md, arch/lua-modules-and-functions.md, windows/7zip-archive-formats.md.
+
+_Agent: kb-research_
