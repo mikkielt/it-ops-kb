@@ -1,0 +1,39 @@
+{
+  "id": "ST-3j3wlgg4",
+  "kind": "story",
+  "title": "A test.run row says whether the run breached, against which limit and on how many workers, and tests.py --changed sees a rename out of _tools",
+  "status": "draft",
+  "parent": "EP-n4dci4w7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "tests.py writes its test.run ops row after ceiling_report (today record_run runs first, tests.py:990), with the worker count computed before the run (today :356 counts after, so 23 of 34 low-worker rows show worker-seconds above workers x wall) and closed fields over, limit_s, platform, profile and ws (worker-seconds); the query-log ops row spec and its readers accept them. changed() runs git diff with --no-renames, so a git mv from _tools/ into kb/ selects the whole suite (today only the destination is listed and the scope is content). No exit-code change. The ops-row shape test in test_redact.py and one assertion in test_ceiling.py's changed-paths test cover it: 0 new ids, under 0.1 s. Evidence: reliability-authority-review.md CI-7, CI-9.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import inspect,tests;s=inspect.getsource(tests);ok='--no-renames' in s and 'limit_s' in s;print(ok);sys.exit(0 if ok else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_redact.py",
+        "_tools/test_ceiling.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/tests.py",
+    "_tools/ql_capture.py",
+    "_tools/test_redact.py",
+    "_tools/test_ceiling.py",
+    "kb/_self/tools.md",
+    "kb/_self/querylog.md"
+  ],
+  "depends_on": [
+    "ST-yl6b2ues"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

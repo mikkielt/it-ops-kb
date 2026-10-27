@@ -1,0 +1,40 @@
+{
+  "id": "ST-kxnlpycw",
+  "kind": "story",
+  "title": "kbmon's states are true: no orphan for a recorded or live headless session, no landing after land.end, a runner only with a live worker, and a silent claimed unit in needs you",
+  "status": "draft",
+  "parent": "EP-n4dci4w7",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "bl_procs.classify counts a pid recorded by backlog.py own --class process, or whose session wrote its transcript within the last 10 minutes, as detached, not orphan (a pid with neither stays orphan), so mon_sessions' sessions.orphan alert and selfcheck stop firing on healthy externally launched claude -p sessions; mon_sessions.landing_steps ignores a land.step row after the item's land.end, so a landed item never shows as in landing at verify (197 do today); role_of labels a session sprint runner only when a dispatch record's worker pid is live or one of its items' run state is working, else interactive; mon_needs adds one needs-you entry stalled-claim for a claimed item whose dispatched worker or session has been silent beyond coord.run.working_silent's 3600 s, and none for an unclaimed idle session. No new metric. Partly overlaps ST-qzknmm7z (silence over all sessions). Evidence: reliability-authority-review.md OB-1 to OB-3.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import inspect,bl_procs,mon_needs;ok=('own' in inspect.getsource(bl_procs.classify)) and ('stalled-claim' in inspect.getsource(mon_needs));print(ok);sys.exit(0 if ok else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/kbmon.py",
+        "--once",
+        "--panel",
+        "sessions",
+        "--timeout",
+        "60"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_procs.py",
+    "_tools/mon_sessions.py",
+    "_tools/mon_needs.py",
+    "kb/_self/monitoring.md"
+  ],
+  "relates_to": [
+    "ST-qzknmm7z"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

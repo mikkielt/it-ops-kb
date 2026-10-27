@@ -1,0 +1,44 @@
+{
+  "id": "ST-ghmzsv7t",
+  "kind": "story",
+  "title": "The kb's docs say which authority boundaries are enforced and which are convention, with two free experiments on worker credentials and check isolation",
+  "status": "draft",
+  "parent": "EP-n4dci4w7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/_self/maintaining.md states, in the present tense, that sessions and headless workers act with the operator's ambient forge and publish credentials, that permission deny rules match command text and do not bound a program (Claude Code permissions docs), and that an item's check may run inline Python (bl_intake.py check programs), so the OS user and its credentials are the boundary on a single-operator host. Two free experiments are run and their outcome added to kb/_self/reports/reliability-authority-review.md (section 10): (1) in a throwaway git root, a planted item whose check runs glab auth status goes through backlog.py done, showing whether a check reaches the network and credentials; (2) one headless worker with a Developer-role forge token, set only in that worker's environment, takes one draft item through claim, work, done, sync and merge, naming the first step that needs more. Nothing in the clone's settings, credentials or permission rules is changed. Overlaps ST-mbb47xlf on maintaining.md. Evidence: reliability-authority-review.md AU-2 to AU-4.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/_self/maintaining.md').read();ok='ambient' in t and 'deny rule' in t;print(ok);sys.exit(0 if ok else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/maintaining.md",
+    "kb/_self/reports/reliability-authority-review.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Experiment 2 needs a Developer-role forge token the operator creates; is one available to that single worker?",
+      "options": [
+        "yes, token file given to the worker",
+        "skip experiment 2, record why"
+      ],
+      "recommendation": "skip experiment 2, record why",
+      "class": "secrets"
+    }
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

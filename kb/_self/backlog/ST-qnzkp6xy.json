@@ -1,0 +1,55 @@
+{
+  "id": "ST-qnzkp6xy",
+  "kind": "story",
+  "title": "An operator-class gate answer recorded from an agent session says so, and horizon and the sprint review list it for re-confirmation",
+  "status": "draft",
+  "parent": "EP-n4dci4w7",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "backlog.py answer --by operator on a gate whose class is in bl_authority.OPERATOR_CLASSES, run where bl_authority.in_agent_session() is true, stores agent_session: true beside operator and role on the gate (bl_items.py answer record); check accepts the field; horizon prints the count of such answers and the sprint review story lists each (item, gate, answer) for the operator to re-confirm from a terminal. Nothing is refused, so pre-approved unattended runs keep working; a terminal answer stores no flag. The extended test_authority.py function plants push, agents-rule and secrets answers under CLAUDECODE=1 and one terminal answer (0 new test ids, under 1 s). Extends the docs-only ST-avh536as. Evidence: reliability-authority-review.md AU-1.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import inspect,bl_items,bl_check,bl_view;ok=all('agent_session' in inspect.getsource(m) for m in (bl_items,bl_check,bl_view));print(ok);sys.exit(0 if ok else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_authority.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/bl_check.py",
+    "_tools/bl_view.py",
+    "_tools/test_authority.py",
+    "kb/_self/backlog.md"
+  ],
+  "relates_to": [
+    "ST-avh536as"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "What does --by operator from an agent session mean for push, secrets and agents-rule gates?",
+      "options": [
+        "keep it and record that an agent session wrote it",
+        "terminal-only for every operator class",
+        "a scoped, expiring pre-approval written from a terminal"
+      ],
+      "recommendation": "keep it and record that an agent session wrote it",
+      "class": "secrets",
+      "answer": "keep it and record that an agent session wrote it",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

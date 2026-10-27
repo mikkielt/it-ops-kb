@@ -1,0 +1,55 @@
+{
+  "id": "ST-yl6b2ues",
+  "kind": "story",
+  "title": "The commit and publish leak gate catches Bearer and Basic credentials, URL passwords and prose secret assignments, measured on an adversarial corpus",
+  "status": "draft",
+  "parent": "EP-n4dci4w7",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "kbcommon.leak_hits (kind secret) carries three structured shapes the query-log redactor already has (redact.AUTH_HEADER, URL_USERINFO, ASSIGNMENT), moved into kbcommon beside SECRETS with one owner: an Authorization scheme word and a value of 12 or more characters with none of $ { } < > *, a scheme://user:password@ url, and an unquoted secret assignment in prose files and item text only; kbpublic.file_hits scans Bearer and userinfo in the whole text, not the url-stripped text (kbpublic.py:545). An adversarial corpus file under _tools/fixtures/redact/ (rows assembled from parts at run time: key x separator x value matrix, quoting depth 0 to 3, urls, layouts, IT-ops command lines, domain secrets, and utility rows such as KB and CVE ids, cmdlets, sha pins, docs urls, prose with the word password) runs inside the existing redact and planted-leak test functions with a known_gap list that may only shrink: 0 new test ids, under 0.3 s. On today's tree and git history the new shapes hit nothing (documented placeholders stay clean). Evidence: reliability-authority-review.md RD-1.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import kbcommon as k;v='Zx9Qm4'+'Lp7Rt2Vb8Nc5Kd3Wf6Hj';a='Authorization: Bea'+'rer '+v;u='postgres://admin:'+'S3cr'+'etPw-2026x'+'@db.corp.example.com/x';n='Authorization: Bea'+'rer $TOKEN';ok=bool(k.leak_hits(a)) and bool(k.leak_hits(u)) and not k.leak_hits(n);print(ok);sys.exit(0 if ok else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_leaks.py",
+        "_tools/test_redact.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbcommon.py",
+    "_tools/redact.py",
+    "_tools/kbpublic.py",
+    "_tools/test_leaks.py",
+    "_tools/test_redact.py",
+    "_tools/fixtures/redact/**",
+    "kb/_self/querylog.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How far does the commit and publish leak gate's coverage widen?",
+      "options": [
+        "three narrow shapes: Bearer/Basic, URL password, prose-only unquoted assignment",
+        "the three shapes plus the assignment rule on code with a baseline file",
+        "status quo"
+      ],
+      "recommendation": "three narrow shapes: Bearer/Basic, URL password, prose-only unquoted assignment",
+      "class": "secrets",
+      "answer": "three narrow shapes: Bearer/Basic, URL password, prose-only unquoted assignment",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

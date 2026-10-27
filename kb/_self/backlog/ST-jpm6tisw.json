@@ -1,0 +1,51 @@
+{
+  "id": "ST-jpm6tisw",
+  "kind": "story",
+  "title": "The Linux CI jobs judge the test suite's time at twice the 60 s linux ceiling",
+  "status": "draft",
+  "parent": "EP-n4dci4w7",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "The GitHub kb-tests job and the GitLab kb-tests job set KB_TEST_TIMEOUT_FACTOR: \"2\" in their env, so tests.py's existing CI factor (tests.py seconds_factor) gives 120 s on Linux runners; _tools/tests_ceiling.json, its decision and the darwin 29 s ceiling stay as they are, and the local gate is unchanged. ST-moy5v7tm's measured p90 is checked against 120 s first: if p90 is above 85% of 120 s the item stops with a report instead of choosing another number. Evidence: reliability-authority-review.md CI-1 to CI-3.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,re;a=open('.github/workflows/kb.yml').read();b=open('.gitlab-ci.yml').read();r=re.compile(r'KB_TEST_TIMEOUT_FACTOR:\\s*\"2\"');sys.exit(0 if r.search(a) and r.search(b) else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,sys;d=json.load(open('_tools/tests_ceiling.json'));sys.exit(0 if d['max_seconds']=={'darwin':29,'linux':60,'win32':150} and d['max_ids']==120 else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".github/workflows/kb.yml",
+    ".gitlab-ci.yml",
+    "kb/_self/git.md"
+  ],
+  "depends_on": [
+    "ST-awqyqc6q",
+    "ST-moy5v7tm"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which policy do the Linux CI jobs use for the test suite's time (tests_ceiling.json and the darwin ceiling unchanged in every option)?",
+      "options": [
+        "factor 2 on both Linux jobs (120 s)",
+        "factor 1.5 (90 s)",
+        "time advisory on CI with its own exit code",
+        "keep 60 s"
+      ],
+      "recommendation": "factor 2 on both Linux jobs (120 s)",
+      "class": "ceiling"
+    }
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

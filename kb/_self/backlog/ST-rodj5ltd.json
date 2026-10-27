@@ -119,7 +119,11 @@
         ],
         "Record without file reads": "ST-rodj5ltd"
       },
-      "class": "design"
+      "class": "design",
+      "answer": "Capture made",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "The lean worker arm adds a fourth arm: 312 runs, about 1.35 to 3.35 USD at the planning estimate, under the 4 USD cap the operator gave on 2026-10-26; the paid mode's --dry-run gives the figure before the start.",
