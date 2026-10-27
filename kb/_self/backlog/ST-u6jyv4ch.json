@@ -97,7 +97,12 @@
         "land only (stage-back keeps its warning); a claim for another --by refuses when no claimer is named": "ST-u6jyv4ch",
         "land and stage-back both; a claim proceeds when no claimer is named": "ST-u6jyv4ch"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "land only (stage-back keeps its warning); a claim for another --by refuses when no claimer is named",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "notes": "Planner (SP-jwvaq2hu): check 0 reads cmd_claim and enter_run for the run-key read; the goal names planted repros in a scratch clone with a local bare origin (no test id) for each refusal and fail-open path, so the worker report gives each repro command and its exit.",
