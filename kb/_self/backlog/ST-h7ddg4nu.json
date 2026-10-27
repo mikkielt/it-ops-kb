@@ -2,7 +2,7 @@
   "id": "ST-h7ddg4nu",
   "kind": "story",
   "title": "The weekly digest hook adds at most 300 ms to a session's start, still shown to the person",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nxb7hjwd",
   "sprint": "SP-wpttdu7u",
   "priority": "P2",
@@ -39,5 +39,7 @@
     "kb/public/claude/hooks.md:87 (a message for the person comes from a synchronous SessionStart hook's systemMessage)"
   ],
   "notes": "The digest is still shown to the person once per week as the systemMessage of a synchronous hook (an async hook's message reaches Claude instead, per the linked kb fact); the review reads that. The worker measures the sync_ms figure's run-to-run spread before relying on the 300 ms bound.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-557596e3",
+  "operator": "op-f618a13e"
 }
