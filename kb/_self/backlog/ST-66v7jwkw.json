@@ -2,7 +2,7 @@
   "id": "ST-66v7jwkw",
   "kind": "story",
   "title": "session-load's replays make no forge call: the red-pipeline hook reads a planted pipeline answer, not gitlab.com",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-nxb7hjwd",
   "sprint": "SP-m5m67goe",
   "priority": "P2",
@@ -64,6 +64,19 @@
   ],
   "notes": "Found by the fresh-context review of SP-3qowbedb (gap report in the sprint's review scratch); the operator chose to park it under EP-nxb7hjwd. Fix before the paid session-load record (ST-rodj5ltd) where it changes a figure. kb/_self/benchmarks.md says how the forge is isolated, as selfdoc stale requires with the code.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-557596e3",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "7d0cdc11c8722a3547d5a8fc62dffb3a36fed374",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, shutil, subprocess, tempfile\nT = tempfile.mkdtemp()\nB = os.path.join(T, 'bin'); os.mkdir(B)\nmark = os.path.join(T, 'forge-called')\nfor name, body in (('claude', 'exit 1'), ('glab', 'echo \"$@\" >> \"' + mark + '\"; exit 1'), ('gh', 'echo \"$@\" >> \"' + mark + '\"; exit 1')):\n    open(os.path.join(B, name), 'w').write('#!/bin/sh\\n' + body + '\\n')\n    os.chmod(os.path.join(B, name), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ['PATH'])\np = subprocess.run([sys.executable, '_tools/benchmarks.py', 'run', 'session-load', '--arms', 'A', '--reps', '1', '--out', os.path.join(T, 'out.csv')],\n                   capture_output=True, text=True, env=ENV, timeout=1800)\ncalled = open(mark).read() if os.path.exists(mark) else ''\nshutil.rmtree(T, ignore_errors=True)\nassert p.returncode == 0, ('run session-load exit', p.returncode, p.stderr[-400:])\nassert not called, ('a replay called the forge CLI', called[:300])\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
