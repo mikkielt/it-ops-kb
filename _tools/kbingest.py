@@ -28,10 +28,14 @@
       runs its mapper: read-only commands only (kb/public/agents/codebase-mapping.csv), each as an argument list with a
       timeout, in a network-off environment (no credentials or proxies passed; refusing proxies, GOTOOLCHAIN=local,
       offline switches). Writes one JSON map, by default _cache/ingest/<repo>-<commit12>.json, never under kb/, then
-      removes the worktree. The map holds the format version, the commit, `tools` (name and version per language),
-      `packages`, `imports` (per file), `entry_points` and `notes`. A missing toolchain, a timeout, a non-zero exit, an
-      output that is not JSON and a file that does not parse are notes, not errors. Python is mapped with
-      `python -I -B -m ast` in a subprocess per file; another language is a Mapper subclass added to MAPPERS.
+      removes the worktree. The map (format 2) holds the format version, the commit, `tools` (name and version per
+      language), `packages`, `imports` (per file), `entry_points`, `symbols` and `notes`. A symbol is a definition:
+      `name`, `kind` (class, function, method, or a module-level variable), `path`, `line`, and its `references`
+      (`path` and `line` of each use of that name in the repository's kept files, the definition's own line left out;
+      matched by name, never resolved; the first 100, `references_total` when there are more). A missing toolchain,
+      a timeout, a non-zero exit, an output that is not JSON and a file that does not parse are notes, not errors.
+      Python is mapped with `python -I -B -m ast` and an isolated `python -I -B -c` that reads definitions and names
+      with the ast module, in a subprocess per file; another language is a Mapper subclass added to MAPPERS.
       Go and Cargo run at the root; .NET (`dotnet msbuild -getProperty -getItem`, never `-target` or `-restore`, and
       never `dotnet package list`), npm (`npm ls --all --json --package-lock-only`) and TypeScript (`tsc
       --showConfig`, `--listFilesOnly`) run per project directory. `tsc` is the one on PATH, never `npx` and never
@@ -856,13 +860,14 @@ def print_pins(entries, rows, repo, max_bytes):
 
 # ---- map: read-only toolchain mapping in a scratch worktree ----------------------------------------------------------
 
-MAP_FORMAT = 1
+MAP_FORMAT = 2
 INGEST_CACHE = Path(kbcommon.HOME) / "_cache" / "ingest"
 MAP_TIMEOUT = 60  # seconds per mapper command
 MAP_MAX_FILES = 2000  # files one per-file mapper maps before it stops with a note
 MAP_MAX_PROJECTS = 50  # projects one per-project mapper (.NET, npm, tsc) maps before it stops with a note
 MAP_MAX_OUTPUT = 64 * 1024 * 1024  # bytes of a command's output that are parsed
 NOTE_LIMIT = 20  # notes one language keeps before it counts the rest
+MAP_MAX_REFS = 100  # references one symbol lists before `references_total` counts them all
 # what makes a mapper command's environment offline: proxies that refuse, the tools' own offline switches (RUSTUP_AUTO_INSTALL=0:
 # a rustup cargo proxy never installs the absent toolchain a rust-toolchain.toml names; MSBUILDDISABLENUGETSDKRESOLVER=1:
 # MSBuild's NuGet SDK resolver resolves no SDK, so a versioned Sdk="Name/1.2.3" or a global.json msbuild-sdks entry
@@ -1084,7 +1089,7 @@ class MapCtx:
     def __init__(self, root, env, timeout, language, links=()):
         self.root, self.env, self.timeout, self.language = Path(root), env, timeout, language
         self.links = frozenset(links)  # paths git stores as symbolic links, however the checkout wrote them
-        self.packages, self.imports, self.entry_points, self.notes = [], [], [], []
+        self.packages, self.imports, self.entry_points, self.symbols, self.notes = [], [], [], [], []
         self._dropped = 0
         spellings = {str(self.root), self.root.as_posix()}
         try:
@@ -1115,6 +1120,16 @@ class MapCtx:
 
     def add_entry_point(self, path, kind, name=None):
         self.entry_points.append({"language": self.language, "path": path, "kind": kind, **({"name": name} if name else {})})
+
+    def add_symbol(self, name, kind, path, line, references):
+        """A definition and its REFERENCES, (path, line) pairs: the first MAP_MAX_REFS are listed, in path and line
+        order, and `references_total` says how many there are when more."""
+        refs = sorted(references)
+        sym = {"language": self.language, "name": name, "kind": kind, "path": path, "line": line,
+               "references": [{"path": p, "line": n} for p, n in refs[:MAP_MAX_REFS]]}
+        if len(refs) > MAP_MAX_REFS:
+            sym["references_total"] = len(refs)
+        self.symbols.append(sym)
 
     def readable(self, rel):
         """The file REL of the worktree, or None (with a note) when it is a symbolic link or not a file. A link counts
@@ -1257,9 +1272,49 @@ def ast_imports_and_main(dump):
     return mods, guard
 
 
+PY_SYMBOLS = r"""
+import ast, json, sys
+tree = ast.parse(open(sys.argv[1], "rb").read(), sys.argv[1])
+defs, refs = [], set()
+
+
+def body(nodes, scope):
+    for n in nodes:
+        if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            defs.append([n.name, "method" if scope == "class" else "function", n.lineno])
+        elif isinstance(n, ast.ClassDef):
+            defs.append([n.name, "class", n.lineno])
+            body(n.body, "class")
+        elif scope == "module" and isinstance(n, (ast.Assign, ast.AnnAssign)):
+            for t in n.targets if isinstance(n, ast.Assign) else [n.target]:
+                if isinstance(t, ast.Name):
+                    defs.append([t.id, "variable", n.lineno])
+        else:
+            for f in ("body", "orelse", "finalbody"):
+                if isinstance(getattr(n, f, None), list):
+                    body(getattr(n, f), scope)
+            for h in getattr(n, "handlers", ()):
+                body(h.body, scope)
+
+
+body(tree.body, "module")
+for n in ast.walk(tree):
+    if isinstance(n, ast.Name):
+        refs.add((n.id, n.lineno))
+    elif isinstance(n, ast.Attribute):
+        refs.add((n.attr, n.end_lineno or n.lineno))
+    elif isinstance(n, (ast.Import, ast.ImportFrom)):
+        for a in n.names:
+            refs.update((part, n.lineno) for part in a.name.split("."))
+print(json.dumps({"defs": defs, "refs": sorted(refs)}))
+"""
+
+
 class PythonMapper(Mapper):
     """`python -m ast` per kept .py file, in isolated mode (no working directory on sys.path, so a file named ast.py in
-    the repository is never run). It reads source only and writes nothing (`-B`, PYTHONDONTWRITEBYTECODE)."""
+    the repository is never run). It reads source only and writes nothing (`-B`, PYTHONDONTWRITEBYTECODE). A second
+    isolated run per file reads its definitions and the names it uses with the ast module (PY_SYMBOLS); a reference
+    is a use of a definition's name in any kept file, matched by name and never resolved."""
     language = "python"
     name = "python"
     tool = sys.executable
@@ -1270,6 +1325,7 @@ class PythonMapper(Mapper):
 
     def map(self, ctx, files):
         have = set(files)
+        defs, uses = [], {}
         for rel in files:  # a package is a directory with __init__.py; its name runs from the first directory without one
             if rel.rsplit("/", 1)[-1] == "__init__.py" and "/" in rel:
                 pkg = rel.rsplit("/", 1)[0]
@@ -1293,6 +1349,18 @@ class PythonMapper(Mapper):
                 ctx.add_entry_point(rel, "main-guard")
             if rel.rsplit("/", 1)[-1] == "__main__.py":
                 ctx.add_entry_point(rel, "module-main")
+            r = ctx.run([self.tool, "-I", "-B", "-c", PY_SYMBOLS, "./" + rel], label=f"python symbols {rel}")
+            if r.missing or r.timed_out or r.rc != 0:
+                continue
+            try:
+                found = json.loads(r.out.decode("utf-8", "replace"))
+                defs += [(name, kind, rel, line) for name, kind, line in found["defs"]]
+                for name, line in found["refs"]:
+                    uses.setdefault(name, []).append((rel, line))
+            except (ValueError, KeyError, TypeError):
+                ctx.note(f"python symbols {rel}: output not read")
+        for name, kind, rel, line in sorted(defs, key=lambda d: (d[2], d[3], d[0])):
+            ctx.add_symbol(name, kind, rel, line, [u for u in uses.get(name, ()) if u != (rel, line)])
         self.pyproject_scripts(ctx)
 
     def pyproject_scripts(self, ctx):
@@ -1860,7 +1928,7 @@ def build_map(repo, commit, rev, rows, langs=None, timeout=MAP_TIMEOUT, base_env
     kept = [(p, k) for p, verdict, k, _secret in rows if verdict == "keep"]
     links = symlinks(repo, commit)
     doc = {"format": MAP_FORMAT, "repo": Path(repo).name, "commit": commit, "rev": rev, "tools": {}, "packages": [],
-           "imports": [], "entry_points": [], "notes": []}
+           "imports": [], "entry_points": [], "symbols": [], "notes": []}
     with scratch_worktree(repo, commit) as root:
         env = scrub_env(base_env, root=root, repo=repo)
         for m in MAPPERS:
@@ -1892,6 +1960,7 @@ def build_map(repo, commit, rev, rows, langs=None, timeout=MAP_TIMEOUT, base_env
             doc["packages"] += ctx.packages
             doc["imports"] += ctx.imports
             doc["entry_points"] += ctx.entry_points
+            doc["symbols"] += ctx.symbols
             doc["notes"] += [{"language": m.language, "note": n} for n in ctx.notes]
     return redact_leaks(doc)
 
@@ -1973,7 +2042,7 @@ def cmd_map(a):
     for lang, t in sorted(doc["tools"].items()):
         print(f"tool: {lang} {t['tool']} {t['version']}")
     print(f"packages={len(doc['packages'])} imports={len(doc['imports'])} entry_points={len(doc['entry_points'])} "
-          f"notes={len(doc['notes'])}")
+          f"symbols={len(doc['symbols'])} notes={len(doc['notes'])}")
     for n in doc["notes"]:
         print(f"note: {n['language']}: {n['note']}")
     return 0
