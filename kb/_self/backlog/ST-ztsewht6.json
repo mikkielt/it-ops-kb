@@ -39,7 +39,10 @@
     "AGENTS.md",
     "kb/_self/tools.md",
     "kb/_self/plugin.md",
-    "kb/_self/token-efficiency.md"
+    "kb/_self/token-efficiency.md",
+    "_tools/kf_fresh.py",
+    "_tools/kbfacts.py",
+    "_tools/ql_store.py"
   ],
   "gates": [
     {
