@@ -4,6 +4,7 @@
   "title": "Index and query tokenize Unicode text the same way: CamelCase splits on any letter case, text is NFC, matching is casefolded",
   "status": "draft",
   "parent": "EP-7vyrared",
+  "sprint": "SP-iir3d2tu",
   "priority": "P2",
   "rank": 0,
   "goal": "kbfacts splits identifiers with non-ASCII capitals (PobierzŁącze -> pobierz, łącze; GetEntityÜbersicht -> get, entity, übersicht), normalizes index text and query to NFC so a decomposed Könige is one word, and compares words casefolded so Straße meets strasse. No setting; ASCII text tokenizes exactly as before, the public eval shares and the collected test ids do not change.",

@@ -4,6 +4,7 @@
   "title": "A root names its languages in _root.md and the pack stops, stems and folds its questions by them, with a tiny German and Polish fixture root",
   "status": "draft",
   "parent": "EP-7vyrared",
+  "sprint": "SP-iir3d2tu",
   "priority": "P2",
   "rank": 0,
   "goal": "_root.md may carry languages: en, de (default en = today's behaviour, byte-identical packs for every existing root). Per-language data under _tools/lang/<code>/ for de and pl (stop words, suffix rules, optional folding variants such as ö/oe and ł/l), and a root may bring its own profile in the same format under its _retrieval/lang/<code>/. Stop words are the union of the served roots' languages; each indexed unit is stemmed by its own root's profile and the query once per root it is matched against; a folding variant counts as present like an alias and is never a key word. A root naming a code with no profile is refused, naming the code and the codes that exist. A tiny German and a tiny Polish fixture root, with their own held-out questions and eval outside the public held-out file, answer good where the fact is present and none where it is not; the public eval shares and the test ids stay unchanged.",
@@ -58,7 +59,8 @@
     "kb/_self/plugin.md"
   ],
   "depends_on": [
-    "ST-yxudqftw"
+    "ST-yxudqftw",
+    "ST-yl6b2ues"
   ],
   "gates": [
     {
@@ -111,6 +113,6 @@
       "role": "interactive"
     }
   ],
-  "notes": "Premise (run at plan time): kbfacts.key_terms('How do I load X in a usermap?') -> ['load', 'usermap']; key_terms('Wie lade ich X im Kartenskript?') -> ['wie', 'lade', 'ich', 'im', 'kartenskript'] (wie, ich, im count as key words); key_terms('Kartenskripte laden Karten') -> ['kartenskript', 'laden', 'karten'] (no German suffix stripped: laden stays laden). Reproduces at the key-word level. The pack-level good-versus-none verdict was not re-run: it needs the fixture root this story adds (no German root exists to run it on). _meta() in kbcommon.py reads one flat key: value per line, so languages needs a list parse. The index unit cache key already hashes STOP, kbid.STOP and the token patterns (kf_index.py _weigh_data), so profile data must enter that hash and INDEX_VERSION bumps. Existing readers of kbfacts.STOP (bench_pool, factdiff, kbid, kbtools, ql_apply, ql_learn) keep the English base set and need no edit if the union is a new function. Overlap: ST-q5o7z2mf (sprint SP-jwvaq2hu) touches _tools/rag.py, AGENTS.md, kb/_self/tools.md; this story touches kb/_self/tools.md too, so land after it or rebase. Operator 2026-10-27: g1 refuse an unknown code; g2 de and pl shipped plus a root's own profile under its _retrieval/; g3 the fixture roots keep their own held-out file.",
+  "notes": "Premise (run at plan time): kbfacts.key_terms('How do I load X in a usermap?') -> ['load', 'usermap']; key_terms('Wie lade ich X im Kartenskript?') -> ['wie', 'lade', 'ich', 'im', 'kartenskript'] (wie, ich, im count as key words); key_terms('Kartenskripte laden Karten') -> ['kartenskript', 'laden', 'karten'] (no German suffix stripped: laden stays laden). Reproduces at the key-word level. The pack-level good-versus-none verdict was not re-run: it needs the fixture root this story adds (no German root exists to run it on). _meta() in kbcommon.py reads one flat key: value per line, so languages needs a list parse. The index unit cache key already hashes STOP, kbid.STOP and the token patterns (kf_index.py _weigh_data), so profile data must enter that hash and INDEX_VERSION bumps. Existing readers of kbfacts.STOP (bench_pool, factdiff, kbid, kbtools, ql_apply, ql_learn) keep the English base set and need no edit if the union is a new function. Overlap: ST-q5o7z2mf (sprint SP-jwvaq2hu) touches _tools/rag.py, AGENTS.md, kb/_self/tools.md; this story touches kb/_self/tools.md too, so land after it or rebase. Operator 2026-10-27: g1 refuse an unknown code; g2 de and pl shipped plus a root's own profile under its _retrieval/; g3 the fixture roots keep their own held-out file. Planner (SP-iir3d2tu): after ST-yl6b2ues (both edit _tools/kbcommon.py); ST-xllrtqlt edits kbcommon.SECRETS, a different section, so the landing rebase merges it.",
   "filed_in": "clone-0ea70e5c"
 }

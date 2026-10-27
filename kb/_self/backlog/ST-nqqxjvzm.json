@@ -4,6 +4,7 @@
   "title": "A root sets which tag kinds answer and which are only leads in _root.md, and the pack enforces and prints that policy",
   "status": "draft",
   "parent": "EP-7vyrared",
+  "sprint": "SP-iir3d2tu",
   "priority": "P3",
   "rank": 0,
   "goal": "_root.md may carry evidence: {answer: [DOC, CODE, DER], lead: [COMMUNITY, UNK]} (each of DOC, CODE, DER, COMMUNITY and UNK in exactly one list; DECISION may be listed in either list as an ordinary kind, and unlisted it keeps its own rule of decided and proposed). The pack prints the policy of the roots it searched on a line of its own, and a fact whose tags are all lead kinds in its root never makes a verdict good: the pack says so on an evidence: line instead. A root that sets nothing is served as today (the line names the default; public eval shares and test ids unchanged). A policy with a kind in both lists, a required kind in neither, or an unknown kind refuses the root with a message naming it.",
@@ -48,10 +49,13 @@
     "kb/_self/tools.md",
     "kb/_self/content-rules.md",
     "kb/_self/token-efficiency.md",
-    "kb/_self/plugin.md"
+    "kb/_self/plugin.md",
+    "AGENTS.md"
   ],
   "depends_on": [
-    "ST-43b6t2i6"
+    "ST-43b6t2i6",
+    "ST-izw3nds4",
+    "ST-q5o7z2mf"
   ],
   "gates": [
     {
@@ -64,7 +68,7 @@
       ],
       "recommendation": "Only the printed line: a root enforces nothing until it sets evidence",
       "reason": "because it keeps the public eval shares and the held-out answer rate unchanged, and the first step of the story measures what enforcing it for the public root would move so the operator can decide later with numbers",
-      "class": "design",
+      "class": "agents-rule",
       "answer": "Only the printed line: a root enforces nothing until it sets evidence",
       "by": "operator",
       "operator": "op-f618a13e",
@@ -80,7 +84,7 @@
       ],
       "recommendation": "Any part of an answer kind makes it an answer; the lead part is still printed as a lead",
       "reason": "because a documented fact with a community note is still documented, and the fact line already shows each part's kind",
-      "class": "design",
+      "class": "agents-rule",
       "answer": "Any part of an answer kind makes it an answer; the lead part is still printed as a lead",
       "by": "operator",
       "operator": "op-f618a13e",
@@ -100,13 +104,13 @@
         "No: DECISION is outside the policy and keeps its rule (decided answers, proposed never does)": "ST-nqqxjvzm",
         "Yes, as an ordinary kind": "ST-nqqxjvzm"
       },
-      "class": "design",
+      "class": "agents-rule",
       "answer": "Yes, as an ordinary kind",
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
     }
   ],
-  "notes": "Premise (run at plan time): the 'COMMUNITY and UNK are leads, never an answer alone' rule is in AGENTS.md prose, the kb MCP instruction text (_tools/kb_mcp.py:153) and kb_ask's answer text (_tools/kb_ask.py:100); grep of kf_index.py, kf_route.py, kb_hook.py finds no handling of the COMMUNITY or UNK kinds, and a rag.py pack output has no evidence line (a public pack for a settings question prints coverage, route, kb has, kb lacks, fact lines and the pack id only). Reproduces: the rule is not data and not enforced by the pack. Live-repository scan: the public root holds 121 facts carrying COMMUNITY and 239 carrying UNK (rag.py facts public --tag COMMUNITY / --tag UNK); no root sets an evidence policy today, so an opt-in rule changes no live verdict by construction, and the story's first step is to run the draft rule over rag.py eval --all with the public root forced strict and record which rows would move (information for the gate, not a change). _root.md front matter is read line by line as key: value (kbcommon._meta), so the evidence value is the flat text {answer: [...], lead: [...]} and needs its own parse and validation in load_root. AGENTS.md and the MCP instruction text keep stating the default rule and are not in this story's touches (AGENTS.md has a size cap and is a rules file). Operator 2026-10-27: g3 yes, DECISION may be listed as an ordinary kind; g1 print only when a root sets nothing; g2 any answer-kind part makes a mixed-tag fact an answer.",
+  "notes": "Premise (run at plan time): the 'COMMUNITY and UNK are leads, never an answer alone' rule is in AGENTS.md prose, the kb MCP instruction text (_tools/kb_mcp.py:153) and kb_ask's answer text (_tools/kb_ask.py:100); grep of kf_index.py, kf_route.py, kb_hook.py finds no handling of the COMMUNITY or UNK kinds, and a rag.py pack output has no evidence line (a public pack for a settings question prints coverage, route, kb has, kb lacks, fact lines and the pack id only). Reproduces: the rule is not data and not enforced by the pack. Live-repository scan: the public root holds 121 facts carrying COMMUNITY and 239 carrying UNK (rag.py facts public --tag COMMUNITY / --tag UNK); no root sets an evidence policy today, so an opt-in rule changes no live verdict by construction, and the story's first step is to run the draft rule over rag.py eval --all with the public root forced strict and record which rows would move (information for the gate, not a change). _root.md front matter is read line by line as key: value (kbcommon._meta), so the evidence value is the flat text {answer: [...], lead: [...]} and needs its own parse and validation in load_root. AGENTS.md and the MCP instruction text keep stating the default rule and are not in this story's touches (AGENTS.md has a size cap and is a rules file). Operator 2026-10-27: g3 yes, DECISION may be listed as an ordinary kind; g1 print only when a root sets nothing; g2 any answer-kind part makes a mixed-tag fact an answer. Planner (SP-iir3d2tu): after ST-izw3nds4, since S3, S4 and S5 all edit AGENTS.md (4 KB cap). Planner (SP-iir3d2tu): after ST-q5o7z2mf (both edit _tools/rag.py and AGENTS.md).",
   "filed_in": "clone-0ea70e5c"
 }

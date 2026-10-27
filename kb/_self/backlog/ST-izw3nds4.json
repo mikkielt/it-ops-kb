@@ -4,6 +4,7 @@
   "title": "fetch.py text unpacks MSI, CAB, WIM and similar archives through a table of extractor commands run in the map sandbox, an internal root may add rows, and 7z installs like WezTerm",
   "status": "draft",
   "parent": "EP-7vyrared",
+  "sprint": "SP-iir3d2tu",
   "priority": "P3",
   "rank": 0,
   "goal": "A table maps a file extension to an argv command and an output directory under _cache/ or _private/. fetch.py text URL runs the matching command in the sandbox kbingest map uses (allow-list environment, timeout, offline, no program or path inside the clone), reads the extracted files as it reads zip members (caps, printable strings for binaries, cut markers) and removes the directory. An internal root may add rows in its own _extractors.csv, its program on PATH outside every clone, and each run prints the program it started. The shipped table names 7z for MSI, CAB and WIM; 7z is an optional dependency installed the way WezTerm is: _tools/install_7z.py --plan, --declined and --yes [--from FILE] with each OS's pinned release URL and SHA-256 and a per-user target, PATH and profiles untouched, and /kb-setup asks before it installs. Without a matching row, or when the program is not installed, text exits 2 naming the extension, the program and the installer; an OLE compound file with no row exits 2 too; zip, tar, gzip and spreadsheet routes are unchanged. Synthetic archives only in the fixtures.",
@@ -61,7 +62,10 @@
     "_tools/install_7z.py",
     "kb/_self/maintaining.md",
     "kb/_self/map.csv",
-    ".claude/skills/kb-setup/SKILL.md"
+    ".claude/skills/kb-setup/SKILL.md",
+    ".claude/skills/kb-ingest/SKILL.md",
+    "AGENTS.md",
+    "kb/_self/plugin.md"
   ],
   "depends_on": [
     "ST-yxudqftw",
