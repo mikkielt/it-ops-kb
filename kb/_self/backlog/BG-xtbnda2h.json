@@ -2,7 +2,7 @@
   "id": "BG-xtbnda2h",
   "kind": "bug",
   "title": "bench_repro.match_facts pairs no paraphrase of one fact, so duplicate research and dup_facts miss differently worded duplicates",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-jxf76aa2",
   "priority": "P2",
   "rank": 0,
@@ -47,5 +47,7 @@
     "parked: SP-n7f53pgv review"
   ],
   "notes": "Planning 2026-10-27: goal narrowed to what the repro and the negative check read; found by the SP-n7f53pgv review (S2 on ST-f5lbn3aw). The matcher feeds the repro benchmark too, so a looser match changes its figures.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
