@@ -2,7 +2,7 @@
   "id": "ST-rih5sa2w",
   "kind": "story",
   "title": "Research sprint goal: Many sessions at once and the paid session-load record",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-wv3ob5vy",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-557596e3",
+  "operator": "op-f618a13e"
 }
