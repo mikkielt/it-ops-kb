@@ -2,7 +2,7 @@
   "id": "ST-kxnlpycw",
   "kind": "story",
   "title": "kbmon's states are true: no orphan for a recorded or live headless session, no landing after land.end, a runner only with a live worker, and a silent claimed unit in needs you",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-fn7letri",
   "priority": "P1",
@@ -62,5 +62,7 @@
     "ST-qzknmm7z"
   ],
   "notes": "Planner (SP-fn7letri): check 1 (kbmon sessions panel) passes before the work and pins that the panel still renders; clauses 1 and 2 (landing_steps after land.end, role_of) are read only through that panel, so the worker's report gives a planted replay for each (a land.step row after land.end; a session with no live worker).",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-557596e3",
+  "operator": "op-f618a13e"
 }
