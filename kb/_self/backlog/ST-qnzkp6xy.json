@@ -69,6 +69,25 @@
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Where does the re-confirmation list appear?",
+      "options": [
+        "horizon prints the count and show of the review story lists each answer",
+        "horizon prints the count and the list"
+      ],
+      "recommendation": "horizon prints the count and show of the review story lists each answer",
+      "do": {
+        "horizon prints the count and show of the review story lists each answer": "ST-qnzkp6xy",
+        "horizon prints the count and the list": "ST-qnzkp6xy"
+      },
+      "class": "agents-rule",
+      "answer": "horizon prints the count and show of the review story lists each answer",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Planner (SP-fn7letri): check 1 (test_authority.py) passes before the work and pins the critical operator-only authority test, which the work extends; check 0 reads the three modules for the new field.",

@@ -537,10 +537,13 @@ def cmd_answer(bl, a):
             record_decision(bl, iid, a.gate, a.answer, a.by)
     g.pop("operator", None)
     g.pop("role", None)
+    g.pop("agent_session", None)
     if g.get("by") == "operator":  # who answered, and whether an orchestrator did on a delegation
         who, role = operator_who()
         if who:
             g["operator"], g["role"] = who, role
+        if held in bl_authority.OPERATOR_CLASSES and bl_authority.in_agent_session():
+            g["agent_session"] = True  # taken, not refused: the operator re-confirms it from a terminal (horizon, review)
     bl.save(it)
     say(f"gate {a.gate} of {bl.label(iid)}: {g['answer']} (by {g['by']})")
     if a.record:
