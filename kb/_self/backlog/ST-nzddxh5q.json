@@ -21,6 +21,23 @@
   "touches": [
     "kb/public/**"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which of the sprint goal's open questions needed an outside fact, and where did the facts go?",
+      "options": [
+        "Extend secret-shapes-in-text for the redactor's key shapes; the other items need no outside fact",
+        "Write a new article per vendor and research each remaining item too"
+      ],
+      "recommendation": "Extend secret-shapes-in-text for the redactor's key shapes; the other items need no outside fact",
+      "do": {
+        "Extend secret-shapes-in-text for the redactor's key shapes; the other items need no outside fact": "ST-nzddxh5q",
+        "Write a new article per vendor and research each remaining item too": "ST-nzddxh5q"
+      },
+      "class": "secrets"
+    }
+  ],
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-557596e3",
   "operator": "op-f618a13e"
