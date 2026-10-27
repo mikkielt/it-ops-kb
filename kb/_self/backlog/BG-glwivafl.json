@@ -2,7 +2,7 @@
   "id": "BG-glwivafl",
   "kind": "bug",
   "title": "kbask ask lets an ask through to a session that ended cleanly, since SessionEnd releases its lease and intents and reach() then answers unknown",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-jxf76aa2",
   "priority": "P1",
   "rank": 0,
@@ -23,5 +23,7 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
