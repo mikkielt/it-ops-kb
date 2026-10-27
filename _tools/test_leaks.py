@@ -167,6 +167,11 @@ def test_scan_reports_each_planted_leak_and_honours_the_allowlist_and_webfetch_h
     assert kbpublic.file_hits("notes.md", ok, {}) == []
     allow = kbpublic.parse_allowlist("\n".join(f"{k} {v}  # reviewed" for k, v in values.items() if k != "home"))
     assert [k for k, _ in kbpublic.file_hits("notes.md", " ".join(values.values()), allow)] == ["home"]
+    # a home path passes only when the allowlist names the whole match (lowercased); a sibling path is still flagged
+    match = re.match(kbcommon.LEAK_HOME, values["home"]).group(0)
+    allow = kbpublic.parse_allowlist(f"home {match.upper()}  # reviewed")
+    assert kbpublic.file_hits("notes.md", f"see {values['home']} here", allow) == []
+    assert [k for k, _ in kbpublic.file_hits("notes.md", values["home"].replace("realperson", "other"), allow)] == ["home"]
     # the private names of an internal root and its pointer (a registry planted in a temporary directory): a source id with
     # its prefix, a qualified path and the pointer's url host and path are refused, a bare root name is not
     team = tmp_path / "team"
