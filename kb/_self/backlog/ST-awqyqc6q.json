@@ -2,7 +2,7 @@
   "id": "ST-awqyqc6q",
   "kind": "story",
   "title": "A GitHub test run names its ten slowest tests and its runner's CPU, runs the trailers check whatever the tests say, and can be dispatched with or without bytecode files",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-fn7letri",
   "priority": "P1",
@@ -90,6 +90,46 @@
   ],
   "notes": "Planner (SP-fn7letri): check 2 (selfdoc.py check) passes before the work and pins that the docs stay consistent; check 3 reads git.md's check-lanes lines (fails today: line 8 names the manual CI job).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-557596e3",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "903746acb07e6e8e53c5300b677efa950990e8ea",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('.github/workflows/kb.yml').read();sys.exit(0 if all(w in t for w in ('--durations','timeout-minutes','nproc','write_bytecode','check-trailers')) and ('always()' in t or 'needs:' in t) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('.gitlab-ci.yml').read();sys.exit(0 if t.count('--durations')>=2 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;ls=[l for l in open('kb/_self/git.md',encoding='utf-8') if 'check-lanes' in l];bad=[l[:120] for l in ls if 'CI job' in l];hand=[l for l in ls if 'by hand' in l];print(bad);sys.exit(0 if hand and not bad else 1)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      }
+    ]
+  }
 }
