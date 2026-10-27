@@ -2,7 +2,7 @@
 topic: python/ps-process-cpu
 priority: P3
 applies_to: "POSIX.1-2024 ps; procps-ng ps(1) (Linux, man page dated 2025-04-23); Apple ps(1) at adv_cmds-237 (macOS); Windows PowerShell 7.6 Get-Process, Get-Counter and the Win32_Process class"
-retrieved_utc: 2026-10-21
+retrieved_utc: 2026-10-27
 sources: [S-tldzr3mf, S-glwifmco, S-ggxrmcqc, S-5syx7mel, S-js22cswf, S-wh6i6rv4, S-v6442u3l, S-ocglo5m3, S-d4mf4bbv]
 status: partial
 ---
@@ -30,6 +30,12 @@ a minute. A sum of the column can exceed 100% on both. Windows has no `ps` listi
   so a row with `args` last splits as two numbers and then the rest of the line. [DOC S-tldzr3mf]
 - The rationale says historical counterparts of `pcpu` showed use in the recent past, such as the preceding
   minute, and that these values frequently did not add up to 100% over all processes. [DOC S-tldzr3mf]
+- `time` is the cumulative CPU time of the process, in the POSIX locale in the form `[dd-]hh:mm:ss`, and `etime` is
+  the elapsed time since the process started, in the form `[[dd-]hh:]mm:ss`; both are whole-second clock texts, not
+  numbers of seconds. [DOC S-tldzr3mf]
+- The specification's keyword list holds no resident-set name: a search of the page for `rss` finds nothing, so
+  `rss` is an extension of the two implementations below, not a portable name. [DER S-tldzr3mf: the page's text
+  searched for the keyword on 2026-10-27, no match]
 
 ### Linux (procps-ng)
 - `-A` selects all processes and is identical to `-e`; `ps -Ao pid,tt,user,fname,tmout,f,wchan` is one of the
@@ -41,6 +47,12 @@ a minute. A sum of the column can exceed 100% on both. Windows has no `ps` listi
   page says it will not add up to 100%. [DOC S-glwifmco]
 - The page's BUGS section says CPU usage is currently the percentage of time spent running during the entire
   lifetime of a process, not ideal and not conforming to the standards `ps` otherwise follows. [DOC S-glwifmco]
+- `rss` (aliases `rssize`, `rsz`) is the resident set size, "the non-swapped physical memory that a task has used",
+  in kibibytes; the page adds that the SIZE and RSS fields do not count some parts of a process, among them the page
+  tables and the kernel stack. [DOC S-glwifmco]
+- `cputime` (alias `time`) is the cumulative CPU time in the form `[DD-]hh:mm:ss`, whole seconds, and `cputimes`
+  (alias `times`) is the same total in seconds; `etime` is the time since the process started in the form
+  `[[DD-]hh:]mm:ss` and `etimes` the same in seconds. [DOC S-glwifmco]
 
 ### macOS (Apple ps)
 - `-A` displays all processes and `-e` is identical to it; keywords take an `=` and a header string, and when
@@ -48,6 +60,12 @@ a minute. A sum of the column can exceed 100% on both. Windows has no `ps` listi
 - `pcpu` is an alias of `%cpu`, "percentage CPU usage", and `args` is "command and arguments". [DOC S-ggxrmcqc]
 - `%cpu` is a decaying average over up to a minute of previous real time; because the time base varies, for
   example for very young processes, the sum of all `%cpu` fields can exceed 100%. [DOC S-ggxrmcqc]
+- `rss` is "the real memory (resident set) size of the process (in 1024 byte units)", so a value is kibibytes, as on
+  Linux; the keyword table says only "resident set size". [DOC S-ggxrmcqc]
+- `time` (alias `cputime`) is the accumulated CPU time, user plus system, and `etime` is the elapsed running time;
+  the page gives no clock format for either. `utime` (alias `putime`) is the user CPU time alone. [DOC S-ggxrmcqc]
+- `-S` "Change the way the process time is calculated by summing all exited children to their parent process", so
+  with it a parent's `time` includes the CPU of children that have already exited. [DOC S-ggxrmcqc]
 
 ### Windows
 - `Get-Process` returns a `Process` object per process; its alias `ps` exists on Windows only, `gps` on all
@@ -86,6 +104,17 @@ a minute. A sum of the column can exceed 100% on both. Windows has no `ps` listi
   `args` is not stated by that page and needs a run on such an image. [DOC S-d4mf4bbv]
 - So the one argument list is documented for procps-ng (Linux), Apple's `ps` and FreeBSD's; a BusyBox applet
   documents the `=header` form and nothing else of it, and a script for a minimal image checks for failure. [DER S-ocglo5m3, S-d4mf4bbv: the FreeBSD page against the BusyBox help]
+- A sampler of a process tree can read `ps -A -o pid=,ppid=,rss=,time=,args=` on macOS and Linux: `rss` is in
+  kibibytes on both pages, so one division by 1024 gives MiB for both, and on Linux `time` is a `[DD-]hh:mm:ss`
+  clock text whose finest step is one second, so a CPU figure from it moves in one-second steps and a short window
+  sees a change only after a second of CPU. [DER S-glwifmco, S-ggxrmcqc: `rss` units on the two pages and the
+  procps-ng `time` format; the one-second step follows from the `hh:mm:ss` form and was not run]
+- Without `-S` a parent's `time` on macOS does not include children that have exited, so a sampler that sums `time`
+  over the live processes of a tree loses the CPU of a child that ends between two samples, and under-counts a tree
+  that starts many short processes. [DER S-ggxrmcqc: the `-S` description, which names exited children summed into
+  the parent only with that option; the Linux page was not read for an equivalent]
+- Apple's `ps` page states no clock format for `time` or `etime`, and no run of either `ps` here checked the text of
+  its `time` column. [UNK: the adv_cmds-237 page gives only "accumulated CPU time, user + system"]
 - A Linux image whose `ps` is a BusyBox applet was not run for `-A`, empty headers or `pcpu`. [UNK: BusyBox's page lists too few options to settle it]
 
 ## Reference

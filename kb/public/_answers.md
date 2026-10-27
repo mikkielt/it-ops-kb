@@ -4601,3 +4601,13 @@ _Agent: kb-research_
 - See claude/hooks.md, python/interpreter-startup.md, python/stdlib-windows-portability.md.
 
 _Agent: kb-research_
+
+## QK-ps-rss-time-etime-report-macos. What do ps `rss`, `time` and `etime` report on macOS and Linux, so a sampler of a process tree can read memory and CPU with one argument list?
+- `rss` is the resident set size in 1024-byte units on both Apple's `ps` ("in 1024 byte units") and procps-ng ("non-swapped physical memory ... in kibibytes"); POSIX names no resident-set keyword. [DOC S-ggxrmcqc, S-glwifmco, S-tldzr3mf]
+- `time` is the cumulative CPU time: POSIX and procps-ng give the form `[dd-]hh:mm:ss`, Apple's page says "user + system" and states no format; `etime` is the elapsed time since start, POSIX and procps-ng `[[dd-]hh:]mm:ss`. [DOC S-tldzr3mf, S-glwifmco, S-ggxrmcqc]
+- Apple's `-S` sums exited children into their parent's `time`; without it the CPU of a child that has ended is not in the parent's figure. [DOC S-ggxrmcqc]
+- Conclusion: `ps -A -o pid=,ppid=,rss=,time=,args=` serves macOS and Linux with one division by 1024 for MiB; `time` moves in whole seconds on Linux, and a sampler that sums `time` over live processes under-counts a tree whose short-lived children end between two samples. [DER S-ggxrmcqc, S-glwifmco, S-tldzr3mf]
+- Open: the text of Apple's `time` column was not run, and no equivalent of `-S` was read on the procps-ng page. [UNK]
+- See python/ps-process-cpu.md.
+
+_Agent: kb-research_
