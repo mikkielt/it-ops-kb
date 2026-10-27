@@ -2,7 +2,7 @@
   "id": "BG-oez5e2ua",
   "kind": "bug",
   "title": "dispatch --resume --detach prints a wait that starts before the resumed worker's own working event when its process is slow to post it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-jxf76aa2",
   "priority": "P3",
   "rank": 0,
@@ -28,5 +28,7 @@
     "moved out: SP-hxxn6fnv"
   ],
   "notes": "Moved out of SP-hxxn6fnv by the unattended orchestrator 2026-10-26: the worker raised gate g1 (class agents-rule, since the item touches _tools/bl_dispatch.py) \"How long does a detached --resume hold for the resumed worker's own working event?\" (recommended: BEGIN_SETTLE_S plus BEGIN_WAIT_S, 70 s). It waits on the operator; work so far is on branch work/BG-oez5e2ua.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
