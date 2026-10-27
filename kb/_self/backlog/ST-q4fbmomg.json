@@ -2,7 +2,7 @@
   "id": "ST-q4fbmomg",
   "kind": "story",
   "title": "One call answers where a symbol is defined, who uses it and what depends on a package, from the pinned map, without reading files",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-rpzrctui",
   "sprint": "SP-jxf76aa2",
   "priority": "P1",
@@ -90,5 +90,7 @@
     "moved out: SP-acysfnxr"
   ],
   "notes": "Moved out of SP-acysfnxr by the unattended orchestrator 2026-10-26: depends on ST-teivhsxq, whose gate g1 (class agents-rule) waits on the operator.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
