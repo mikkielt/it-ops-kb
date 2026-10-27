@@ -2,7 +2,7 @@
   "id": "ST-rih5sa2w",
   "kind": "story",
   "title": "Research sprint goal: Many sessions at once and the paid session-load record",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-wv3ob5vy",
   "goal_research": true,
   "priority": "P1",
@@ -22,6 +22,20 @@
     "kb/public/**"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-557596e3",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "7b2446e117021c1bac09c05c20b81193027c65ba",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-rih5sa2w"
+        ],
+        "exit": 0,
+        "sha256": "d16220227e6f12fe"
+      }
+    ]
+  }
 }
