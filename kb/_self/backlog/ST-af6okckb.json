@@ -87,7 +87,11 @@
         "shared evenly over the names, so the ranking adds up to the prompts' cost": "ST-af6okckb",
         "the whole prompt cost to each name": "ST-af6okckb"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "shared evenly over the names, so the ranking adds up to the prompts' cost",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -102,7 +106,11 @@
         "the day's total and the costliest 20 topics": "ST-af6okckb",
         "one point for every topic of the day": "ST-af6okckb"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "the day's total and the costliest 20 topics",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
@@ -117,7 +125,11 @@
         "the reader version stays, the fields are optional and older records count in no ranking": "ST-af6okckb",
         "the reader version is raised so every prompt is read again": "ST-af6okckb"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "the reader version stays, the fields are optional and older records count in no ranking",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g4",
@@ -132,7 +144,11 @@
         "yes, the first character may be an underscore": "ST-af6okckb",
         "no, a topic starting with an underscore leaves its point out": "ST-af6okckb"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "yes, the first character may be an underscore",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
