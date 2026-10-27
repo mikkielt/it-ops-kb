@@ -89,9 +89,27 @@
       "class": "design",
       "answer": "the hook command's own wall time; a non-zero exit writes an errors row",
       "by": "agent"
+    },
+    {
+      "id": "land",
+      "kind": "blocking",
+      "question": "land rebases work/ST-6zg57xiu onto a moving origin/main, which rewrites the tool commit's sha, so the record rows always fail ST-nejgzptp's check that rows name a commit on the branch (refused twice at step siblings). How does a new session-load record land?",
+      "options": [
+        "Land the tool and docs first without the record rows, and record the rows in a follow-up item once the tool commit is on origin/main",
+        "Reopen ST-nejgzptp so its check accepts a row whose commit's tool files match a commit on the branch",
+        "Keep racing: repoint and land right after a rebase while main is quiet"
+      ],
+      "recommendation": "Land the tool and docs first without the record rows, and record the rows in a follow-up item once the tool commit is on origin/main",
+      "reason": "the record then names a sha that never changes",
+      "do": {
+        "Land the tool and docs first without the record rows, and record the rows in a follow-up item once the tool commit is on origin/main": "ST-6zg57xiu",
+        "Reopen ST-nejgzptp so its check accepts a row whose commit's tool files match a commit on the branch": "ST-nejgzptp",
+        "Keep racing: repoint and land right after a rebase while main is quiet": "ST-6zg57xiu"
+      },
+      "class": "design"
     }
   ],
-  "notes": "Premise from ST-7nuaruwn's first record (before g8's pin): the SessionStart intake hook's drift scan took about 50 s and 50 CPU seconds per session start in a replay clone, against under 15 starts for every other hook; the pinned record leaves it out (gate g8 of ST-7nuaruwn). The hook files nothing in a linked worktree under .claude/worktrees/ (kb/_self/backlog.md), so dispatched workers skip it; sessions in the main checkout, interactive or headless, pay it. Its figure goes into the switch decision of ST-qqpcgqe7. Operator chose on 2026-10-26: keep the pin and measure this apart. The pinned arm comparison (arms A, C, D) stays as it is; the sprint review's done reruns its checks.",
+  "notes": "Premise from ST-7nuaruwn's first record (before g8's pin): the SessionStart intake hook's drift scan took about 50 s and 50 CPU seconds per session start in a replay clone, against under 15 starts for every other hook; the pinned record leaves it out (gate g8 of ST-7nuaruwn). The hook files nothing in a linked worktree under .claude/worktrees/ (kb/_self/backlog.md), so dispatched workers skip it; sessions in the main checkout, interactive or headless, pay it. Its figure goes into the switch decision of ST-qqpcgqe7. Operator chose on 2026-10-26: keep the pin and measure this apart. The pinned arm comparison (arms A, C, D) stays as it is; the sprint review's done reruns its checks. Orchestrator 2026-10-28: gate land asks the operator how a new session-load record lands, after two refusals at step siblings.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-557596e3",
   "operator": "op-f618a13e"
