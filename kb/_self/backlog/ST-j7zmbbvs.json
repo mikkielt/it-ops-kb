@@ -2,7 +2,7 @@
   "id": "ST-j7zmbbvs",
   "kind": "story",
   "title": "The session-load docs say arm B leaves out the pane's --receipt run, so it understates the pane",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nxb7hjwd",
   "sprint": "SP-m5m67goe",
   "priority": "P3",
@@ -42,5 +42,7 @@
     "parked: SP-3qowbedb review"
   ],
   "notes": "Found by the fresh-context review of SP-3qowbedb (gap report in the sprint's review scratch); the operator chose to park it under EP-nxb7hjwd. Fix before the paid session-load record (ST-rodj5ltd) where it changes a figure.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-557596e3",
+  "operator": "op-f618a13e"
 }
