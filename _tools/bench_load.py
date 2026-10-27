@@ -226,6 +226,23 @@ def pin_drift(clone):
         "bench: the item files' mode", cwd=clone)
 
 
+def plant_no_forge(clone):
+    """Make no hook of the clone read a forge: its backlog.json says `"forge": ""`, committed so `reset` keeps it. The
+    red-pipeline hook then answers "not checked" at once, with no `glab` or `gh` process and no request (else it asks
+    gitlab.com about a project the throwaway clone's path names, and its sync_ms and starts move with the network and
+    the operator's sign-in); what the real hook costs with a forge to read is not measured here."""
+    path = Path(clone) / "backlog.json"
+    text = path.read_text(encoding="utf-8")
+    planted = re.sub(r'("forge"\s*:\s*)"[^"]*"', r'\1""', text, count=1)
+    if json.loads(planted).get("forge") != "":
+        raise Skip("session-load: backlog.json has no forge setting to empty, so a replay's hooks could read a forge")
+    if planted != text:
+        path.write_text(planted, encoding="utf-8", newline="\n")
+        git("add", "--", "backlog.json", cwd=clone)
+        git("-c", "user.name=bench", "-c", "user.email=bench@example.com", "commit", "-q", "--no-verify", "-m",
+            "bench: no forge", cwd=clone)
+
+
 def reset(clone):
     """The clone's working tree as the checkout left it, whatever a replay's hooks wrote, and the intake hook's drift
     cursor removed, so each replay's drift scan starts at the same item instead of where the replay before it stopped."""
@@ -496,6 +513,7 @@ def s_session_load(b):
           "Ctrl-C), then `python3 _tools/benchmarks.py run session-load --fs-usage fs_usage.txt`", flush=True)
     arms =list(getattr(b, "load_arms", None) or DEFAULT_ARMS)
     clone = b.clone("session-load", "local")
+    plant_no_forge(clone)
     pin_drift(clone)
     hooks = hook_commands(clone)
     first_s, refresh_s = pane_schedule(clone)
