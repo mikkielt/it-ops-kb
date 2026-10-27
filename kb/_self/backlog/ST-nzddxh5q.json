@@ -35,7 +35,12 @@
         "Extend secret-shapes-in-text for the redactor's key shapes; the other items need no outside fact": "ST-nzddxh5q",
         "Write a new article per vendor and research each remaining item too": "ST-nzddxh5q"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "Extend secret-shapes-in-text for the redactor's key shapes; the other items need no outside fact",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "filed_in": "clone-0ea70e5c",
