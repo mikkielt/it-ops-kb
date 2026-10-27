@@ -36,10 +36,11 @@
                                            _gaps.md/_conflicts.md entries linked to it (named, or via its sources);
                                            --unlinked lists the entries no topic marker, path or section links
   rag.py src S1824 --cited                 also every file line that names the id
-  rag.py eval [--file FILE] [--root NAME] [--free] [--min N] [--all] | --write-shares   pack against the lookup eval sets (every
+  rag.py eval [--file FILE] [--root NAME] [--free] [--min N] [--max-false-good N] [--all] | --write-shares  pack against the lookup eval sets (every
                                            root's lookup_eval.csv and kb/_self's, or FILE): expected article found,
                                            verdict, expected phrase; prints the failing rows and the totals line
                                            (--all: every row); exit 1 unless every row (or at least N) passes,
+                                           or when more than --max-false-good rows fail as a false good (verdict good, row wants weak or none),
                                            or, with no --file, when noted= (good rows whose pack prints a
                                            check: or route: line) is above NOTED_BASELINE;
                                            --free adds the _self rows' leave-one-out rate (slow);
@@ -100,6 +101,13 @@ def positive_int(v):
     n = int(v)
     if n < 1:
         raise argparse.ArgumentTypeError(f"must be >= 1, got {n}")
+    return n
+
+
+def non_negative_int(v):
+    n = int(v)
+    if n < 0:
+        raise argparse.ArgumentTypeError(f"must be >= 0, got {n}")
     return n
 
 
@@ -631,6 +639,8 @@ def main():
     ev.add_argument("--free", action="store_true", help="also the leave-one-out rate of the _self rows (slow: one store build per row)")
     ev.add_argument("--min", type=positive_int, help="exit 0 when at least MIN rows pass (default: every row), e.g. the "
                     "held-out file kb/public/_retrieval/lookup_heldout.csv's answer rate")
+    ev.add_argument("--max-false-good", type=non_negative_int, metavar="N", help="exit 1 when more than N failing rows are a false "
+                    "good: the verdict good where the row wants weak or none")
     ev.add_argument("--write-shares", action="store_true", help="rewrite word_shares.csv beside every root's lookup_eval.csv "
                     "(the key-word shares a failing row is re-judged on) and exit; no judging")
     ev.add_argument("--all", action="store_true", help="print every row, passing ones too (default: the failing rows and the totals)")
@@ -799,7 +809,9 @@ def main():
             sys.exit(1)
         res = run_eval(a.file, a.root, a.free)
         over = a.file is None and res["noted"] > NOTED_BASELINE
-        failing = res["passed"] < (res["n"] if a.min is None else a.min) or over  # the exit code, --json or not
+        false_good = [r for r in res["rows"] if not r["ok"] and r["verdict"] == "good" and r["want_verdict"] in ("weak", "none")]
+        too_good = a.max_false_good is not None and len(false_good) > a.max_false_good
+        failing = res["passed"] < (res["n"] if a.min is None else a.min) or over or too_good  # the exit code, --json or not
         if a.json:
             print(json.dumps(res, indent=1))
             sys.exit(1 if failing else 0)
@@ -819,6 +831,8 @@ def main():
                 print(f"NOTED {r['id']:<{width}} carries a check: or route: line though expected good")
             print(f"noted={res['noted']} is above NOTED_BASELINE={NOTED_BASELINE}: a pack note now fires on an answered "
                   "question; fix the note, or raise the constant with the reason")
+        if a.max_false_good is not None:
+            print(f"false_good={len(false_good)} max={a.max_false_good}")
         if failing:
             sys.exit(1)
     else:
