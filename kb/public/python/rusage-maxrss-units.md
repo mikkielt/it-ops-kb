@@ -31,9 +31,14 @@ by platform. For a child waited for, the value is the peak of the largest single
 - `ru_maxrss` is "the maximum resident set size used (in KiB)", and exists since Linux 2.6.32. [DOC S-d3vrqlxp]
 - For `RUSAGE_CHILDREN` it is the resident set size of the largest child, not the maximum resident set size of the
   process tree. [DOC S-d3vrqlxp]
+- `RUSAGE_CHILDREN` statistics "will include the resources used by grandchildren, and further removed descendants",
+  if all the intervening descendants waited on their terminated children; `ru_utime` is the time spent executing in
+  user mode and `ru_stime` the system CPU time. [DOC S-d3vrqlxp]
 
 ### macOS
 - `ru_maxrss` is "the maximum resident set size utilized (in bytes)". [DOC S-l7f6hp46]
+- The page defines `ru_utime` as the total time spent executing in user mode and `ru_stime` as time in the system on
+  behalf of the process, and states no rule for descendants of a child. [DOC S-l7f6hp46]
 
 ### What follows for a measurement
 - The same `ru_maxrss` integer is kibibytes on Linux and bytes on macOS, so a figure read from `os.wait4` or
@@ -43,6 +48,12 @@ by platform. For a child waited for, the value is the peak of the largest single
 - `RUSAGE_CHILDREN` is a maximum over children (Linux page), so it cannot give a per-run figure for each of several
   children: a record per run calls `os.wait4` on that child's pid and reads the usage in its result. [DER
   S-d3vrqlxp, S-5brdhqgo: the aggregate is a maximum; `os.wait4` takes a pid and returns usage information]
+- CPU seconds follow the same wait chain: a child that a hook shell started and waited for (such as `git`) counts in
+  the usage of the hook shell's own `wait4` result or, summed, in `RUSAGE_CHILDREN` of the caller, so the hook's figure
+  already holds that child's CPU and a separate row for the child counts it twice. [DER S-d3vrqlxp: descendants are
+  included when each intervening process waited]
+- Whether the macOS kernel includes waited-for grandchildren in `RUSAGE_CHILDREN` is not stated on the page used here.
+  [UNK: S-l7f6hp46 names no descendant rule; the Linux statement is not taken to hold there]
 - One run on this kind of host (macOS, Python 3.13.2, 2026-10-26): a forked child that touched 200 MiB, waited for
   with `os.wait4`, returned a `struct_rusage` whose `ru_maxrss` was 212549632, about 202.7 MiB when divided by
   1048576, so the integer is bytes there as the Apple page says. [DER S-l7f6hp46: one run of our own, one host]

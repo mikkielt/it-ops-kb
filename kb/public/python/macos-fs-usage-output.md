@@ -55,12 +55,27 @@ which calls are reads; the source marks an `open` as read access with an `R` in 
 - A physical read is a separate line named `RdData` (metadata reads `RdMeta`, page-ins `PgIn`); with `-f filesys`
   the filter returns true for such a disk-I/O record, so it is shown beside the system calls. [CODE S-bj2723hr:
   fs_usage.c#diskio_print, check_filter_mode]
+- A physical disk I/O line (`RdData`, `RdMeta`, `PgIn` and the write forms) prints ` D=0x<block number>`, ` B=0x<size>`
+  and ` /dev/<disk name>` first, and only then the pathname column, taken from the I/O's vnode when the code can
+  resolve one; a vnode it cannot resolve gives an empty pathname, so the line then ends in the device and no file
+  path. [CODE S-bj2723hr: fs_usage.c#format_print FMT_DISKIO]
+- For a metadata disk I/O the code looks a name up by block number only when the record is not a read; an `RdMeta`
+  line takes no name from that lookup. [CODE S-bj2723hr: fs_usage.c#format_print FMT_DISKIO, `is_meta` branch]
+- A disk I/O that completed with an error prints `D=0x<block number>  [<errno>]` instead, with no size and no `/dev/`
+  token; CoreStorage records (`RdChunkCS`, `WrChunkCS`, `RdMetaCS`) print `D=`, `B=` and `/dev/<name>` and no
+  pathname at all. [CODE S-bj2723hr: fs_usage.c#format_print FMT_DISKIO, FMT_DISKIO_CS]
 
 ### What follows for counting file reads per process class
 - A count of "reads" is a choice among three line kinds that the man page does not rank: `open` lines with `R` in the
   mode, descriptor reads (`read`, `pread`, `readv`, `preadv`), and `RdData` physical reads, which are not the same
   count (a descriptor read and a disk read are different records). A counter says which kind it counts. [DER S-iezgwy2f, S-bj2723hr: the
   page lists columns only; the source defines the three line kinds]
+- A counter of distinct file paths that takes the first `/`-token of a disk I/O line takes the `/dev/<disk>` device,
+  not a file; it skips the token that follows `B=0x<size>` as a device and counts a path only when text follows it, so
+  a `RdData` line with a device and no file path adds nothing to the set of paths. [DER S-bj2723hr: the device is
+  printed before the pathname and the pathname may be empty]
+- How often a `RdData` line of a real capture carries no resolved path was not measured. [UNK: no run of `fs_usage`,
+  root is needed]
 - The number after the process name identifies a thread, so grouping lines into a process class (hook shell,
   `node`, `python3`) goes by the process name before the dot, or by a pid operand to `fs_usage`, never by that
   number. [DER S-iezgwy2f, S-bj2723hr: the number is a thread id]

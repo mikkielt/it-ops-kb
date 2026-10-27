@@ -14166,6 +14166,7 @@ f0c169bcd9c3,python/interpreter-startup.md,S-j7sjakc5,located,,none;return;stder
 fd385ca5aec7,python/interpreter-startup.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-14
 fd385ca5aec7,python/interpreter-startup.md,S-ew7mucsg,located,release semaphore,python_cpu_count;overrid;cpu_count;cpu;count;3.13;python,2530d652d55ded52,".. versionchanged:: 3.13 If :option:-X cpucount <-X> is given or :envvar:PYTHONCPUCOUNT is set, :func:cpucount returns the override value n.",2026-10-14
 076c6c4b8190,python/macos-fs-usage-output.md,S-iezgwy2f,unlocated:no-match,,,,,2026-10-26
+0e80531e7a7f,python/macos-fs-usage-output.md,S-bj2723hr,located,,path;pathnam,60c958bb9a7db0a0,"pathname = ktracegetpathforvp(s, dio->vnodeid);",2026-10-27
 1be9b92f844c,python/macos-fs-usage-output.md,S-iezgwy2f,located,,append;mail.nn;nnn;thread;mail;mode;name;wide,1285fb642b3271b8,Wide mode will append the thread id to the process name (i.e Mail.nnn).,2026-10-26
 27640e1196f3,python/macos-fs-usage-output.md,S-iezgwy2f,located,,zsh;includ;default,c788f067e8d167bb,"process, Terminal, telnetd, telnet, sshd, rlogind, tcsh, csh, sh, and zsh. These defaults can be overridden such that output is limited to include or",2026-10-26
 4ebdfa675b45,python/macos-fs-usage-output.md,S-bj2723hr,located,,flag,014014cce0adc712,if (flags & ORDWR) {,2026-10-26
@@ -14183,8 +14184,10 @@ fd385ca5aec7,python/interpreter-startup.md,S-ew7mucsg,located,release semaphore,
 ab190f1b42a6,python/macos-fs-usage-output.md,S-iezgwy2f,located,,last;access;byte;pathnam;file,5a8aa1a79ffc534a,Pathname of the file accessed (up to the last 28 bytes).,2026-10-26
 bbd5ecc16b60,python/macos-fs-usage-output.md,S-iezgwy2f,located,,filesy;mail;fs_usag;usag,c4c1418d5bd6c640,fsusage -w -f filesys Mail,2026-10-26
 cd163d860b9e,python/macos-fs-usage-output.md,S-iezgwy2f,located,,column;data,f6011571e9321ad5,The data columns displayed are as follows:,2026-10-26
+d070cd1a35c7,python/macos-fs-usage-output.md,S-bj2723hr,located,,errno,39c445616fa071c3,"clen += printf("" D=0x%8.8"" PRIx64 "" [%3d]"", dio->blkno, (int)dio->ioerrno);",2026-10-27
 d6c1d14fe38a,python/macos-fs-usage-output.md,S-iezgwy2f,located,,csh;rlogind;sshd;tcsh;telnet;telnetd;terminal;zsh,5fd48758dd57fd3e,"process, Terminal, telnetd, telnet, sshd, rlogind, tcsh, csh, sh, and zsh.",2026-10-26
 f5283ac2fe28,python/macos-fs-usage-output.md,S-iezgwy2f,located,,granularity;microsecond;mode;wide,5c1eea3dd29af08e,Wide mode will have microsecond granularity.,2026-10-26
+f7ddfab8e5be,python/macos-fs-usage-output.md,S-bj2723hr,located,,read;meta;name,1548bae73c656a7d,if (!(type & PDISKIOREAD)) { pathname = metafindname(dio->blkno); },2026-10-27
 0851e72209af,python/maturin-pyo3-wheels.md,S-yua2ucez,located,Changelog > [0.9.1] - 2021-01-13,singl;x86;universal2;aarch64;file;wheel;build;support,98af172e8bc1bf6e,Support building universal2 wheels (x86 and aarch64 in a single file),2026-10-21
 09de6aee0a89,python/maturin-pyo3-wheels.md,S-yua2ucez,located,Changelog > [1.0.0] - 2023-05-23,universal2-apple-darwin;darwin;appl;universal2;instead;target,8cef9f80d3d973a8,Remove deprecated --universal2 cli option in #1620 use --target universal2-apple-darwin instead,2026-10-21
 0e30f622fb22,python/maturin-pyo3-wheels.md,S-26hqxvrn,located,Bindings > `pyo3`,cargo.toml;cargo;dependency;automatically;detect;toml;pyo3;maturin,c1576ef5932983fd,maturin automatically detects pyo3 bindings when it's added as a dependency in Cargo.toml.,2026-10-21
@@ -14416,10 +14419,12 @@ debb8922de45,python/ruff.md,S-y3zhzpmv,unlocated:no-match,,,,,2026-10-10
 2866b78854f9,python/rusage-maxrss-units.md,S-d3vrqlxp,unlocated:no-match,,,,,2026-10-26
 2866b78854f9,python/rusage-maxrss-units.md,S-l7f6hp46,unlocated:no-match,,,,,2026-10-26
 553c18721560,python/rusage-maxrss-units.md,S-d3vrqlxp,located,getrusage(2) — Linux manual page > DESCRIPTION top,kib;maximum;resident;size,111cd77200173bbd,This is the maximum resident set size used (in KiB).,2026-10-26
+682e2b89c64a,python/rusage-maxrss-units.md,S-d3vrqlxp,located,getrusage(2) — Linux manual page > DESCRIPTION top,further;grandchildren;interven;remov;descendant;terminat;wait;children,bcae2a36f1f242d2,"grandchildren, and further removed descendants, if all of the intervening descendants waited on their terminated children",2026-10-27
 7329f4108021,python/rusage-maxrss-units.md,S-2ua7dl2m,located,a CPU-bound task,consult;detail;man;getrusag;information;page,a9465d98c29210a0,Consult the getrusage(2) man page for detailed information about these values,2026-10-26
 7d641c2379e4,python/rusage-maxrss-units.md,S-d3vrqlxp,located,getrusage(2) — Linux manual page > DESCRIPTION top,largest;child;maximum;resident;size,82280cfde690af55,"largest child, not the maximum resident set size of the",2026-10-26
 7e51f19d11a9,python/rusage-maxrss-units.md,S-5brdhqgo,unlocated:no-match,,,,,2026-10-26
 7e51f19d11a9,python/rusage-maxrss-units.md,S-d3vrqlxp,unlocated:no-match,,,,,2026-10-26
+a75e208d3fbe,python/rusage-maxrss-units.md,S-l7f6hp46,located,,mode;execut;spent;total;user;time,8cb7eb7f07afccb9,the total amount of time spent executing in user mode.,2026-10-27
 ae6cea57ee2b,python/rusage-maxrss-units.md,S-5brdhqgo,located,release semaphore > Process Management¶,indication;resourc;usag;status;information;exit;process,54307c8257db9fce,"process id, exit status indication, and resource usage information is",2026-10-26
 c30ed99779fa,python/rusage-maxrss-units.md,S-2ua7dl2m,located,resource — Resource usage information¶ > Resource Limits¶,resident;size;maximum,5e62a4956e9e9524,maximum resident set size,2026-10-26
 c6ee2ce91cc4,python/rusage-maxrss-units.md,S-2ua7dl2m,located,a CPU-bound task,terminat;wait;call;process,7bbbf2ee081c787e,of the calling process which have been terminated and waited for.,2026-10-26
