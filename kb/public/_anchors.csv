@@ -16111,9 +16111,11 @@ edf3ba9209a3,security/script-and-code-signing.md,S-5kvx24wm,unlocated:no-match,,
 2201f9a5d104,security/secret-shapes-in-text.md,S-xnlryf7y,unlocated:no-match,,,,,2026-10-17
 3252f558360b,security/secret-shapes-in-text.md,S-mi4dlpr3,located,,rsa;dsa;privat;key,32db3ccae03eb740,"# define PEMSTRINGRSA ""RSA PRIVATE KEY"" # define PEMSTRINGRSAPUBLIC ""RSA PUBLIC KEY"" # define PEMSTRINGDSA ""DSA PRIVATE KEY""",2026-10-20
 32aa475bebf4,security/secret-shapes-in-text.md,S-wct3uoax,located,,case-insensitiv;insensitiv;case;token;schem,71b120d3604d9dfd,It uses a case-insensitive token to identify the authentication scheme,2026-10-17
+384fe0cfe046,security/secret-shapes-in-text.md,S-crezzacp,located,Supported secret scanning patterns > Supported patterns,google_api_key;googl;api;key,a0a2f8f92616ecb9,Google | Google API Key | googleapikey,2026-10-27
 3d01043974da,security/secret-shapes-in-text.md,S-lglgs6wg,located,Connection string syntax - ADO.NET Provider for SQL Server | Microsoft Learn > SqlClient connection strings > Connection string aliases,case-insensitiv;insensitiv;case;keyword;string;connection,1e8b08f384a85215,Connection string keywords are case-insensitive.,2026-10-21
 41f1a4387b98,security/secret-shapes-in-text.md,S-bs6jgunr,unlocated:no-match,,,,,2026-10-17
 46a08d1263cf,security/secret-shapes-in-text.md,S-jkdywrys,located,baz,separat;destination;must;tabs;titl;spac;link,968642a6a392dbc7,which if it is present must be separated from the link destination by spaces or tabs.,2026-10-21
+46cf76e038a6,security/secret-shapes-in-text.md,S-h2ms2nek,located,API keys > Key types > Webhook signing secrets,came;per-webhook;receiver;uses;webhook;sign;secret;strip,bd31a61043d5e22e,,2026-10-27
 4cba6ea46a4a,security/secret-shapes-in-text.md,S-4rjxcq6v,unlocated:no-match,,,,,2026-10-23
 4e4e98a4fcd0,security/secret-shapes-in-text.md,S-4tr3garn,unlocated:no-match,,,,,2026-10-24
 4e4e98a4fcd0,security/secret-shapes-in-text.md,S-jkdywrys,unlocated:no-match,,,,,2026-10-24
@@ -16133,6 +16135,8 @@ edf3ba9209a3,security/script-and-code-signing.md,S-5kvx24wm,unlocated:no-match,,
 7065106a3e2a,security/secret-shapes-in-text.md,S-4tr3garn,located,,text;line;armor;header,4b32b4fb691bd635,An Armor Header Line consists of the appropriate header line text,2026-10-21
 735897e1f715,security/secret-shapes-in-text.md,S-neu52zjd,located,,b64token;credential;bearer,9efae23b9f45be66,"credentials = ""Bearer"" 1SP b64token",2026-10-17
 7672202d04f5,security/secret-shapes-in-text.md,S-cbxnheng,located,aaa,trim;pipe;cell;between;spac,999fe62eaf71408c,Spaces between pipes and cell content are trimmed.,2026-10-23
+776dab15d2ed,security/secret-shapes-in-text.md,S-bnaqck42,located,Create API keys > Operation details > Responses,sg.xxxxxxxx.yyyyyyy;yyyyyyy;xxxxxxx;api_key;key;api,e54ee795d9c5a16a,,2026-10-27
+79cf40012f29,security/secret-shapes-in-text.md,S-qf2l6w5a,located,npm has a new access token format > Identifiable prefix and higher entropy pattern,start;prefix;pattern;access;token;npm,06af98ea45e60931,,2026-10-27
 7f7d41ebea7e,security/secret-shapes-in-text.md,S-4rjxcq6v,located,,two-character;two;escap;character,bfed420790298ed2,there are two-character sequence escape representations of some popular characters,2026-10-17
 843f306a867a,security/secret-shapes-in-text.md,S-cr2wj4s2,located,,1.1;legacy;file;begin;format;privat;ssh;key,4e665e17c8745e73,"#define LEGACYBEGIN ""SSH PRIVATE KEY FILE FORMAT 1.1\n""",2026-10-21
 90559d9d0e5d,security/secret-shapes-in-text.md,S-jkdywrys,located,Inlines > Code spans,squar;unescap;insid;label;bracket;allow;character;link,29e15e241146136c,Unescaped square bracket characters are not allowed inside the opening and closing square brackets of link labels.,2026-10-21
@@ -16175,6 +16179,7 @@ e32a6e54677a,security/secret-shapes-in-text.md,S-cr2wj4s2,unlocated:no-match,,,,
 e32a6e54677a,security/secret-shapes-in-text.md,S-kskf5yv7,unlocated:no-match,,,,,2026-10-18
 e32a6e54677a,security/secret-shapes-in-text.md,S-mi4dlpr3,located,,dsa;privat;key,3d939f5bc0573b61,"# define PEMSTRINGDSA ""DSA PRIVATE KEY""",2026-10-20
 e32a6e54677a,security/secret-shapes-in-text.md,S-vstqd426,unlocated:no-match,,,,,2026-10-18
+e381c9ec16c2,security/secret-shapes-in-text.md,S-h2ms2nek,located,API keys > Use API keys to authenticate API requests. > If you're new to Stripe,rk_test_;sk_test_;pk_test_;start;publishabl;test;sandbox;restrict,48f871277c5decdc,,2026-10-27
 e3a31ddf92c9,security/secret-shapes-in-text.md,S-jkdywrys,located,Inlines > Code spans,fold;lead;strip;trail;unicod;case,905a4dc6185f6084,perform the Unicode case fold,2026-10-21
 eb02f630315a,security/secret-shapes-in-text.md,S-k57sryj7,unlocated:no-match,,,,,2026-10-18
 eb91dfb2c4e1,security/secret-shapes-in-text.md,S-bs6jgunr,located,,deprecat;password;userinfo;user,eb7754875181d9f0,"Use of the format ""user:password"" in the userinfo field is deprecated",2026-10-21
@@ -16184,6 +16189,7 @@ f0e30ccd16ed,security/secret-shapes-in-text.md,S-wct3uoax,located,,token68,19240
 f0fe1c511c69,security/secret-shapes-in-text.md,S-vstqd426,located,,begin;privat;key,97b15364089fb494,BEGIN EC PRIVATE KEY,2026-10-21
 f51dc2814d92,security/secret-shapes-in-text.md,S-neu52zjd,unlocated:no-match,,,,,2026-10-18
 f61d0fbfa2ef,security/secret-shapes-in-text.md,S-k57sryj7,located,SQL Server connection string entity definition | Microsoft Learn > Keywords > CEP\_PasswordPlaceHolder,hyphen;asterisk;digit;letter,428f8e4966b33b33,"Any combination of 1-200 characters that are upper- or lowercase letters, digits, an asterisk (\), hyphen (-), underline (\), or whitespace character",2026-10-21
+f6289410d04e,security/secret-shapes-in-text.md,S-h2ms2nek,located,API keys > Protect your keys,outsid;expos;backend;safe;publishabl;application;keys,0b1b71a13af559c6,,2026-10-27
 f9183a2178d6,security/secret-shapes-in-text.md,S-cbxnheng,located,aaa,broken;another;empty;tabl;first;line,eacbffb01493ad29,The table is broken at the first empty line,2026-10-23
 faeea1ce6997,security/secret-shapes-in-text.md,S-neu52zjd,located,,chain;validat;certificat;tls;protect;client;request;resourc,37c9b036b0b2f8ce,The client MUST validate the TLS certificate chain when making requests to protected resources.,2026-10-18
 fd3961548293,security/secret-shapes-in-text.md,S-bs6jgunr,located,,parameter;valu;delimit;often;exampl;segment,bdafaafb1cfa148f,"the semicolon ("";"") and equals (""="") reserved characters are often used to delimit parameters and parameter values applicable to that segment",2026-10-21

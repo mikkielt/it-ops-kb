@@ -4633,3 +4633,16 @@ _Agent: kb-research_
 - See python/stdlib-unicode-normalization.md, arch/snowball-stemmers-german-polish.md, windows/powershell-static-analysis.md, arch/lua-modules-and-functions.md, windows/7zip-archive-formats.md.
 
 _Agent: kb-research_
+
+## QK-sprint-redaction-parity-honest-test-rows. What do the sprint's redactor, test-row, run-ownership, held-quality and paid-probe items need to know from outside the kb?
+- A Microsoft Entra client secret has no vendor prefix; Microsoft's Purview detector matches up to 40 characters of letters, digits, `- _ . ~`, and rates a match High or Medium only beside an `AppSecret=` keyword, so the Entra shape is confirmed as a Learn page but only as a detector pattern. [DOC S-qo44eri2]
+- The Google API key is the case-sensitive prefix `AIza` followed by 35 characters (39 in all). [DOC S-5zkihk4v]
+- Stripe secret and restricted keys start with `sk_live_` and `rk_live_` (live) or `sk_test_` and `rk_test_` (sandbox); `pk_` keys are publishable and safe to expose. [DOC S-h2ms2nek]
+- An npm access token starts with `npm` and an underscore and ends in a six-character Base62 CRC32; SendGrid's reference shows a key as `SG.` and two dot-separated parts, as a placeholder only. [DOC S-qf2l6w5a, S-bnaqck42]
+- GitHub's supported-patterns list names `google_api_key`, `npm_access_token`, `sendgrid_api_key` and `stripe_api_key` as secret types and gives no regular expression. [DOC S-crezzacp]
+- Haiku 5.5 lists at $0.10 input and $0.50 output per million tokens for a prompt of up to 100,000 tokens, so 50 short distill questions cost far under the item's USD 1 cap; the research pair's USD 5 cap has no price source in the kb beyond the same list. [DOC S2131]
+- Conclusion: the redactor item can name the four prefixes and the Entra shape from the kb; the Entra rule is a context rule (key and separator, letter and digit), not a prefix rule, and the bodies' lengths are not documented, so a floor is a choice. The run-ownership, test-row and held-quality items rest on the repository's own code and tools and need no outside fact. [DER S-qo44eri2, S-5zkihk4v, S-h2ms2nek, S-qf2l6w5a, S-bnaqck42, S2131: the shapes and the price list above]
+- Open: the length of Stripe, npm, SendGrid and Entra secret bodies, Google keys with another prefix, and the prefix of a Stripe webhook signing secret. [UNK]
+- See security/secret-shapes-in-text.md, claude/ci-and-headless.md.
+
+_Agent: kb-research_

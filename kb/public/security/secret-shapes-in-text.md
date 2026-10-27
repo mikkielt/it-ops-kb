@@ -1,9 +1,9 @@
 ---
 topic: security/secret-shapes-in-text
 priority: P2
-applies_to: "free text (a command line, a log line, a pasted note) that a redactor or scanner reads for credentials: HTTP Authorization headers, URL userinfo, PEM, OpenSSH and OpenPGP private key blocks, key=value assignments, SQL Server connection strings"
-retrieved_utc: 2026-10-23
-sources: [S-wct3uoax, S-neu52zjd, S-3mhhoprh, S-bs6jgunr, S-kskf5yv7, S-as3c23xb, S-cr2wj4s2, S-xnlryf7y, S-lglgs6wg, S-k57sryj7, S-spzetxhy, S-d2kitjup, S-imedhmhc, S-bcbpadtc, S-4rjxcq6v, S-jkdywrys, S-vstqd426, S-mi4dlpr3, S-4tr3garn, S-cbxnheng]
+applies_to: "free text (a command line, a log line, a pasted note) that a redactor or scanner reads for credentials: HTTP Authorization headers, URL userinfo, PEM, OpenSSH and OpenPGP private key blocks, key=value assignments, SQL Server connection strings, vendor-prefixed API keys (Google, Stripe, npm, SendGrid) and the Entra client secret"
+retrieved_utc: 2026-10-27
+sources: [S-wct3uoax, S-neu52zjd, S-3mhhoprh, S-bs6jgunr, S-kskf5yv7, S-as3c23xb, S-cr2wj4s2, S-xnlryf7y, S-lglgs6wg, S-k57sryj7, S-spzetxhy, S-d2kitjup, S-imedhmhc, S-bcbpadtc, S-4rjxcq6v, S-jkdywrys, S-vstqd426, S-mi4dlpr3, S-4tr3garn, S-cbxnheng, S-qo44eri2, S-5zkihk4v, S-h2ms2nek, S-qf2l6w5a, S-bnaqck42, S-crezzacp]
 status: partial
 ---
 
@@ -79,6 +79,21 @@ A credential in free text has a grammar its specification fixes, and that gramma
 - No official source lists the key names that mark an assignment as secret: the deny-list above is one community tool's, and Microsoft's detector covers connection strings only. [UNK: no standard found]
 - A longer key whose last word is on the deny-list (`DB_PASSWORD`, `aws_secret_access_key`, a prefixed environment variable) is therefore the same assignment as the bare word, in the scanner's reading. [DER S-spzetxhy: the prefix and suffix `\w*` of the deny-list regex]
 
+### Vendor key shapes
+- Microsoft's Purview detector for a Microsoft Entra client secret matches up to 40 characters from `a-z` (not case-sensitive), `0-9`, dashes, underlines, dots and tildes; the page's example is `Bb2Cc~3Dd4.-Ee5Ff6Gg7Hh8Ii9Jj0_Kk1Ll2Mm3`. [DOC S-qo44eri2]
+- The same page rates a match by its context: a value after `AppSecret=` beside an `AppId` and a tenant id is High confidence, one after `AppSecret=` beside an `AppId` is Medium, and a bare value has no Low band ("N/A"); its keywords are `secret`, `password` and `key`, and it does not match mockup values, redacted values or placeholders. [DOC S-qo44eri2]
+- The alphabet of that value (letters, digits, `- _ . ~`) is also the alphabet of an identifier or a file name, so the shape alone does not mark an Entra secret: a redactor has to key on the assignment (`key=` or `key:` before the value) and on the value having both a letter and a digit, as Microsoft's detector keys on its keywords. [DER S-qo44eri2: the alphabet, the 40-character ceiling and the context bands above]
+- The Entra pages read for this change (app registration and credential pages on Learn) say the secret value is shown once and give a lifetime, but state no length or alphabet of the value: the 40-character shape is a Microsoft detector's pattern, not a statement of what Entra issues. [UNK: looked 2026-10-27 in the Learn pages for adding a client secret; only the Purview definition gives a shape]
+- Microsoft's Purview detector for a Google API key matches the case-sensitive token prefix `AIza` followed by 35 characters from `a-z` (not case-sensitive), `0-9`, a hyphen, an underline or a backslash, and the page gives the whole as 39 characters. [DOC S-5zkihk4v]
+- Stripe sandbox keys start with `pk_test_` (publishable), `rk_test_` (restricted) and `sk_test_` (secret); live mode keys start with `pk_live_`, `rk_live_` and `sk_live_`. [DOC S-h2ms2nek]
+- Stripe says only publishable keys are safe to expose outside an application's backend, so a `pk_` key is no secret and an `sk_` or `rk_` key is, in either mode. [DOC S-h2ms2nek]
+- A Stripe webhook signing secret is not an API key: the page calls it a per-webhook secret that a receiver uses to check that a webhook came from Stripe, and it does not give its prefix. [DOC S-h2ms2nek]
+- npm access tokens issued after the September 2021 change start with the prefix `npm`, then an underscore as delimiter, and the last six characters are a CRC32 checksum in Base62; the older tokens were a 36-character UUID pattern. [DOC S-qf2l6w5a]
+- The SendGrid reference for creating an API key shows `api_key` as `SG.xxxxxxxx.yyyyyyyy` and `api_key_id` as `xxxxxxxx` in its example response: a prefix `SG.`, then two parts separated by a dot. [DOC S-bnaqck42]
+- The SendGrid page gives that shape only as a placeholder example: the length and alphabet of the two parts are not stated. [UNK: looked 2026-10-27 in the create-API-key reference and the v3 authentication page]
+- GitHub's list of supported secret scanning patterns names the secret types `google_api_key`, `npm_access_token`, `sendgrid_api_key` and `stripe_api_key`, among others; it lists types and what each type supports, not the regular expression of a pattern. [DOC S-crezzacp]
+- A vendor prefix (`AIza`, `sk_live_`, `rk_live_`, `npm_`, `SG.`) marks a credential without any key name in the text, so a redactor can match it as a token on its own; an Entra secret has no prefix and needs the assignment rule above. [DER S-5zkihk4v, S-h2ms2nek, S-qf2l6w5a, S-bnaqck42, S-qo44eri2: a prefix is part of the documented shape of the first four and absent from the fifth]
+
 ### JSON string values
 - A JSON string (RFC 8259, section 7) begins and ends with quotation marks, and the characters that must be escaped inside it are the quotation mark, the reverse solidus (backslash) and the control characters U+0000 to U+001F. [DOC S-4rjxcq6v]
 - The two-character escapes are `\"` for the quotation mark and `\\` for the backslash (also `\/`, `\b`, `\f`, `\n`, `\r`, `\t`); any character may instead be written as `\u` and four hex digits, so one backslash is `"\\"` or `"\u005C"`. [DOC S-4rjxcq6v]
@@ -128,6 +143,11 @@ Open gaps of this topic: `python3 _tools/rag.py audit security/secret-shapes-in-
 | Key block in a nested JSON string | `\\n` between the lines | one `\n` per level, backslashes doubled at each further level | RFC 8259 |
 | Markdown link reference definition | `[label]:` at line start | a destination with no space, or `<...>`, then an optional quoted title | CommonMark 0.31.2 |
 | URL path parameter | `;key=` inside a path segment | text up to `/`, `?` or `#` | RFC 3986 |
+| Entra client secret | no prefix; after `AppSecret=` or a secret keyword | up to 40 of letters, digits, `- _ . ~` (Purview detector) | Purview |
+| Google API key | `AIza` | 35 more of letters, digits, `- _ \`; 39 in all | Purview |
+| Stripe key | `sk_live_`, `rk_live_`, `sk_test_`, `rk_test_` (`pk_` is publishable) | length not stated | Stripe docs |
+| npm access token | `npm_` | last six characters a Base62 CRC32 | GitHub changelog |
+| SendGrid API key | `SG.` | two dot-separated parts; lengths not stated | SendGrid reference |
 
 ## Examples
 - SNIPPET: placeholder inputs, one for each shape in the table, as a redaction test would plant them (build real-looking values at run time, never commit one); context: free text, any language; checked: no [DER S-wct3uoax, S-3mhhoprh, S-bs6jgunr, S-kskf5yv7, S-xnlryf7y, S-4rjxcq6v: the shapes the facts above give]
