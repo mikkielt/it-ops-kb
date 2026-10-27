@@ -59,6 +59,17 @@
       closing bracket, and is compared as text; a file that changed elsewhere, or a definition that only moved to
       another line, is not a finding. It rewrites no fact, source row or date: the findings are for /kb-refresh.
 
+  kbingest.py impact REPO --since REV [--rev NEW] [--root NAME] [--prefix TOPIC] [--remote HOST/PROJECT]
+      Read-only, no model, in any repository that has a docs map: the `docs_map` of the repository's own backlog.json,
+      a `doc,pattern` csv of repository-relative paths (the project's, never this kb's, when the plugin is installed in
+      a host project). Prints the commits and the number of files `git diff --name-only REV NEW` lists (NEW default
+      HEAD), then `doc PATH` and a tab and the changed files it describes for each doc the map ties to one of them
+      (selfdoc.py's glob rules, so in this repository the docs `selfdoc.py map` names), then `fact KBPATH:LINE` and a tab
+      and `KIND SOURCE-ID PATH#SYMBOL DETAIL` (tab-separated) for each finding that `drift REPO --rev NEW` reports,
+      then a `docs=N facts=N` line. A repository with no backlog.json, no `docs_map` or an unreadable csv prints
+      `note: docs:` and its reason; one with no remote (and no --remote) prints `note: facts:` and no fact lines.
+      Exit 1 when any `doc` or `fact` line is printed, 0 when none, 2 for an unknown REV or a repository that is none.
+
   kbingest.py where NAME (--map FILE | --repo REPO [--rev REV]) [--forge gitlab|github] [--budget N]
       Read-only and reading only the map: with --repo, the cached map of the commit under _cache/ingest/ (built by `map`
       and cached when there is none), with --map, that JSON file. Prints the definitions of NAME (kind, path:line and the
@@ -90,16 +101,17 @@ a self-managed host) as https://<host>/<project>/-/raw/<commit>/<path>. A host n
 needs --forge; another forge gets no url (`url` refuses; the skill says what to do).
 
 Exit: 0 done (`drift`: no finding), 1 `map` could not create its worktree (`where` likewise, building a map), `drift`
-printed findings or `where` found no such name, 2 refused (not a git repository, an unknown REV, `url` with no pinned url
+printed findings, `impact` printed a doc or fact line or `where` found no such name, 2 refused (not a git repository, an unknown REV, `url` with no pinned url
 form, `map` with an unknown language or an --out under kb/, `drift` with an unknown --root or a repository with no remote
-and no --remote, `where` with a file that is no map).
+and no --remote, `impact` with an unknown --since or --rev, `where` with a file that is no map).
 
 Answers: what a git repository holds before its knowledge goes into a kb root: files kept, left out and secrets
 Answers: whether a root's pinned code sources drifted from the repository
+Answers: which docs and kb CODE facts a change since a revision makes stale, from the repository's docs map
 Answers: where a symbol is defined, who uses it and what imports a package, from the pinned code map
-Use: python3 _tools/kbingest.py survey REPO | map | where NAME | drift | url
+Use: python3 _tools/kbingest.py survey REPO | map | where NAME | drift | impact REPO --since REV | url
 """
-import argparse, contextlib, getpass, json, os, posixpath, re, shutil, signal, socket, subprocess, sys, tempfile
+import argparse, contextlib, csv, getpass, json, os, posixpath, re, shutil, signal, socket, subprocess, sys, tempfile
 from pathlib import Path
 from typing import NamedTuple
 from urllib.parse import quote, unquote, urlsplit
@@ -2390,37 +2402,97 @@ def drift_findings(repo, new, facts, sources, project):
     return findings, checked, elsewhere
 
 
+def drift_of(repo, new, remote=None, root=None, prefix=None):
+    """(findings, checked, elsewhere) of `drift_findings` over the served roots' CODE facts at the commit NEW, as
+    `drift` runs it; ValueError with the reason when the repository has no remote to match to, or ROOT names no root."""
+    if remote:
+        host, _, path = remote.strip().partition("/")
+        project = (host.lower(), path.strip("/").lower())
+    else:
+        r = remote_of(repo)
+        project = (r[1], r[2].lower()) if r else None
+    if not project or not project[1]:
+        raise ValueError(f"{repo.name} has no remote to match the source rows to; pass --remote HOST/PROJECT")
+    try:
+        names = [r.name for r in kbcommon.roots()]
+        if root and root not in names:
+            raise ValueError(f"no root {root!r} (roots: {', '.join(names)})")
+        facts = [u for u in kbfacts.units(prefix) if not root or kbfacts.root_name(u["path"]) == root]
+        sources = kbfacts.source_rows()
+    except (kbcommon.RootError, OSError) as e:
+        raise ValueError(str(e))
+    return drift_findings(repo, new, facts, sources, project)
+
+
 def cmd_drift(a):
     repo = Path(a.repo).expanduser().resolve()
     new = resolve(repo, a.rev)
     if new is None:
         print(f"refused: {repo.name}: not a git repository, or {a.rev!r} names no commit")
         return 2
-    if a.remote:
-        host, _, path = a.remote.strip().partition("/")
-        project = (host.lower(), path.strip("/").lower())
-    else:
-        r = remote_of(repo)
-        project = (r[1], r[2].lower()) if r else None
-    if not project or not project[1]:
-        print(f"refused: {repo.name} has no remote to match the source rows to; pass --remote HOST/PROJECT")
-        return 2
     try:
-        names = [r.name for r in kbcommon.roots()]
-        if a.root and a.root not in names:
-            print(f"refused: no root {a.root!r} (roots: {', '.join(names)})")
-            return 2
-        facts = [u for u in kbfacts.units(a.prefix) if not a.root or kbfacts.root_name(u["path"]) == a.root]
-        sources = kbfacts.source_rows()
-    except (kbcommon.RootError, OSError) as e:
+        findings, checked, elsewhere = drift_of(repo, new, a.remote, a.root, a.prefix)
+    except ValueError as e:
         print(f"refused: {e}")
         return 2
-    findings, checked, elsewhere = drift_findings(repo, new, facts, sources, project)
     print(f"commit: {new} ({a.rev})")
     for path, line, sid, label, kind, detail in sorted(findings):
         print(f"finding\t{kind}\t{path}:{line}\t{sid}\t{label}\t{detail}")
     print(f"checked={checked} unchanged={checked - len(findings)} findings={len(findings)} elsewhere={elsewhere}")
     return 1 if findings else 0
+
+
+def docs_of(repo, changed):
+    """({doc path: [changed files it describes]}, note): the docs the repository's docs map (the csv that its
+    backlog.json `docs_map` names, `doc,pattern` rows of repository-relative paths) ties to the CHANGED files, with
+    selfdoc.py's glob rules; NOTE says why there is no map, else ''."""
+    import selfdoc  # a repository tool beside this one: the one place the glob rules live
+    try:
+        cfg = json.loads((repo / "backlog.json").read_text(encoding="utf-8-sig"))
+    except (OSError, ValueError):
+        return {}, "no backlog.json with a docs_map"
+    name = cfg.get("docs_map") if isinstance(cfg, dict) else None
+    if not isinstance(name, str) or not name.strip():
+        return {}, "backlog.json has no docs_map"
+    try:
+        with open(repo / name.strip(), encoding="utf-8-sig", newline="") as f:
+            rows = list(csv.DictReader(f))
+    except (OSError, ValueError, csv.Error) as e:
+        return {}, f"docs_map {name.strip()} cannot be read ({e})"
+    docs = {}
+    for r in rows:
+        doc, pat = (r.get("doc") or "").strip(), (r.get("pattern") or "").strip()
+        if doc and pat:
+            docs.setdefault(doc, []).append(pat)
+    return selfdoc.describing(docs, changed), ""
+
+
+def cmd_impact(a):
+    repo = Path(a.repo).expanduser().resolve()
+    since, new = resolve(repo, a.since), resolve(repo, a.rev)
+    if since is None or new is None:
+        print(f"refused: {repo.name}: not a git repository, or {a.since if since is None else a.rev!r} names no commit")
+        return 2
+    diff = git(repo, "diff", "--name-only", "-z", since, new)
+    if diff.returncode:
+        print(f"refused: git diff {a.since}..{a.rev}: {diff.stderr.decode('utf-8', 'replace').strip()}")
+        return 2
+    changed = [x.decode("utf-8", "surrogateescape") for x in diff.stdout.split(b"\0") if x]
+    docs, note = docs_of(repo, changed)
+    print(f"since: {since} ({a.since}) to {new} ({a.rev}): {len(changed)} files changed")
+    if note:
+        print(f"note: docs: {note}")
+    for doc in sorted(docs):
+        print(f"doc {doc}\t{', '.join(docs[doc])}")
+    facts = []
+    try:
+        facts = drift_of(repo, new, a.remote, a.root, a.prefix)[0]
+    except ValueError as e:
+        print(f"note: facts: {e}")
+    for path, line, sid, label, kind, detail in sorted(facts):
+        print(f"fact {path}:{line}\t{kind}\t{sid}\t{label}\t{detail}")
+    print(f"docs={len(docs)} facts={len(facts)}")
+    return 1 if docs or facts else 0
 
 
 def main(argv=None):
@@ -2456,6 +2528,13 @@ def main(argv=None):
     d.add_argument("--root", help="only the facts of this kb root")
     d.add_argument("--prefix", help="only the facts under this topic or path prefix (`dsc`, `public/dsc/what-if`)")
     d.add_argument("--remote", help="HOST/PROJECT the source rows are matched to (default: the repository's origin)")
+    im = sub.add_parser("impact", help="the docs of the repository's docs map and the CODE facts that a change since a revision makes stale")
+    im.add_argument("repo")
+    im.add_argument("--since", required=True, help="the earlier commit the change is counted from")
+    im.add_argument("--rev", default="HEAD", help="the new commit (default HEAD)")
+    im.add_argument("--root", help="only the facts of this kb root")
+    im.add_argument("--prefix", help="only the facts under this topic or path prefix")
+    im.add_argument("--remote", help="HOST/PROJECT the source rows are matched to (default: the repository's origin)")
     w = sub.add_parser("where", help="where a name is defined, who uses it and what imports it, from a map")
     w.add_argument("name")
     src = w.add_mutually_exclusive_group(required=True)
@@ -2465,7 +2544,8 @@ def main(argv=None):
     w.add_argument("--forge", choices=("gitlab", "github"))
     w.add_argument("--budget", type=int, default=WHERE_BUDGET, help="body lines to print (default %(default)s)")
     a = ap.parse_args(argv)
-    return {"survey": cmd_survey, "url": cmd_url, "map": cmd_map, "drift": cmd_drift, "where": cmd_where}[a.cmd](a)
+    return {"survey": cmd_survey, "url": cmd_url, "map": cmd_map, "drift": cmd_drift, "impact": cmd_impact,
+                "where": cmd_where}[a.cmd](a)
 
 
 if __name__ == "__main__":
