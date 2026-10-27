@@ -23,5 +23,5 @@
   "links": [
     "parked: SP-p46hofrg close"
   ],
-  "notes": "check to tighten at planning: the command given only proves the tool runs"
+  "notes": "check to tighten at planning: the command given only proves the tool runs Seen on ST-6n5xrkbt g2 (2026-10-26): a gate question about how a task's text shares a token budget between pack questions was classed secrets (matched 'token'); the question is about a count of tokens, no credential."
 }

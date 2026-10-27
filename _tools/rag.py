@@ -21,6 +21,11 @@
   rag.py pack --root _self --item ID [QUESTION]   the brief of a backlog item: its docs (kb/_self/map.csv) and decisions
   rag.py pack --root _self --set NAME      the tested questions of a set (`skill` or `skill:step`, the `sets` column of
                                            kb/_self/_retrieval/lookup_eval.csv), their passages and the decisions tied to them
+  rag.py task FILE|- [--budget 1200] [-d DOMAIN] [--root NAME]
+                                           the pack for a task's text (its title and body, plain text or Markdown; - reads
+                                           stdin): the questions the text raises (the title, then each sentence or list
+                                           item, at most 6) as one pack_many batch, with each part's verdict, fact lines,
+                                           `kb has:` and `kb lacks:` lines, the parts sharing BUDGET tokens
   rag.py facts PREFIX [--tag UNK,COMMUNITY] [--format detailed]
                                            fact lines under a path prefix (a domain, topic or file), by tag kind
   rag.py audit [PREFIX] [--status partial] [--entries] [--unlinked] [--format detailed]
@@ -58,7 +63,8 @@ index files (README.md, each root's _answers.md, _gaps.md, _conflicts.md, _cover
 Answers: what the kb says about a question, as cited fact lines with their coverage
 Answers: which kb articles, facts or sources match some words, and how many there are
 Answers: how to read lines of a kb file or resolve a source id
-Use: python3 _tools/rag.py pack|search|show|facts|audit|src|topics|topics-for|eval [ARGS]
+Answers: which kb facts a task's text rests on, and what the kb lacks for it
+Use: python3 _tools/rag.py pack|task|search|show|facts|audit|src|topics|topics-for|eval [ARGS]
 MCP: kb_pack answers a question
 MCP: kb_search searches every line
 MCP: kb_show reads lines
@@ -66,6 +72,7 @@ MCP: kb_facts lists fact lines
 MCP: kb_audit counts per article
 MCP: kb_source resolves source ids
 MCP: kb_topics_for maps code to topics
+MCP: kb_task_context answers a task's text with the cited facts and what the kb lacks
 """
 import argparse, csv, difflib, json, os, re, sys
 from collections import Counter, defaultdict
@@ -101,6 +108,48 @@ def domain_arg(domain):
     if d is None:
         sys.exit(f"no domain {domain!r}; omit -d, or use one of: {', '.join(kbfacts.domains())}")
     return d
+
+
+TASK_PART_CHARS = 240  # characters of one question taken from a task's text
+TASK_PART_MIN = 200  # tokens a question of a task's pack gets at least (kb_pack's own floor)
+TASK_MARKUP = ((re.compile(r"```.*?```|~~~.*?~~~|<!--.*?-->", re.S), " "), (re.compile(r"!\[[^\]]*\]\([^)]*\)"), " "),
+               (re.compile(r"\[([^\]]*)\]\([^)]*\)"), r"\1"), (re.compile(r"<[^>\n]+>|https?://\S+"), " "),
+               (re.compile(r"[`*_~|]+"), " "))
+TASK_LEAD = re.compile(r"^\s*(?:#{1,6}|>|[-*+]|\d+[.)])?\s*(?:\[[ xX]\])?\s*")
+
+
+def task_questions(text):
+    """The questions a task's text raises, for the pack: the title (the first line) and then each sentence or list
+    item of the body, Markdown and plain text alike, with code blocks, comments, images, links' targets and urls
+    dropped; a part is at most TASK_PART_CHARS characters, a repeat and a fragment of under two words are left out,
+    and the first MAX_QUESTIONS stay."""
+    for rx, sub in TASK_MARKUP:
+        text = rx.sub(sub, text)
+    out, seen = [], set()
+    for line in (TASK_LEAD.sub("", l).strip() for l in text.splitlines()):
+        for part in re.split(r"(?<=[.!?])\s+", line) if out else [line]:  # the title is one part
+            part = " ".join(part.split())[:TASK_PART_CHARS].strip(" :;,-")
+            if len(part.split()) >= 2 and part.lower() not in seen:
+                seen.add(part.lower())
+                out.append(part)
+    return out[:kbfacts.MAX_QUESTIONS]
+
+
+def task_pack(text, budget=1200, domain=None, fmt="detailed", root=None, revalidate=False):
+    """One pack over a task's text: a part per question `task_questions` finds (kbfacts.pack_many), the parts
+    sharing `budget` tokens (at least TASK_PART_MIN each: a budget too small for every question keeps the first
+    ones, and a line says so). Of several questions the text's first line is the worst verdict of the parts. None
+    when the text holds no question."""
+    qs = task_questions(text)
+    if not qs:
+        return None
+    n = min(len(qs), max(budget // TASK_PART_MIN, 1))
+    res = kbfacts.pack_many(qs[:n], budget // n, domain, fmt, root, revalidate=revalidate)
+    head = [f"coverage: {res['verdict']} (the worst of {n} questions)"] if n > 1 else []
+    if n < len(qs):
+        head.append(f"task: {len(qs) - n} more question(s) left out for the budget")
+    res["text"] = "\n".join(head + [res["text"]])
+    return res
 
 
 def search(query, k, domain, index=False, notes=None, root=None):
@@ -557,6 +606,11 @@ def main():
     pk.add_argument("--revalidate", action="store_true", help="check the cited sources of the printed fact lines against "
                     "their pages now (the network, within a time budget) and mark each line current, moved, not found "
                     "or source-dated only; the results are kept under _cache/ only")
+    tk = sub.add_parser("task", help="the evidence pack for a task's text")
+    tk.add_argument("file", help="a file with the task's title and body (plain text or Markdown), or - for stdin")
+    tk.add_argument("--budget", type=positive_int, default=1200, help="tokens for all the questions together (default 1200)")
+    tk.add_argument("-d", "--domain"); tk.add_argument("--format", choices=FORMATS, default="detailed")
+    tk.add_argument("--root", help="one root only")
     fa = sub.add_parser("facts"); fa.add_argument("prefix"); fa.add_argument("--tag", help="comma-separated kinds, e.g. UNK,COMMUNITY")
     fa.add_argument("--format", choices=FORMATS, default="concise"); fa.add_argument("--root", help="one root only")
     au = sub.add_parser("audit"); au.add_argument("prefix", nargs="?"); au.add_argument("--status")
@@ -660,6 +714,18 @@ def main():
         res = kbfacts.pack_many(parts, a.budget, domain_arg(a.domain), a.format, a.root, a.invalidated, brief, a.revalidate)
         if a.root == kbfacts.SELF_ROOT:
             kbfacts.record_self(res["text"], a.budget, res, parts, item=a.item)
+        res["text"] = kbcommon.with_missing_note(res["text"])
+        if a.json:
+            return print(json.dumps(res, indent=1))
+        print(res["text"])
+    elif a.cmd == "task":
+        try:
+            text = sys.stdin.read() if a.file == "-" else open(a.file, encoding="utf-8", errors="replace").read()
+        except OSError as e:
+            sys.exit(f"task: cannot read {a.file}: {e.strerror}")
+        res = task_pack(text, a.budget, domain_arg(a.domain), a.format, a.root)
+        if res is None:
+            sys.exit("task: the text holds no question")
         res["text"] = kbcommon.with_missing_note(res["text"])
         if a.json:
             return print(json.dumps(res, indent=1))
