@@ -88,7 +88,11 @@
       ],
       "recommendation": "de and pl only, in _tools/lang/, the two the fixtures prove; a root cannot bring its own yet",
       "reason": "because untested stop lists and suffix rules cost correct verdicts and a root-owned profile can be added later without changing the format",
-      "class": "design"
+      "class": "design",
+      "answer": "de and pl in _tools/lang/ and a root may add its own under its _retrieval/ directory",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
