@@ -1288,19 +1288,67 @@ def referrers_of(root, term, files):
     return out
 
 
+def map_refs(doc, term, files):
+    """{path: [line, ...]} of what the code map says uses TERM in code: the references of each definition named TERM
+    (matched by name, never resolved; the definition's own lines left out), and, for a tracked .py file, the files that
+    import its module. All from the map, no file read."""
+    import kbingest
+    refs = {}
+    own = {(x["path"], x["line"]) for x in doc["symbols"] if x.get("name") == term}
+    for x in doc["symbols"]:
+        if x.get("name") == term:
+            for r in x.get("references", ()):
+                if (r["path"], r["line"]) not in own:
+                    refs.setdefault(r["path"], set()).add(r["line"])
+    if term in files and term.endswith(".py"):
+        stem = Path(term).stem
+        for row in doc.get("imports", ()):
+            if row["path"] != term and any(kbingest.module_of(m, stem) for m in row.get("imports", ())):
+                refs.setdefault(row["path"], set())
+    return {f: sorted(v) for f, v in refs.items() if f != term and not item_file(f)}
+
+
+def code_map(root):
+    """(map, why): the code map of root's HEAD, the cached one when it is of that commit, else built and cached under
+    _cache/ingest (`kbingest.where_map`); (None, reason) when it cannot be had, and the text scan stands alone."""
+    import kbingest
+    try:
+        doc, _commit, _remote, _label, why = kbingest.where_map(argparse.Namespace(map=None, repo=str(root), rev="HEAD"))
+    except Exception as e:  # a map is a help, never a reason for the listing to fail
+        return None, f"{type(e).__name__}: {e}"
+    return doc, why
+
+
+def referrer_rows(root, term, files, doc):
+    """[(kind, path, first line, line count)] of the files that name TERM, each listed once: kind `ref` for a file of the
+    code map that uses it (the map's references, else a text hit in a source file the map covers: a comment or
+    docstring there changes with the symbol), kind `text` for any other file the text scan finds (docs, lists, data)."""
+    text = {f: (first, n) for f, first, n in referrers_of(root, term, files)}
+    refs = map_refs(doc, term, files) if doc else {}
+    mapped = {r["path"] for r in doc.get("imports", ())} | {x["path"] for x in doc["symbols"]} if doc else set()
+    rows = [("ref", f, v[0] if v else text.get(f, (0, 0))[0], len(v) or text.get(f, (0, 0))[1])
+            for f, v in refs.items() if f in files]
+    rows += [("ref" if f in mapped else "text", f, first, n) for f, (first, n) in text.items() if f not in refs]
+    return sorted(rows, key=lambda r: (r[0] != "ref", r[1]))
+
+
 def cmd_referrers(bl, a):
-    """Every tracked file that names a file or symbol a task will move or delete: one line per file with its first
-    line and its count of lines, read-only. --item ID marks each file outside the item's scope (its touches and its
-    descendants') and exits 1 when there is one, so the touches hold them before the work starts."""
+    """Every tracked file that names a file or symbol a task will move or delete, one line per file, read-only: kind=ref
+    for a file the code map of HEAD has using it in code, kind=text for a file the text scan finds that the map does not
+    (docs, prose, lists). --item ID marks each file outside the item's scope (its touches and its descendants') and
+    exits 1 when there is one, so the touches hold them before the work starts."""
     files = tracked_files(bl.root)
     globs = scope(bl, need(bl, a.item)) if a.item else None
+    doc, why = code_map(bl.root)
+    if doc is None:
+        say(f"note: no code map ({why}); every file is listed as kind=text")
     stray = 0
     for term in a.terms:
-        rows = referrers_of(bl.root, term, files)
-        for f, first, n in rows:
+        rows = referrer_rows(bl.root, term, files, doc)
+        for kind, f, first, n in rows:
             out = bool(globs is not None and not in_scope(f, globs))
             stray += out
-            say(f"{term}  {f}:{first}  {n} line{'s' * (n != 1)}" + ("  outside touches" if out else ""))
+            say(f"{term}  {f}:{first}  {n} line{'s' * (n != 1)}  kind={kind}" + ("  outside touches" if out else ""))
         if not rows:
             say(f"{term}  no tracked file names it")
     return 1 if stray else 0

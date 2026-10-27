@@ -71,6 +71,28 @@
     "ST-af6okckb",
     "ST-cqcmpo72"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "In referrers, which files get kind=ref: only those the map's references list, or also a source file the map covers whose only mention is a comment or docstring (bl_land.py names worker_of only in a docstring, and the item's first check wants it kind=ref)?",
+      "options": [
+        "map references plus text hits in mapped source files",
+        "map references only"
+      ],
+      "recommendation": "map references plus text hits in mapped source files",
+      "reason": "a docstring or comment naming a symbol in a source file changes with it, so it belongs in touches, and the item's check needs it",
+      "do": {
+        "map references plus text hits in mapped source files": "ST-hqko4k2x",
+        "map references only": "ST-hqko4k2x"
+      },
+      "class": "agents-rule",
+      "answer": "map references plus text hits in mapped source files",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "moved out: SP-acysfnxr"
   ],
