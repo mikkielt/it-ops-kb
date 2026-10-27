@@ -2,7 +2,7 @@
   "id": "ST-yl6b2ues",
   "kind": "story",
   "title": "The commit and publish leak gate catches Bearer and Basic credentials, URL passwords and prose secret assignments, measured on an adversarial corpus",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-fn7letri",
   "priority": "P1",
@@ -170,6 +170,38 @@
   ],
   "notes": "Planner (SP-fn7letri): check 1 (the leak and redact test files) passes before the work and pins the critical leak guard; the corpus and known_gap list land inside those test functions. Depends on BG-juf5gvt4 (SP-m5m67goe), which also edits _tools/test_redact.py. Check 2 builds its fake secrets at run time. Operator 2026-10-27: g3 back to the recommended scope (vendor exports and pinned snapshots skip the new shapes, keep the old secret scan); reword the three kb/public prose lines the new shapes hit, keeping each fact's meaning, tag and source.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-557596e3",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "49ad9e2e8f1eb3973ee036513050f12fa3b1c63d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import kbcommon as k;v='Zx9Qm4'+'Lp7Rt2Vb8Nc5Kd3Wf6Hj';a='Authorization: Bea'+'rer '+v;u='postgres://admin:'+'S3cr'+'etPw-2026x'+'@db.corp.example.com/x';n='Authorization: Bea'+'rer $TOKEN';ok=bool(k.leak_hits(a)) and bool(k.leak_hits(u)) and not k.leak_hits(n);print(ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "a9ac0c3ac83c40e1"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "_tools/test_leaks.py",
+          "_tools/test_redact.py"
+        ],
+        "exit": 0,
+        "sha256": "fbd54d3d001edfd3"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import kbpublic as p;u='see https://admin:'+'S3cr'+'etPw-2026x'+'@db.corp.example.com/x now';b='curl -H \"Authorization: Bea'+'rer '+'Zx9Qm4'+'Lp7Rt2Vb8Nc5Kd3Wf6Hj\" https://api.example.com/v1';ok=bool([h for h in p.file_hits('kb/public/x.md',u,{}) if h[0]=='secret']) and bool([h for h in p.file_hits('kb/public/y.md',b,{}) if h[0]=='secret']);print(ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "a9ac0c3ac83c40e1"
+      }
+    ]
+  }
 }
