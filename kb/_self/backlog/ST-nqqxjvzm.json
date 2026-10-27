@@ -64,7 +64,11 @@
       ],
       "recommendation": "Only the printed line: a root enforces nothing until it sets evidence",
       "reason": "because it keeps the public eval shares and the held-out answer rate unchanged, and the first step of the story measures what enforcing it for the public root would move so the operator can decide later with numbers",
-      "class": "design"
+      "class": "design",
+      "answer": "Only the printed line: a root enforces nothing until it sets evidence",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
