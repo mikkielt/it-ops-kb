@@ -434,3 +434,4 @@ EV-coordination-needs-you-after-min,what does announce.needs_you_after_min delay
 SQ-census-gone-sources,census gone sources,web-sources.md,good,yes,mechanical verdict per source,
 SQ-item-whose-repro-already-passes-base,an item whose repro already passes on the base: how is it closed or dropped,tools.md,good,yes,sprint's open committed items,
 SQ-goal-research-story-fill-each-committed,how does the goal research story fill each committed item's knowledge field and what does backlog.py researched check,tools.md,good,yes,goal research story (`bl_base.research_checks,
+EV-sprint-plan-measured-figures-margin-against-spread,"what must a planner measure before writing a check that orders or bounds measured figures such as timings, starts or memory",backlog.md,good,yes,states its margin against their run-to-run spread,kb-sprint:plan
