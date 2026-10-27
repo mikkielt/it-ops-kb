@@ -1,0 +1,18 @@
+{
+  "id": "BG-xkafsiza",
+  "kind": "bug",
+  "title": "stage-back runs an item's checks before the staged file is committed, so a check that measures a clone of HEAD sees the old file",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "stage-back runs an item's own checks over a commit that holds the copies (undone when a check fails), or names the checks that read a clone of HEAD and leaves them to done",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import inspect,sys; sys.path.insert(0,'_tools'); import bl_dispatch as d; s=inspect.getsource(d.cmd_stage_back); assert s.index('commit_message(') < s.index('stage_back_checks('), 'stage-back checks the item before it commits the copies'"
+    ]
+  },
+  "filed_in": "clone-0ea70e5c"
+}
