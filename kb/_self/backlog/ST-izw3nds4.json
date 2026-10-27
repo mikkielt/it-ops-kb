@@ -84,7 +84,11 @@
       ],
       "recommendation": "One cross-platform program (7z) for all three, and text exits 2 naming 7z when it is absent",
       "reason": "because msiexec and DISM can run installer logic or need administrator rights, while 7z only lists and extracts",
-      "class": "design"
+      "class": "design",
+      "answer": "7z for MSI, CAB and WIM; 7z is an optional dependency installed the way WezTerm is: a pinned per-user installer (_tools/install_7z.py --plan | --declined | --yes [--from FILE], each OS's release URL and SHA-256 pin, a per-user target, PATH and profiles untouched, /kb-setup asks first); text exits 2 naming 7z and the installer when 7z is absent",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
