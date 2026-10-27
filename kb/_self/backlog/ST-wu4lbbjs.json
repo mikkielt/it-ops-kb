@@ -111,7 +111,11 @@
         "one lease per path under the key reservation/SOURCE/HOLDER/PATH, listed by digest as its own reservation line": "ST-wu4lbbjs",
         "one lease per holder with the paths in a value, listed as a claim line": "ST-wu4lbbjs"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "one lease per path under the key reservation/SOURCE/HOLDER/PATH, listed by digest as its own reservation line",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
@@ -126,7 +130,11 @@
         "source optional (external), at most 50 paths per line, local store only, the hook shows one overlap per source and holder with a wait-or-ask line instead of a settings strategy": "ST-wu4lbbjs",
         "source required, any number of paths, served through --url, the hook shows the strategy of the settings": "ST-wu4lbbjs"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "source optional (external), at most 50 paths per line, local store only, the hook shows one overlap per source and holder with a wait-or-ask line instead of a settings strategy",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
