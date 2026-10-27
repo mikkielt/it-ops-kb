@@ -267,35 +267,33 @@ AUTH_HEADER = re.compile(
 # The password of a URL's user:password@ part; the user stays.
 URL_USERINFO = re.compile(r"""(\b[A-Za-z][A-Za-z0-9+.-]*://[^\s/:@"'<>]*:)([^\s/"'<>]+)(?=@)""")
 # What the leak scan takes of them (`structured_secrets`): the shapes named in STRUCTURED, each only for a value, not a
-# placeholder or a word. A header credential: 12 or more characters, none of `$ { } < > *`, no `...`, not an upper-case
-# name (`YOUR_API_KEY`) or lower-case words joined by hyphens. A url password or an unquoted assignment value: 8 or more
-# characters with a letter and a digit, none of those characters, not starting with a backtick (a code reference in
-# prose). A quoted assignment value is the last SECRETS shape's. The assignment is read in prose files and item text only.
+# placeholder. A header credential has 12 or more characters; a url password and an unquoted assignment value have one or
+# more. A placeholder is one of ASSIGNED_PLACEHOLDER whole, a value with one of `$ { } < > *` or `...`, a code expression
+# or markup rather than a literal (a value with one of `( ) [ ] , ; \``), an upper-case name (`YOUR_API_KEY`), a
+# `your-`, `my-` or `-here` name, one character, or one of the words in PLACEHOLDER_WORDS. A quoted assignment value is the last SECRETS
+# shape's; the assignment is read in prose files and item text only.
 STRUCTURED = ("auth", "url")
 PROSE_STRUCTURED = STRUCTURED + ("assign",)
-_NOT_A_VALUE = re.compile(r"[${}<>*]|\.\.\.|\u2026")
-_NAME_ONLY = re.compile(r"[A-Z]+(?:_[A-Z0-9]+)+|[a-z]+(?:[-_.][a-z]+)+")
+PLACEHOLDER_WORDS = frozenset(("pass password passwd pwd pw secret token key test tiger user changeme change-me example "
+                               "none null true false str string where in is it the see for to of").split())
+_NOT_A_VALUE = re.compile(r"[${}<>*()\[\],;`\u2026\u201c\u201d]|\.\.\.")
+_PLACEHOLDER_NAME = re.compile(r".|[A-Z][A-Z_]+|(?i:(?:your|my)[-_].*|.*[-_]here)")
 
 
-def _plain(value, least):
-    return len(value) >= least and not _NOT_A_VALUE.search(value) and not ASSIGNED_PLACEHOLDER.fullmatch(value)
-
-
-def _valuelike(value):
-    return _plain(value, 8) and re.search(r"[A-Za-z]", value) and re.search(r"\d", value) and value[0] != "`"
+def _value(value, least):
+    return (len(value) >= least and not _NOT_A_VALUE.search(value) and not ASSIGNED_PLACEHOLDER.fullmatch(value)
+            and not _PLACEHOLDER_NAME.fullmatch(value) and value.lower() not in PLACEHOLDER_WORDS)
 
 
 def structured_secrets(text, kinds=STRUCTURED):
     """[matched text] of the shapes named in KINDS ("auth", "url", "assign") that hold a value in `text`."""
     out = []
     if "auth" in kinds:
-        out += [m.group(0) for m in AUTH_HEADER.finditer(text)
-                if _plain(m.group(2), 12) and not _NAME_ONLY.fullmatch(m.group(2))]
+        out += [m.group(0) for m in AUTH_HEADER.finditer(text) if _value(m.group(2), 12)]
     if "url" in kinds:
-        out += [m.group(0) for m in URL_USERINFO.finditer(text) if _valuelike(m.group(2))]
+        out += [m.group(0) for m in URL_USERINFO.finditer(text) if _value(m.group(2), 1)]
     if "assign" in kinds:
-        out += [m.group(0) for m in ASSIGNMENT.finditer(text)
-                if m.group(2)[:1] not in "\\\"'" and _valuelike(m.group(2))]
+        out += [m.group(0) for m in ASSIGNMENT.finditer(text) if m.group(2)[:1] not in "\\\"'" and _value(m.group(2), 1)]
     return out
 
 

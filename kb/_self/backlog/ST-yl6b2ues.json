@@ -141,6 +141,22 @@
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
+    },
+    {
+      "id": "g5",
+      "kind": "blocking",
+      "question": "What is a placeholder value for the url-password and unquoted-assignment shapes, beyond <...>, ${...}, %NAME% and ***?",
+      "options": [
+        "also a value with one of $ { } < > * ( ) [ ] , ; a backtick or ..., an upper-case name, a your-, my- or -here name, one character, and the words of kbcommon.PLACEHOLDER_WORDS",
+        "only <...>, ${...}, %NAME% and ***"
+      ],
+      "recommendation": "also a value with one of $ { } < > * ( ) [ ] , ; a backtick or ..., an upper-case name, a your-, my- or -here name, one character, and the words of kbcommon.PLACEHOLDER_WORDS",
+      "reason": "the narrow list hits 223 places of the tree, 188 of them code, types and prose",
+      "do": {
+        "also a value with one of $ { } < > * ( ) [ ] , ; a backtick or ..., an upper-case name, a your-, my- or -here name, one character, and the words of kbcommon.PLACEHOLDER_WORDS": "ST-yl6b2ues",
+        "only <...>, ${...}, %NAME% and ***": "ST-yl6b2ues"
+      },
+      "class": "secrets"
     }
   ],
   "notes": "Planner (SP-fn7letri): check 1 (the leak and redact test files) passes before the work and pins the critical leak guard; the corpus and known_gap list land inside those test functions. Depends on BG-juf5gvt4 (SP-m5m67goe), which also edits _tools/test_redact.py. Check 2 builds its fake secrets at run time.",

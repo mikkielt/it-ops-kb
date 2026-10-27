@@ -114,9 +114,9 @@
   ],
   "known_gap": {
     "redact": ["token|*|*|*", "layout.table", "layout.xml", "layout.xml-attr", "layout.prose", "cmd.cmdkey", "cmd.net-use", "cmd.sqlcmd", "cmd.securestring", "cmd.curl-user", "cmd.schtasks", "cmd.psexec", "cmd.az-login", "cmd.docker", "cmd.mgraph", "domain.sas", "domain.bitlocker", "domain.laps", "domain.wifi", "domain.vault-token"],
-    "scan": ["*|*|short|*", "*|*|word|*", "*|*|*|1", "*|*|*|2", "*|*|*|4", "token|*|*|*", "url.short", "url.word", "hdr.token-scheme", "hdr.short", "hdr.split-line", "hdr.table-cell", "layout.table", "layout.xml", "layout.xml-attr", "layout.query", "layout.prose", "layout.code-span", "layout.multiline-json", "cmd.cmdkey", "cmd.net-use", "cmd.sqlcmd", "cmd.securestring", "cmd.curl-user", "cmd.schtasks", "cmd.psexec", "cmd.az-login", "cmd.docker", "cmd.mgraph", "cmd.env-set", "domain.sas", "domain.bitlocker", "domain.laps", "domain.wifi", "domain.vault-token"],
+    "scan": ["*|*|*|1", "*|*|*|2", "*|*|*|4", "token|*|*|*", "hdr.token-scheme", "hdr.short", "hdr.split-line", "hdr.table-cell", "layout.table", "layout.xml", "layout.xml-attr", "layout.query", "layout.prose", "layout.code-span", "layout.multiline-json", "cmd.cmdkey", "cmd.net-use", "cmd.sqlcmd", "cmd.securestring", "cmd.curl-user", "cmd.schtasks", "cmd.psexec", "cmd.az-login", "cmd.docker", "cmd.mgraph", "cmd.env-set", "domain.sas", "domain.bitlocker", "domain.laps", "domain.wifi", "domain.vault-token"],
     "utility_redact": ["sha-pin", "sha-digest", "prose-strong", "ph-api-key", "ref-path", "ref-code-path", "hdr-shell", "hdr-upper-name", "hdr-words", "hdr-ellipsis", "url-doc-password", "url-doc-change-me", "url-ssh"],
-    "utility_scan": [],
-    "max": {"redact": 67, "scan": 385, "utility_redact": 13, "utility_scan": 0}
+    "utility_scan": ["prose-strong", "ref-path"],
+    "max": {"redact": 67, "scan": 327, "utility_redact": 13, "utility_scan": 2}
   }
 }
