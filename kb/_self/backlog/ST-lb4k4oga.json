@@ -19,7 +19,7 @@
       "run": [
         "python3",
         "-c",
-        "import re,sys\nt=open('.claude/skills/kb-setup/SKILL.md').read();s=t[t.index('## 4. MCP servers'):];s=s[:s.index('\n## ',5)]\nok='--coord-tools' in s and 'KB_COORD_TOOLS' in s and 'AskUserQuestion' in s\nprint('step 4 asks coord tools:',ok);sys.exit(0 if ok else 1)\n"
+        "import re,sys\nt=open('.claude/skills/kb-setup/SKILL.md').read();s=t[t.index('## 4. MCP servers'):];s=s[:s.index('\\n## ',5)]\nok='--coord-tools' in s and 'KB_COORD_TOOLS' in s and 'AskUserQuestion' in s\nprint('step 4 asks coord tools:',ok);sys.exit(0 if ok else 1)\n"
       ]
     },
     {
