@@ -4,6 +4,7 @@
   "title": "An operator-class gate answer recorded from an agent session says so, and horizon and the sprint review list it for re-confirmation",
   "status": "draft",
   "parent": "EP-n4dci4w7",
+  "sprint": "SP-fn7letri",
   "priority": "P1",
   "rank": 0,
   "goal": "backlog.py answer --by operator on a gate whose class is in bl_authority.OPERATOR_CLASSES, run where bl_authority.in_agent_session() is true, stores agent_session: true beside operator and role on the gate (bl_items.py answer record); check accepts the field; horizon prints the count of such answers and the sprint review story lists each (item, gate, answer) for the operator to re-confirm from a terminal. Nothing is refused, so pre-approved unattended runs keep working; a terminal answer stores no flag. The extended test_authority.py function plants push, agents-rule and secrets answers under CLAUDECODE=1 and one terminal answer (0 new test ids, under 1 s). Extends the docs-only ST-avh536as. Evidence: reliability-authority-review.md AU-1.",

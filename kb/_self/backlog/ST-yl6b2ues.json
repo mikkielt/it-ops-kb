@@ -4,6 +4,7 @@
   "title": "The commit and publish leak gate catches Bearer and Basic credentials, URL passwords and prose secret assignments, measured on an adversarial corpus",
   "status": "draft",
   "parent": "EP-n4dci4w7",
+  "sprint": "SP-fn7letri",
   "priority": "P1",
   "rank": 0,
   "goal": "kbcommon.leak_hits (kind secret) carries three structured shapes the query-log redactor already has (redact.AUTH_HEADER, URL_USERINFO, ASSIGNMENT), moved into kbcommon beside SECRETS with one owner: an Authorization scheme word and a value of 12 or more characters with none of $ { } < > *, a scheme://user:password@ url, and an unquoted secret assignment in prose files and item text only; kbpublic.file_hits scans Bearer and userinfo in the whole text, not the url-stripped text (kbpublic.py:545). An adversarial corpus file under _tools/fixtures/redact/ (rows assembled from parts at run time: key x separator x value matrix, quoting depth 0 to 3, urls, layouts, IT-ops command lines, domain secrets, and utility rows such as KB and CVE ids, cmdlets, sha pins, docs urls, prose with the word password) runs inside the existing redact and planted-leak test functions with a known_gap list that may only shrink: 0 new test ids, under 0.3 s. On today's tree and git history the new shapes hit nothing (documented placeholders stay clean). Evidence: reliability-authority-review.md RD-1.",
