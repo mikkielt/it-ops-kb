@@ -61,7 +61,7 @@ The four issuers differ in what they let a holder do to a credential: GitLab rot
 | GitLab personal, group, project token | 365 days if unset; 400 days max behind a flag (Ultimate limit) | `rotate` API, `self` allowed; new token one week by default | revoked at once; family revoked on reuse | S-mhouxzvy, S-7bs3m5z2, S-pu7alvhx |
 | GitLab runner authentication token | `token_expires_at` 5 minutes to 21 days (see `gitlab/runner-registration.md`) | `reset_authentication_token` | replaced | S-udvn7k24, S-ytnvr75r |
 | Cloudflare user or account API token | optional TTL (`not_before`, `expires_on`); no ceiling stated | roll in place | invalidated at once | S-i7k2yzu3, S-mk66h6ri, S-34drdif4 |
-| R2 S3 key pair | follows its API token | roll the token; secret = SHA-256 of the new value | old secret invalid | S-xaij2xlf |
+| R2 S3 key pair | follows its API token | roll the token; the secret is the SHA-256 of the new value | old secret invalid | S-xaij2xlf |
 | R2 temporary credential | `ttlSeconds` per credential | none: mint again | expires or dies with parent | S-azsoi3uw |
 | Discord bot token | none stated | "Reset Token" in the portal | not stated | S-jnot5rsp |
 | Discord OAuth2 access token | `expires_in` 604800 in the docs' examples | refresh grant, revoke endpoint | per revoke | S-5wetycnr |

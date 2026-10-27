@@ -60,7 +60,12 @@
     "kb/_self/querylog.md",
     "kb/_self/git.md",
     "kb/_self/plugin.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/public/agents/api-tokens-issue-and-store.md",
+    "kb/public/auth/issuer-token-rotation.md",
+    "kb/public/security/kali-default-account-vm-containers.md",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
   ],
   "depends_on": [
     "BG-juf5gvt4"
@@ -81,9 +86,89 @@
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Which values count for the url-password and unquoted-assignment shapes?",
+      "options": [
+        "8 or more characters with a letter and a digit, none of $ { } < > *, not led by a backtick",
+        "any non-placeholder value"
+      ],
+      "recommendation": "8 or more characters with a letter and a digit, none of $ { } < > *, not led by a backtick",
+      "reason": "the tree and history hit nothing; a short or alphabetic value is a corpus known_gap",
+      "do": {
+        "8 or more characters with a letter and a digit, none of $ { } < > *, not led by a backtick": "ST-yl6b2ues",
+        "any non-placeholder value": "ST-yl6b2ues"
+      },
+      "class": "secrets",
+      "answer": "any non-placeholder value",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "Which files and passes read the new structured shapes?",
+      "options": [
+        "header and url shapes in the whole text of any file but a vendor export, the assignment in the url-stripped text of .md and .txt files and item text only",
+        "all three shapes everywhere, vendor exports included"
+      ],
+      "recommendation": "header and url shapes in the whole text of any file but a vendor export, the assignment in the url-stripped text of .md and .txt files and item text only",
+      "reason": "the vendor snapshots hold documented example credentials",
+      "do": {
+        "header and url shapes in the whole text of any file but a vendor export, the assignment in the url-stripped text of .md and .txt files and item text only": "ST-yl6b2ues",
+        "all three shapes everywhere, vendor exports included": "ST-yl6b2ues"
+      },
+      "class": "push",
+      "answer": "header and url shapes in the whole text of any file but a vendor export, the assignment in the url-stripped text of .md and .txt files and item text only",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g4",
+      "kind": "blocking",
+      "question": "How does the corpus list its known gaps?",
+      "options": [
+        "fnmatch patterns over row ids in the corpus file, each pattern and each failing row checked both ways, with a max count per guard",
+        "one id per gap row"
+      ],
+      "recommendation": "fnmatch patterns over row ids in the corpus file, each pattern and each failing row checked both ways, with a max count per guard",
+      "reason": "the matrix holds hundreds of rows that fail alike",
+      "do": {
+        "fnmatch patterns over row ids in the corpus file, each pattern and each failing row checked both ways, with a max count per guard": "ST-yl6b2ues",
+        "one id per gap row": "ST-yl6b2ues"
+      },
+      "class": "push",
+      "answer": "fnmatch patterns over row ids in the corpus file, each pattern and each failing row checked both ways, with a max count per guard",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g5",
+      "kind": "blocking",
+      "question": "What is a placeholder value for the url-password and unquoted-assignment shapes, beyond <...>, ${...}, %NAME% and ***?",
+      "options": [
+        "also a value with one of $ { } < > * ( ) [ ] , ; a backtick or ..., an upper-case name, a your-, my- or -here name, one character, and the words of kbcommon.PLACEHOLDER_WORDS",
+        "only <...>, ${...}, %NAME% and ***"
+      ],
+      "recommendation": "also a value with one of $ { } < > * ( ) [ ] , ; a backtick or ..., an upper-case name, a your-, my- or -here name, one character, and the words of kbcommon.PLACEHOLDER_WORDS",
+      "reason": "the narrow list hits 223 places of the tree, 188 of them code, types and prose",
+      "do": {
+        "also a value with one of $ { } < > * ( ) [ ] , ; a backtick or ..., an upper-case name, a your-, my- or -here name, one character, and the words of kbcommon.PLACEHOLDER_WORDS": "ST-yl6b2ues",
+        "only <...>, ${...}, %NAME% and ***": "ST-yl6b2ues"
+      },
+      "class": "secrets",
+      "answer": "also a value with one of $ { } < > * ( ) [ ] , ; a backtick or ..., an upper-case name, a your-, my- or -here name, one character, and the words of kbcommon.PLACEHOLDER_WORDS",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
-  "notes": "Planner (SP-fn7letri): check 1 (the leak and redact test files) passes before the work and pins the critical leak guard; the corpus and known_gap list land inside those test functions. Depends on BG-juf5gvt4 (SP-m5m67goe), which also edits _tools/test_redact.py. Check 2 builds its fake secrets at run time.",
+  "notes": "Planner (SP-fn7letri): check 1 (the leak and redact test files) passes before the work and pins the critical leak guard; the corpus and known_gap list land inside those test functions. Depends on BG-juf5gvt4 (SP-m5m67goe), which also edits _tools/test_redact.py. Check 2 builds its fake secrets at run time. Operator 2026-10-27: g3 back to the recommended scope (vendor exports and pinned snapshots skip the new shapes, keep the old secret scan); reword the three kb/public prose lines the new shapes hit, keeping each fact's meaning, tag and source.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-557596e3",
   "operator": "op-f618a13e"

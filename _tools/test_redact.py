@@ -8,6 +8,7 @@ import pytest
 
 import kb_hook, kb_mcp, kbcommon, kbfacts, ql_capture, ql_distill, ql_learn, ql_store, redact
 from conftest import KB, TOOLS
+from test_leaks import corpus, gap_problems
 
 FIXTURE_STORE = Path(TOOLS) / "fixtures" / "querylog" / "store"
 RUN_REL = "2026-09/20260928T130000Z-0000beef.jsonl"
@@ -101,6 +102,13 @@ def test_redact_replaces_every_class_of_value_leaves_ordinary_text_and_a_second_
     urls = redact.redact("open https://ci7.qzvx-internal.net/x or http://ci7.qzvx-internal.net:8080/x?y=1")
     assert urls == "open https://corp.example.com/x or http://corp.example.com:8080/x?y=1"  # an unnamed url host goes as a bare host does
     assert redact.redact("see https://learn.microsoft.com/en-us/graph/overview") == "see https://learn.microsoft.com/en-us/graph/overview"
+    # the adversarial corpus: the value of every secret row goes unless the row is a known gap, an ordinary row stays whole
+    secrets, utility, gap = corpus()
+    every = [i for i, _, _ in secrets]
+    kept = {i for i, text, value in secrets if value in redact.redact(text)}
+    assert not gap_problems("redact", kept, every, gap), gap_problems("redact", kept, every, gap)
+    changed = {i for i, text in utility if redact.redact(text) != text}
+    assert not gap_problems("utility_redact", changed, [i for i, _ in utility], gap), changed
     f = tmp_path / "in.txt"
     f.write_text(TEXT, encoding="utf-8", newline="\n")
     assert redact.main(["--scan", str(f)]) == 1

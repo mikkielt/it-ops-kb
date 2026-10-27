@@ -243,18 +243,74 @@ LEAK_GUID = r"\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9
 GUID_OK = re.compile(r"0{8}-0{4}-0{4}-0{4}-0{8}[0-9a-f]{4}")  # the tenant placeholder and its numbered siblings
 
 
+# The structured shapes the query-log redactor replaces (redact.py) and the leak scan flags (leak_hits): one owner here.
+# An assignment of a secret whatever the value: key=v, key: v, "key": "v", DB_PASSWORD=v, ?api_key=v, Password=v; in a
+# connection string. The key is one of the names or ends in one (aws_secret_access_key, client_secret, x-api-key). The
+# key may close its quote behind backslashes (JSON inside a JSON string, \"key\": \"v\") or a bracket (cfg['key'] = 'v'), a
+# quoted value may hold an escaped quote ("a\"b"), and an escaped-quote value (\"v\") ends at the escaped quote whose
+# backslash run is as long as the opening one; a longer run before a quote (\\\" inside \"...\") is a nested escaped quote.
+# One with a nested escaped quote and no closing quote (a JSON string cut off mid-value) runs to the end of the line.
+_SECRET_NAME = r"(?:password|passwd|pwd|secret|api[_-]?key|access[_-]?key)"
+ASSIGNMENT = re.compile(
+    r"""(?i)((?:\[\\*["'][\w.-]*?""" + _SECRET_NAME + r"""\\*["']\]|(?<![\w.-])[\w.-]*?""" + _SECRET_NAME
+    + r"""(?:\\*["'])?)[ \t]*[:=](?![=>])[ \t]*)"""
+    r"""((?P<bd>\\+)"(?:[^"\\\n]|\\+(?![\\"])|(?P=bd)\\+")*(?P=bd)"|(?P<bs>\\+)'(?:[^'\\\n]|\\+(?![\\'])|(?P=bs)\\+')*(?P=bs)'"""
+    r"""|"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'"""
+    r"""|(?P<bu>\\+)"(?:[^"\\\n]|\\+(?![\\"]))*(?P=bu)\\+"(?:[^"\\\n]|\\+(?![\\"])|(?P=bu)\\+")*"""
+    r"""|\\*["']?[^\s&;"']+)""")
+ASSIGNED_PLACEHOLDER = re.compile(r"<[^<>\s]*>|\$\{[^}\s]*\}|%\w+%|\*{3}")  # a value that is not a secret
+# The credential of an Authorization header, Bearer or Basic, whatever its length or entropy; the scheme stays. The name
+# and the scheme may sit behind escaped quotes or a bracket, as in ASSIGNMENT; the credential ends at a quote, escaped or not.
+AUTH_HEADER = re.compile(
+    r"""(?i)((?:\[\\*["']Authorization\\*["']\]|\bAuthorization(?:\\*["'])?)[ \t]*[:=][ \t]*(?:\\*["'])?(?:Bearer|Basic)[ \t]+)"""
+    r"""((?:[^\s"',;\\]|\\(?!["']))+)""")
+# The password of a URL's user:password@ part; the user stays.
+URL_USERINFO = re.compile(r"""(\b[A-Za-z][A-Za-z0-9+.-]*://[^\s/:@"'<>]*:)([^\s/"'<>]+)(?=@)""")
+# What the leak scan takes of them (`structured_secrets`): the shapes named in STRUCTURED, each only for a value, not a
+# placeholder. A header credential has 12 or more characters; a url password and an unquoted assignment value have one or
+# more. A placeholder is one of ASSIGNED_PLACEHOLDER whole, a value with one of `$ { } < > *` or `...`, a code expression
+# or markup rather than a literal (a value with one of `( ) [ ] , ; \``), an upper-case name (`YOUR_API_KEY`), a
+# `your-`, `my-` or `-here` name, one character, or one of the words in PLACEHOLDER_WORDS. A quoted assignment value is the last SECRETS
+# shape's; the assignment is read in prose files and item text only.
+STRUCTURED = ("auth", "url")
+PROSE_STRUCTURED = STRUCTURED + ("assign",)
+PLACEHOLDER_WORDS = frozenset(("pass password passwd pwd pw secret token key test tiger user changeme change-me example "
+                               "none null true false str string where in is it the see for to of").split())
+_NOT_A_VALUE = re.compile(r"[${}<>*()\[\],;`\u2026\u201c\u201d]|\.\.\.")
+_PLACEHOLDER_NAME = re.compile(r".|[A-Z][A-Z_]+|(?i:(?:your|my)[-_].*|.*[-_]here)")
+
+
+def _value(value, least):
+    return (len(value) >= least and not _NOT_A_VALUE.search(value) and not ASSIGNED_PLACEHOLDER.fullmatch(value)
+            and not _PLACEHOLDER_NAME.fullmatch(value) and value.lower() not in PLACEHOLDER_WORDS)
+
+
+def structured_secrets(text, kinds=STRUCTURED):
+    """[matched text] of the shapes named in KINDS ("auth", "url", "assign") that hold a value in `text`."""
+    out = []
+    if "auth" in kinds:
+        out += [m.group(0) for m in AUTH_HEADER.finditer(text) if _value(m.group(2), 12)]
+    if "url" in kinds:
+        out += [m.group(0) for m in URL_USERINFO.finditer(text) if _value(m.group(2), 1)]
+    if "assign" in kinds:
+        out += [m.group(0) for m in ASSIGNMENT.finditer(text) if m.group(2)[:1] not in "\\\"'" and _value(m.group(2), 1)]
+    return out
+
+
 def secrets_rx():
     """SECRETS as one pattern (one pass per text)."""
     return "|".join(f"(?i:{p[4:]})" if p.startswith("(?i)") else f"(?:{p})" for p in SECRETS)
 
 
-def leak_hits(text, allow=None):
+def leak_hits(text, allow=None, kinds=STRUCTURED):
     """[(kind, value)] of the leak scan's shapes in `text`: secret, home, ip, email, guid, and the private names the
     registry knows (`private_hits`); `allow` maps a kind to lowercased values that pass (the scan of tracked files
-    reads them from _tools/tests_allowlist.txt)."""
+    reads them from _tools/tests_allowlist.txt). `kinds`: the structured secret shapes read (`structured_secrets`):
+    PROSE_STRUCTURED for a prose file or item text, `()` for a vendor export."""
     allow = allow or {}
     out = [("secret", m.group(0)) for m in re.finditer(secrets_rx(), text)
            if m.group(0).lower() not in allow.get("secret", ())]
+    out += [("secret", v) for v in structured_secrets(text, kinds) if v.lower() not in allow.get("secret", ())]
     out += [("home", m.group(0)) for m in re.finditer(LEAK_HOME, text)
             if re.split(r"[/\\]+", m.group(0))[-1].lower() not in HOME_GENERIC
             and m.group(0).lower() not in allow.get("home", ())]

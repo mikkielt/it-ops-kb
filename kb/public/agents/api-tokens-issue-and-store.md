@@ -182,7 +182,7 @@ Encrypted, DPAPI-NG, age/sops) and `mcp/authorization.md` (MCP OAuth 2.1, DCR de
   [DOC S2057, S2041] `managed-settings.json` (S2042, `agent-rbac.md`) sits above project/user settings in
   precedence and can pin or forbid a project's own `apiKeyHelper` value organization-wide.
 
-### Detecting a leaked secret: push protection and planted canary values
+### Detecting a leaked secret with push protection and planted canary values
 - GitLab secret push protection runs in the `pre-receive` hook and checks each file or commit of a push; by default a push in which it finds a secret is blocked. It is generally available since GitLab 17.5; the client sees `remote: PUSH BLOCKED: Secrets detected in code changes`. [DOC S-75p7zmds]
 - Push protection scans the diffs of commits pushed over HTTP(S) and SSH only: "If a secret is already present in a file and not part of the changes, it is not detected." [DOC S-75p7zmds]
 - Its patterns are chosen for high confidence, to keep pushes fast and false alerts few; the page's own example is that a personal access token with a custom prefix is not detected. [DOC S-75p7zmds]

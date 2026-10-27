@@ -81,21 +81,10 @@ ID_LIKE = re.compile(r"CVE-\d{4}-\d+|KB\d+|RFC\d+|MS\d\d-\d+|PL-[A-Z]+-\d+|S(?:-
 TOKEN = re.compile(r"(?<![A-Za-z0-9+_=])[A-Za-z0-9+_]{%d,}={0,2}(?![A-Za-z0-9+_=])" % ENTROPY_MIN_LEN)
 WORD_PIECES = re.compile(r"[A-Z]?[a-z]+|[A-Z]+(?![a-z])|\d+")
 SECRETS = [re.compile(f"(?i:{p[4:]})" if p.startswith("(?i)") else p) for p in kbcommon.SECRETS]
-# An assignment of a secret whatever the value: key=v, key: v, "key": "v", DB_PASSWORD=v, ?api_key=v, Password=v; in a
-# connection string. The key is one of the names or ends in one (aws_secret_access_key, client_secret, x-api-key). The
-# key may close its quote behind backslashes (JSON inside a JSON string, \"key\": \"v\") or a bracket (cfg['key'] = 'v'), a
-# quoted value may hold an escaped quote ("a\"b"), and an escaped-quote value (\"v\") ends at the escaped quote whose
-# backslash run is as long as the opening one; a longer run before a quote (\\\" inside \"...\") is a nested escaped quote.
-# One with a nested escaped quote and no closing quote (a JSON string cut off mid-value) runs to the end of the line.
-_SECRET_NAME = r"(?:password|passwd|pwd|secret|api[_-]?key|access[_-]?key)"
-ASSIGNMENT = re.compile(
-    r"""(?i)((?:\[\\*["'][\w.-]*?""" + _SECRET_NAME + r"""\\*["']\]|(?<![\w.-])[\w.-]*?""" + _SECRET_NAME
-    + r"""(?:\\*["'])?)[ \t]*[:=](?![=>])[ \t]*)"""
-    r"""((?P<bd>\\+)"(?:[^"\\\n]|\\+(?![\\"])|(?P=bd)\\+")*(?P=bd)"|(?P<bs>\\+)'(?:[^'\\\n]|\\+(?![\\'])|(?P=bs)\\+')*(?P=bs)'"""
-    r"""|"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'"""
-    r"""|(?P<bu>\\+)"(?:[^"\\\n]|\\+(?![\\"]))*(?P=bu)\\+"(?:[^"\\\n]|\\+(?![\\"])|(?P=bu)\\+")*"""
-    r"""|\\*["']?[^\s&;"']+)""")
-ASSIGNED_PLACEHOLDER = re.compile(r"<[^<>\s]*>|\$\{[^}\s]*\}|%\w+%|\*{3}")  # a value that is not a secret
+# The assignment, header and url-password shapes are kbcommon's (the leak scan reads them too): one owner, so the
+# redactor and the scan cannot drift apart.
+ASSIGNMENT, ASSIGNED_PLACEHOLDER, AUTH_HEADER, URL_USERINFO = (kbcommon.ASSIGNMENT, kbcommon.ASSIGNED_PLACEHOLDER,
+                                                               kbcommon.AUTH_HEADER, kbcommon.URL_USERINFO)
 # Nine English function words: a bare word of this list after a secret key name or an Authorization scheme is prose ("LAPS
 # password: where stored", "use Authorization: Bearer in Graph"), not a value. No other word is kept, a quoted word
 # is a value, and so is a word of the list inside a URL's user:password@ part.
@@ -103,13 +92,6 @@ PROSE_WORDS = frozenset("where in is it the see for to of".split())
 # A private key block whole, BEGIN line through END line; with no END line (cut off), BEGIN line to the end of the text
 # (the BEGIN line alone is a kbcommon.SECRETS shape, except the EC one, which is a shape only with key material after it).
 KEY_BLOCK = re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY(?: BLOCK)?-----(?:.*?-----END [A-Z ]*PRIVATE KEY(?: BLOCK)?-----|.*)", re.S)
-# The credential of an Authorization header, Bearer or Basic, whatever its length or entropy; the scheme stays. The name
-# and the scheme may sit behind escaped quotes or a bracket, as in ASSIGNMENT; the credential ends at a quote, escaped or not.
-AUTH_HEADER = re.compile(
-    r"""(?i)((?:\[\\*["']Authorization\\*["']\]|\bAuthorization(?:\\*["'])?)[ \t]*[:=][ \t]*(?:\\*["'])?(?:Bearer|Basic)[ \t]+)"""
-    r"""((?:[^\s"',;\\]|\\(?!["']))+)""")
-# The password of a URL's user:password@ part; the user stays.
-URL_USERINFO = re.compile(r"""(\b[A-Za-z][A-Za-z0-9+.-]*://[^\s/:@"'<>]*:)([^\s/"'<>]+)(?=@)""")
 
 
 def entropy(s):
