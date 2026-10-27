@@ -2,7 +2,7 @@
   "id": "BG-juf5gvt4",
   "kind": "bug",
   "title": "A clone that runs the kb-sprint skill's coordination settings init fails its own test suite and push gate",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-m5m67goe",
   "priority": "P2",
   "rank": 0,
@@ -37,5 +37,7 @@
     "parked: SP-3qowbedb close"
   ],
   "notes": "From the retrospective of SP-3qowbedb; the operator accepted it at the close. Once this lands, the orchestrator writes the operator's coordination answers of 2026-10-26 as the clone's local, uncommitted settings.json: python3 _tools/kbsettings.py init --root . --set announce.when=start,claim --set strategy.decide=operator --set strategy.landing=ask --set strategy.working=ask, and puts backlog.json back as tracked (kb/_self/maintaining.md, Setup); then a push gate run shows the file no longer trips it. In this kb clone the skill's init step leaves backlog.json's hooks list as tracked (kb/_self/maintaining.md, Setup); the skill text says so where it runs init.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-557596e3",
+  "operator": "op-f618a13e"
 }
