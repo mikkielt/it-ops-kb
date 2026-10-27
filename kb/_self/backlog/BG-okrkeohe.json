@@ -22,7 +22,6 @@
   ],
   "relates_to": [
     "BG-zexhpoqi",
-    "ST-w6vnsox3",
     "ST-6qplip34"
   ],
   "notes": "Premise (run 2026-10-26 on a planted clone): commit bc14f216937a filed BG-23wnhrgc and d8609788f9 reworded it 18 s later; both were pushed in one sync, whose gate (backlog.py check, tests.py) reads the pushed tip's tree only, so it passed; kbgit.py publish scans the lines each commit adds against its parent (kbpublic.history_refusals, leak_verdicts) and refuses bc14f216937a for good, which stops every newer commit reaching the public home. The scan did not widen: kbcommon.LEAK_HOME is unchanged since 2026-09-28. Fix shape: the gate gets a range check beside check-trailers (kg_sync.gate, up..HEAD) that calls the publish verdict code, not a second implementation; it runs in every clone (cheap: only added lines, verdicts cached under _cache/publish/), not only where kb.publishRemote is set. Test: a push gate and a leak guard are critical (kb/_self/code.md), so one planted case goes into an existing scenario (test_sync_e2e.py), no new file or test id, within _tools/tests_ceiling.json, never a raise. No claim or coord note on _tools/kg_sync.py or _tools/kbpublic.py at planning (backlog.py held, coord digest). Related: ST-w6vnsox3 unblocks the commit already on main; BG-zexhpoqi stops the usual source.",

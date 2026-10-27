@@ -35,9 +35,6 @@
     "skills/sprint/SKILL.md",
     "kb/_self/_retrieval/lookup_eval.csv"
   ],
-  "depends_on": [
-    "ST-x2ayo2yk"
-  ],
   "links": [
     "parked: SP-3qowbedb close"
   ],

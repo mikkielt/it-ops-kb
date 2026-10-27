@@ -62,9 +62,6 @@
     "kb/_self/querylog.md",
     "kb/_self/usage.md"
   ],
-  "depends_on": [
-    "ST-x2ayo2yk"
-  ],
   "gates": [
     {
       "id": "switch",

@@ -24,10 +24,6 @@
     "kb/_self/token-efficiency.md",
     "kb/_self/tools.md"
   ],
-  "depends_on": [
-    "ST-q4fbmomg",
-    "ST-zhpor7fy"
-  ],
   "notes": "Premise did not reproduce at planning (SP-acysfnxr precheck, 2026-10-26): its check already passes, a generic MCP client that knows only the kb MCP server gets kb_pack's verdict, fact lines and footer today. What remains is plugin.md wording for registering the server in another vendor's agent; reshape to that, with a check that fails before it, before committing it to a sprint.",
   "filed_in": "clone-0ea70e5c"
 }
