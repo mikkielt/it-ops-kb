@@ -3,10 +3,11 @@ per ISO week by a SessionStart hook, `status` (open source findings, open confli
 automatic commits) and `show` (one run, entry, usage sidecar, the findings under a filter, or the local spool). Only
 the store and the week go into the digest, so every clone at one commit prints the same lines.
 """
-import datetime, json, math, re, sys, time
+import datetime, json, math, os, re, subprocess, sys, time
 from pathlib import Path
 
-from ql_base import HOME, STORE, STORE_REL, iso, logging_off, places, read_mode, run_cmd, write_text
+from ql_base import (HOME, STORE, STORE_REL, iso, launch_places, logging_off, places, read_json, read_mode, run_cmd,
+                     write_text)
 from ql_deliver import BRANCH, CONFLICT_BRANCH_PREFIX, REMOTE, auto_log, forge_list, origin_forge
 from ql_learn import FAILED, feedback_reports, host_fetches, is_miss
 from ql_store import (DAY, ENTRY_KEYS, FETCH_KEYS, FINDING_KINDS, FINDING_STATES, JUDGED, ROW_SURFACES, RULES_ROOT,
@@ -16,7 +17,9 @@ from ql_store import (DAY, ENTRY_KEYS, FETCH_KEYS, FINDING_KINDS, FINDING_STATES
 from ql_capture import FEEDBACK_ISSUES, FEEDBACK_OUTCOMES, FEEDBACK_TOOL_ISSUES, VERDICTS
 
 DIGEST_MARKER = "digest-week"  # beside the spool: the ISO week in which the SessionStart digest was last shown
-DIGEST_BUDGET_S = 3  # the SessionStart digest prints nothing when reading the store took longer
+DIGEST_CACHE = "digest-{week}.json"  # beside the spool: last week's digest, computed once per ISO week
+DIGEST_PENDING = "digest-pending"  # beside the spool: touched when a detached digest computation starts
+DIGEST_PENDING_S = 300  # a computation younger than this is not started a second time
 DIGEST_HOOK_TIMEOUT_S = 10  # the digest hook's `timeout` in .claude/settings.json and the plugin
 BACKLOG = HOME / "kb" / "_self" / "backlog"  # the item files, which `intake --file` writes drafts into
 DETECTOR_LINK = "detector "  # the last link of an item intake files (bl_intake.DETECTOR_LINK; no import of it here)
@@ -373,12 +376,46 @@ def digest(store=None, week=None, backlog=None):
     return week, lines, bool(week_entries or runs or recorded)
 
 
-def digest_hook(now_dt=None, store=None, backlog=None):
+def digest_precompute(now_dt=None, store=None):
+    """`digest --cache`: last week's digest (the ISO week before the one the UTC date is in) is written to the cache
+    file beside the spool, `{"week", "found", "lines"}`, and the cache files of other weeks are removed. Backlog
+    drafts go in no line (the hook's digest has no `intake:` line). Returns the file."""
+    qdir, _ = places()
+    last = iso_week((now_dt or datetime.datetime.now(datetime.timezone.utc)).date() - datetime.timedelta(days=7))
+    _, lines, found = digest(store, last)
+    path = qdir / DIGEST_CACHE.format(week=last)
+    write_text(path, json.dumps({"week": last, "found": found, "lines": lines if found else []}, ensure_ascii=False) + "\n")
+    for other in qdir.glob(DIGEST_CACHE.format(week="*")):
+        if other != path:
+            other.unlink(missing_ok=True)
+    return path
+
+
+def start_precompute(qdir):
+    """Starts `digest --cache` detached unless one started within DIGEST_PENDING_S; False when it was not started."""
+    pending = qdir / DIGEST_PENDING
+    try:
+        if time.time() - pending.stat().st_mtime < DIGEST_PENDING_S:
+            return False
+    except OSError:
+        pass
+    write_text(pending, "")
+    entry, cwd = launch_places()
+    kw = dict(stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=str(cwd), close_fds=True)
+    argv = [sys.executable, str(entry), "digest", "--cache"]
+    if os.name == "nt":
+        subprocess.Popen(argv, creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP, **kw)
+    else:
+        subprocess.Popen(argv, start_new_session=True, **kw)
+    return True
+
+
+def digest_hook(now_dt=None):
     """The SessionStart digest: the JSON line `{"systemMessage": ...}` the first SessionStart of an ISO week prints
     (last week's digest), or None: logging off (mode `off`, the DISABLED marker), already shown this week (the marker
-    beside the spool names the week), an empty week, or reading the store took more than DIGEST_BUDGET_S. The
-    marker is written before the store is read, so a slow or failed digest is not tried again that week."""
-    t0 = time.monotonic()
+    beside the spool names the week), an empty week, or no cached digest yet. The hook reads the digest computed once
+    per week (`digest_precompute`) and never the store: with none cached it starts that computation detached and
+    prints nothing, so the next SessionStart shows it."""
     qdir, cfg = places()
     if logging_off(qdir, cfg):
         return None
@@ -390,11 +427,15 @@ def digest_hook(now_dt=None, store=None, backlog=None):
             return None
     except OSError:
         pass
-    write_text(marker, this + "\n")
-    _, lines, found = digest(store, iso_week(today - datetime.timedelta(days=7)), backlog)
-    if not found or time.monotonic() - t0 > DIGEST_BUDGET_S:
+    last = iso_week(today - datetime.timedelta(days=7))
+    cached = read_json(qdir / DIGEST_CACHE.format(week=last), None)
+    if not (isinstance(cached, dict) and cached.get("week") == last and isinstance(cached.get("lines"), list)):
+        start_precompute(qdir)
         return None
-    return json.dumps({"systemMessage": "\n".join(lines)}, ensure_ascii=False)
+    write_text(marker, this + "\n")
+    if not cached.get("found"):
+        return None
+    return json.dumps({"systemMessage": "\n".join(str(x) for x in cached["lines"])}, ensure_ascii=False)
 
 
 def hook_digest():
