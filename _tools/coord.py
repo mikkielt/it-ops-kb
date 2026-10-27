@@ -172,21 +172,16 @@ MCP: coord_wait waits for events
 import argparse
 import csv
 import hashlib
-import http.client
-import http.server
-import ipaddress
 import json
 import math
 import os
 import re
 import secrets
-import socket
 import sqlite3
 import subprocess
 import sys
 import time
 import unicodedata
-import urllib.parse
 from fnmatch import fnmatchcase
 from pathlib import Path
 
@@ -1287,74 +1282,81 @@ def authenticate(keys_dir, header):
     return found[0] if len(found) == 1 else None
 
 
-class Handler(http.server.BaseHTTPRequestHandler):
-    server_version = "coord"
-    protocol_version = "HTTP/1.0"
-    timeout = 30
+def server_class():
+    """The HTTP server class of `serve`, made when it is asked for: the http modules cost every other command about 15 ms to load."""
+    import http.server
+    import socket
 
-    def log_message(self, *_args):
-        pass
+    class Handler(http.server.BaseHTTPRequestHandler):
+        server_version = "coord"
+        protocol_version = "HTTP/1.0"
+        timeout = 30
 
-    def reply(self, status, payload, headers=()):
-        data = json.dumps(payload, sort_keys=True, ensure_ascii=False).encode("utf-8")
-        self.send_response(status)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Content-Length", str(len(data)))
-        for name, value in headers:
-            self.send_header(name, value)
-        self.end_headers()
-        self.wfile.write(data)
+        def log_message(self, *_args):
+            pass
 
-    def refuse(self, status, text, headers=()):
-        self.reply(status, {"ok": False, "error": text}, headers)
+        def reply(self, status, payload, headers=()):
+            data = json.dumps(payload, sort_keys=True, ensure_ascii=False).encode("utf-8")
+            self.send_response(status)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(data)))
+            for name, value in headers:
+                self.send_header(name, value)
+            self.end_headers()
+            self.wfile.write(data)
 
-    def do_POST(self):
-        operator = authenticate(self.server.keys, self.headers.get("Authorization"))
-        if operator is None:
-            return self.refuse(401, "unknown or revoked token", [("WWW-Authenticate", "Bearer")])
-        try:
-            size = int(self.headers.get("Content-Length") or 0)
-        except ValueError:
-            return self.refuse(400, "bad Content-Length")
-        if not 0 <= size <= BODY_LIMIT:
-            return self.refuse(413, f"a request is at most {BODY_LIMIT} bytes")
-        if self.path != ENDPOINT:
-            return self.refuse(404, f"only POST {ENDPOINT}")
-        raw = self.rfile.read(size)
-        try:
-            argv = json.loads(raw.decode("utf-8"))["argv"]
-            if not isinstance(argv, list) or not all(isinstance(a, str) for a in argv):
-                raise ValueError
-        except (ValueError, KeyError, TypeError, UnicodeDecodeError):
-            return self.refuse(400, 'the body is {"argv": [strings]}')
-        try:
-            args = build_parser(QuietParser, True).parse_args(argv)
-            args.store, args.operator, args.keys = self.server.store, operator, self.server.keys
-            header = self.headers.get("Authorization")
-            args.recheck = lambda: authenticate(self.server.keys, header) == operator
-            body, code = run(args, time.time)
-        except Revoked:
-            return self.refuse(401, "unknown or revoked token", [("WWW-Authenticate", "Bearer")])
-        except Refused as refused:
-            body, code = refused.body, refused.code
-        except sqlite3.Error as error:
-            body, code = {"ok": False, "error": f"store: {error.__class__.__name__}"}, 2
-        self.reply({0: 200, 1: 409}.get(code, 400), {"code": code, "body": body})
+        def refuse(self, status, text, headers=()):
+            self.reply(status, {"ok": False, "error": text}, headers)
 
-    def do_other(self):
-        self.refuse(405, f"only POST {ENDPOINT}", [("Allow", "POST")])
+        def do_POST(self):
+            operator = authenticate(self.server.keys, self.headers.get("Authorization"))
+            if operator is None:
+                return self.refuse(401, "unknown or revoked token", [("WWW-Authenticate", "Bearer")])
+            try:
+                size = int(self.headers.get("Content-Length") or 0)
+            except ValueError:
+                return self.refuse(400, "bad Content-Length")
+            if not 0 <= size <= BODY_LIMIT:
+                return self.refuse(413, f"a request is at most {BODY_LIMIT} bytes")
+            if self.path != ENDPOINT:
+                return self.refuse(404, f"only POST {ENDPOINT}")
+            raw = self.rfile.read(size)
+            try:
+                argv = json.loads(raw.decode("utf-8"))["argv"]
+                if not isinstance(argv, list) or not all(isinstance(a, str) for a in argv):
+                    raise ValueError
+            except (ValueError, KeyError, TypeError, UnicodeDecodeError):
+                return self.refuse(400, 'the body is {"argv": [strings]}')
+            try:
+                args = build_parser(QuietParser, True).parse_args(argv)
+                args.store, args.operator, args.keys = self.server.store, operator, self.server.keys
+                header = self.headers.get("Authorization")
+                args.recheck = lambda: authenticate(self.server.keys, header) == operator
+                body, code = run(args, time.time)
+            except Revoked:
+                return self.refuse(401, "unknown or revoked token", [("WWW-Authenticate", "Bearer")])
+            except Refused as refused:
+                body, code = refused.body, refused.code
+            except sqlite3.Error as error:
+                body, code = {"ok": False, "error": f"store: {error.__class__.__name__}"}, 2
+            self.reply({0: 200, 1: 409}.get(code, 400), {"code": code, "body": body})
 
-    do_GET = do_HEAD = do_PUT = do_DELETE = do_PATCH = do_other
+        def do_other(self):
+            self.refuse(405, f"only POST {ENDPOINT}", [("Allow", "POST")])
+
+        do_GET = do_HEAD = do_PUT = do_DELETE = do_PATCH = do_other
 
 
-class Server(http.server.ThreadingHTTPServer):
-    daemon_threads = True
+    class Server(http.server.ThreadingHTTPServer):
+        daemon_threads = True
 
-    def __init__(self, address, keys, store):
-        self.keys, self.store = keys, store
-        if ":" in address[0]:
-            self.address_family = socket.AF_INET6
-        super().__init__(address, Handler)
+        def __init__(self, address, keys, store):
+            self.keys, self.store = keys, store
+            if ":" in address[0]:
+                self.address_family = socket.AF_INET6
+            super().__init__(address, Handler)
+
+    return Server
 
 
 def split_bind(text):
@@ -1373,6 +1375,7 @@ def is_loopback(host):
     """True for localhost and a loopback IP address (127.0.0.0/8, ::1, and ::ffff:127.x.x.x)."""
     if host.lower().rstrip(".") == "localhost":
         return True
+    import ipaddress
     try:
         ip = ipaddress.ip_address(host)
     except ValueError:
@@ -1411,7 +1414,7 @@ def serve(args):
     if loose:
         return 2
     try:
-        httpd = Server((host, port), args.keys, args.store)
+        httpd = server_class()((host, port), args.keys, args.store)
     except OSError as error:
         print(f"coord.py: cannot bind {args.bind}: {error}", file=sys.stderr)
         return 2
@@ -1429,6 +1432,9 @@ def serve(args):
 def send(url, key_file, argv, plain_http=False):
     """Run the command on the server at url as the operator whose token key_file holds; a plain http url to a host
     that is not loopback is refused unless plain_http."""
+    import http.client
+    import socket
+    import urllib.parse
     parsed = build_parser(argparse.ArgumentParser, True).parse_args(argv)
     mode = open_key_mode(key_file)
     if mode:
@@ -1514,17 +1520,33 @@ def git_dir_of(root):
         return None
 
 
+def read_git_dir(root):
+    """The common git directory of the clone that holds ROOT, read from the `.git` of ROOT or the nearest directory above
+    it without starting git (the hook asks on every tool call); None where git's own answer is needed: a git environment
+    variable is set, or no directory up to the file system's root holds a `.git`."""
+    if any(os.environ.get(name) for name in ("GIT_DIR", "GIT_COMMON_DIR", "GIT_WORK_TREE", "GIT_CEILING_DIRECTORIES")):
+        return None
+    here = Path(os.path.abspath(root))
+    for top in (here, *here.parents):
+        if os.path.lexists(top / ".git"):
+            found = git_dir_of(top)
+            return Path(os.path.normpath(found)) if found else None
+    return None
+
+
 def store_of(root):
-    """kb-coord/coord.sqlite in the common git directory of the clone at ROOT: from `git rev-parse --git-common-dir`,
-    else, where git cannot run, from ROOT/.git (`git_dir_of`); None when ROOT is in no git clone."""
-    common = None
-    try:
-        p = subprocess.run(["git", "-C", str(root), "rev-parse", "--git-common-dir"], capture_output=True, text=True,
-                           encoding="utf-8", timeout=10)
-        if p.returncode == 0 and p.stdout.strip():
-            common = Path(root, p.stdout.strip())
-    except (OSError, subprocess.SubprocessError):
-        pass
+    """kb-coord/coord.sqlite in the common git directory of the clone at ROOT: read from the `.git` files (`read_git_dir`),
+    else from `git rev-parse --git-common-dir`, else, where git cannot run, from ROOT/.git (`git_dir_of`); None when ROOT
+    is in no git clone."""
+    common = read_git_dir(root)
+    if common is None:
+        try:
+            p = subprocess.run(["git", "-C", str(root), "rev-parse", "--git-common-dir"], capture_output=True, text=True,
+                               encoding="utf-8", timeout=10)
+            if p.returncode == 0 and p.stdout.strip():
+                common = Path(root, p.stdout.strip())
+        except (OSError, subprocess.SubprocessError):
+            pass
     if common is None:
         common = git_dir_of(root)
     return str(common / "kb-coord" / "coord.sqlite") if common else None
