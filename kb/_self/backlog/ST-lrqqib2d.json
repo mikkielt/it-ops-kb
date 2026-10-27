@@ -2,7 +2,7 @@
   "id": "ST-lrqqib2d",
   "kind": "story",
   "title": "Research sprint goal: Roots beyond English text and Python code",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-iir3d2tu",
   "goal_research": true,
   "priority": "P1",
@@ -22,6 +22,20 @@
     "kb/public/**"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-557596e3",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "93c174a3c9135bc8a2adaf41cfeba500c0ff1e89",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-lrqqib2d"
+        ],
+        "exit": 0,
+        "sha256": "edc478f68f17586a"
+      }
+    ]
+  }
 }
