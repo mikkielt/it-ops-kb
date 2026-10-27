@@ -1,0 +1,22 @@
+{
+  "id": "SP-iir3d2tu",
+  "kind": "sprint",
+  "title": "Roots beyond English text and Python code",
+  "status": "planned",
+  "goal": "index and query tokenize Unicode text the same way; a root names its languages and the pack stops, stems and folds its questions by them; kbingest map reads PowerShell and Lua with a table of patterns and no toolchain; fetch.py text unpacks MSI, CAB and WIM through a table of extractor commands run in the map sandbox; a root sets which tag kinds answer and which are only leads; a root may list its own placeholder user names while the leak shapes stay the same for every root",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e",
+  "filed_in": "clone-0ea70e5c"
+}
