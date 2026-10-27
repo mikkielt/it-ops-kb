@@ -71,7 +71,11 @@
       ],
       "recommendation": "Refuse the root with a RootError naming the code and the codes that exist",
       "reason": "because a silent fallback hides a typo as a quietly wrong verdict",
-      "class": "design"
+      "class": "design",
+      "answer": "Refuse the root with a RootError naming the code and the codes that exist",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
