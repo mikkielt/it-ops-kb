@@ -1,7 +1,7 @@
 """kbmon's sessions panel (kb/_self/monitoring.md): the processes working in a checkout of the clone, the clone's worktrees
 with their branches and the stalled items with their signals.
 
-The processes are `backlog.py procs`' inventory (`bl_procs.snapshot`): pid, age and class (`orphan`, `hook` or `foreign`),
+The processes are `backlog.py procs`' inventory (`bl_procs.snapshot`): pid, age and class (`orphan`, `hook`, `detached` or `foreign`; an orphan whose session's transcript was written under `bl_procs.FRESH_S` seconds ago is `detached`),
 each with its checkout as a path relative to the clone (`.` is the clone itself; a worktree outside it is its directory
 name, with the parents that tell it from a same-named one), never an absolute one. A process whose command name is `claude` is a Claude Code session: `headless`, with its item,
 when its checkout is a worktree on a `work/<id>` branch, else `interactive`; any other process has no session. The worktrees
@@ -102,7 +102,7 @@ PLACEMENT_LOCK = threading.Lock()  # one placement at a time shares a single wor
 STORE_LOCK = threading.Lock()  # one panel run at a time points the environment's coord store at the clone's
 WINDOWS_LIMIT = ("Windows shows no working directory: a process is listed when its command line names a checkout of "
                  "the clone, so one that names none, an orphan told by working directory, is not shown")
-RAW_KEYS = ("session", "base")  # the keys of a `session_entries` entry that the panel's data never holds
+RAW_KEYS = ("session", "base", "quiet")  # the keys of a `session_entries` entry that the panel's data never holds
 AGENT_STATES = ("working", "blocked", "idle", "done")  # the states an `agent_states` line may give
 AGENT_STATES_SECONDS = 5  # the longest the `agent_states` command may take
 ROLES = ("worker", "sprint runner", "planner", "reviewer", "interactive", "benchmark agent", "bare twin", "observer",
@@ -683,12 +683,17 @@ def spool_figures(session):
     return (max(stamps) if stamps else None), (round(bl_cost.price_usd(models)[0], 4) if counted else None)
 
 
-def silence(session, last_activity, started, now):
-    """The seconds a live session has gone quiet: since the newest write to its transcript or its subagents' (SESSION, a
-    session id or None); with none found (no id, or no transcript) since the newer of its newest spool row (LAST_ACTIVITY, an
-    ISO time or None) and its process's start (STARTED, epoch seconds or None); None only where none of them is known."""
+def transcript_quiet(session, now):
+    """The seconds since the newest write to the transcript of SESSION (a session id or None) or its subagents'; None with no id
+    or no transcript."""
     import mon_coord
-    quiet = mon_coord.transcript_age([session], now) if session is not None else None
+    return mon_coord.transcript_age([session], now) if session is not None else None
+
+
+def silence(quiet, last_activity, started, now):
+    """The seconds a live session has gone quiet: QUIET, the seconds since the newest write to its transcript or its subagents'
+    (`transcript_quiet`); with none found (None) since the newer of its newest spool row (LAST_ACTIVITY, an ISO time or None)
+    and its process's start (STARTED, epoch seconds or None); None only where none of them is known."""
     if quiet is not None:
         return quiet
     known = [t for t in (epoch(last_activity) if last_activity else None, started) if t is not None]
@@ -696,18 +701,22 @@ def silence(session, last_activity, started, now):
 
 
 def landing_steps(root):
-    """{item: the newest `land.step` of its landing in progress} from the ops rows of ROOT; {} when they cannot be read."""
+    """{item: the newest `land.step` of its landing in progress} from the ops rows of ROOT; {} when they cannot be read. A
+    landing whose `land.end` row has exit 0 is over: a `land.step` row after it (a step's row written late) opens no landing,
+    while a step after a `land.end` with another exit is a retry's and does."""
     try:
         import bl_stall
         rows = bl_stall.ops_rows(str(root))
     except Exception:  # noqa: BLE001 - an unreadable log shows no landing
         return {}
-    cur = {}
+    cur, ended = {}, set()
     for r in rows:
         item = r.get("item")
         if r.get("event") == "land.end":
             cur.pop(item, None)
-        elif r.get("event") == "land.step" and isinstance(item, str) and isinstance(r.get("step"), str):
+            if r.get("exit") == 0:
+                ended.add(item)
+        elif r.get("event") == "land.step" and isinstance(item, str) and isinstance(r.get("step"), str) and item not in ended:
             cur[item] = r["step"]
     return cur
 
@@ -717,7 +726,8 @@ def role_of(base, worker, review, runner, planner, observer, listed):
     claims ledgers, the item files and the coord leases, never a command line or an environment): `bare twin` (the
     checkout is `bare/agentN`), `benchmark agent` (`multi-<hash>/agentN`), `observer` (nothing names the session and a
     `remediate/` claim is live), `reviewer` (its item is a review story), `worker` (a dispatch record names the process,
-    or the checkout is on a `work/<id>` branch), `sprint runner` (the checkout's ledger holds a dispatch record),
+    or the checkout is on a `work/<id>` branch), `sprint runner` (the checkout's ledger holds a dispatch record whose worker pid runs, or one whose item's run state is
+    `working`; with neither the session is only a session in a worktree, `interactive`),
     `planner` (its items are all epics or sprints), `interactive` (the checkout is a worktree of the clone) and else
     `unknown`."""
     parts = Path(base).parts
@@ -846,6 +856,14 @@ def session_entries(ctx, procs, placed, by_path, found, bl, names, light=False, 
     remediating = any(key.startswith(REMEDIATE) for key, _ in (found or {}).get("claims", []))
     items_of = bl.items if bl is not None else {}
 
+    states_read = []
+
+    def runs():
+        """{item: run state} of the coord store, read once and only for a session a dispatch record is the sign of a runner of."""
+        if not states_read:
+            states_read.append(run_states(ctx) or {})
+        return states_read[0]
+
     def title(item):
         return None if item is None or bl is None or item in bl.withheld else (items_of.get(item) or {}).get("title")
 
@@ -855,26 +873,27 @@ def session_entries(ctx, procs, placed, by_path, found, bl, names, light=False, 
         sid, items, worker = bound[p["pid"]]
         records = ledgers[base]
         dispatched = [i for i, r in records.items() if any(worker_of(r))]
-        runner = not worker and bool(dispatched)
         if not worker:  # a session's claims, else its intents'; the ones still open
             items = [i for i in items or intents_of(found, sid) if (items_of.get(i) or {}).get("status") in ("todo", "doing")]
         known = [items_of[i] for i in items if i in items_of]
         sprints = {it.get("sprint") for it in known}
-        live_workers = os.name != "nt" and not light and any(bl_procs.running(w) for w in (worker_of(r)[0] for r in records.values()) if w is not None)
+        live_workers = os.name != "nt" and any(bl_procs.running(w) for w in (worker_of(r)[0] for r in records.values()) if w is not None)
+        runner = not worker and bool(dispatched) and (live_workers or any(runs().get(i) == "working" for i in dispatched))
         role = role_of(base, worker, any(it.get("review") for it in known), runner,
                        bool(known) and all(it.get("kind") in PLAN_KINDS for it in known),
                        sid is None and not hook_sessions(base) and remediating, base in by_path)
         item = items[0] if len(items) == 1 else None
         sprint = sprints.pop() if len(sprints) == 1 else None
         stamp, spend = spool_figures(sid) if sid is not None and not light else (None, None)
-        silent = None if light else silence(sid, stamp, p["start"], now)
+        quiet = None if light else transcript_quiet(sid, now)
+        silent = None if light else silence(quiet, stamp, p["start"], now)
         step = step_of(role, items + [i for i in dispatched if runner and i not in items], bl, landing, live_workers) \
             if bl is not None and not light else None
         out.append({"label": mon_view.session_label(sid) if sid else None, "role": role, "item": item,
                     "item_title": title(item), "sprint": sprint, "sprint_title": title(sprint), "step": step,
                     "started": iso(p["start"]) if p["start"] is not None else None, "last_activity": stamp, "silent_s": silent, "spend_usd": spend,
                     "agent_state": (states[0].get(p["pid"]) or states[1].get(sid)) if states else None, "pid": p["pid"],
-                    "checkout": names.get(base, "."), "session": sid, "base": base})
+                    "checkout": names.get(base, "."), "session": sid, "base": base, "quiet": quiet})
         waits_on = ((found or {}).get("blocked") or {}).get(sid) if sid is not None and not light else None
         if waits_on:  # only a blocked session has the key: a silent one shows no blocked field
             out[-1]["blocked"] = {"on": waits_on[0], "since": iso(waits_on[1]), "age_s": max(0, int(time.time() - waits_on[1]))}
@@ -942,15 +961,22 @@ def live_sessions(root):
 
 def collect(ctx):
     import kbwho
+    import bl_procs
     procs, why, blind, rows, by_path, names, placed = placement(ctx)
     now = time.time()
+    found = read_coord(ctx)
+    bl = backlog(ctx.root)
+    states, why_states = agent_states(ctx.root)
+    entries = session_entries(ctx, procs or [], placed, by_path, found, bl, names, states=states)
+    fresh = {e["pid"] for e in entries if e["quiet"] is not None and e["quiet"] < bl_procs.FRESH_S}  # a session at work
     out = []
     for p in procs or []:
         base = placed.get(p["pid"])
         session, item = session_of(base, by_path) if p["comm"] == CLAUDE else (None, None)
         _, _, rest = p["where"].partition("/")
         shown = names.get(base, p["where"].split("/", 1)[0])
-        out.append({"pid": p["pid"], "age_s": max(0, int(now - p["start"])), "class": p["kind"],
+        kind = bl_procs.DETACHED if p["kind"] == bl_procs.ORPHAN and p["pid"] in fresh else p["kind"]
+        out.append({"pid": p["pid"], "age_s": max(0, int(now - p["start"])), "class": kind,
                     "checkout": shown + ("/" + rest if rest else ""), "session": session, "item": item})
     me = kbwho.operator()
     data = {"procs": out, "worktrees": rows, "operator": {"id": me.get("id"), "role": me.get("role")}}
@@ -959,7 +985,6 @@ def collect(ctx):
     elif blind is not None:
         data["procs_limit"] = WINDOWS_LIMIT + (f"; {blind} process{' shows' if blind == 1 else 'es show'} no command line "
                                                "(another account's, unless run elevated)" if blind else "")
-    found = read_coord(ctx)
     intents = intent_rows(found)
     if intents is not None:
         data["intents"] = intents
@@ -970,11 +995,9 @@ def collect(ctx):
     elif coord_conn(ctx) is not None:
         data["overlaps_unread"] = "the coord store does not answer" if found is None else "its events do not read"
     data["dispatch"] = dispatch_runs(ctx.root)
-    bl = backlog(ctx.root)
-    states, why_states = agent_states(ctx.root)
     if why_states:
         data["agent_states_unread"] = why_states
-    data["sessions"] = session_rows(ctx, procs or [], placed, by_path, found, bl, names, states)
+    data["sessions"] = [{k: v for k, v in e.items() if k not in RAW_KEYS} for e in entries[:SESSIONS_KEPT]]
     waits = wait_rows(ctx, data["sessions"], bl)
     if waits is not None:
         data["waits"] = waits

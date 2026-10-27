@@ -4,9 +4,10 @@ checkout and worktrees), each as an orphan or foreign (kb/_self/backlog.md, Proc
 
   procs                 list them (read only): pid, parent, age, class, command name, and where it runs
 
-Classes: `orphan` (its parent is gone: a background run a session left behind), `detached` (its parent is gone, but it
-leads its own process group, started with `start_new_session`, and still has a live child: a launcher a session started
-apart and left at work; named in no alert and by no `selfcheck`), `hook` (an orphan whose standard output
+Classes: `orphan` (its parent is gone: a background run a session left behind), `detached` (its parent is gone, but an
+`own PID --class process` record names it, or its session wrote its transcript under FRESH_S seconds ago (kbmon's sessions
+panel says so through `classify`'s `fresh`), or it leads its own process group, started with `start_new_session`, and still
+has a live child: a launcher a session started apart and left at work; named in no alert and by no `selfcheck`), `hook` (an orphan whose standard output
 is the query log's distill.log and that is still at work: the run a session's end hook started, which waits for the
 distill lock up to the query log's USAGE_LOCK_WAIT_S, delivers with its parent gone, and ends on its own; it is at work
 while the distill lock records its pid, or while it is younger than USAGE_LOCK_WAIT_S plus HOOK_MARGIN_S) and `foreign`
@@ -38,6 +39,7 @@ import re
 import shutil
 import signal
 import subprocess
+import sys
 import tempfile
 import time
 from pathlib import Path
@@ -51,6 +53,10 @@ ORPHAN, HOOK, DETACHED, FOREIGN = "orphan", "hook", "detached", "foreign"
 HOOK_GRACE_S = 60  # how long `land` waits for a session-end hook's run to end
 HOOK_MARGIN_S = 120  # past the query log's USAGE_LOCK_WAIT_S, how long a distill run that holds no lock is still at work
 END_WAIT_S = 3  # how long `end_orphans` waits for a process to end on SIGTERM before it sends SIGKILL
+OWN_PREFIX = "own/process/"  # the coord keys of `backlog.py own --class process` (bl_clean.PREFIX, then the class)
+OWN_SLOP_S = 2  # how far a process's start may differ from its record's (bl_clean.START_SLOP_S)
+OWN_READ_S = 10  # the longest the read of the records may take
+FRESH_S = 600  # a session whose transcript was written less than this many seconds ago is at work: its process is not an orphan
 HOOK_LOG =("_cache", "querylog")  # under a checkout: the directory ql_base.places() gives a clone, whose distill.log is
 #                                    the standard output of every run `ql_distill.detach` starts
 
@@ -282,7 +288,7 @@ def windows_snapshot(root):
             placed[pid] = base
     procs = [{"pid": pid, "ppid": tab[pid][0], "start": tab[pid][1], "comm": tab[pid][2],
               "where": Path(base).name, "base": base} for pid, base in sorted(placed.items())]
-    return classify(procs, tab, holders=lock_holders(bases)), tab, None, blind
+    return classify(procs, tab, holders=lock_holders(bases), root=root), tab, None, blind
 
 
 # ---------------------------------------------------------------- the clone's checkouts
@@ -347,20 +353,55 @@ def leads_group(pid):
         return False
 
 
-def classify(procs, tab, hooks=(), now=None, holders=()):
+def recorded_pids(procs, tab, root=None):
+    """The pids of PROCS that a `backlog.py own PID --class process` record names and that are still the process it
+    names (the record's start time is the table's within OWN_SLOP_S, so a reused pid is not): the record is the owner's
+    statement that it started the process apart and knows it. Reads the coord store of the clone at ROOT (the script's own
+    where None) once; an empty set where it cannot be read or PROCS is empty. The record's format is `bl_clean.record_owner`'s,
+    read here and not through `bl_clean`, which imports this module."""
+    if not procs:
+        return set()
+    root = str(root or Path(__file__).resolve().parent.parent)
+    env = {**os.environ, "CLAUDE_PROJECT_DIR": root}
+    try:
+        p = subprocess.run([sys.executable, str(Path(__file__).resolve().with_name("coord.py")), "list", "--prefix", OWN_PREFIX],
+                           capture_output=True, text=True, encoding="utf-8", stdin=subprocess.DEVNULL, timeout=OWN_READ_S,
+                           cwd=root, env=env)
+        rows = json.loads(p.stdout) if p.returncode == 0 else None
+    except (OSError, subprocess.SubprocessError, ValueError):
+        return set()
+    found = set()
+    for row in rows if isinstance(rows, list) else []:
+        try:
+            rec = json.loads(row.get("value") or "")
+        except (AttributeError, TypeError, ValueError):
+            continue
+        pid, start = (rec.get("pid"), rec.get("start")) if isinstance(rec, dict) and rec.get("class") == "process" else (None, None)
+        if isinstance(pid, int) and isinstance(start, int) and pid in tab and abs(tab[pid][1] - start) <= OWN_SLOP_S:
+            found.add(pid)
+    return found & {p["pid"] for p in procs}
+
+
+def classify(procs, tab, hooks=(), now=None, holders=(), recorded=None, fresh=(), root=None):
     """Each process of PROCS with its `kind`: foreign while its parent lives, else hook when its pid is in HOOKS (the
     runs whose standard output is a distill.log) and it is in HOLDERS (the pids a distill lock records) or started
-    less than `hook_run_s()` before NOW, else detached when it is no hook's run, leads its own process group and a live
-    process of TAB is its child (a launcher a session started apart and left at work), else orphan."""
+    less than `hook_run_s()` before NOW, else detached when it is no hook's run and a `backlog.py own --class process`
+    record names its pid (RECORDED, the pids `recorded_pids` finds in the coord store of the clone at ROOT; None reads them for the orphans) or its session wrote
+    its transcript less than FRESH_S ago (FRESH, the pids the caller bound to such a session) or it leads its own
+    process group and a live process of TAB is its child (a launcher a session started apart and left at work), else
+    orphan: a pid with no record and no recent transcript stays an orphan."""
     now = time.time() if now is None else now
     parents = {v[0] for v in tab.values()}
     out = []
+    left = [p for p in procs if orphaned(tab, p["pid"]) and p["pid"] not in hooks and p["pid"] not in fresh]
+    owned = recorded_pids(left, tab, root) if recorded is None and left else set(recorded or ())
     for p in procs:
         if not orphaned(tab, p["pid"]):
             kind = FOREIGN
         elif p["pid"] in hooks and (p["pid"] in holders or now - p["start"] < hook_run_s()):
             kind = HOOK
-        elif p["pid"] not in hooks and p["pid"] in parents and leads_group(p["pid"]):
+        elif p["pid"] not in hooks and (p["pid"] in owned or p["pid"] in fresh
+                                        or (p["pid"] in parents and leads_group(p["pid"]))):
             kind = DETACHED
         else:
             kind = ORPHAN
@@ -393,7 +434,7 @@ def snapshot(root):
     bases = checkouts(root)
     procs = inventory(root, tab, cwds, bases)
     hooks = hook_pids(root, [p["pid"] for p in procs if orphaned(tab, p["pid"])], bases)
-    return classify(procs, tab, hooks, holders=lock_holders(bases)), tab, None
+    return classify(procs, tab, hooks, holders=lock_holders(bases), root=root), tab, None
 
 
 # ---------------------------------------------------------------- the command
@@ -410,7 +451,7 @@ def end_orphans(worktree):
         return []
     procs = inventory(base, tab, cwds, [base])
     hooks = hook_pids(base, [p["pid"] for p in procs if orphaned(tab, p["pid"])], [base])
-    pids = {p["pid"]: p["comm"] for p in classify(procs, tab, hooks, holders=lock_holders([base])) if p["kind"] in (ORPHAN, DETACHED)}
+    pids = {p["pid"]: p["comm"] for p in classify(procs, tab, hooks, holders=lock_holders([base]), recorded=()) if p["kind"] in (ORPHAN, DETACHED)}
     return [(pid, pids[pid]) for pid in end_pids(list(pids))]
 
 
