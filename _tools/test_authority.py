@@ -204,6 +204,16 @@ def test_an_agent_cannot_answer_or_provisionally_answer_an_operator_gate_the_ope
     # a class the operator answers in any session keeps its rule: the agent session's `--by operator` is taken
     code, out = bl(tmp_path, "answer", iid, "g", "--answer", "a", "--by", "operator", env=agent)
     assert code == 0, out
+    # ... and says so on the gate (push here, agents-rule and secrets below), where a terminal answer stores no flag
+    assert gate(tmp_path, iid)["agent_session"] is True
+    for touch, question in (("AGENTS.md", "Which name?"), ("src/a.py", "Which password do we rotate?")):
+        sid = new_item(tmp_path, touch=touch)
+        assert add_gate(tmp_path, sid, question)[0] == 0
+        code, out = bl(tmp_path, "answer", sid, "g", "--answer", "a", "--by", "operator", env=agent)
+        assert code == 0 and gate(tmp_path, sid)["agent_session"] is True, out
+    code, out = bl(tmp_path, "answer", iid, "g", "--answer", "a", "--by", "operator", env=terminal)
+    assert code == 0 and "agent_session" not in gate(tmp_path, iid), out
+    assert bl(tmp_path, "check")[0] == 0
 
 
 def an_agent_cannot_confirm_an_operator_gate(tmp_path):

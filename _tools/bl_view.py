@@ -155,9 +155,19 @@ def cmd_show(bl, a):
         say(x)
     for x in knowledge_lines(bl, iid, indent=""):
         say(x)
+    if bl.items[iid].get("review") and bl.sprint_of(iid):  # the review story lists what the operator re-confirms
+        for i, gid, answer in agent_session_answers(bl, bl.sprint_of(iid)):
+            say(f"re-confirm from a terminal: {bl.label(i)} gate {gid}: {answer} (answered from an agent session)")
     w = waits(bl, iid)
     say("ready" if not w else "waits on:\n  " + "\n  ".join(w))
     return 0
+
+
+def agent_session_answers(bl, sid):
+    """[(item id, gate id, answer)] of the gates of sprint SID and its items that an operator-class answer
+    `--by operator` closed from an agent session (`agent_session: true`), which the operator re-confirms from a terminal."""
+    return [(i, g["id"], g.get("answer")) for i in [sid, *bl.sprint_items(sid)] for g in bl.items[i].get("gates", [])
+            if isinstance(g, dict) and g.get("agent_session") is True]
 
 
 def cmd_next(bl, a):
@@ -423,6 +433,10 @@ def cmd_horizon(bl, a):
         lines.append(f"  {done}/{len(items)} done; {len(reach)} more reachable without the operator; "
                      + (f"{starts} wait on backlog.py start {sid}; " if starts else "")
                      + f"{waiting} wait on the operator or a trigger")
+        sessions = agent_session_answers(bl, sid)
+        if sessions:
+            lines.append(f"  {len(sessions)} operator-class answer(s) recorded from an agent session, for the operator to "
+                         f"re-confirm from a terminal (listed by show of the review story)")
         if items and done == len(items):
             lines.append(f"  all done: close with python3 _tools/backlog.py close {sid}")
         for i in finishable(bl, items):

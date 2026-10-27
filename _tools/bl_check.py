@@ -733,6 +733,8 @@ def validate(bl, pieces=None):
                 why = why or "role needs the session's role (text, never an email address)"
             if why:
                 e(f"gate {g['id']}: {why}")
+            if "agent_session" in g and not (g["agent_session"] is True and g.get("by") == "operator"):
+                e(f"gate {g['id']}: agent_session is true and goes with an answer by operator")
             if "class" in g and g["class"] not in bl_authority.CLASSES:
                 e(f"gate {g['id']}: class {g['class']!r} is not one of {', '.join(bl_authority.CLASSES)}")
             elif bl_authority.lowered(it, g):
