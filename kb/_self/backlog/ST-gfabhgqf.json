@@ -4,6 +4,7 @@
   "title": "A refresh closes a changed fact with an end date and adds the new one, instead of rewriting it",
   "status": "draft",
   "parent": "EP-lrmcc2uf",
+  "sprint": "SP-jxf76aa2",
   "priority": "P3",
   "rank": 0,
   "goal": "factdiff.py close PATH:LINE --on DATE|REV --text NEW, which /kb-refresh runs when the fact diff finds a fact's passage changed so the fact no longer holds, ends the old line's validity window at DATE (at REV for a CODE fact) and adds NEW after it with a window starting there, citing the same sources; doc2query rows keyed to the old line follow the new line; a pack with no as-of shows the new fact as current; an as-of before the change shows the old one",
@@ -66,7 +67,13 @@
   ],
   "depends_on": [
     "ST-mp4pjor2",
-    "ST-dnpg6e7d"
+    "ST-dnpg6e7d",
+    "ST-teivhsxq",
+    "BG-ctp52w3e",
+    "ST-deyyxb4c",
+    "ST-6n5xrkbt",
+    "ST-q4fbmomg",
+    "ST-zhpor7fy"
   ],
   "links": [
     "moved out: SP-vlfcgmbu"

@@ -4,6 +4,7 @@
   "title": "Planning skills and the session-start line point every planner at peers, and an overlap is settled by asking the other session",
   "status": "draft",
   "parent": "EP-zv3duelo",
+  "sprint": "SP-jxf76aa2",
   "priority": "P1",
   "rank": 0,
   "goal": "the session-start `backlog.py horizon --hook` line names the other live sessions by label and topic and the `backlog.py peers` command; `/kb-sprint plan` step 2 and `/kb-backlog` Plan step 1 run `backlog.py peers` first and, on an overlap, ask the other session with `kbask.py ask` and record the agreed order as a `depends_on` or a note, in place of the rule that never messages other sessions",
@@ -37,7 +38,10 @@
   "depends_on": [
     "ST-hjl7dhyh",
     "ST-3suebmof",
-    "ST-tq6yo2si"
+    "ST-tq6yo2si",
+    "ST-zimb7vuu",
+    "ST-cqcmpo72",
+    "ST-hqko4k2x"
   ],
   "links": [
     "moved out: SP-basca7ae"

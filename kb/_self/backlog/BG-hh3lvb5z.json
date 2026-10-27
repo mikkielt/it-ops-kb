@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "dispatch --detach says the last line of dispatch.log is 'worker of ID exited', but begin and dispatch print rows and report lines after it",
   "status": "draft",
+  "sprint": "SP-jxf76aa2",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

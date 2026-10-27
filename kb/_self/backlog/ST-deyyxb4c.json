@@ -4,6 +4,7 @@
   "title": "Code questions are claimed like research: a claim names a repository, path and symbol, and a second agent mapping the same code sees the overlap and gets the results",
   "status": "draft",
   "parent": "EP-fxrzbuza",
+  "sprint": "SP-jxf76aa2",
   "priority": "P2",
   "rank": 0,
   "goal": "coord.py dedup --code REPO:PATH[#SYMBOL] (repeatable) claims code targets under keys of their own beside the research terms; a claim on a path covers its symbols; another holder's dedup of a covered target lists it in overlaps and claims only the rest; the holder posts each code fact or map entry it adds as a code_added event (fields target for REPO:PATH[#SYMBOL] and ref for path:line) of the closed kinds, which coord.py wait --kind code_added returns, so a waiting agent reads those instead of reading the code; on a temp store a second holder's dedup of the same path reports the first holder's overlap.",
@@ -64,6 +65,11 @@
     "kb/_self/monitoring.md",
     "kb/_self/plugin.md",
     "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "ST-teivhsxq",
+    "ST-oykcufk5",
+    "BG-ctp52w3e"
   ],
   "links": [
     "moved out: SP-n7f53pgv"

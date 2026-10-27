@@ -4,6 +4,7 @@
   "title": "pack answers as of a date or a release, with the facts valid then, and says which it left out",
   "status": "draft",
   "parent": "EP-lrmcc2uf",
+  "sprint": "SP-jxf76aa2",
   "priority": "P2",
   "rank": 0,
   "goal": "rag.py pack --as-of DATE and kb_pack's as_of argument rank only the facts whose validity window holds the date; they print one line naming how many matching facts were left out as not yet or no longer valid; they keep the verdict rule, read over the facts valid then; with no as-of a pack prints facts whose window has ended under a no-longer-valid mark instead of as current",
@@ -75,7 +76,14 @@
     "kb/_self/plugin.md"
   ],
   "depends_on": [
-    "ST-mp4pjor2"
+    "ST-mp4pjor2",
+    "ST-teivhsxq",
+    "BG-ctp52w3e",
+    "ST-deyyxb4c",
+    "ST-wu4lbbjs",
+    "ST-6n5xrkbt",
+    "ST-q4fbmomg",
+    "ST-zhpor7fy"
   ],
   "links": [
     "moved out: SP-vlfcgmbu"

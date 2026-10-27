@@ -4,6 +4,7 @@
   "title": "backlog.py peers lists the other live sessions' plans, files and sprints and names each file a plan shares with them",
   "status": "draft",
   "parent": "EP-zv3duelo",
+  "sprint": "SP-jxf76aa2",
   "priority": "P1",
   "rank": 0,
   "goal": "`backlog.py peers [--sprint SP | --item ID | --touch GLOB...]` lists, read-only and with no model call, every other live Claude session of the clone with its label, topic, items and files from its coord intents, the active and planned sprints on the integration main with their items' files, and the held claims; with a sprint, item or touch it names each file that work shares with them, a shared `kb/_self` doc as `doc` and any other file as `overlap`, exiting 1 when an overlap is found and 0 otherwise; it prints no raw session id and leaves this session's own intents out",

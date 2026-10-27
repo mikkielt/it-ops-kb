@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "coord dedup still claims a whole-topic key with a * and keys over 120 characters for a long topic, and drops non-ASCII letters from term ids",
   "status": "draft",
+  "sprint": "SP-jxf76aa2",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -49,6 +50,10 @@
     "AGENTS.md",
     "kb/_self/maintaining.md",
     "kb/_self/web-sources.md"
+  ],
+  "depends_on": [
+    "ST-teivhsxq",
+    "ST-oykcufk5"
   ],
   "links": [
     "parked: SP-c7oav2vn review",

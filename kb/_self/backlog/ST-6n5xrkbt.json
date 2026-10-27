@@ -4,6 +4,7 @@
   "title": "One call turns a task's title and body into a context pack: the cited fact lines and what the kb lacks",
   "status": "draft",
   "parent": "EP-66qfpegm",
+  "sprint": "SP-jxf76aa2",
   "priority": "P2",
   "rank": 0,
   "goal": "rag.py task FILE|- reads a task's text (any tracker's title and body, plain text or Markdown) and prints, within a token budget (default 1200), the pack's verdict and fact lines for the questions the text raises; it prints the kb has / kb lacks lines; the kb MCP server serves the same as kb_task_context; nothing in the code or docs names a tracker product.",
@@ -66,6 +67,13 @@
     "kb/_self/plugin.md",
     "AGENTS.md",
     "kb/_self/content-rules.md"
+  ],
+  "depends_on": [
+    "ST-teivhsxq",
+    "ST-mp4pjor2",
+    "BG-ctp52w3e",
+    "ST-deyyxb4c",
+    "ST-wu4lbbjs"
   ],
   "links": [
     "moved out: SP-n7f53pgv"

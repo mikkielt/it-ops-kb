@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "goal": "Answer, with the kb tools first and the live docs for the gaps: which MCP clients (Claude Code, Claude Desktop, VS Code with Copilot, Cursor) load every tool schema into the context at session start and which defer them, and whether a server can mark tools as deferrable; and how the MCP specification lets a server change its tool list at run time (tools/list_changed). Findings go into dated gap notes and one answers entry in kb/public (no new article facts and no source rows), so the coord tools setup choice and its docs can cite them.",
   "checks": [
     {
       "run": [
@@ -19,7 +19,8 @@
     }
   ],
   "touches": [
-    "kb/public/**"
+    "kb/public/_answers.md",
+    "kb/public/_gaps.md"
   ],
   "filed_in": "clone-0ea70e5c"
 }

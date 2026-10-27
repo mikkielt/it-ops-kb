@@ -4,6 +4,7 @@
   "title": "A session whose work is recorded as done but whose process stays alive is flagged, and stopped after a grace period when the operator's policy allows",
   "status": "draft",
   "parent": "EP-wqgicmmj",
+  "sprint": "SP-jxf76aa2",
   "priority": "P2",
   "rank": 0,
   "goal": "backlog.py stalled lists a finished-alive signal for an item whose dispatched worker wrote its result, or whose run is returned or landed, while that worker's own recorded pid still runs past the grace period bl_stall.FINISHED_ALIVE_GRACE_S, read at call time; kbmon's sessions panel and needs-you line show it; when backlog.json's stop_finished setting is true (off by default), dispatch's wait sends SIGTERM to that recorded pid only and records the stop as an ops row; no other process is ever signalled.",
@@ -67,6 +68,10 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md",
     "kb/_self/querylog.md"
+  ],
+  "depends_on": [
+    "BG-hh3lvb5z",
+    "BG-oez5e2ua"
   ],
   "gates": [
     {

@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kbtail skips a live session whose transcript it cannot find, with no line",
   "status": "draft",
+  "sprint": "SP-jxf76aa2",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",

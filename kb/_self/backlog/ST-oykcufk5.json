@@ -4,6 +4,7 @@
   "title": "A session waiting on a permission prompt or a question shows as blocked within seconds, apart from a silent one",
   "status": "draft",
   "parent": "EP-wqgicmmj",
+  "sprint": "SP-jxf76aa2",
   "priority": "P2",
   "rank": 0,
   "goal": "The coord hook runs on the permission-request and notification hook events and records the session as blocked through an event of a closed kind, cleared at its next tool event; kbmon's sessions panel shows that session as blocked on a prompt and the needs-you line names it, within one snapshot; a session that is only silent is not shown as blocked and the needs-you line does not name it; a planted permission-request event on a temp store leaves a blocked record that coord.py wait returns.",
@@ -69,6 +70,10 @@
     "kb/_self/maintaining.md",
     "kb/_self/token-efficiency.md",
     "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-zimb7vuu",
+    "ST-cgaf2hfc"
   ],
   "gates": [
     {

@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "The graded-overlap bullet's failed-agent counts have no benchmark row and say 1 of 4 isolated full-overlap runs where the records show 3",
   "status": "draft",
+  "sprint": "SP-jxf76aa2",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
-  "goal": "The graded-overlap reading in kb/_self/token-efficiency.md gives failed-agent counts a reader can recompute from kb/_self/reports/benchmarks.csv (a per-run metric, or the counts dropped), and names its 110 USD total as the cost metric beside its rule that USD figures are the usd metric. Found by the SP-n7f53pgv review (S2 and S3 on ST-fdigz7xe); the shared-against-isolated verdict holds when recomputed.",
+  "goal": "The failed-agent counts of the graded-overlap reading in kb/_self/token-efficiency.md match the benchmark rows, counting an agent past 150 turns with no verified fact as failed",
   "repro": {
     "run": [
       "python3",
@@ -15,13 +16,19 @@
     ]
   },
   "repro_reason": "the defect is a doc figure against committed benchmark rows; no tool computes the failure count",
+  "clauses": [
+    {
+      "clause": "The failed-agent counts of the graded-overlap reading in kb/_self/token-efficiency.md match the benchmark rows, counting an agent past 150 turns with no verified fact as failed",
+      "check": 0
+    }
+  ],
   "touches": [
     "kb/_self/token-efficiency.md",
-    "kb/_self/reports/benchmarks.csv",
     "kb/_self/coordination.md"
   ],
   "links": [
     "parked: SP-n7f53pgv review"
   ],
+  "notes": "Planning 2026-10-27: goal narrowed to the repro; also worth fixing in passing: the reading's 110 USD total is the cost metric while its rule says USD figures are the usd metric.",
   "filed_in": "clone-0ea70e5c"
 }

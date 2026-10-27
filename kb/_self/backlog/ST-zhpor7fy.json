@@ -4,6 +4,7 @@
   "title": "A change since a revision names the docs and the kb CODE facts it makes stale, in any repository with a docs map",
   "status": "draft",
   "parent": "EP-rpzrctui",
+  "sprint": "SP-jxf76aa2",
   "priority": "P2",
   "rank": 0,
   "goal": "kbingest.py impact REPO --since REV prints one 'doc PATH' line for each doc that the repository's docs map (the csv its backlog.json docs_map names) ties to a file changed since REV; it prints one 'fact KBPATH:LINE' line for each kb CODE fact that kbingest.py drift REPO --rev HEAD reports, with no model; it runs on a project that installs the plugin against that project's own docs map; on this repository its doc lines are the docs selfdoc.py map names for the files changed since REV.",
@@ -61,7 +62,10 @@
   ],
   "depends_on": [
     "ST-teivhsxq",
-    "ST-q4fbmomg"
+    "ST-q4fbmomg",
+    "BG-ctp52w3e",
+    "ST-deyyxb4c",
+    "ST-6n5xrkbt"
   ],
   "links": [
     "moved out: SP-acysfnxr"

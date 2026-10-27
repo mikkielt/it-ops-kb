@@ -4,6 +4,7 @@
   "title": "kbingest map records each symbol's definition and its references, file by file, at the pinned commit",
   "status": "draft",
   "parent": "EP-rpzrctui",
+  "sprint": "SP-jxf76aa2",
   "priority": "P1",
   "rank": 0,
   "goal": "kbingest.py map adds a symbols section to its JSON map, read with ast for Python: for each definition its name, kind, path and line, and for each its references (path and line) within the repository; the map is written under _cache by default, never under kb/, and its format is 2.",

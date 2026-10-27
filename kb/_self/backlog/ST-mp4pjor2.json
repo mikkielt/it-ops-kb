@@ -4,6 +4,7 @@
   "title": "The content rules and the lint accept a validity window on a fact line and a commit range on a CODE fact",
   "status": "draft",
   "parent": "EP-lrmcc2uf",
+  "sprint": "SP-jxf76aa2",
   "priority": "P2",
   "rank": 0,
   "goal": "content-rules.md defines how a fact states when it became true and when it stopped, as the marker before its tag that the operator's gate names: (valid YYYY-MM-DD..YYYY-MM-DD) for DOC and DER facts and (valid REV..REV) with short commit ids for CODE facts, an open end written as nothing after the two dots; the contract lint accepts a well-formed window and rejects a malformed one, an end before a start or a commit range on a fact whose cited source is not pinned; rag.py audit counts each article's facts whose window has ended; a fact with no window is valid from its retrieval date with no end, so every existing fact stays valid unchanged.",

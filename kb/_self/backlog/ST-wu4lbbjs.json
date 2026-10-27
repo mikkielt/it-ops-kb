@@ -4,6 +4,7 @@
   "title": "coord exchanges claims with any external coordination service through a JSON-lines contract: live intents and touches out, external reservations in as overlaps",
   "status": "draft",
   "parent": "EP-66qfpegm",
+  "sprint": "SP-jxf76aa2",
   "priority": "P2",
   "rank": 0,
   "goal": "coord.py export-intents prints each live intent with its session, items and touch globs as JSON lines; coord.py import-reservations FILE|- takes JSON lines of holder, paths (globs), expires_in (seconds) and source and stores them as leases of their own that expire on their own; digest and the coord hook show an imported reservation that meets a session's touches as an overlap, as they show a session's; the contract is documented in coordination.md with no product named; on a temp store an imported reservation's holder appears in the digest.",
@@ -70,6 +71,11 @@
     "kb/_self/monitoring.md",
     "kb/_self/plugin.md",
     "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "ST-oykcufk5",
+    "BG-ctp52w3e",
+    "ST-deyyxb4c"
   ],
   "gates": [
     {
