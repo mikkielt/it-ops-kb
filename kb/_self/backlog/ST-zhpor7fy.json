@@ -2,7 +2,7 @@
   "id": "ST-zhpor7fy",
   "kind": "story",
   "title": "A change since a revision names the docs and the kb CODE facts it makes stale, in any repository with a docs map",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-rpzrctui",
   "sprint": "SP-jxf76aa2",
   "priority": "P2",
@@ -114,6 +114,37 @@
   ],
   "notes": "Check 1 compares impact's fact lines with drift's findings; drift on this repository finds no CODE fact of its own today (checked=0, elsewhere=890), so the check fails before the work only because impact does not exist yet; the planted host-project check is the behavioural one. Moved out of SP-acysfnxr by the unattended orchestrator 2026-10-26: depends on ST-teivhsxq, whose gate g1 (class agents-rule) waits on the operator.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-775f1f5d",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "57c2e3126d7b966e479111e0664ebcbe5ba3cd92",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess as s,sys;f=s.run(['git','diff','--name-only','HEAD~5','HEAD'],capture_output=True,text=True,check=True).stdout.split();m=s.run([sys.executable,'_tools/selfdoc.py','map']+f,capture_output=True,text=True);want={l.split(': ')[0] for l in m.stdout.splitlines() if ': ' in l};p=s.run([sys.executable,'_tools/kbingest.py','impact','.','--since','HEAD~5'],capture_output=True,text=True,timeout=900);got={l.split()[1] for l in p.stdout.splitlines() if l.startswith('doc ')};print(sorted(want),sorted(got),p.stderr[-300:]);sys.exit(0 if p.returncode in (0,1) and got==want else 1)"
+        ],
+        "exit": 0,
+        "sha256": "bc02e9756c71fb48"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess as s,sys;d=s.run([sys.executable,'_tools/kbingest.py','drift','.','--rev','HEAD'],capture_output=True,text=True,timeout=900);want={l.split(chr(9))[2] for l in d.stdout.splitlines() if l.startswith('finding')};p=s.run([sys.executable,'_tools/kbingest.py','impact','.','--since','HEAD~5'],capture_output=True,text=True,timeout=900);got={l.split()[1] for l in p.stdout.splitlines() if l.startswith('fact ')};print(sorted(want),sorted(got),p.stderr[-300:]);sys.exit(0 if p.returncode in (0,1) and got==want else 1)"
+        ],
+        "exit": 0,
+        "sha256": "4c43976571aeab21"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile;d=tempfile.mkdtemp();g=lambda *a:s.run(['git','-C',d]+list(a),capture_output=True,check=True);g('init','-q');os.makedirs(os.path.join(d,'docs'));os.makedirs(os.path.join(d,'src'));open(os.path.join(d,'backlog.json'),'w').write(json.dumps({'docs_map':'docs/map.csv'}));open(os.path.join(d,'docs','map.csv'),'w').write('doc,pattern'+chr(10)+'docs/a.md,src/*.py'+chr(10));open(os.path.join(d,'docs','a.md'),'w').write('# A'+chr(10));open(os.path.join(d,'src','x.py'),'w').write('X = 1'+chr(10));c=lambda m:g('-c','user.name=chk','-c','user.email=chk@example.com','commit','-qam',m);g('add','.');c('one');open(os.path.join(d,'src','x.py'),'w').write('X = 2'+chr(10));c('two');p=s.run([sys.executable,'_tools/kbingest.py','impact',d,'--since','HEAD~1'],capture_output=True,text=True,timeout=300);print(p.stdout,p.stderr[-300:]);sys.exit(0 if 'doc docs/a.md' in p.stdout else 1)"
+        ],
+        "exit": 0,
+        "sha256": "bf17438364c89216"
+      }
+    ]
+  }
 }
