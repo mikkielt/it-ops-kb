@@ -96,7 +96,11 @@
         "8 or more characters with a letter and a digit, none of $ { } < > *, not led by a backtick": "ST-yl6b2ues",
         "any non-placeholder value": "ST-yl6b2ues"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "any non-placeholder value",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
