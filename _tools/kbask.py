@@ -3,7 +3,9 @@
 
   kbask.py ask TARGET QUESTION          put QUESTION, after redact.redact, as the coord value ask/ID and post an `ask`
                                         event naming TARGET (a session, item or agent id, or `any`) and that key; prints
-                                        the new ID and the key as JSON
+                                        the new ID and the key as JSON. A TARGET that is a session id whose process has
+                                        ended (`bl_peers.reach`) is refused, exit 1, naming the live session that works on
+                                        the same item when there is one
   kbask.py answer ID TEXT [--state S]   the same for an answer: the value answer/ID and an `answer` event with the state
                                         (working, input-required, completed, failed or rejected; default completed)
   kbask.py coordinate ITEM OTHER STRATEGY [--session ID]
@@ -289,10 +291,41 @@ def check_text(text):
     return text
 
 
+def clone_root():
+    """The top directory of the git clone the working directory is in (the sessions of that clone are the ones to look for),
+    else the clone this script is in."""
+    try:
+        p = subprocess.run(["git", "rev-parse", "--show-toplevel"], capture_output=True, text=True, encoding="utf-8",
+                           stdin=subprocess.DEVNULL, timeout=COORD_SECONDS)
+        if p.returncode == 0 and p.stdout.strip():
+            return Path(p.stdout.strip())
+    except (OSError, subprocess.SubprocessError):
+        pass
+    return ROOT
+
+
+def refuse_ended(conn, target):
+    """Stop (exit 1) when TARGET, a session id, has ended: no Claude Code process of this clone is bound to it
+    (`bl_peers.reach` says when that is told). The message names the live session that works on the same item, when there is one. A
+    target that is no session id, a served coord (its sessions are out of reach) and a session that may be running pass."""
+    import mon_view
+    if "--url" in conn or not mon_view.SESSION_ID.fullmatch(target):
+        return
+    import bl_peers
+    asker = os.environ.get("CLAUDE_CODE_SESSION_ID") or None
+    state, items, successors = bl_peers.reach(clone_root(), target, asker, conn[conn.index("--store") + 1] if "--store" in conn else None)
+    if state != "ended":
+        return
+    where = f"; {', '.join(successors)} is live and works on {', '.join(items)}: ask the item" if successors \
+        else "; no live session works on the same item" if items else ""
+    raise Stop(f"kbask: session {mon_view.session_label(target)} has ended (no process runs it), so the ask was not sent{where}", 1)
+
+
 def cmd_ask(args):
     conn = connection(args)
     target = check_id(args.target, "TARGET", ALERT_ID)
     check_text(args.question)
+    refuse_ended(conn, target)
     ask_id = "A" + secrets.token_hex(5)
     event = send_ask(conn, ask_id, target, args.question)
     return {"ok": True, "id": ask_id, "to": target, "ref": f"ask/{ask_id}", "seq": event.get("seq")}

@@ -2,8 +2,10 @@
 Sessions plan with each other; kb/_self/tools.md).
 
   peers [--sprint SP | --item ID | --touch GLOB...]
-                               print, read only and with no model call (exit 0 unless a file is shared), the other live
-                               Claude sessions of the clone, each with its label, role, topics, items and files; the
+                               print, read only and with no model call (exit 0 unless a file is shared), the other
+                               sessions of the clone, each with its label, `live` or `ended` (a Claude Code process of the
+                               clone runs it or none does), role, topics, items and files and the open asks addressed to it
+                               (those addressed to this session follow them: an ask records no asker); the
                                active and planned sprints on the integration main (`bl_plan.history_ref`) with their
                                items and the files of those; and the held claims there (doing items and their files).
                                With a sprint, an item or touches it also names each file that work shares with them,
@@ -16,12 +18,15 @@ files of the items it names; the sessions from `mon_sessions.live_sessions`, one
 clone, with a session that holds a lease and an intent but shows no process. This session's own intents (the id in
 `CLAUDE_CODE_SESSION_ID`) are left out, and a session shows as its label (`mon_view.session_label`), never its id or its
 checkout's path. The work's own sprint (or the sprint of its item) is left out of the plans, since its items are
-planned together. `peer_overlaps` is the same comparison for `precheck`: each committed item's file that a peer also plans,
+planned together. `reach` tells `kbask.py ask` whether a session id has ended, and which live session works on its items. `peer_overlaps` is the same comparison for `precheck`: each committed item's file that a peer also plans,
 unless a depends_on or a `coordinate` event settles the pair. Standard library only; imports `bl_base`, `bl_cli`, `bl_plan` and `bl_view` at load, and the monitor's
 modules where it reads the sessions. It registers its own subcommand when imported.
 """
+import json
 import os
 import re
+import subprocess
+import sys
 from pathlib import Path
 
 import bl_cli
@@ -32,6 +37,8 @@ from bl_view import items_at
 
 
 HOLDERS_SHOWN = 6  # the holders one shared-file line names; a doc most items name would fill the screen
+ASK_SECONDS = 10  # the longest one coord.py read of the asks may take
+ASK_CHARS = 60  # characters of a question peers prints
 PLAN_TOUCH_CHARS = 120  # the width of an intent's touch field (coord.py refuses more)
 PLAN_WORD = re.compile(r"[A-Za-z0-9_.:/#@*?-]+")  # what coord accepts in a touch path
 PLAN_SESSION = re.compile(r"[A-Za-z0-9_.:/#@-]{1,120}")  # what coord accepts as a field value
@@ -69,16 +76,94 @@ def live_peers(root, own, found=None):
         if sid and sid == own:
             continue
         seen.add(sid)
-        out.append({"sid": sid, "label": s["label"] or "unbound", "role": s["role"], "items": [s["item"]] if s["item"] else []})
+        out.append({"sid": sid, "label": s["label"] or "unbound", "role": s["role"], "live": True,
+                    "items": [s["item"]] if s["item"] else []})
     for sid in found["leases"]:
         if sid not in seen and sid != own and mon_view.SESSION_ID.fullmatch(sid) and any(f.get("session") == sid for f in found["intents"]):
-            out.append({"sid": sid, "label": mon_view.session_label(sid), "role": "no process seen", "items": []})
+            out.append({"sid": sid, "label": mon_view.session_label(sid), "role": "no process seen", "live": False, "items": []})
     for s in out:
         intents = [f for f in found["intents"] if s["sid"] and f.get("session") == s["sid"]]
         s["topics"] = list(dict.fromkeys(f["topic"] for f in intents if f.get("topic")))
         s["items"] = list(dict.fromkeys(s["items"] + [i for f in intents for i in split_list(f.get("item"))]))
         s["touch"] = list(dict.fromkeys(t for f in intents for t in split_list(f.get("touch"))))
     return out
+
+
+def ask_events(root, kind):
+    """The events of the kind KIND (`ask` or `answer`) in the coord store of the clone ROOT, oldest first; [] where it does not answer."""
+    import mon_base
+    import mon_coord
+    import mon_sessions
+    conn = mon_sessions.coord_conn(mon_base.Ctx(Path(root).resolve()))
+    if conn is None:
+        return []
+    try:
+        p = subprocess.run([sys.executable, str(mon_coord.COORD), *conn, "wait", "--since", "0", "--timeout", "0", "--kind", kind],
+                           capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=ASK_SECONDS,
+                           stdin=subprocess.DEVNULL)
+        got = json.loads(p.stdout)["events"] if p.returncode == 0 else []
+    except (OSError, subprocess.SubprocessError, ValueError, KeyError, TypeError):
+        return []
+    return [e for e in got if isinstance(e, dict) and isinstance(e.get("fields"), dict)]
+
+
+def open_asks(root, targets):
+    """{target: [(ask id, question)]} of the asks to each of TARGETS (raw session ids) that no closing answer ended
+    (`mon_coord.CLOSED`), oldest first, the question redacted and cut to ASK_CHARS. An ask records no asker, so these are the
+    asks addressed to the session, whoever sent them."""
+    import mon_coord
+    import redact
+    closed = {e["fields"].get("id") for e in ask_events(root, "answer") if e["fields"].get("state") in mon_coord.CLOSED}
+    out = {}
+    for e in ask_events(root, "ask"):
+        f = e["fields"]
+        if f.get("to") in targets and f.get("id") and f["id"] not in closed:
+            code, body, _err = run_coord("get", f["ref"]) if f.get("ref") else (2, None, "")
+            text = " ".join(str(body.get("value") or "").split()) if code == 0 and isinstance(body, dict) else ""
+            text = redact.redact(text)
+            out.setdefault(f["to"], []).append((f["id"], text if len(text) <= ASK_CHARS else text[:ASK_CHARS - 3] + "..."))
+    return out
+
+
+def reach(root, target, asker, store=None):
+    """(state, items, successors) for the session id TARGET as the session id ASKER (None for none) sees it from the clone ROOT:
+    `live` when a Claude Code process of the clone is bound to it, `ended` when none is and it either announced an intent or
+    the asker is no live session of the clone (a caller that is none cannot be told apart from a session that never ran),
+    else `unknown` (it left no trace and a live asker may be seeing it start). Windows lists no process by working directory,
+    so it is always `unknown`, as is a clone with a process no session id binds (it may be the target). ITEMS are the items
+    the target's intents name and SUCCESSORS the labels of the other live sessions, the asker left out, whose intents or
+    item name one of them. STORE, when given, is the coord store the ask goes to."""
+    import mon_sessions
+    import mon_view
+    if os.name == "nt":
+        return "unknown", [], []
+    saved = os.environ.get("KB_COORD_STORE")
+    if store:
+        os.environ["KB_COORD_STORE"] = store
+    try:
+        live = mon_sessions.live_sessions(root)
+        found = read_found(root, False)
+    except Exception:  # a host that cannot list its processes or read the store leaves the ask allowed
+        return "unknown", [], []
+    finally:
+        if store and saved is None:
+            os.environ.pop("KB_COORD_STORE", None)
+        elif store:
+            os.environ["KB_COORD_STORE"] = saved
+    ids = {s["session"] for s in live if s["session"]}
+    if target in ids:
+        return "live", [], []
+    intents = [f for f in found["intents"] if f.get("session") == target]
+    if any(s["session"] is None for s in live) or not (intents or asker not in ids):
+        return "unknown", [], []
+    items = list(dict.fromkeys(i for f in intents for i in split_list(f.get("item"))))
+    successors = []
+    for s in live:
+        sid = s["session"]
+        if sid and sid != asker and (set(items) & ({s["item"]} | {i for f in found["intents"] if f.get("session") == sid
+                                                                for i in split_list(f.get("item"))})):
+            successors.append(mon_view.session_label(sid))
+    return "ended", items, successors
 
 
 def item_touches(items, iid):
@@ -269,16 +354,24 @@ def cmd_peers(bl, a):
     plans = plan_rows(main, skip_sprint, skip_items)
     claims = claim_rows(main, skip_items)
     files = touch_files(bl.root)
-    say(f"peers: {len(sessions)} other live session{'' if len(sessions) == 1 else 's'}, {len(plans)} active or planned "
+    alive = sum(1 for s in sessions if s["live"])
+    say(f"peers: {alive} other live session{'' if alive == 1 else 's'}" + (f", {len(sessions) - alive} ended" if alive < len(sessions) else "")
+        + f", {len(plans)} active or planned "
         f"sprint{'' if len(plans) == 1 else 's'} on {ref.rsplit('refs/remotes/', 1)[-1]}, {len(claims)} held claim{'' if len(claims) == 1 else 's'}")
     holders = []
+    asks = open_asks(bl.root, {s["sid"] for s in sessions if s["sid"]} | ({own} if own else set()))
     for s in sessions:
         touch = list(dict.fromkeys(s["touch"] + [t for i in s["items"] for t in item_touches(main.items, i)]))
-        say(f"session {s['label']}  {s['role'] or 'session'}" + (f"  topic {', '.join(s['topics'])}" if s["topics"] else "")
+        say(f"session {s['label']}  {'live' if s['live'] else 'ended'}  {(s['role'] if s['live'] else '') or 'session'}"
+            + (f"  topic {', '.join(s['topics'])}" if s["topics"] else "")
             + (f"  items {', '.join(item_label(bl, main, i) for i in s['items'])}" if s["items"] else ""))
         if touch:
             say("  files " + ", ".join(touch))
+        for aid, text in asks.get(s["sid"], []):
+            say(f"  open ask {aid} to it" + (f": {text}" if text else ""))
         holders.append((f"session {s['label']}", touch))
+    for aid, text in asks.get(own, []) if own else []:
+        say(f"open ask {aid} to this session" + (f": {text}" if text else ""))
     for sid, title, status, rows in plans:
         say(f"sprint {sid}  {status}  {title}")
         for iid, ititle, touch in rows:
