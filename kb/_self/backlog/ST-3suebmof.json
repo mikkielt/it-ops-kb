@@ -2,7 +2,7 @@
   "id": "ST-3suebmof",
   "kind": "story",
   "title": "Putting items in a sprint posts the session's plan to coord, so other sessions see it before any claim",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-zv3duelo",
   "sprint": "SP-jxf76aa2",
   "priority": "P1",
@@ -42,5 +42,7 @@
     "moved out: SP-basca7ae"
   ],
   "notes": "The coord hook announces only at start and claim (`announce.when`); this posts from the tool itself, honouring `announce.to_other_sessions`. A run with no session id posts nothing. A coord intent's touch field holds at most 120 characters of ids (coord.py refuses more): a sprint whose items' files exceed it posts several plan intents, one per chunk, as the planner did by hand for SP-basca7ae on 2026-10-26. Plan check 2026-10-26: the check now plants both forms the goal names, set --sprint and new --sprint, each with its own case. On the base neither posts a plan intent and peers does not exist (premise reproduced). Moved out of SP-basca7ae by the unattended orchestrator 2026-10-26: builds on ST-hjl7dhyh (backlog.py peers, bl_peers.py), whose gates g1 and g2 (class agents-rule) wait on the operator.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
