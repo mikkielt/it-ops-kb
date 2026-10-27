@@ -2,7 +2,7 @@
   "id": "ST-ur767dzs",
   "kind": "story",
   "title": "kb/_self/coordination.md states the coordination guarantee, its failure policy, the peer states and each lock's role",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-fn7letri",
   "priority": "P1",
@@ -67,5 +67,7 @@
     "kb/_self/coordination.md"
   ],
   "notes": "Planner (SP-fn7letri): checks 0 (the pack) and 2 (selfdoc.py check) pass before the work: the pack exits 0 whatever it finds, so the worker's report quotes the pack's lead line from the new section; selfdoc pins the docs' consistency. Check 3 (fails today: no 'fail open', 'positive evidence', 'lease-expired') reads clauses 1 and 2.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-557596e3",
+  "operator": "op-f618a13e"
 }
