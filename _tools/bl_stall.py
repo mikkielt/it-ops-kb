@@ -22,6 +22,10 @@ sidecars (`ql_store` readers; a row's closed keys only, never event text), never
                       merge status is one of MR_DEAD_MERGE
   red-main            the newest `ci.pipeline` row is red (claimed items)
   lock-wait           the host test lock has been held, by a live process, for HOST_LOCK_WAIT_S (claimed items)
+  finished-alive      the item's dispatched worker wrote its result (`result.json` in its scratch directory holds the
+                      session's result), or its run state is `returned` or `landed`, and the worker's own `worker_pid`
+                      of the claims ledger still runs more than FINISHED_ALIVE_GRACE_S seconds after (read at call
+                      time; `dispatch`'s wait ends it when backlog.json's `stop_finished` is true)
 
 A signal whose input cannot be read is `unknown:<what>`, never a guess: a request read that fails, a forge CLI not
 signed in or a remote that names no forge project is `unknown:forge`, and so is every claimed item not read when the
@@ -50,6 +54,8 @@ LAND_SAME_STEP_N = 2  # failed rows of one `land` step of one item that make the
 HOST_LOCK_WAIT_S = 1800  # seconds the host test lock may be held before the runs waiting for it are a stall
 FORGE_DEADLINE_S = 60  # seconds all the forge reads together may take: past it, each item not yet read is unknown:forge
 FORGE_CALL_S = 60  # seconds one forge command may take (bl_base.run's limit), cut shorter by the time left to the deadline
+FINISHED_ALIVE_GRACE_S = 300  # seconds a worker's process may run on after its work is recorded as done, before it is a stall
+RESULT_NAME = "result.json"  # the worker session's --output-format json output in its scratch directory (bl_dispatch.RESULT_NAME)
 LOCK_NAME = "kb-tests.lock"  # tests.py's host lock file (tests.HOST_LOCK_NAME), read for its holder and start
 
 # Head pipeline words of a request that never become `success` by waiting: the pipeline ended without it, or holds at a
@@ -66,7 +72,8 @@ MR_DEAD_MERGE = ("not_open", "draft_status", "need_rebase", "commits_status", "d
                  "merge_request_blocked")
 
 SIGNALS = ("claim-no-commit", "returned-no-commit", "returned-staged", "done-refused", "check-timeout",
-           "land-same-step", "mr-dead", "red-main", "lock-wait")
+           "land-same-step", "mr-dead", "red-main", "lock-wait", "finished-alive")
+FINISHED_RUN_STATES = ("returned", "landed")  # the run states that record a worker's work as done
 ROW_KEYS = ("id", "ts", "surface", "v")  # the spool row's own keys, which ops_problems does not read
 
 
@@ -223,6 +230,65 @@ def lock_state(now):
         return "unknown", type(e).__name__
 
 
+def ledger_records(root):
+    """{item id: record} of this working tree's claims ledger (`bl_base.claims_ledger`), {} when it cannot be read."""
+    path = bl_base.claims_ledger(root)[1]
+    try:
+        data = json.loads(path.read_text(encoding="utf-8")) if path is not None else {}
+    except (OSError, ValueError):
+        return {}
+    return {k: v for k, v in data.items() if isinstance(v, dict)} if isinstance(data, dict) else {}
+
+
+def result_written(path):
+    """The epoch of the last write of the worker session's JSON at PATH once it holds the session's result, else None."""
+    try:
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
+        stamp = Path(path).stat().st_mtime
+    except (OSError, ValueError):
+        return None
+    return stamp if isinstance(data, dict) and ("subtype" in data or "result" in data) else None
+
+
+def finished_moves():
+    """{item id: epoch} of the items whose newest progress event moved the run state to returned or landed, from one coord
+    read; {} where coord cannot be read."""
+    import bl_clean
+    code, body, _ = bl_clean.run_coord("wait", "--since", "0", "--timeout", "0")
+    events = body.get("events") if code == 0 and isinstance(body, dict) else None
+    newest = {}
+    for e in events if isinstance(events, list) else []:
+        f = e.get("fields") if isinstance(e, dict) and isinstance(e.get("fields"), dict) else {}
+        if e.get("kind") == "progress" and isinstance(f.get("item"), str) and isinstance(e.get("at"), (int, float)):
+            newest[f["item"]] = (e["at"], f.get("state"))
+    return {i: at for i, (at, state) in newest.items() if state in FINISHED_RUN_STATES}
+
+
+def result_path(root, iid):
+    """The worker session's JSON of IID: `result.json` in its scratch directory (`scratch_dir` of the clone's top)."""
+    return Path(bl_base.claims_ledger(root)[0]).joinpath(*bl_base.scratch_dir(), iid, RESULT_NAME)
+
+
+def finished_alive(root, ids, now):
+    """{item id: seconds since its work was recorded as done} of the items in IDS whose dispatched worker's recorded pid
+    (`worker_pid` of the claims ledger, no other process) still runs more than FINISHED_ALIVE_GRACE_S seconds after the
+    write of its `result.json`, or, with none, the move of its run state to returned or landed."""
+    import bl_procs
+    recs = ledger_records(root)
+    out, moves = {}, []  # moves: finished_moves(), read once, and only when an item has no result yet
+    for iid in ids:
+        pid = recs.get(iid, {}).get("worker_pid")
+        if not isinstance(pid, int) or isinstance(pid, bool) or pid <= 0:
+            continue
+        since = result_written(result_path(root, iid))
+        if since is None:
+            moves = moves or [finished_moves()]
+            since = moves[0].get(iid)
+        if since is not None and now - since > FINISHED_ALIVE_GRACE_S and bl_procs.alive(pid):
+            out[iid] = int(now - since)
+    return out
+
+
 # ---------------------------------------------------------------- the signals
 
 def ops_signals(rows):
@@ -358,6 +424,7 @@ def collect(bl, now=None, run=None):
     import bl_forge
     no_forge = bl_forge.no_forge()
     dead = forge_reads(root, sorted(doing, key=bl.order_key), run)
+    finished = finished_alive(root, doing, now)
     out = []
     for iid in sorted(set(doing) | set(ready_items(bl)), key=bl.order_key):
         signals, unknown = list(from_rows.get(iid, [])), []
@@ -376,6 +443,8 @@ def collect(bl, now=None, run=None):
                 signals.append("lock-wait")
             if lock == "unknown":
                 unknown.append("unknown:lock")
+            if iid in finished:
+                signals.append("finished-alive")
         signals = [s for s in SIGNALS if s in signals]
         if signals or unknown:
             out.append({"id": iid, "label": bl.label(iid), "state": "doing" if iid in doing else "ready",

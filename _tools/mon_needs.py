@@ -11,6 +11,8 @@ nothing at load, `mon_sessions` (its age text) and `mon_status` (`short_name`) w
                   an Alertmanager alert, a cleanup verdict or a session's question posted as an ask shows here), `overlap` (each
                   overlap of two live sessions in the sessions panel that no coordinate event decided and that is
                   `announce.needs_you_after_min` minutes old, `overlap ST-… (s-…) with ST-… (s-…), undecided for 12m`),
+                  `finished` (each item of the sessions panel's `stalled` list with the `finished-alive` signal: its worker's work is
+                  recorded as done and the worker's process still runs past the grace period, `ST-… finished, its worker still runs`),
                   `blocked` (an active sprint with items left, none ready and
                   none in progress), `delivery` (the query log's last delivery was refused, with the gate that failed),
                   `orphan` (each process of class `orphan`, oldest first), `disk` (under LOW_DISK_PCT percent free, from the byte counts as the host alert reads them; none for a total of 0 bytes) and
@@ -26,8 +28,8 @@ The list reads only the panels' data, so a saved snapshot gives the same line. I
 
 PANELS = ("sprint", "querylog", "sessions", "host")
 COORD_PANEL = "coord"
-KINDS = ("gate", "run", "ask", "overlap", "blocked", "delivery", "orphan", "disk", "fast-forward")
-MANY = {"gate": "gates", "run": "runs", "ask": "asks", "overlap": "overlaps", "blocked": "blocked sprints", "delivery": "deliveries", "orphan": "orphans", "disk": "disk",
+KINDS = ("gate", "run", "ask", "overlap", "finished", "blocked", "delivery", "orphan", "disk", "fast-forward")
+MANY = {"gate": "gates", "run": "runs", "ask": "asks", "overlap": "overlaps", "finished": "finished workers", "blocked": "blocked sprints", "delivery": "deliveries", "orphan": "orphans", "disk": "disk",
         "fast-forward": "fast-forward"}  # the noun after `+N more`
 LOW_DISK_PCT = 10  # the host panel's alert threshold
 SHOWN = 3  # entries of one kind the line names before it counts the rest
@@ -118,6 +120,13 @@ def overlap_entries(data):
     return out
 
 
+def finished_entries(data):
+    """The `finished` entries of the sessions panel's DATA: a stalled item whose worker is finished and still runs."""
+    return [{"kind": "finished", "text": f"{r['item']} finished, its worker still runs", "item": r["item"]}
+            for r in data.get("stalled") or []
+            if isinstance(r, dict) and r.get("item") and "finished-alive" in (r.get("signals") or [])]
+
+
 def delivery_entries(data):
     last = data.get("last_delivery")
     if not isinstance(last, dict) or last.get("outcome") != "refused":
@@ -164,7 +173,7 @@ def fast_forward_entries(data):
 def entries(snap):
     """The list of what waits on the operator, from the `ok` panels of SNAP (see the module docstring)."""
     out = []
-    for name, found in (("sprint", sprint_entries), (COORD_PANEL, ask_entries), ("sessions", overlap_entries), ("querylog", delivery_entries),
+    for name, found in (("sprint", sprint_entries), (COORD_PANEL, ask_entries), ("sessions", overlap_entries), ("sessions", finished_entries), ("querylog", delivery_entries),
                         ("sessions", orphan_entries),
                         ("host", disk_entries), ("sprint", fast_forward_entries)):
         data = data_of(snap, name)

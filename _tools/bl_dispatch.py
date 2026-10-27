@@ -36,6 +36,7 @@ import os
 import re
 import shlex
 import shutil
+import signal
 import subprocess
 import sys
 import time
@@ -48,6 +49,7 @@ import bl_items
 import bl_land
 import bl_plan
 import bl_procs
+import bl_stall
 import bl_view
 from bl_base import (RESEARCH_KINDS, Backlog, colourless_env, ROOT as PLUGIN_ROOT, Refused, Rejected, always_in_scope, canonical, claims_ledger, commit_message,
                      external_lines, git, git_text, id_re, item_repos, link_target, name_for, need, repo_branch, repositories, research_touches,
@@ -63,7 +65,8 @@ ROLE_FILE = ".claude/agents/kb-worker.md"  # the worker's role file: its brief m
 PLUGIN_ROLE_FILE = "agents/worker.md"  # the plugin's, under PLUGIN_ROOT (the directory of the tool scripts): the file
 # the brief names when the project has no ROLE_FILE
 BRIEF_NAME = "brief.md"
-RESULT_NAME = "result.json"  # the session's --output-format json output
+RESULT_NAME = bl_stall.RESULT_NAME  # the session's --output-format json output
+STOP_POLL_S = 2  # seconds between the wait's reads of the session's JSON while `stop_finished` is true
 STDERR_NAME = "stderr.log"
 RESUME_MESSAGE_NAME = "resume-message.md"  # `--resume --detach`: the message file as it was when the detached resume started
 REPORT_TAIL = 15  # lines of the result text `report` prints
@@ -1087,6 +1090,33 @@ def start_detached(bl, a, iid, scratch):
     return 0
 
 
+def wait_worker(iid, proc, result):
+    """(the exit code of the worker session PROC, whether this stopped it). With the project's `stop_finished` setting true, a session that has
+    written its result (RESULT holds it) and still runs more than `bl_stall.FINISHED_ALIVE_GRACE_S` seconds after (read
+    at call time) is sent SIGTERM, its own pid only, once, and its stop is recorded as an `agent.run` ops row of group
+    `stop-finished`; the result is already written, so the stop counts as a clean exit (0). Nothing else is signalled."""
+    if not setting("stop_finished"):
+        return proc.wait(), False
+    while True:
+        try:
+            return proc.wait(timeout=STOP_POLL_S), False
+        except subprocess.TimeoutExpired:
+            pass
+        since = bl_stall.result_written(result)
+        if since is None or time.time() - since <= bl_stall.FINISHED_ALIVE_GRACE_S:
+            continue
+        age = int(time.time() - since)
+        with contextlib.suppress(OSError):
+            os.kill(proc.pid, signal.SIGTERM)
+        from ql_deliver import ops_row
+        ops_row("agent.run", group="stop-finished", ms=age * 1000, item=iid)
+        say(f"stopped the worker of {iid}: pid {proc.pid} still ran {age}s after it wrote its result (SIGTERM to that pid "
+            "only; backlog.json stop_finished)")
+        sys.stdout.flush()
+        proc.wait()
+        return 0, True
+
+
 def run_worker(bl, iid, argv, wt, stdin_path, scratch, started, source):
     """Run the headless session ARGV in the worktree WT with the file STDIN_PATH on stdin and the session's JSON and
     stderr in SCRATCH, and move the item's run state: `working` first, then, once the session has exited and the
@@ -1110,10 +1140,12 @@ def run_worker(bl, iid, argv, wt, stdin_path, scratch, started, source):
         own_made(bl, iid, "process", proc.pid)
         say(f"{started} {bl.label(iid)}: pid {proc.pid}, {source}, output {result}")
         sys.stdout.flush()
-        code = proc.wait()
-    for where in [wt] + [repo_worktree_path(bl.root, iid, n) for n, _ in repo_checkouts(bl, iid)]:
+        code, stopped = wait_worker(iid, proc, result)
+    for where in [] if stopped else [wt] + [repo_worktree_path(bl.root, iid, n) for n, _ in repo_checkouts(bl, iid)]:
         for pid, comm in bl_procs.end_orphans(where):
             say(f"ended pid {pid} ({comm}), left running in {where.name} by the worker's session")
+    if stopped:
+        say("no other process was signalled: `backlog.py procs` lists what the stopped session left running")
     session, failed = None, code != 0
     try:
         data = json.loads(result.read_text(encoding="utf-8"))
