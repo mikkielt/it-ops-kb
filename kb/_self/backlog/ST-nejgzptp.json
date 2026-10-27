@@ -46,6 +46,26 @@
   "relates_to": [
     "ST-rodj5ltd"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the 2026-10-26 session-load record come to name commits on main, and its rows to carry the new notes?",
+      "options": [
+        "repoint the record's rows to the main commits with the same tool code, and add the new notes to them",
+        "re-record the replays at a commit on main"
+      ],
+      "recommendation": "repoint the record's rows to the main commits with the same tool code, and add the new notes to them",
+      "reason": "the tool code at 4b064dd and 786dd41 is identical to that at the old commits (git diff of _tools and .claude is empty), and a re-record costs hours of host load for the same figures",
+      "do": {
+        "repoint the record's rows to the main commits with the same tool code, and add the new notes to them": "ST-nejgzptp",
+        "re-record the replays at a commit on main": "ST-nejgzptp"
+      },
+      "class": "design",
+      "answer": "repoint the record's rows to the main commits with the same tool code, and add the new notes to them",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-3qowbedb review"
   ],
