@@ -80,7 +80,11 @@
       ],
       "recommendation": "Any part of an answer kind makes it an answer; the lead part is still printed as a lead",
       "reason": "because a documented fact with a community note is still documented, and the fact line already shows each part's kind",
-      "class": "design"
+      "class": "design",
+      "answer": "Any part of an answer kind makes it an answer; the lead part is still printed as a lead",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
