@@ -103,7 +103,11 @@
         "add _tools/rag.py to the touches, so rag.py audit prints an ended column": "ST-mp4pjor2",
         "leave the column to a follow-up story, the audit rows hold ended only": "ST-mp4pjor2"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "add _tools/rag.py to the touches, so rag.py audit prints an ended column",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
@@ -119,7 +123,11 @@
         "a date end before today (UTC) or any commit end is ended; the lint refuses a commit range with no CODE tag or an unpinned source and a date range on a CODE-only fact": "ST-mp4pjor2",
         "only a date end before today is ended; the lint refuses only a commit range on an unpinned source": "ST-mp4pjor2"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "a date end before today (UTC) or any commit end is ended; the lint refuses a commit range with no CODE tag or an unpinned source and a date range on a CODE-only fact",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
