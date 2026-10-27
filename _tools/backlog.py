@@ -57,6 +57,13 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           only the claimed items outside ID's chain whose touches overlap ID's own or
                                           its descendants' (a glob read as a path matches the other, or a tracked file
                                           matches both), each naming the glob it meets; exit 1 when there is one
+  backlog.py peers [--sprint SP | --item ID | --touch GLOB...]   the other live sessions with their label, role,
+                                          topics, items and files (their coord intents), the active and planned sprints
+                                          of the integration main with their items' files and the held claims there;
+                                          read only, no model, this session's own intents and every raw session id left
+                                          out. With a sprint, an item or touches, each file that work shares with them:
+                                          `doc` for a kb/_self doc, `overlap` for any other file; exit 1 when an overlap
+                                          is found, else 0
   backlog.py claim ID --by NAME          status doing, claimed by NAME, with the session's operator id beside it
                                           (kbwho.py; `new sprint` writes the sprint's creator the same way);
                                           backlog.py release ID  back to todo
@@ -445,6 +452,7 @@ import bl_check  # noqa: F401 - registers its commands
 import bl_ci  # noqa: F401 - registers its commands
 import bl_cli
 import bl_items  # noqa: F401 - registers the item writers (new, fmt, claim, ... goal)
+import bl_peers  # noqa: F401 - registers `peers`
 import bl_land  # noqa: F401 - registers its commands, and those of bl_close and bl_precheck, which it imports
 import bl_plan  # noqa: F401 - registers its commands
 import bl_upstream  # noqa: F401 - registers `upstream-report` and `upstream-import`
@@ -482,7 +490,7 @@ bl_cli.extend("next", bl_plan.next_batch, bl_plan.args_next_batch)  # `next --ba
 bl_cli.register("config", cmd_config, help="print the project settings with each value's source")
 
 # The usage order of the subcommands: each module registers its own when imported, and this puts them in order.
-USAGE = ("new", "similar", "check", "fmt", "selectors", "list", "tree", "find", "show", "next", "held", "claim",
+USAGE = ("new", "similar", "check", "fmt", "selectors", "list", "tree", "find", "show", "next", "held", "peers", "claim",
          "release", "answer", "set", "move", "reopen", "gate", "fire", "done", "researched", "land", "merge", "drop", "start", "precheck",
          "host-check", "close", "tidy", "horizon", "goal", "brief", "begin", "dispatch", "report", "stage-back", "referrers", "cost", "red-pipeline", "intake", "procs", "runner", "stalled", "ops",
          "runs", "landings", "own", "selfcheck", "upstream-report", "upstream-import", "config")
