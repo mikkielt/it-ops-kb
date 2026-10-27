@@ -23,5 +23,5 @@
   "links": [
     "parked: SP-p46hofrg close"
   ],
-  "notes": "check to tighten at planning: the command given only proves the tool runs Seen on ST-6n5xrkbt g2 (2026-10-26): a gate question about how a task's text shares a token budget between pack questions was classed secrets (matched 'token'); the question is about a count of tokens, no credential."
+  "notes": "check to tighten at planning: the command given only proves the tool runs Seen on ST-6n5xrkbt g2 (2026-10-26): a gate question about how a task's text shares a token budget between pack questions was classed secrets (matched 'token'); the question is about a count of tokens, no credential. Seen again 2026-10-27 on ST-jvthzus2: gate add classed a question about how tokens and USD per right answer are shown in a benchmark report as secrets (matched 'token') and made it blocking, though it names no credential."
 }

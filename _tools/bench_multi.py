@@ -40,7 +40,7 @@ BASE_MESSAGE = "chore: sandbox base commit, backlog.json with no code lane"
 CLAIM_KEY = "multi-probe"  # the key the probe's two agents claim in turn
 INPUTS = "kb/_self/reports/multi_bench.csv"  # the frozen inputs of the scenarios, one row per agent and input
 INPUT_COLUMNS = ("scenario", "agent", "role", "input")
-SCENARIOS = ("lookups", "research", "research-none", "research-partial", "mixed", "coord")
+SCENARIOS = ("lookups", "code-lookups", "research", "research-none", "research-partial", "mixed", "coord")
 ROLES = ("lookup", "research", "code")
 ASK_ROW = re.compile(r"ask (\S+): (.+)", re.S)  # a row after an agent's first of a code or research agent: the agent asks TARGET (an agent of the scenario) QUESTION
 ASK_WAIT = 10  # seconds an agent that is asked waits for the ask, after its own work, when the agents run at once
@@ -48,6 +48,8 @@ ASK_ANSWER = "{agent} holds {what} and finishes it; leave it to {agent}."  # the
 SPEC_KEYS = ("title", "goal", "touches", "check", "gate")  # the keys of a code agent's input, an item spec in json
 ITEM_DIR = "kb/_self/backlog"  # where setup writes a planted item: bl_base's item_dir of this project
 TOOL_SETS = {"kb": ["mcp__kb"], "files": ["Read", "Grep", "Glob"]}  # --tools: the lookup agent's tools
+CODE_IDS = frozenset(r["id"] for r in bench_pool.CODE_ROWS)  # the ids of the code questions, which a `code-lookups` agent's input names
+CODE_NO_FILES = ("Read", "Grep", "Glob", "Bash")  # what a kb lookup agent of code questions may not use: its answers come from the kb's tools
 MANAGERS = ("code", "session")  # --manager: this tool starts the agents, or a model session does
 DEFAULT_MODELS = {"lookup": "haiku-5-5", "research": "sonnet-5-5", "code": "sonnet-5-5"}
 MANAGER_MODEL = "sonnet-5-5"
@@ -443,9 +445,11 @@ def agents_of(rows, scenario):
 
 
 def pool_questions():
-    """{id: question} of the rows of the pool file and the evaluation file, which a lookup agent's input may name."""
+    """{id: question} of the rows of the pool file, the evaluation file and the code questions (bench_pool.CODE_ROWS), which a
+    lookup agent's input may name."""
     out = {r["id"]: r["question"] for r in bench_repro.read_csv(HOME / bench_pool.EVAL_FILE)}
     out.update({r["id"]: bench_pool.question_of(r) for r in bench_repro.read_csv(HOME / bench_pool.PUBLIC_FILE)})
+    out.update({r["id"]: r["question"] for r in bench_pool.CODE_ROWS})
     return out
 
 
@@ -514,7 +518,7 @@ def input_problems(rows, questions, areas):
             if target == r["agent"] or (r["scenario"], target) not in names:
                 out.append(f"{label}: the ask names {target!r}, no other agent of the scenario")
         elif r["role"] == "lookup" and r["input"] not in questions:
-            out.append(f"{label}: input {r['input']!r} is the id of no row of {bench_pool.PUBLIC_FILE} or {bench_pool.EVAL_FILE}")
+            out.append(f"{label}: input {r['input']!r} is the id of no row of {bench_pool.PUBLIC_FILE}, {bench_pool.EVAL_FILE} or the code questions")
         elif r["role"] == "research" and r["input"] not in areas:
             out.append(f"{label}: input {r['input']!r} is the area of no row of {bench_repro.BRIEFS}")
         elif r["role"] == "code":
@@ -696,16 +700,22 @@ def question_usd(means, mid):
     return ref[0] * price_ratio(mid), f"the recorded mean of {RECORDED_MODEL} x {price_ratio(mid):.3g} (the input price ratio)"
 
 
-def lookup_prompt(questions, tools, budget):
-    """The prompt of a lookup agent's session: its questions, answered one after the other from the kb's tools or from files."""
+def lookup_prompt(questions, tools, budget, code=False):
+    """The prompt of a lookup agent's session: its questions, answered one after the other from the kb's tools or from files; for
+    `code` questions (about this clone's code) the kb tools are the code map and the docs map."""
     how = (f"Answer from the kb: call kb_pack first, with budget {budget} tokens, and cite path:line and the source url of each fact."
            if tools == "kb" else "Answer from the files of this clone with Read, Grep and Glob (no kb tool), citing the file and line of each fact.")
+    if code and tools == "kb":
+        how = (f"Answer with the kb's tools, which read no file for you: kb_code with repo \".\" says where a name is defined, who uses it and "
+               f"what imports a package, from the pinned code map; kb_docs with command map says which documents describe a path; kb_pack "
+               f"(budget {budget} tokens) answers from the kb's articles. Cite path:line of each fact.")
     return how + " Answer the questions one after the other.\n\n" + "\n".join(f"{n}. {q}" for n, q in enumerate(questions, 1)) + "\n"
 
 
-def session_argv(model, max_turns, usd, mcp, tools=None):
+def session_argv(model, max_turns, usd, mcp, tools=None, code=False):
     """The argv of one agent's session: bench_repro.session_argv's (the two plugins off, the agent's own mcp-config), at effort
-    high; with `tools` ("kb" or "files"), the lookup agent's: no effort flag and its allowed tools."""
+    high; with `tools` ("kb" or "files"), the lookup agent's: no effort flag and its allowed tools; for `code` questions the
+    kb arm also has no file tool (`CODE_NO_FILES`), so it answers from the maps alone."""
     argv = bench_repro.session_argv(model, bench_repro.DEFAULTS["effort"], max_turns, usd, mcp)
     if tools:
         i = argv.index("--effort")
@@ -713,6 +723,8 @@ def session_argv(model, max_turns, usd, mcp, tools=None):
         argv += ["--allowedTools", *TOOL_SETS[tools]]
         if tools == "files":
             argv += ["--disallowedTools", "mcp__kb"]
+        elif code:
+            argv += ["--disallowedTools", *CODE_NO_FILES]
     return argv
 
 
@@ -733,9 +745,10 @@ def agent_plan(agent, scenario, n, root, knobs, models, means, questions, briefs
             "wall": None, "n": n, "turns": d["max_turns"], "cap": d["area_usd"]}
     if role == "lookup":
         qs = [questions[i] for i in agent["inputs"]]
-        plan["argv"] = session_argv(model, LOOKUP_LIMITS["max_turns"], LOOKUP_LIMITS["usd"], mcp, knobs["tools"])
+        code = all(i in CODE_IDS for i in agent["inputs"])
+        plan["argv"] = session_argv(model, LOOKUP_LIMITS["max_turns"], LOOKUP_LIMITS["usd"], mcp, knobs["tools"], code)
         plan["turns"], plan["cap"] = LOOKUP_LIMITS["max_turns"], LOOKUP_LIMITS["usd"]
-        plan["prompt"] = lookup_prompt(qs, knobs["tools"], knobs["pack_budget"])
+        plan["prompt"] = lookup_prompt(qs, knobs["tools"], knobs["pack_budget"], code)
         one, why = question_usd(means, mid)
         plan["usd"], plan["basis"] = one * len(qs), f"{len(qs)} question(s) x ${one:.4f}, {why}"
         plan["what"] = f"{len(qs)} question(s): {', '.join(agent['inputs'])}"
@@ -2525,7 +2538,7 @@ def right_counts(scenario, lines):
     checks = {}
     for r in bench_repro.read_csv(HOME / bench_pool.EVAL_FILE):
         checks[r["id"]] = [r["expect_re"]] if r.get("expect_re") else []
-    for r in bench_repro.read_csv(HOME / bench_pool.PUBLIC_FILE):
+    for r in [*bench_repro.read_csv(HOME / bench_pool.PUBLIC_FILE), *bench_pool.CODE_ROWS]:
         try:
             checks[r["id"]] = json.loads(r["checks"])
         except ValueError:
@@ -2578,7 +2591,8 @@ def run_values(root, manifest, lines):
     """{metric: value} of one run: each agent's AGENT_METRICS as `AGENT/METRIC` and the run's, the run's wall seconds its own
     (`run_wall`), then dup_facts, claims, claim_refused, dedup_hits, skipped_terms (each also per agent, by its holder name
     `agentN`), claim_conflicts, conflicts_resolved, asks, asks_answered (`ask_counts`), dup_commits, wasted_tokens, land_stops, rebase_s,
-    right and asked (lookup agents), eval_passed and eval_total (research agents with a frozen question)."""
+    right and asked (lookup agents), then tokens_per_right and usd_per_right (the four token counts summed, and `usd`, over `right`;
+    none when no answer was right), eval_passed and eval_total (research agents with a frozen question)."""
     values, total = {}, {m: 0 for m, _ in AGENT_METRICS}
     lines = [{**r, "usd": usd_of(r)} for r in lines]
     for r in lines:
@@ -2612,6 +2626,9 @@ def run_values(root, manifest, lines):
         if counts:
             values[key] = sum(g for g, _ in counts.values())
             values["asked" if key == "right" else "eval_total"] = sum(a for _, a in counts.values())
+    if values.get("right"):
+        values["tokens_per_right"] = round(sum(values[m] for m in ("input", "out", "cache_read", "cache_write")) / values["right"])
+        values["usd_per_right"] = round(values["usd"] / values["right"], 5)
     facts = {agent: len(f) for agent, f in verified_facts(root, manifest, lines).items()}
     items = kb_items_passed(root, lines)
     for key, counts in (("facts_verified", {a: (n,) for a, n in facts.items()}), ("items_passed", {a: (int(ok),) for a, ok in items.items()}),

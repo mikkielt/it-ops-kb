@@ -65,6 +65,51 @@ EARLIER_HELDOUT = frozenset("""HO-adr-status-superseded HO-bare-headless-default
 OFFKB_FILE = "kb/public/_retrieval/doc2query/offkb_questions.txt"
 SCENARIO_FILE = "kb/public/_retrieval/bench_scenarios.csv"
 SCENARIO_COLUMNS = ["kind", "domain", "question", "answer", "route", "note"]
+
+
+def _name(*parts):
+    """A symbol or file name written in pieces, so a search of this file for the name finds none of the questions below: they
+    ask about the other modules of `_tools/`, and a hit here would be a false one for an agent that reads files."""
+    return "".join(parts)
+
+
+def _code_rows():
+    """The code questions of the multi-agent benchmark's `code-lookups` scenario, about this repository: where a function is
+    defined, which modules use it or import a package, and which documents the docs map (kb/_self/map.csv) lists for a tool.
+    Each row has the columns of the pool file and one regex for each file the answer must name (all must match); the answers
+    are read from `_tools/*.py` and `kb/_self/map.csv` at the benchmark's start commit (the questions name no test or doc file
+    that a change of the benchmark itself moves)."""
+    def define(slug, name, module):
+        return (f"CQ-def-{slug}", "code_def", f"Which Python module under `_tools/` defines the function `{name}`? Give the file path.",
+                [re.escape(module)])
+
+    def uses(slug, name, home, modules):
+        return (f"CQ-use-{slug}", "code_use", f"Which modules under `_tools/` other than `{home}` call `{name}` (tests aside)? "
+                "Name every module.", [re.escape(m) for m in modules])
+
+    def docs(slug, tool, docs):
+        return (f"CQ-docs-{slug}", "code_docs", f"Which documents does the docs map `kb/_self/map.csv` list as describing `_tools/{tool}`? "
+                "Name every one.", [re.escape(d) for d in docs])
+    rows = [
+        define("one", _name("referrers", "_of"), "bl_items.py"),
+        define("two", _name("stage_back", "_copies"), "bl_dispatch.py"),
+        define("three", _name("make_", "checkout"), "bench_repro.py"),
+        define("four", _name("resolve", "_model"), "bench_core.py"),
+        uses("one", _name("stat_", "rows"), "bench_core.py", ["bench_install.py", "bench_querylog.py", "bench_retrieval.py"]),
+        uses("two", _name("tier", "_of"), "bench_core.py", ["bench_multi.py", "bl_cost.py", "census.py"]),
+        uses("three", _name("spent", "_run"), "bench_core.py", ["bench_lookup.py", "bench_pool.py", "bench_multi.py"]),
+        ("CQ-use-four", "code_use", "Which modules under `_tools/` (tests aside) import the standard-library package `tar" "file`? "
+         "Name every module.", [re.escape(m) for m in ("bench_multi.py", "fetch.py", "kg_sync.py")]),
+        docs("one", "doc2query.py", ["doc2query.md", "tools.md", "code.md"]),
+        docs("two", "factdiff.py", ["content-rules.md", "tools.md", "code.md"]),
+        docs("three", "kbask.py", ["monitoring.md", "coordination.md", "tools.md", "code.md"]),
+        docs("four", "bl_items.py", ["backlog.md", "tools.md", "code.md"]),
+    ]
+    return [{"id": i, "kind": k, "domain": "code", "phrasing": "plain", "source": "_tools", "question": q, "checks": json.dumps(c),
+             "expected_route": "tool"} for i, k, q, c in rows]
+
+
+CODE_ROWS = _code_rows()  # the rows a `code-lookups` agent's input names by id (bench_multi.pool_questions)
 SOURCE_ID = re.compile(r"(?<![\w-])(S-[a-z0-9]{8}|S\d+)(?![\w-])")
 BRAND = re.compile(r"\b(?:[A-Z]{2,}[A-Za-z0-9]*|[A-Z][a-z0-9]+[A-Z][A-Za-z0-9]*)\b")
 REGEX_ASK = ("For each numbered item below (a question, then the fact line of the kb that answers it), write one regular "
