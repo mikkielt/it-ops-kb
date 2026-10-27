@@ -2,7 +2,7 @@
   "id": "ST-zhpor7fy",
   "kind": "story",
   "title": "A change since a revision names the docs and the kb CODE facts it makes stale, in any repository with a docs map",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-rpzrctui",
   "sprint": "SP-jxf76aa2",
   "priority": "P2",
@@ -71,5 +71,7 @@
     "moved out: SP-acysfnxr"
   ],
   "notes": "Check 1 compares impact's fact lines with drift's findings; drift on this repository finds no CODE fact of its own today (checked=0, elsewhere=890), so the check fails before the work only because impact does not exist yet; the planted host-project check is the behavioural one. Moved out of SP-acysfnxr by the unattended orchestrator 2026-10-26: depends on ST-teivhsxq, whose gate g1 (class agents-rule) waits on the operator.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
