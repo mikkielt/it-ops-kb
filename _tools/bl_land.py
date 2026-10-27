@@ -865,6 +865,22 @@ def missing_reasons(root, iid, ids, seen, where):
     return out
 
 
+def distill_in_flight(spools):
+    """[phrase] naming each distill that holds the lock (`ql_base.LOCK_NAME`, not older than `ql_base.LOCK_STALE_S`) of
+    the query log directory beside a spool of SPOOLS, with its pid and age: a session-end distill takes its session's
+    spool file under that lock and delivers the sidecar when it is done. Empty when no such lock is held."""
+    import ql_base
+    out = []
+    for d in spools:
+        lock = d.parent / ql_base.LOCK_NAME
+        age = ql_base.lock_age(lock)
+        if age is None or age >= ql_base.LOCK_STALE_S:
+            continue
+        pid = ql_base.read_json(lock, {}).get("pid")
+        out.append(f"a distill{f' (pid {pid})' if pid else ''} holds the lock of {d.parent}, taken {int(age)}s ago")
+    return out
+
+
 def ops_work_rows(root, iid):
     """[line] the landing of IID says about its work rows, none when nothing is amiss. A line of the committed work
     sidecars (`bl_cost.cost_lines`) that names the item or a descendant of it ends it: the rows are delivered. Else
@@ -880,6 +896,8 @@ def ops_work_rows(root, iid):
       started with the Agent tool runs inside the orchestrator's session and writes those, never a `branch` row), is
       no warning: its session is open or not distilled yet, so its rows are late, said as a `land:` line naming the
       session and its state;
+    - none of these while a distill holds the lock of a spool read (`distill_in_flight`: the worker's session-end
+      distill has taken its spool file and not yet delivered the sidecar): the same `land:` line, naming the distill;
     - none of these: `warning: ... missing`, the line a worker that ran without the capture hooks leaves, with the
       reasons `missing_reasons` finds: the state of the spool file of the session `dispatch` recorded for the item,
       and a `claim` row of the item in the orchestrator's own session. The orchestrator's own `claim`, `done` and
@@ -931,6 +949,10 @@ def ops_work_rows(root, iid):
         if late:
             return [f"land: {iid}'s work rows are late: {'; '.join(late)}; `backlog.py cost` shows its figures once "
                     "the session has ended and distill has run"]
+        flight = distill_in_flight(spools)
+        if flight:
+            return [f"land: {iid}'s work rows are late: no spool file of its worker is left to read and {'; '.join(flight)}"
+                    f"; `backlog.py cost` shows its figures once that distill has delivered the sidecar"]
         where = ", ".join(str(d) for d in spools)
         why = missing_reasons(root, iid, ids, seen, where)
         if why:
