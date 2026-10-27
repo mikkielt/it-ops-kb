@@ -49,7 +49,8 @@
     "kb/_self/tools.md"
   ],
   "depends_on": [
-    "ST-q4fbmomg"
+    "ST-q4fbmomg",
+    "BG-ddvtdc5v"
   ],
   "gates": [
     {
