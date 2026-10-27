@@ -2,7 +2,7 @@
   "id": "BG-gu2kjifh",
   "kind": "bug",
   "title": "session-load's rss_mean_mb averages each class over only the samples it was alive in, so means are not comparable across classes and arms",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nxb7hjwd",
   "sprint": "SP-m5m67goe",
   "priority": "P2",
@@ -40,5 +40,7 @@
     "parked: SP-3qowbedb review"
   ],
   "notes": "Found by the fresh-context review of SP-3qowbedb (gap report in the sprint's review scratch); the operator chose to park it under EP-nxb7hjwd. Fix before the paid session-load record (ST-rodj5ltd) where it changes a figure. The live repro (arms A,B at the default window) failed twice from a shell and passed under precheck's isolated home, so the repro drives bench_load.Replay.summary on two planted ticks instead. The docs (kb/_self/benchmarks.md, the report's setup) say what the mean is over, as selfdoc stale requires with the code.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-557596e3",
+  "operator": "op-f618a13e"
 }
