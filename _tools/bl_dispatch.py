@@ -1117,12 +1117,8 @@ def wait_worker(iid, proc, result):
         return 0, True
 
 
-def run_worker(bl, iid, argv, wt, stdin_path, scratch, started, source):
-    """Run the headless session ARGV in the worktree WT with the file STDIN_PATH on stdin and the session's JSON and
-    stderr in SCRATCH, and move the item's run state: `working` first, then, once the session has exited and the
-    processes it left in the worktrees are ended, `returned` (exit 0 and no `is_error` result; `gates` the open
-    gates of the item file) or `failed`. Records the session's pid and, when its JSON names one, its session id on the
-    item's claim. STARTED (`dispatched`, `resumed`) and SOURCE (`brief PATH`, `message PATH`) are what the first line says. The exit code: 1 when the run failed."""
+def run_direct(bl, iid, argv, wt, stdin_path, scratch, started, source):
+    """`run_worker`'s own start: the session is a child of this process, which waits for it (`wait_worker`). Returns its (exit code, whether `stop_finished` stopped it)."""
     it = bl.items[iid]
     oid, _ = operator_who()
     result, errlog = scratch / RESULT_NAME, scratch / STDERR_NAME
@@ -1140,7 +1136,105 @@ def run_worker(bl, iid, argv, wt, stdin_path, scratch, started, source):
         own_made(bl, iid, "process", proc.pid)
         say(f"{started} {bl.label(iid)}: pid {proc.pid}, {source}, output {result}")
         sys.stdout.flush()
-        code, stopped = wait_worker(iid, proc, result)
+        return wait_worker(iid, proc, result)
+
+
+LAUNCH_LOG_NAME = "launcher.log"  # what a `launcher` command prints
+LAUNCH_PID_NAME = "launched.pid"  # the pid of the shell the launched command line starts with
+LAUNCH_EXIT_NAME = "launched.exit"  # the exit code of the session, written when it ends
+LAUNCH_START_S = 60  # seconds a launcher that returned 0 may take to start the command line
+LAUNCH_POLL_S = 0.5
+
+
+def launched_line(argv, stdin_path, result, errlog, pidfile, exitfile, env, base):
+    """The shell line a `launcher` runs for the session ARGV: it writes its shell's pid to PIDFILE, runs the session with
+    the file STDIN_PATH on stdin and its JSON and stderr in RESULT and ERRLOG, and writes the session's exit code to
+    EXITFILE. A runtime that starts the line in a place of its own may not pass on this process's environment, so the line
+    sets the variables where ENV (the worker's) differs from BASE (this process's) and unsets those it drops."""
+    q = shlex.quote
+    sets = [f"{k}={v}" for k, v in sorted(env.items()) if base.get(k) != v]
+    drops = [k for k in sorted(base) if k not in env]
+    prefix = shlex.join(["env", *[x for k in drops for x in ("-u", k)], *sets]) + " " if sets or drops else ""
+    return (f"echo $$ > {q(str(pidfile))}; {prefix}{shlex.join(argv)} < {q(str(stdin_path))} > {q(str(result))} "
+            f"2> {q(str(errlog))}; echo $? > {q(str(exitfile))}")
+
+
+def launcher_argv(launcher, wt, command):
+    """The `launcher` setting's argument list with `{dir}` the worktree WT and `{command}` the shell line COMMAND."""
+    return [x.replace("{dir}", str(wt)).replace("{command}", command) for x in launcher]
+
+
+def read_int(path):
+    """The integer the file PATH holds, or None when it is not there, empty or no number yet."""
+    try:
+        return int(path.read_text(encoding="utf-8").strip())
+    except (OSError, ValueError):
+        return None
+
+
+def run_launched(bl, iid, argv, wt, stdin_path, scratch, started, source):
+    """`run_worker` for a project whose `launcher` setting is set: the launcher starts the session's command line
+    (`launched_line`) in the worktree, and this process follows it by the files the line writes in SCRATCH: the shell's pid
+    (recorded as the worker's) and, when the session ends, its exit code. The launcher may return at once or when the
+    session ends. The code is 1 when the launcher fails or starts nothing within LAUNCH_START_S, or when the shell ends
+    with no exit code written. Returns (the code, False): `stop_finished` stops only the own start's session."""
+    it = bl.items[iid]
+    oid, _ = operator_who()
+    result, errlog, log = scratch / RESULT_NAME, scratch / STDERR_NAME, scratch / LAUNCH_LOG_NAME
+    pidfile, exitfile = scratch / LAUNCH_PID_NAME, scratch / LAUNCH_EXIT_NAME
+    for f in (pidfile, exitfile):
+        f.unlink(missing_ok=True)
+    bl_items.move_run(iid, "working", "dispatch")
+    env = worker_env(oid, iid, it.get("sprint"), worker_traceparent(iid, it.get("sprint")))
+    largv = launcher_argv(setting("launcher"), wt, launched_line(argv, stdin_path, result, errlog, pidfile, exitfile, env,
+                                                                   dict(os.environ)))
+    try:
+        with open(log, "w", encoding="utf-8", newline="\n") as out:
+            proc = subprocess.Popen(largv, cwd=str(wt), stdin=subprocess.DEVNULL, stdout=out, stderr=subprocess.STDOUT, env=env)
+    except OSError as e:
+        bl_items.move_run(iid, "failed", "dispatch")
+        raise Refused(f"dispatch: the launcher {largv[0]!r} did not start: {e}")
+    began, pid, code, gone = time.monotonic(), None, None, False
+    while code is None:
+        code = read_int(exitfile)
+        if code is not None:
+            break
+        if pid is None and (pid := read_int(pidfile)) is not None:
+            record_worker(bl.root, iid, worker_pid=pid, role=WORKER_ROLE, **({"operator": oid} if oid else {}))
+            own_made(bl, iid, "process", pid)
+            say(f"{started} {bl.label(iid)} through the launcher: pid {pid}, {source}, output {result}")
+            sys.stdout.flush()
+        launcher_code = proc.poll()
+        if launcher_code not in (None, 0) and pid is None:
+            say(f"the launcher exited {launcher_code} and started nothing, see {log}")
+            code = 1
+        elif pid is None and launcher_code == 0 and time.monotonic() - began > LAUNCH_START_S:
+            say(f"the launcher returned 0 and started nothing within {LAUNCH_START_S} s, see {log}")
+            code = 1
+        elif pid is not None and not bl_procs.alive(pid):
+            if gone:
+                say(f"the launched session (pid {pid}) ended with no exit code in {exitfile}")
+                code = 1
+            gone = True
+        if code is None:
+            time.sleep(LAUNCH_POLL_S)
+    if proc.poll() is None:
+        with contextlib.suppress(OSError):
+            proc.terminate()
+    return code, False
+
+
+def run_worker(bl, iid, argv, wt, stdin_path, scratch, started, source):
+    """Run the headless session ARGV in the worktree WT with the file STDIN_PATH on stdin and the session's JSON and
+    stderr in SCRATCH, and move the item's run state: `working` first, then, once the session has exited and the
+    processes it left in the worktrees are ended, `returned` (exit 0 and no `is_error` result; `gates` the open
+    gates of the item file) or `failed`. Records the session's pid and, when its JSON names one, its session id on the
+    item's claim. STARTED (`dispatched`, `resumed`) and SOURCE (`brief PATH`, `message PATH`) are what the first line says.
+    The `launcher` setting, when set, starts the session instead (`run_launched`; `stop_finished` stops a session only on
+    the own start). The exit code: 1 when the run failed."""
+    result, errlog = scratch / RESULT_NAME, scratch / STDERR_NAME
+    start = run_launched if setting("launcher") else run_direct
+    code, stopped = start(bl, iid, argv, wt, stdin_path, scratch, started, source)
     for where in [] if stopped else [wt] + [repo_worktree_path(bl.root, iid, n) for n, _ in repo_checkouts(bl, iid)]:
         for pid, comm in bl_procs.end_orphans(where):
             say(f"ended pid {pid} ({comm}), left running in {where.name} by the worker's session")
