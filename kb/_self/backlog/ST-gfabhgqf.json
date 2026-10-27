@@ -91,7 +91,11 @@
         "the retrieval date of its first cited source": "ST-gfabhgqf",
         "always require --from": "ST-gfabhgqf"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "earliest date its cited sources give, else the pinned commit of its CODE source, --from overrides",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -108,7 +112,11 @@
         "doc2query rows are copied to the new bullet and kept for the old one": "ST-gfabhgqf",
         "doc2query rows are pruned and the new bullet regenerated": "ST-gfabhgqf"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "doc2query rows move to the new bullet, anchor rows follow the old line's new text, the new bullet is left to anchor",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
