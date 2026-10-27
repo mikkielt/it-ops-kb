@@ -386,8 +386,6 @@ def cmd_horizon(bl, a):
                                                   if it.get("kind") == "sprint" and it.get("status") == "active"
                                                   and (a.all or not bl.is_upstream(i)))
     lines = [lag] if a.hook and (lag := lag_line(bl.root)) else []  # first: the hook's cut drops the last lines
-    if a.hook and (peers := peers_line(bl.root)):
-        lines.append(peers)
     if not sprints:
         planned = [i for i, it in bl.items.items() if it.get("kind") == "sprint" and (a.all or not bl.is_upstream(i))]
         n = sum(1 for i, it in bl.items.items() if it.get("kind") != "sprint" and it.get("status") not in ("done", "dropped")
@@ -441,6 +439,8 @@ def cmd_horizon(bl, a):
             lines.append(f"  waiting on {c}")
             for i in ids[:5 if a.hook else 50]:
                 lines.append(f"    {bl.label(i)}")
+    if a.hook and (peers := peers_line(bl.root)):
+        lines.append(peers)  # last: the hook's cut drops it before any sprint line
     text = withhold("\n".join(lines))
     if a.hook:
         print(hook_json(text))
