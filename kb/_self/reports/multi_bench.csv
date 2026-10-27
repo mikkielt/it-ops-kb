@@ -22,6 +22,12 @@ lookups,lookup-4,lookup,BP-7e7e0d4c
 research,research-1,research,pip
 research,research-2,research,pip
 research,research-3,research,pip
+research-none,research-1,research,pip
+research-none,research-2,research,rust
+research-none,research-3,research,sops
+research-partial,research-1,research,pip
+research-partial,research-2,research,uv
+research-partial,research-3,research,python
 mixed,research-1,research,pip
 mixed,research-2,research,cmd
 mixed,code-1,code,"{""title"": ""A slugify helper for the multi-agent benchmark examples"", ""goal"": ""examples/multi-bench/slugify.py defines slugify(text), which lowercases the text, replaces each run of characters outside a-z and 0-9 with one hyphen and strips the hyphens from both ends"", ""touches"": [""examples/multi-bench/slugify.py""], ""check"": [""python3"", ""-c"", ""import sys; sys.path.insert(0, 'examples/multi-bench'); from slugify import slugify; assert slugify('Hello, World!') == 'hello-world'; assert slugify('  --a  b-- ') == 'a-b'; assert slugify('') == ''""], ""gate"": {""question"": ""How does slugify treat accented letters?"", ""options"": [""Drop each one like any other character outside a-z and 0-9"", ""Transliterate each one to its base letter with unicodedata first""], ""recommendation"": ""Transliterate each one to its base letter with unicodedata first""}}"
