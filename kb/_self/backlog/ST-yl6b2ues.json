@@ -81,6 +81,54 @@
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Which values count for the url-password and unquoted-assignment shapes?",
+      "options": [
+        "8 or more characters with a letter and a digit, none of $ { } < > *, not led by a backtick",
+        "any non-placeholder value"
+      ],
+      "recommendation": "8 or more characters with a letter and a digit, none of $ { } < > *, not led by a backtick",
+      "reason": "the tree and history hit nothing; a short or alphabetic value is a corpus known_gap",
+      "do": {
+        "8 or more characters with a letter and a digit, none of $ { } < > *, not led by a backtick": "ST-yl6b2ues",
+        "any non-placeholder value": "ST-yl6b2ues"
+      },
+      "class": "secrets"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "Which files and passes read the new structured shapes?",
+      "options": [
+        "header and url shapes in the whole text of any file but a vendor export, the assignment in the url-stripped text of .md and .txt files and item text only",
+        "all three shapes everywhere, vendor exports included"
+      ],
+      "recommendation": "header and url shapes in the whole text of any file but a vendor export, the assignment in the url-stripped text of .md and .txt files and item text only",
+      "reason": "the vendor snapshots hold documented example credentials",
+      "do": {
+        "header and url shapes in the whole text of any file but a vendor export, the assignment in the url-stripped text of .md and .txt files and item text only": "ST-yl6b2ues",
+        "all three shapes everywhere, vendor exports included": "ST-yl6b2ues"
+      },
+      "class": "push"
+    },
+    {
+      "id": "g4",
+      "kind": "blocking",
+      "question": "How does the corpus list its known gaps?",
+      "options": [
+        "fnmatch patterns over row ids in the corpus file, each pattern and each failing row checked both ways, with a max count per guard",
+        "one id per gap row"
+      ],
+      "recommendation": "fnmatch patterns over row ids in the corpus file, each pattern and each failing row checked both ways, with a max count per guard",
+      "reason": "the matrix holds hundreds of rows that fail alike",
+      "do": {
+        "fnmatch patterns over row ids in the corpus file, each pattern and each failing row checked both ways, with a max count per guard": "ST-yl6b2ues",
+        "one id per gap row": "ST-yl6b2ues"
+      },
+      "class": "push"
     }
   ],
   "notes": "Planner (SP-fn7letri): check 1 (the leak and redact test files) passes before the work and pins the critical leak guard; the corpus and known_gap list land inside those test functions. Depends on BG-juf5gvt4 (SP-m5m67goe), which also edits _tools/test_redact.py. Check 2 builds its fake secrets at run time.",
