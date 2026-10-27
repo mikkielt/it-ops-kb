@@ -1,0 +1,3 @@
+# qq (an invented language) stop words
+ka
+zu

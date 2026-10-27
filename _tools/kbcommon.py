@@ -22,7 +22,7 @@ source ledger. One copy, so every tool reads and writes these files the same way
   resolve(rel)                the absolute path of a file named relative to the kb root, else to this repository
 
 Roots. Knowledge lives in roots: kb/public (the upstream facts) and any kb/<name>/ a team adds, each a directory
-with a ROOT_FILE (`_root.md`: front matter `root`, `id_prefix`, `visibility`, `description`, optionally `team`) and the same layout:
+with a ROOT_FILE (`_root.md`: front matter `root`, `id_prefix`, `visibility`, `description`, optionally `team` and `languages`) and the same layout:
 domain directories of articles, the ledgers (SOURCES, ANSWERS, GAPS, CONFLICTS, COVERAGE_CSV, COVERAGE_MD, STATE,
 ARTIFACTS, ANCHORS), `_census/`, SNAPSHOTS and DATA_DIR. Every path inside a root is relative to that root, so moving a root moves no
 line inside it. Tools that span roots name a file by its qualified path `<root>/<path in root>` (`public/intune/x.md`)
@@ -47,6 +47,9 @@ and a topic by `<root>/<topic>`.
   split(qpath)                (Root, rel) of a qualified path; (None, qpath) when its first part names no root
   path_of(qpath)              the absolute path of a qualified path (a root's file), else of a repository path
   root_of_prefix(prefix)      the Root whose id_prefix it is, or None
+  lang_codes(root_path)       the language codes a root may name in `languages`: en (built in), the profiles under
+                              _tools/lang/ and the root's own under DATA_DIR/lang/; lang_dir(code, root_path) is the
+                              directory of a profile (the root's own before the shared one), None for en
   private_hits(text)          [(kind, value)] of the private names of the internal roots and pointers (the leak scan's
                               `private-id`, `private-host`, `private-path` kinds; leak_hits adds them)
 
@@ -439,6 +442,11 @@ def resolve(rel):
     return repo if not os.path.exists(path) and os.path.exists(repo) else path
 
 
+LANG_DIR = os.path.join(TOOLS, "lang")  # the language profiles every root may name: <code>/ with stop.txt, suffixes.csv, fold.csv
+ROOT_LANG = "lang"  # a root's own profiles: DATA_DIR/lang/<code>/, in the same format
+DEFAULT_LANGUAGES = ("en",)  # a root naming no languages: today's English stop words and suffix stripper
+
+
 class Root(NamedTuple):
     name: str
     path: str  # absolute
@@ -446,6 +454,7 @@ class Root(NamedTuple):
     visibility: str  # public | internal
     description: str
     team: str = ""  # '' when the root names none
+    languages: tuple = DEFAULT_LANGUAGES  # the language codes of its text (`languages` in ROOT_FILE), the first one primary
 
 
 class RootError(Exception):
@@ -463,6 +472,40 @@ def _meta(text):
         if sep and k.strip():
             out[k.strip()] = v.strip().strip('"')
     return out
+
+
+def lang_dir(code, root_path=None):
+    """The directory of language `code`'s profile: the root's own (DATA_DIR/lang/<code>/ under `root_path`) when it has
+    one, else the shared one under _tools/lang/; None when there is none (`en` is built in)."""
+    for base in ((os.path.join(root_path, DATA_DIR, ROOT_LANG),) if root_path else ()) + (LANG_DIR,):
+        d = os.path.join(base, code)
+        if os.path.isdir(d):
+            return d
+    return None
+
+
+def lang_codes(root_path=None):
+    """The sorted language codes a root may name: `en` and the directories under _tools/lang/ and, for `root_path`, under
+    its DATA_DIR/lang/."""
+    out = {"en"}
+    for base in (LANG_DIR, os.path.join(root_path, DATA_DIR, ROOT_LANG) if root_path else None):
+        try:
+            out |= {d for d in os.listdir(base) if os.path.isdir(os.path.join(base, d))} if base else set()
+        except OSError:
+            pass
+    return sorted(out)
+
+
+def _languages(path, raw):
+    """The language codes of a ROOT_FILE's `languages` value (`en, de`; default en): RootError naming a code that has no
+    profile and the codes that exist."""
+    codes = tuple(dict.fromkeys(c for c in re.split(r"[\s,]+", raw.lower()) if c)) or DEFAULT_LANGUAGES
+    known = lang_codes(path)
+    unknown = [c for c in codes if c not in known]
+    if unknown:
+        raise RootError(f"{path}/{ROOT_FILE}: `languages` names {', '.join(map(repr, unknown))}, which has no profile "
+                        f"(_tools/lang/<code>/ or {DATA_DIR}/{ROOT_LANG}/<code>/ in the root); codes that exist: {', '.join(known)}")
+    return codes
 
 
 def load_root(path):
@@ -486,7 +529,7 @@ def load_root(path):
     team = meta.get("team", "")
     if team and not TEAM.fullmatch(team):
         raise RootError(f"{path}/{ROOT_FILE}: `team` must be a lowercase name (a-z, 0-9, -), got {team!r}")
-    return Root(name, path, prefix, vis, meta.get("description", ""), team)
+    return Root(name, path, prefix, vis, meta.get("description", ""), team, _languages(path, meta.get("languages", "")))
 
 
 class Pointer(NamedTuple):

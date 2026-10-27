@@ -1,0 +1,2 @@
+id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by
+LO-a1b2c3d4,https://docs.example.com/qq/maps,Mapa,Example,CC-BY-4.0,summary,2026-10-27,1.0,,maps/load.md,
