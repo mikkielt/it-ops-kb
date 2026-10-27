@@ -2,7 +2,7 @@
   "id": "ST-avh536as",
   "kind": "story",
   "title": "kb_backlog_write's docs name what its call does not check: user-level and managed settings, the coord hook's claim notice, and --by operator on operator-only classes other than ceiling",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-fn7letri",
   "priority": "P3",
   "rank": 0,
@@ -33,5 +33,7 @@
   "links": [
     "parked: SP-rrqlgiff review"
   ],
-  "notes": "Planner (SP-fn7letri): the goal names docs only, so _tools/kb_mcp.py left the touches; the item changes kb/_self/backlog.md or plugin.md text beside KB_BACKLOG_WRITE_TOOLS."
+  "notes": "Planner (SP-fn7letri): the goal names docs only, so _tools/kb_mcp.py left the touches; the item changes kb/_self/backlog.md or plugin.md text beside KB_BACKLOG_WRITE_TOOLS.",
+  "claimed_by": "claude-557596e3",
+  "operator": "op-f618a13e"
 }
