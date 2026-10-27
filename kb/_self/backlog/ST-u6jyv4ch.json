@@ -77,7 +77,12 @@
         "the claimed event's step field carries by:<ops token of --by>, read from the newest claimed event": "ST-u6jyv4ch",
         "a second coord key run-by/ID written after the transition": "ST-u6jyv4ch"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "the claimed event's step field carries by:<ops token of --by>, read from the newest claimed event",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     },
     {
       "id": "scope",
