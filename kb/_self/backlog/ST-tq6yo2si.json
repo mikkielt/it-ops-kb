@@ -38,6 +38,50 @@
     "ST-3suebmof",
     "ST-cqcmpo72"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Does precheck's peer-overlap warning include the held claims (doing items of the integration main) beside live sessions' plans and other sprints' items?",
+      "options": [
+        "leave held claims out",
+        "include held claims as peers"
+      ],
+      "recommendation": "leave held claims out",
+      "reason": "the goal names sessions and sprints, and a live session already shows through its intent",
+      "do": {
+        "leave held claims out": "ST-tq6yo2si",
+        "include held claims as peers": "ST-tq6yo2si"
+      },
+      "class": "agents-rule",
+      "answer": "leave held claims out",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "What may the other side of a coordinate event be to settle a warning about an item-less peer session (an intent with a topic and no item)?",
+      "options": [
+        "the peer's topic or its session label",
+        "only an item id, so an item-less peer cannot be settled",
+        "the peer's topic only"
+      ],
+      "recommendation": "the peer's topic or its session label",
+      "reason": "kbask.py coordinate already accepts any id as OTHER, and a label is what every tool shows",
+      "do": {
+        "the peer's topic or its session label": "ST-tq6yo2si",
+        "only an item id, so an item-less peer cannot be settled": "ST-tq6yo2si",
+        "the peer's topic only": "ST-tq6yo2si"
+      },
+      "class": "agents-rule",
+      "answer": "the peer's topic or its session label",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "moved out: SP-basca7ae"
   ],

@@ -16,7 +16,8 @@ files of the items it names; the sessions from `mon_sessions.live_sessions`, one
 clone, with a session that holds a lease and an intent but shows no process. This session's own intents (the id in
 `CLAUDE_CODE_SESSION_ID`) are left out, and a session shows as its label (`mon_view.session_label`), never its id or its
 checkout's path. The work's own sprint (or the sprint of its item) is left out of the plans, since its items are
-planned together. Standard library only; imports `bl_base`, `bl_cli`, `bl_plan` and `bl_view` at load, and the monitor's
+planned together. `peer_overlaps` is the same comparison for `precheck`: each committed item's file that a peer also plans,
+unless a depends_on or a `coordinate` event settles the pair. Standard library only; imports `bl_base`, `bl_cli`, `bl_plan` and `bl_view` at load, and the monitor's
 modules where it reads the sessions. It registers its own subcommand when imported.
 """
 import os
@@ -24,7 +25,7 @@ import re
 from pathlib import Path
 
 import bl_cli
-from bl_base import Backlog, glob_re, need, operator_who, resolved_touch, say, scope
+from bl_base import Backlog, Rejected, glob_re, need, operator_who, resolved_touch, say, scope
 from bl_clean import run_coord
 from bl_plan import history_ref, shared_doc, touch_files, touches_meet
 from bl_view import items_at
@@ -47,13 +48,21 @@ def split_list(value):
     return [w for w in value.split(",") if w] if isinstance(value, str) else []
 
 
-def live_peers(root, own):
-    """[{label, role, topics, items, files}] of the live sessions other than OWN (a raw session id or None), oldest first,
-    and the claim-less rest: a lease with an intent but no process comes last. [] where no coord store answers."""
+def read_found(root, events):
+    """`mon_sessions.read_coord`'s answer for the clone ROOT, with the coordinate events read when EVENTS; an empty answer
+    where no coord store answers."""
     import mon_base
     import mon_sessions
+    return mon_sessions.read_coord(mon_base.Ctx(Path(root).resolve()), events=events) or {"intents": [], "leases": {}, "coordinate": []}
+
+
+def live_peers(root, own, found=None):
+    """[{label, role, topics, items, files}] of the live sessions other than OWN (a raw session id or None), oldest first,
+    and the claim-less rest: a lease with an intent but no process comes last. [] where no coord store answers. FOUND is
+    an answer of `read_found` already read."""
+    import mon_sessions
     import mon_view
-    found = mon_sessions.read_coord(mon_base.Ctx(Path(root).resolve()), events=False) or {"intents": [], "leases": {}}
+    found = found or read_found(root, False)
     out, seen = [], set()
     for s in mon_sessions.live_sessions(root):
         sid = s["session"]
@@ -135,6 +144,63 @@ def shares(touches, holders, files):
                 held = out.setdefault((kind, shown_path(w, t)), [])
                 if who not in held:
                     held.append(who)
+    return out
+
+
+def ordered(items, a, b):
+    """True when the depends_on edges of ITEMS (a dict of item dicts) lead from A to B or from B to A, through other items."""
+    def reaches(start, goal):
+        seen, todo = set(), [start]
+        while todo:
+            cur = todo.pop()
+            if cur == goal:
+                return True
+            if cur not in seen:
+                seen.add(cur)
+                todo += [d for d in (items.get(cur) or {}).get("depends_on", []) or [] if isinstance(d, str)]
+        return False
+    return reaches(a, b) or reaches(b, a)
+
+
+def coordinated(events, iid, names):
+    """True when a `coordinate` event of EVENTS (`mon_sessions.read_events`' tuples) has IID on one side and any of NAMES
+    (an item, a topic or a session label of the other work) on the other."""
+    return any((i == iid and o in names) or (o == iid and i in names) for i, o, _strategy, _who, _at in events)
+
+
+def peer_overlaps(bl, sid, ids):
+    """[(item id, path, [other work])] for each of the sprint SID's items IDS and each file of its scope that another live
+    session's plan or another active or planned sprint's item of the integration main also plans, a kb/_self doc left out
+    (`shares`, `overlap`), the other work named as `session LABEL ...` or `ITEM in sprint SP`. A pair that is ordered (the
+    item `depends_on` the other, or the other way, through other items) or that a `coordinate` event names (the item and the
+    other work's item, topic or session label) is settled and left out. The sprint's own items are not peers. [] where
+    none of the items has a touch. A ref that holds no item directory gives no sprint plans, and the sessions are still compared."""
+    mine = {i: [t for t in scope(bl, i) if isinstance(t, str) and t] for i in ids}
+    if not any(mine.values()):
+        return []
+    found = read_found(bl.root, True)
+    main = Backlog(bl.root)
+    try:
+        main.items, main.raw = items_at(bl.root, history_ref(bl.root)), {}
+    except Rejected:  # the ref holds no item directory yet: no held plans
+        main.items, main.raw = {}, {}
+    known = {**main.items, **bl.items}
+    holders = []  # ((text, items, names), [touch])
+    for s in live_peers(bl.root, os.environ.get("CLAUDE_CODE_SESSION_ID") or None, found):
+        touch = list(dict.fromkeys(s["touch"] + [t for i in s["items"] for t in item_touches(main.items, i)]))
+        text = f"session {s['label']}" + (f" (topic {', '.join(s['topics'])})" if s["topics"] else "")
+        holders.append(((text, s["items"], s["topics"] + [s["label"]]), touch))
+    for psid, _title, _status, rows in plan_rows(main, sid, set(bl.sprint_items(sid))):
+        holders += [((f"{iid} in sprint {psid}", [iid], []), touch) for iid, _t, touch in rows]
+    events = found.get("coordinate") or []
+    files = touch_files(bl.root)
+    out = []
+    for iid in ids:
+        for (kind, path), who in sorted(shares(mine[iid], holders, files).items(), key=lambda kv: kv[0][1]):
+            left = [w[0] for w in who if not any(ordered(known, iid, j) for j in w[1])
+                    and not coordinated(events, iid, {*w[1], *w[2]})]
+            if kind == "overlap" and left:
+                out.append((iid, path, left))
     return out
 
 
