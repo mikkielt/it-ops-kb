@@ -31,7 +31,16 @@ _SCOPED = [0]  # scans of _sources.csv for some ids made by ledger_rows
 _PROVIDER_ROWS = []
 
 
-def _ledger_rows(path, column, sids):
+def _row_dict(head, row):
+    """`row` as csv.DictReader makes it for the header `head`."""
+    out = dict(zip(head, row))
+    out.update(dict.fromkeys(head[len(row):]))  # a missing field is None, the extra ones a list under None
+    if len(row) > len(head):
+        out[None] = row[len(head):]
+    return out
+
+
+def _scan_rows(path, column, sids):
     """The rows of the csv at `path` whose `column` is in `sids` (every row when None), as csv.DictReader makes them:
     the file is read by csv's own reader, which takes a quoted field that holds a comma or a newline whole, and a
     dict is built only for a row of a wanted source."""
@@ -43,15 +52,96 @@ def _ledger_rows(path, column, sids):
             if column not in head:
                 return rows
             col = head.index(column)
-            for row in reader:
-                if row and (sids is None or len(row) > col and row[col] in sids):
-                    out = dict(zip(head, row))
-                    out.update(dict.fromkeys(head[len(row):]))  # a missing field is None, the extra ones a list under None
-                    if len(row) > len(head):
-                        out[None] = row[len(head):]
-                    rows.append(out)
+            rows = [_row_dict(head, row) for row in reader
+                    if row and (sids is None or len(row) > col and row[col] in sids)]
     except (OSError, UnicodeDecodeError, csv.Error):
         pass
+    return rows
+
+
+def _record_offsets(path, column):
+    """(head, {value of `column`: [byte offset of each record that holds it]}) of the csv at `path`, read through csv's
+    own reader so a record with a quoted newline is one; raises OSError, UnicodeDecodeError or csv.Error."""
+    where, state = {}, [0]
+    with open(path, "rb") as f:
+        def lines():
+            for raw in iter(f.readline, b""):
+                yield raw.decode("utf-8-sig" if f.tell() == len(raw) else "utf-8")
+        reader = csv.reader(lines())
+        head = next(reader, [])
+        if column not in head:
+            return head, where
+        col = head.index(column)
+        while True:
+            start = f.tell()
+            row = next(reader, None)
+            if row is None:
+                break
+            if len(row) > col and row:
+                where.setdefault(row[col], []).append(start)
+    return head, where
+
+
+def _ledger_index(path, column):
+    """(head, {value: [offsets]}) of the csv at `path` for `column` from the index directory's file for it, written
+    for the file's mtime and size, else read now (_record_offsets) and written there for the next process; None when
+    there is no index directory or the file does not read. Best effort: a cache that does not write costs a read."""
+    try:
+        st = os.stat(path)
+    except OSError:
+        return None
+    sig = [st.st_mtime_ns, st.st_size, column]
+    d = index_dir()
+    memo = os.path.join(d, "ledger-" + hashlib.sha1(os.path.abspath(path).encode()).hexdigest()[:12] + ".json") if d else None
+    try:
+        with open(memo, encoding="utf-8") as f:
+            got = json.load(f)
+        if got.get("sig") == sig:
+            return got["head"], got["at"]
+    except (OSError, TypeError, ValueError, KeyError, AttributeError):
+        pass
+    try:
+        head, where = _record_offsets(path, column)
+    except (OSError, UnicodeDecodeError, csv.Error):
+        return None
+    if memo:
+        tmp = None
+        try:
+            os.makedirs(d, exist_ok=True)
+            fd, tmp = tempfile.mkstemp(prefix=".ledger-", suffix=".tmp", dir=d)
+            with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as f:
+                json.dump({"sig": sig, "head": head, "at": where}, f)
+            os.replace(tmp, memo)
+            tmp = None
+        except OSError:
+            pass
+        finally:
+            if tmp:
+                remove_file(tmp)
+    return head, where
+
+
+def _ledger_rows(path, column, sids):
+    """The rows of the csv at `path` whose `column` is in `sids` (every row when None), as csv.DictReader makes them.
+    For some ids the rows are read at the byte offsets a record index of the file gives (_ledger_index), one csv
+    record each, so a ledger of thousands of rows costs the rows asked for; every row, or a file that cannot be
+    indexed, is read whole (_scan_rows)."""
+    got = _ledger_index(path, column) if sids is not None else None
+    if got is None:
+        return _scan_rows(path, column, sids)
+    head, where = got
+    if column not in head:
+        return []
+    col, rows = head.index(column), []
+    try:
+        with open(path, "rb") as f:
+            for off in sorted(o for sid in sids for o in where.get(sid, ())):  # the file's order
+                f.seek(off)
+                row = next(csv.reader(iter(lambda: f.readline().decode("utf-8"), "")), [])
+                if len(row) > col and row[col] in sids:
+                    rows.append(_row_dict(head, row))
+    except (OSError, UnicodeDecodeError, csv.Error):
+        return _scan_rows(path, column, sids)
     return rows
 
 
