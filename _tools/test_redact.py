@@ -229,8 +229,10 @@ def feedback_is_spooled_once_and_refuses_open_fields(tmp_path, monkeypatch):
     assert kb_mcp.handle({"jsonrpc": "2.0", "id": 4, "method": "tools/call", "params": {"name": "coord_put", "arguments": {
         "key": "claim/x", "value": "text"}}})["result"]["isError"]  # only an ask's or answer's text is written
     assert "kb_feedback" in kb_mcp.instructions()
-    settings = kb_mcp.handle({"jsonrpc": "2.0", "id": 5, "method": "tools/call", "params": {
-        "name": "kb_settings", "arguments": {"key": "strategy.working", "kb_root": "nowhere"}}})["result"]
+    with monkeypatch.context() as planted:  # a workspace of its own: the clone's real settings.json is none of the test's business
+        planted.setenv("CLAUDE_PROJECT_DIR", str(tmp_path))
+        settings = kb_mcp.handle({"jsonrpc": "2.0", "id": 5, "method": "tools/call", "params": {
+            "name": "kb_settings", "arguments": {"key": "strategy.working", "kb_root": "nowhere"}}})["result"]
     assert not settings["isError"] and "strategy.working = ask  (source: default)" in settings["content"][0]["text"]
     with monkeypatch.context() as limited:  # --roots, and kb_http.py always: no such tool
         limited.setattr(kb_mcp, "limited", lambda: True)
