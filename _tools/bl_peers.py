@@ -25,7 +25,7 @@ import re
 from pathlib import Path
 
 import bl_cli
-from bl_base import Backlog, glob_re, need, operator_who, resolved_touch, say, scope
+from bl_base import Backlog, Rejected, glob_re, need, operator_who, resolved_touch, say, scope
 from bl_clean import run_coord
 from bl_plan import history_ref, shared_doc, touch_files, touches_meet
 from bl_view import items_at
@@ -174,13 +174,16 @@ def peer_overlaps(bl, sid, ids):
     (`shares`, `overlap`), the other work named as `session LABEL ...` or `ITEM in sprint SP`. A pair that is ordered (the
     item `depends_on` the other, or the other way, through other items) or that a `coordinate` event names (the item and the
     other work's item, topic or session label) is settled and left out. The sprint's own items are not peers. [] where
-    none of the items has a touch."""
+    none of the items has a touch. A ref that holds no item directory gives no sprint plans, and the sessions are still compared."""
     mine = {i: [t for t in scope(bl, i) if isinstance(t, str) and t] for i in ids}
     if not any(mine.values()):
         return []
     found = read_found(bl.root, True)
     main = Backlog(bl.root)
-    main.items, main.raw = items_at(bl.root, history_ref(bl.root)), {}
+    try:
+        main.items, main.raw = items_at(bl.root, history_ref(bl.root)), {}
+    except Rejected:  # the ref holds no item directory yet: no held plans
+        main.items, main.raw = {}, {}
     known = {**main.items, **bl.items}
     holders = []  # ((text, items, names), [touch])
     for s in live_peers(bl.root, os.environ.get("CLAUDE_CODE_SESSION_ID") or None, found):
