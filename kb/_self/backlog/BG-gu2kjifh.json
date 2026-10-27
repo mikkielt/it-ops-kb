@@ -36,6 +36,26 @@
   "relates_to": [
     "ST-rodj5ltd"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "When the sampler took no tick at all, what is a class's rss_mean_mb?",
+      "options": [
+        "the class's own peak (the old fallback, kept)",
+        "0"
+      ],
+      "recommendation": "the class's own peak (the old fallback, kept)",
+      "reason": "a replay too short to sample still reports the processes' own ru_maxrss rather than a false 0",
+      "do": {
+        "the class's own peak (the old fallback, kept)": "BG-gu2kjifh",
+        "0": "BG-gu2kjifh"
+      },
+      "class": "design",
+      "answer": "the class's own peak (the old fallback, kept)",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-3qowbedb review"
   ],

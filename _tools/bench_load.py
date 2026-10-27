@@ -332,11 +332,12 @@ class Replay:
         """{class: {cpu_s, spawns, pane_spawns, peak, rss_mean_mb}} with `all`, the hook commands' timings and the failed
         ones. A command is one start and the processes the Python programs of the tree started the rest (a pane command's
         are `pane_spawns`, since the pane's rate is per window and a hook's per session); the peak memory is the largest of
-        the processes' own peaks and of the sampled sums, the mean the sampled sums' mean."""
+        the processes' own peaks and of the sampled sums, the mean the mean over every sampler tick of the phase, a tick with
+        no process of the class counting as 0, so no class's mean exceeds that of `all`."""
         per = {}
 
         def cell(c):
-            return per.setdefault(c, {"cpu_s": 0.0, "spawns": 0, "pane_spawns": 0, "peak": 0.0, "mean": []})
+            return per.setdefault(c, {"cpu_s": 0.0, "spawns": 0, "pane_spawns": 0, "peak": 0.0, "mean": 0.0})
         for r in self.roots + self.panes:
             c = cell(r["class"])
             c["cpu_s"] += r["cpu_s"]
@@ -350,17 +351,16 @@ class Replay:
             cell(cls)["peak"] = max(cell(cls)["peak"], kb / 1024)
         for tick in sampler.ticks:
             for cls, kb in tick.items():
-                cell(cls)["mean"].append(kb / 1024)
+                cell(cls)["mean"] += kb / 1024 / len(sampler.ticks)
                 cell(cls)["peak"] = max(cell(cls)["peak"], kb / 1024)
         procs = self.roots + self.panes
         per["all"] = {"cpu_s": sum(c["cpu_s"] for c in per.values()), "spawns": sum(c["spawns"] for c in per.values()),
                       "pane_spawns": sum(c["pane_spawns"] for c in per.values()),
                       "peak": max([r["maxrss_mb"] for r in procs] + [sum(t.values()) / 1024 for t in sampler.ticks] + [0.0]),
-                      "mean": [sum(t.values()) / 1024 for t in sampler.ticks]}
+                      "mean": sum(sum(t.values()) / 1024 for t in sampler.ticks) / max(len(sampler.ticks), 1)}
         for c in per.values():
-            if not c["mean"]:  # nothing sampled: the processes' own peaks stand for their size
-                c["mean"] = [c["peak"]]
-            c["rss_mean_mb"] = statistics.mean(c["mean"])
+            # no tick at all: the processes' own peaks stand for their size
+            c["rss_mean_mb"] = c["mean"] if sampler.ticks else c["peak"]
         return {"classes": per, "wall_s": wall, "hooks": self.roots, "pane_runs": self.pane_runs,
                 "failed": [r for r in self.roots if r.get("rc") not in (0, None)],
                 "pane_failed": [r for r in self.panes if r.get("rc") not in (0, 1)]}  # kbmon exits 1 while an alert is on
