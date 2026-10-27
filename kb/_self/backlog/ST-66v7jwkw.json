@@ -2,7 +2,7 @@
   "id": "ST-66v7jwkw",
   "kind": "story",
   "title": "session-load's replays make no forge call: the red-pipeline hook reads a planted pipeline answer, not gitlab.com",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nxb7hjwd",
   "sprint": "SP-m5m67goe",
   "priority": "P2",
@@ -41,5 +41,7 @@
     "parked: SP-3qowbedb review"
   ],
   "notes": "Found by the fresh-context review of SP-3qowbedb (gap report in the sprint's review scratch); the operator chose to park it under EP-nxb7hjwd. Fix before the paid session-load record (ST-rodj5ltd) where it changes a figure. kb/_self/benchmarks.md says how the forge is isolated, as selfdoc stale requires with the code.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-557596e3",
+  "operator": "op-f618a13e"
 }
