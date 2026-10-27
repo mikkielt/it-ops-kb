@@ -74,6 +74,15 @@ Work is planned and tracked in the backlog (`kb/_self/backlog.md`); a commit tha
 - A whole-suite `tests.py` run takes a host-wide lock and waits for another such run on the same host, naming its pid and clone (`kb/_self/tools.md`): sessions sharing a host, a sprint worker too, need no message to avoid overlapping runs. A selection takes no lock.
 - Commit messages: conventional prefix (`docs(kb):`, `fix(kb):`, `feat(kb):`, `chore:`), imperative, body explaining why; your own trailers (e.g. `Co-Authored-By`) in the last paragraph, and the hook appends the KB-* ones after them. Commit only when asked. Push with `python3 _tools/kbgit.py sync --push` (`kb/_self/git.md`).
 
+## Authority boundaries: enforced and convention
+
+On a single-operator host the OS user and the credentials it holds are the boundary; nothing in this clone narrows them for a session.
+
+- **Credentials are ambient.** An interactive session and a headless worker (`backlog.py dispatch`, `claude -p`) act with the operator's ambient forge and publish credentials: the forge CLI's stored login and the git remotes' keys. `KB_OPERATOR` and `KB_ROLE` name a session for the record and the claim; they grant and withdraw nothing.
+- **A permission deny rule matches command text.** A rule such as `Bash(git push *)` or `Bash(kbgit.py publish *)` refuses the command as typed; it does not bound a program. A `python3 -c` or a script that runs `git` or `glab` through `subprocess` is no match of any deny rule (Claude Code permissions docs: a Bash deny rule "isn't a security boundary around the program", live docs, not in the kb: https://code.claude.com/docs/en/permissions, read 2026-10-24). The `Edit` and `Write` path deny rules, which guard the ceiling file, the decisions files and the host profile, cover the tools and the file commands Claude Code recognizes, not a program that opens the file itself.
+- **An item's check may run inline Python.** `bl_intake.py`'s check-program rule (`check_program_refusal`) lets a check be `python3 -c` or `-m`, or any `_tools/` script but four `kbgit.py` forms (`publish`, `bridge`, `install-hooks`, `hook`); `precheck` and `done` run it in the session's own environment with an isolated query-log home and nothing else removed (`bl_base.run_check`). Drift's runner allows only its read-only scripts and no inline code. A reviewed item is the control on a check, not the runner.
+- **Enforced** means the OS, the forge or the tool refuses it whatever the command: a file mode, a protected branch, the forge role of the token. **Convention** means a rule of this repository the session follows: the role files, `KB_ROLE`, the operator-only gate classes, a deny rule, the allow lists. The experiments that measure what a check and a Developer-role token reach are in `kb/_self/reports/reliability-authority-review.md`, section 10.
+
 ## The test runner
 
 Commands: `python3 _tools/tests.py [-k NAME] [PATH ...] [--changed [REV]] [--ceiling] [--no-reuse] [--write-lint-baseline]`
