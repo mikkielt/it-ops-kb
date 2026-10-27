@@ -38,6 +38,7 @@ What a fact, an article, a source row and a ledger entry look like, and how to a
   - a fact with no window is valid from its source's retrieval date with no end, so every fact written before windows stays valid unchanged; a window is written only where a source dates a change;
   - the marker is one token with no space inside it, and a parenthesis of prose (`(valid signature, ...)`) is none;
   - `kbfacts.windows_in` reads it and `kbfacts.window_ended` says whether it has ended (a date end before today, or any commit end); `rag.py audit` counts those facts per article as `ended`;
+  - `rag.py pack --as-of DATE` (`kb_pack`'s `as_of`) ranks only the facts whose window holds the date, and a pack without it prints a fact whose window has ended under a no-longer-valid mark, not among the current facts (`kb/_self/tools.md`, "Packs as of a date");
   - the kb-verify lint reports as an error a window that is neither dates nor commit ids, a date that does not exist, an end before the start, a second window on a fact, a window after the tag, a commit range on a fact with no `CODE` tag or whose cited source is not pinned (`CODE`, below), and a date range on a fact tagged only `CODE`.
 
 ## CODE: what the implementation does

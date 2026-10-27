@@ -13,6 +13,9 @@
                                            the cited sources' urls, within about BUDGET tokens. Start every lookup here.
   rag.py pack -q PART -q PART ...          one batch for a question with several parts (1-6): a section with its
                                            own verdict per part and one shared source footer
+  rag.py pack QUESTION --as-of DATE        rank only the facts whose validity window holds DATE (YYYY-MM-DD), the verdict
+                                           read over them, and name how many matching facts the date left out; with no
+                                           --as-of, a fact whose window has ended prints under a no-longer-valid mark
   rag.py pack QUESTION --revalidate        also check the cited sources of the printed fact lines against their pages
                                            now (the network, within a time budget; only these sources and lines) and
                                            mark each line current, moved (with the new passage), not found or
@@ -603,6 +606,8 @@ def main():
     pk.add_argument("--set", dest="set_name", help="with --root _self: the tested questions of a set (`skill` or `skill:step`), "
                     "their passages and the decisions tied to them; no ranking, no verdict")
     pk.add_argument("--invalidated", action="store_true", help="also print the invalidated decisions, with the reason")
+    pk.add_argument("--as-of", metavar="DATE", help="YYYY-MM-DD: rank only the facts whose validity window holds the date "
+                    "and say how many matching facts it left out")
     pk.add_argument("--revalidate", action="store_true", help="check the cited sources of the printed fact lines against "
                     "their pages now (the network, within a time budget) and mark each line current, moved, not found "
                     "or source-dated only; the results are kept under _cache/ only")
@@ -711,7 +716,12 @@ def main():
             sys.exit(2)
         if len(parts) > kbfacts.MAX_QUESTIONS:
             sys.exit(f"pack: at most {kbfacts.MAX_QUESTIONS} parts")
-        res = kbfacts.pack_many(parts, a.budget, domain_arg(a.domain), a.format, a.root, a.invalidated, brief, a.revalidate)
+        try:
+            res = kbfacts.pack_many(parts, a.budget, domain_arg(a.domain), a.format, a.root, a.invalidated, brief, a.revalidate,
+                                    a.as_of)
+        except ValueError as e:
+            print(f"pack: {e}", file=sys.stderr)
+            sys.exit(2)
         if a.root == kbfacts.SELF_ROOT:
             kbfacts.record_self(res["text"], a.budget, res, parts, item=a.item)
         res["text"] = kbcommon.with_missing_note(res["text"])

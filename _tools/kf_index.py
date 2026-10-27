@@ -20,7 +20,7 @@ from kbfacts import (
     clip_around, corpus, decision_block, decision_label, decision_rows, decisions_for, eval_phrases, expand,
     fact_key, fingerprint, flags_in, home_label, in_prefix, index_dir, item_decisions, key_terms, log_line,
     logs_for, read, remove_file, scope, self_eval_rows, self_places, source_rows, stem, summary_text, terms,
-    tied_decisions
+    tied_decisions, window_ended, windows_in
 )
 from kf_fresh import format_sources, fresh_mark, fresh_state, ledger_rows, printed_lines
 
@@ -784,8 +784,23 @@ def name_apart(question, known, held):
             and not any(set(name) <= h and h & plain for h in held)]
 
 
+ENDED_MARK = "  no longer valid (validity window ended, not current):"  # above a pack's facts whose window has ended
+AS_OF_SHARE = 0.4  # the share of the best score a fact needs to count among those an as-of pack leaves out (as pack's own cut)
+
+
+def valid_on(text, as_of):
+    """Whether a fact's validity window holds the date `as_of` (YYYY-MM-DD, both ends included): a fact with no window,
+    an open end or a commit window (no date to compare) holds every date it is not dated out of."""
+    for w in windows_in(text):
+        if w["error"] or w["kind"] != "date":
+            continue
+        if w["start"] > as_of or (w["end"] and w["end"] < as_of):
+            return False
+    return True
+
+
 def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", footer=True, root=None, invalidated=False,
-         item=None, st=None, shares=None):
+         item=None, st=None, shares=None, as_of=None):
     """Rank fact units for a question and return {verdict, route, has, lacks, missing, matched, sources, text, ...}.
 
     The corpus is every fact unit plus the untagged bullets, table rows and data rows (Summary, Reference, Examples,
@@ -841,17 +856,32 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     computed after the verdict, the route and the `check:` lines and change none of them, nor any fact line; a `none`
     that routes web prints none. Under the same label follow at most MAX_FLAGS `flagged (feedback, not a fact):` lines,
     one per printed fact line that a committed feedback report flags (flags_in), paid from the same budget and as little
-    a part of the verdict. A kb with none prints what it always did, byte for byte. fmt
+    a part of the verdict. A kb with none prints what it always did, byte for byte.
+    Validity: with `as_of` (YYYY-MM-DD) only the facts whose window holds the date (valid_on) rank, so the verdict reads
+    over the facts valid then, and a line under the coverage names how many of the best-ranked matching facts (the top
+    40 at AS_OF_SHARE of the best score) the date left out. With none, a fact whose window has ended (window_ended)
+    prints after the article's others under ENDED_MARK, never among the current facts. fmt
     `concise` drops the article flags and the source url footer; footer=False leaves the footer out of the text (pack_many prints one shared footer). `domain` (bare `intune`
     or qualified `public/intune`) and `root` narrow the units (scope()); paths print qualified (`public/intune/x.md`)."""
     rules = scope(domain, root) == SELF_ROOT  # the kb's own rule docs: facts without sources, no web route
     st = st or store(scope(domain, root))
     ranked, keys, holders, kdf = rank(st, question)
+    left_out, kdf_kb, dropped = None, kdf, 0
+    if as_of and not rules:
+        # the facts valid on the date are the corpus: the words' counts and the unit count that judge which words tell
+        # units apart are read over them, so a word the dated-out facts alone held counts as lacking, not as common
+        top = ranked[0][0] if ranked else 0
+        out = {i for i in {x[1] for x in ranked}.union(*holders.values()) if not valid_on(st.unit(i)["text"], as_of)}
+        left_out = sum(1 for k, x in enumerate(ranked[:40]) if x[1] in out and x[0] >= AS_OF_SHARE * top)
+        ranked = [x for x in ranked if x[1] not in out]
+        holders = {t: ids - out for t, ids in holders.items()}
+        kdf = {t: len(ids) for t, ids in holders.items()}
+        dropped = len(out)
     if item:
         ranked = [x for x in ranked if st.paths[x[1]] in item["docs"]]
-    n = max(st.n, 1)
+    n = max(st.n - dropped, 1)
     informative = informative_words(keys, kdf, n, shares)
-    missing = [t for t in informative if not kdf[t]]
+    missing = [t for t in informative if not kdf_kb[t]]  # a word the kb never holds, whatever the date
     scored = [(s, st.unit(i)) for s, i in ranked[:40]]
     tested = tested_matches(st, informative) if rules else []
     pins = [{**st.unit(i), "tested": rid} for rid, _, i in tested]
@@ -982,7 +1012,7 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
         fresh_state(rows)
     for art in order:
         picked = taken[art]
-        items = []
+        lines = []  # (line, whether its window has ended), in article order
         one_section = len({u["section"] for _, u in picked}) == 1  # rule docs: the heading once, else on each line
         for s, u in picked:
             if rules:
@@ -999,23 +1029,27 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
             new_ids = [i for p in u["tags"] for i in p["ids"]] + ID.findall(text)
             # the root prefix of the path (`public/`) is not counted: a pack chooses the same lines in any layout
             cost = len(line) - (len(u["path"]) - len(bare(u["path"]))) + url_cost * len(set(new_ids) - set(cited))
-            if used + cost > limit and (items or groups):
+            if used + cost > limit and (lines or groups):
                 used = limit
                 break
-            items.append(line)
+            lines.append((line, not (rules or as_of) and window_ended(u["text"])))
             printed.append(u)
             used += cost
             cited += new_ids
-        if items:
-            more = sum(1 for x in ranked if st.paths[x[1]] == art and x[0] >= 0.4 * best) - len(items)
-            if more > 0:  # e.g. hundreds of similar rows in a data file: the answer may be one of these
-                items.append(f"  (+{more} more matching lines in {art}: kb_search with more words, or kb_show)")
+        if lines:
+            more = sum(1 for x in ranked if st.paths[x[1]] == art and x[0] >= 0.4 * best) - len(lines)
+            # a fact whose window has ended is not current: it follows the others, under its own mark
+            tail = [(f"  (+{more} more matching lines in {art}: kb_search with more words, or kb_show)", False)] if more > 0 else []
+            # e.g. hundreds of similar rows in a data file: the answer may be one of these
+            arrange = lambda ls: [l for l, e in ls if not e] + ([ENDED_MARK] if any(e for _, e in ls) else []) + [l for l, e in ls if e]
+            items = arrange(lines + tail)
+            short = arrange((lines + tail)[:2])
             meta = st.arts.get(art, {})
             head = f"## {art}" + (f"  {meta.get('title', '')}" if meta else "")
             if rules and one_section and picked[0][1]["section"]:
                 head += f"  § {picked[0][1]['section']}"
             flags = ", ".join(filter(None, (meta.get("status"), f"retrieved {meta['retrieved_utc']}" if meta.get("retrieved_utc") else "")))
-            groups.append((head + (f"  [{flags}]" if flags and not concise else ""), items))
+            groups.append((head + (f"  [{flags}]" if flags and not concise else ""), items, short))
             paths.append(art)
             used += len(head) - (len(art) - len(bare(art))) + 40
         if used >= limit:
@@ -1110,6 +1144,9 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     if missing:
         head += f"; not in the kb: {', '.join(missing)}"
     out = [head]
+    if left_out is not None:
+        out.append(f"as of {as_of}: {left_out} matching fact{'' if left_out == 1 else 's'} left out as not yet valid or "
+                   "no longer valid then")
     if unmatched:
         names = {stem(w.lower()): w for w in WORD.findall(question)}
         out.append(f"check: {paths[0]} never mentions {', '.join(names.get(t, t) for t in unmatched)}; the facts may be "
@@ -1158,7 +1195,7 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
                 "every kb/_self doc)"]
     if rules and verdict != "good" and not item:
         out.append("reword once with the rule's own words, or read the section: python3 _tools/selfdoc.py section DOC HEADING")
-    for h, items in groups if not shut else [(g[0], g[1][:2]) for g in groups[:1]]:
+    for h, items, short in groups if not shut else [(g[0], g[2], None) for g in groups[:1]]:
         out += ["", h] + items
     if dlines:
         out += ["", "## decisions"] + dlines
