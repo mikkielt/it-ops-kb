@@ -84,7 +84,11 @@
         "the same pairs including kb/_self docs, printed only with --conflicts": "ST-cqcmpo72",
         "the same pairs printed on every precheck run": "ST-cqcmpo72"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "pairs of open committed items whose touches share a path, kb/_self docs left out as check leaves them, printed only with --conflicts",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -100,7 +104,11 @@
         "refuse the run naming the line number, and list a reference that names no item with the outside-the-sprint predictions": "ST-cqcmpo72",
         "skip the bad line with a warning": "ST-cqcmpo72"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "refuse the run naming the line number, and list a reference that names no item with the outside-the-sprint predictions",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ]
 }
