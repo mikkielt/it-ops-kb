@@ -2,7 +2,7 @@
   "id": "ST-xllrtqlt",
   "kind": "story",
   "title": "The query-log redactor catches a long token after an equals sign and the common cloud key shapes",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-jwvaq2hu",
   "priority": "P1",
@@ -58,5 +58,7 @@
     "ST-yl6b2ues"
   ],
   "notes": "Planner (SP-jwvaq2hu): check 1 (test_redact.py) passes before the work and pins the critical redaction test the corpus extends; check 2 builds the four cloud key shapes at run time (no secret-shaped literal in the item).",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-557596e3",
+  "operator": "op-f618a13e"
 }
