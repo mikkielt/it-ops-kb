@@ -2,7 +2,7 @@
   "id": "ST-6vcyn4as",
   "kind": "story",
   "title": "Review sprint: Coordination any agent can use, and whether it pays",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-n7f53pgv",
   "review": true,
   "priority": "P1",
@@ -24,6 +24,27 @@
     }
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-775f1f5d",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "021f89bbcebadac1bfdaaeecaf638e9e23f51898",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "b955fb2ef6f437d1"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "0500cd9c2ef50317"
+      }
+    ]
+  }
 }
