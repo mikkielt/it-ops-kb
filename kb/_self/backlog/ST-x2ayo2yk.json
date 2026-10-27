@@ -43,6 +43,24 @@
     "ST-cqcmpo72",
     "ST-hqko4k2x"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the session-start peers line read the sessions, and where does it sit among the hook's lines?",
+      "options": [
+        "Read the monitor's modules at call time, place the line after the checkout-lag line, name at most two sessions",
+        "Import bl_peers.live_peers at call time, place the line last, name three sessions"
+      ],
+      "recommendation": "Read the monitor's modules at call time, place the line after the checkout-lag line, name at most two sessions",
+      "reason": "bl_peers imports bl_view, so importing it back makes an import cycle; the line shares the hook's 1000-character cap, and above the sprint lines it is the last to be cut",
+      "do": {
+        "Read the monitor's modules at call time, place the line after the checkout-lag line, name at most two sessions": "ST-x2ayo2yk",
+        "Import bl_peers.live_peers at call time, place the line last, name three sessions": "ST-x2ayo2yk"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "moved out: SP-basca7ae"
   ],
