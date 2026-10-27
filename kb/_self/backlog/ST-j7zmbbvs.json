@@ -2,7 +2,7 @@
   "id": "ST-j7zmbbvs",
   "kind": "story",
   "title": "The session-load docs say arm B leaves out the pane's --receipt run, so it understates the pane",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-nxb7hjwd",
   "sprint": "SP-m5m67goe",
   "priority": "P3",
@@ -43,6 +43,19 @@
   ],
   "notes": "Found by the fresh-context review of SP-3qowbedb (gap report in the sprint's review scratch); the operator chose to park it under EP-nxb7hjwd. Fix before the paid session-load record (ST-rodj5ltd) where it changes a figure.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-557596e3",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "46bfa02519d5b1674f846ee82f5d6e4ccecdb037",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport re\nfor path in ('kb/_self/benchmarks.md', 'kb/_self/reports/benchmarks.md'):\n    text = open(path, encoding='utf-8').read()\n    paras = [p for p in re.split(r'\\n\\s*\\n', text) if 'arm B' in p or 'Arm B' in p]\n    assert paras, ('no arm B paragraph', path)\n    for p in paras:\n        assert 'heavier refresh' not in p, ('an arm B paragraph still calls the pane run the heavier refresh', path)\n    assert any('--receipt' in p for p in paras), ('no arm B paragraph says the mod also runs --receipt and arm B does not', path)\n    assert any('empty' in p and ('coord' in p or 'query log' in p) for p in paras), ('no arm B paragraph says its kbmon reads an empty coord store and query log', path)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
