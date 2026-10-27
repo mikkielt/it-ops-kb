@@ -109,6 +109,16 @@ def test_redact_replaces_every_class_of_value_leaves_ordinary_text_and_a_second_
     assert not gap_problems("redact", kept, every, gap), gap_problems("redact", kept, every, gap)
     changed = {i for i, text in utility if redact.redact(text) != text}
     assert not gap_problems("utility_redact", changed, [i for i, _ in utility], gap), changed
+    # a long value (20 or more characters with a letter and a digit) goes after any key, separator and quoting depth,
+    # `token=<value>` included; a cloud key shape goes with no key name before it
+    with open(Path(TOOLS) / "fixtures" / "redact" / "adversarial.json", encoding="utf-8") as f:
+        c = json.load(f)
+    long, m = "".join(c["values"]["long"]), c["matrix"]
+    rows = [("{" + q + k + q + s + q + long + q + "}") for k in m["keys"] for s in m["seps"] for q in m["depths"]]
+    assert not [r for r in rows if long in redact.redact(r)], "long value kept"
+    t = "Qm4Lp7Rt2Vb8Nc5Kd3Wf6Hj01"
+    cloud = ["AI" + "za" + "SyD" + t + "2345678", "sk_" + "live_" + t, "npm_" + t + "Ab9x8Yz7Wq", "SG" + "." + t[:22] + "." + t + "Ab9x8Yz7Wq6Vu5Ts4Rp"]
+    assert not [v for v in cloud if v in redact.redact("key " + v) or not kbcommon.leak_hits("key " + v)], "cloud key kept"
     f = tmp_path / "in.txt"
     f.write_text(TEXT, encoding="utf-8", newline="\n")
     assert redact.main(["--scan", str(f)]) == 1

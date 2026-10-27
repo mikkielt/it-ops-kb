@@ -222,7 +222,10 @@ SECRETS = (
     r"-----BEGIN (?:(?:RSA |OPENSSH |DSA |PGP |ENCRYPTED )?PRIVATE KEY-----"
     r"|(?:EC PRIVATE KEY|PGP PRIVATE KEY BLOCK)-----"
     r"(?=(?:" + _GAPS + r")?(?:[A-Za-z][\w-]*+:" + _VALUE + _GAPS + r")*" + _KEY + r"))",
-    r"\bAKIA[0-9A-Z]{16}\b",
+    # The AWS access key id with the other cloud key shapes that have a fixed prefix: a Google API key, a Stripe live
+    # secret or restricted key, an npm token and a SendGrid key (one entry, as `_tools/test_leaks.py` plants one per entry).
+    r"\bAKIA[0-9A-Z]{16}\b|\bAIza[0-9A-Za-z_-]{35,}|\b[rs]k_live_[0-9A-Za-z]{24,}\b|\bnpm_[A-Za-z0-9]{30,}\b"
+    r"|\bSG\.[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{43,}",
     r"\bgh[pousr]_[A-Za-z0-9]{36}\b", r"\bgithub_pat_[A-Za-z0-9_]{22,}\b",
     r"\bglpat-[A-Za-z0-9_-]{20,}\b", r"\bglrt-[A-Za-z0-9_-]{20,}\b",
     r"\bxox[abprs]-[A-Za-z0-9-]{10,}\b",
