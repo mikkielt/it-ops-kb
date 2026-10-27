@@ -396,6 +396,10 @@ def main(argv=None):
     r.add_argument("--fs-usage", metavar="FILE",
                    help="`session-load` alone: count the file reads per process class in this capture of `fs_usage -w -f filesys` "
                    "and start no replay and no model (without it the scenario prints the `sudo fs_usage` command to run by hand)")
+    r.add_argument("--intake-real", action="store_true",
+                   help="`session-load` alone, arm A only: replay only arm A's SessionStart intake hook in a clone left as the checkout "
+                   "is (the other replays pin the item files so its drift scan runs no item check) and write its cpu_s, wall_s and "
+                   "spawns, case 'idle hook intake real', keeping the rest of the record")
     r.add_argument("--kinds", help="the pool kinds `pool` runs, comma separated (default: every kind; the opus-5-5 arm: its sanity subset, "
                    + "+".join(bench_pool.SUBSET_KINDS["opus-5-5"]) + ")")
     r.add_argument("--effort", help="the effort levels of the kb arms of `pool`, comma separated (default: "
@@ -655,6 +659,11 @@ def main(argv=None):
         problems.append("--sample needs 1 or more")
     if any(x is not None and x <= 0 for x in (a.window, a.pane_every)):
         problems.append("--window and --pane-every need more than 0 seconds")
+    if a.intake_real:
+        if names != ["session-load"]:
+            problems.append("--intake-real: name `session-load` alone, as the other scenarios would run")
+        elif a.fs_usage or a.window is not None or a.pane_every is not None or set(load_arms or ["A"]) != {"A"}:
+            problems.append("--intake-real: replays arm A's intake hook alone; it takes no other --arms, --window, --pane-every or --fs-usage")
     capture = None
     if a.fs_usage:
         if names != ["session-load"]:
@@ -675,6 +684,7 @@ def main(argv=None):
     b.arm = a.arm
     b.arms, b.efforts, b.dry, b.shape, b.seed = arms, efforts, a.dry_run, a.shape, a.seed
     b.load_arms, b.window, b.pane_every, b.capture = load_arms, a.window, a.pane_every, capture
+    b.intake_real = a.intake_real
     b.jobs, b.max_usd, b.sample = a.jobs, a.max_usd, a.sample
     b.kinds, b.arm_reps, b.arm_kinds = kinds, arm_reps, arm_kinds
     out = Path(a.out) if a.out else RESULTS
@@ -703,10 +713,12 @@ def main(argv=None):
                   f"{time.time() - t:.0f} s", flush=True)
             SPEND.update(usd=0.0, input=0, out=0, runs=0)
             old = read_rows(out)
-            if n == "session-load":  # a same-day run of some arms keeps the rows of the arms it did not run
+            if n == "session-load":  # a same-day run of some arms keeps the rows of the arms it did not run, and every run the rows of --intake-real
                 ran, records = {r["arm"] for r in mine if r["arm"]}, {r["record"] for r in mine}
+                fresh = {(r["case"], r["arm"], r["metric"]) for r in mine}
                 mine = [r for r in old if r["scenario"] == n and r["record"] in records and r["arm"]
-                        and r["arm"] not in ran] + mine
+                        and (r["arm"] not in ran or b.intake_real or r["case"] == bench_load.INTAKE_REAL_CASE)
+                        and (r["case"], r["arm"], r["metric"]) not in fresh] + mine
             merged = merge_rows(old, mine)
             if n == "pool":  # a same-day run of arm labels takes their runs out of an earlier spend row that counted them
                 for record in dict.fromkeys(r["record"] for r in mine):

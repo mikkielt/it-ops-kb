@@ -33,6 +33,7 @@ READ_CALLS = ("read", "readv", "pread", "preadv", "RdData")  # descriptor reads 
 DESCRIPTOR_CALLS = ("read", "readv", "pread", "preadv")  # the descriptor reads among them; RdData is the disk read
 OPEN_CALLS = ("open", "open_extended", "open_dprotected_np", "openat")  # a read when the mode string starts with R
 FS_LINE = re.compile(r"^\s*\d\d:\d\d:\d\d(?:\.\d+)?\s+(\S+)\s*(.*?)\s+\d+\.\d+(?:\s+W)?\s+(\S.*?)\.\d+\s*$")  # call, fields and path, process
+INTAKE_REAL_CASE = "idle hook intake real"  # the case of `run session-load --intake-real`: the intake hook in an unpinned clone
 SAMPLE_S = 0.02  # the sampler's pause between two `ps` listings
 SETTLE_S = 30  # seconds a replay waits for the processes it left running in the clone
 SITE = '''# logs each process a Python program starts (the audit events of subprocess.Popen, os.posix_spawn and os.system) to the
@@ -219,12 +220,17 @@ def pin_drift(clone):
     todo items whose touches changed since their file did, within a wall-clock budget of its own: the checks that fit, and so
     the processes started, move with the host's speed and load. One commit on the clone that changes the mode of each item file
     (no content) makes the newest commit of every item file the clone's HEAD, so no item is eligible and the scan only
-    reads the items; what the real hook costs in a clone where checks do run is not measured here."""
+    reads the items; what the real hook costs in a clone where checks do run is `intake_real_rows`'s."""
     item_dir = json.loads((Path(clone) / "backlog.json").read_text(encoding="utf-8"))["item_dir"]
     files = git("ls-files", "--", item_dir, cwd=clone).splitlines()
     git("update-index", "--chmod=+x", "--", *files, cwd=clone)
     git("-c", "user.name=bench", "-c", "user.email=bench@example.com", "commit", "-q", "--no-verify", "-m",
         "bench: the item files' mode", cwd=clone)
+
+
+def intake_hooks(hooks):
+    """The SessionStart commands of the intake hook (`backlog.py intake`) among the clone's hook commands."""
+    return [h for h in hooks if h[0] == "SessionStart" and "backlog.py intake" in h[3]]
 
 
 def reset(clone):
@@ -516,6 +522,32 @@ def capture_rows(b):
         b.row("session-load", f"capture {cls}", "capture", "distinct_paths", len(got["paths"] if cls == "all" else cells[0]["paths"]), 1)
 
 
+def intake_real_rows(b):
+    """The rows of `run session-load --intake-real`: arm A's SessionStart intake hook alone, replayed in a clone left as
+    the checkout is (no pin_drift), so its drift scan runs the checks of the draft and todo items whose touches changed
+    since their file did, until the scan's budget is spent. Case INTAKE_REAL_CASE, arm A: the median over the reps of
+    the hook command's `cpu_s` (os.wait4, its children included), `wall_s` (the command's own, not the replay's) and
+    `spawns` (the command and the processes the Python programs of its tree started). One unmeasured replay first."""
+    import bl_ci, bl_intake
+    clone = b.clone("session-load-real", "local")
+    hooks = intake_hooks(hook_commands(clone))
+    if not hooks:
+        raise RuntimeError("no SessionStart command of the intake hook in .claude/settings.json")
+    replay(b, clone, hooks, "A", "idle", "warm-real")
+    reps = [replay(b, clone, hooks, "A", "idle", f"real-{i}") for i in range(max(1, b.reps))]
+    bad = [h["rc"] for r in reps for h in r["hooks"] if h.get("rc") != 0]
+    if bad:
+        raise RuntimeError(f"the intake hook exited with {bad[0]}: its figures would not stand for a session")
+    runs = [r["hooks"][0] for r in reps]
+    kids = [1 + len(h["children"]) for h in runs]
+    note = (host_note([r["load"] for r in reps]) + f"; the clone is left as the checkout is, so the drift scan runs item checks until "
+            f"its budget of {bl_intake.DRIFT_BUDGET_S} s is spent (the hook stops waiting for its detectors after "
+            f"{bl_ci.INTAKE_HOOK_BUDGET_S} s): the checks that fit move with the host's speed and load")
+    for metric, vals, n in (("cpu_s", [h["cpu_s"] for h in runs], note), ("wall_s", [h["wall_s"] for h in runs], ""),
+                            ("spawns", kids, "the command and the processes Python programs of its tree started, per replay")):
+        b.row("session-load", INTAKE_REAL_CASE, "A", metric, statistics.median(vals), len(vals), note=n)
+
+
 def s_session_load(b):
     """One session's hook cost on the host, no model: the hook events of a session replayed through this clone's own hook
     commands in a throwaway clone (query log in mode `local` under a scratch plugin data directory, a `claude` that fails
@@ -527,12 +559,15 @@ def s_session_load(b):
     NOMINAL_S (the pane's own starts per minute of the window); per synchronous hook command its median milliseconds (a
     run of an async hook is `async_ms`: Claude Code does not wait for it). Each rep runs every arm and phase once, the
     medians of the reps are the rows. With `b.capture` (run --fs-usage FILE) it only writes the file reads of that capture;
-    otherwise it prints the `sudo fs_usage` command the operator runs by hand, which this tool never runs."""
+    otherwise it prints the `sudo fs_usage` command the operator runs by hand, which this tool never runs. With
+    `b.intake_real` (run --intake-real) it only replays the intake hook, in a clone no item is pinned in (intake_real_rows)."""
     if getattr(b, "capture", None):  # --fs-usage FILE: count a capture, start no replay
         return capture_rows(b)
     if not hasattr(os, "wait4"):
         raise Skip("no os.wait4 (Windows): run it on macOS or Linux")
     need_sh()
+    if getattr(b, "intake_real", False):  # --intake-real: the intake hook in an unpinned clone, nothing else
+        return intake_real_rows(b)
     print(f"session-load: for the file reads of a session, run `{FS_COMMAND}` by hand beside it (macOS, needs root; stop it with "
           "Ctrl-C), then `python3 _tools/benchmarks.py run session-load --fs-usage fs_usage.txt`", flush=True)
     arms =list(getattr(b, "load_arms", None) or DEFAULT_ARMS)
