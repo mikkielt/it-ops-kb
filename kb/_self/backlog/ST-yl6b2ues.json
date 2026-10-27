@@ -2,7 +2,7 @@
   "id": "ST-yl6b2ues",
   "kind": "story",
   "title": "The commit and publish leak gate catches Bearer and Basic credentials, URL passwords and prose secret assignments, measured on an adversarial corpus",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-fn7letri",
   "priority": "P1",
@@ -84,5 +84,7 @@
     }
   ],
   "notes": "Planner (SP-fn7letri): check 1 (the leak and redact test files) passes before the work and pins the critical leak guard; the corpus and known_gap list land inside those test functions. Depends on BG-juf5gvt4 (SP-m5m67goe), which also edits _tools/test_redact.py. Check 2 builds its fake secrets at run time.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-557596e3",
+  "operator": "op-f618a13e"
 }
