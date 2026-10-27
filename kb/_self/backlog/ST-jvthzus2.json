@@ -2,7 +2,7 @@
   "id": "ST-jvthzus2",
   "kind": "story",
   "title": "Code questions answered from the map are measured against reading files, per right answer",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-rpzrctui",
   "sprint": "SP-jxf76aa2",
   "priority": "P2",
@@ -80,5 +80,7 @@
     "moved out: SP-acysfnxr"
   ],
   "notes": "Spend: the operator set a 150 USD cap (gate g1). No dry-run estimate exists at planning: multi run code-lookups --dry-run exits 2 until this story adds the scenario, so the worker prints the dry-run estimate first and stops at a gate if it exceeds 150 USD. Moved out of SP-acysfnxr by the unattended orchestrator 2026-10-26: depends on ST-teivhsxq, whose gate g1 (class agents-rule) waits on the operator.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
