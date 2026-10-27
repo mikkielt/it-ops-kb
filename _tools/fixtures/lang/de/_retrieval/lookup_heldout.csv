@@ -1,0 +1,4 @@
+id,question,expect_paths,expect_verdict,allow_weak
+HO-de-load,Wie lade ich Kartenskripte?,maps/scripts.md,good,
+HO-de-queen,Wie heisst die Koenigin einer Karte?,maps/scripts.md,good,
+HO-de-delete,Wie lösche ich Y im Kartenskript?,,none,

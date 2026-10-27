@@ -1,0 +1,4 @@
+id,question,expect_paths,expect_verdict,allow_weak
+HO-pl-load,Jak wczytać skrypty mapy?,maps/scripts.md,good,
+HO-pl-load-x,Jak wczytać X w skrypcie mapy?,maps/scripts.md,good,
+HO-pl-delete,Jak usunąć skrypt Y z archiwum?,,none,

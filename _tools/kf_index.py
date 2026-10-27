@@ -9,18 +9,19 @@ import sys
 if "kbfacts" not in sys.modules:  # imported first: the facade loads this stage under its name, then this copy reads it
     sys.modules.pop(__name__, None)
     import kbfacts
-import array, bisect, functools, hashlib, json, marshal, math, os, re, sqlite3, tempfile, threading, time
+import array, bisect, functools, hashlib, inspect, json, marshal, math, os, re, sqlite3, tempfile, threading, time
 from collections import Counter, defaultdict
 
 import kbcommon, kbid
 from kbfacts import (
     CAMEL_CLASSES, CLAUSE_CHARS, CONTEXT_SEP, EXPANSION_WEIGHT, ID, ITEM_DECISIONS, LOG_LABEL, MAX_DECISIONS, MAX_FLAGS,
-    MAX_LOGS, NONE_SENTENCE, NUMBER, PARENT_CHARS, PART_WEIGHT, PASSAGES_PER_LINE, PASSAGE_CHARS, SELF_ROOT, STOP,
+    MAX_LOGS, NONE_SENTENCE, NUMBER, PARENT_CHARS, PART_WEIGHT, PASSAGES_PER_LINE, PASSAGE_CHARS, SELF_ROOT,
     SUMMARY_WEIGHT, TITLE_WEIGHT, UNTAGGED_WEIGHT, VERSION_ID, VPREFIX, WORD, aliases, articles, bare, clip,
     clip_around, corpus, decision_block, decision_label, decision_rows, decisions_for, eval_phrases, expand,
     fact_key, fingerprint, flags_in, fold, home_label, in_prefix, index_dir, item_decisions, key_terms, log_line,
     logs_for, nfc, read, remove_file, scope, self_eval_rows, self_places, source_rows, stem, summary_text, terms,
-    tied_decisions, window_ended, windows_in, camel_parts, has_camel
+    tied_decisions, window_ended, windows_in, camel_parts, has_camel, DEFAULT_LK, lang_context, lang_digest, lang_key, stop_words,
+    _stem, _stem_en, _stem_profile
 )
 from kf_fresh import format_sources, fresh_mark, fresh_state, ledger_rows, printed_lines
 
@@ -39,7 +40,7 @@ def _code_digest(code):
 @functools.lru_cache(maxsize=1)
 def _weigh_code():
     """The digest of the functions that weigh a unit: _weigh, terms, stem (without its cache wrapper) and bare."""
-    return [_code_digest(f.__code__) for f in (_weigh, terms, getattr(stem, "__wrapped__", stem), bare, fold, camel_parts, has_camel)]
+    return [_code_digest(f.__code__) for f in (_weigh, terms, _stem.__wrapped__, _stem_en, _stem_profile, bare, fold, camel_parts, has_camel)]
 
 
 @functools.lru_cache(maxsize=4)
@@ -48,10 +49,11 @@ def _weigh_data(stop, kbid_stop, patterns):
     return hashlib.sha1(repr((sorted(stop), sorted(kbid_stop), patterns)).encode()).hexdigest()
 
 
-def _unit_key(u, art, meta, sums, exps):
+def _unit_key(u, art, meta, sums, exps, lk):
     """The cache key of unit `u`'s weighing: a hash of INDEX_VERSION, the doc2query mode, the weighing code (the
-    weights, the STOP sets and the word patterns that terms() reads, and the code of _weigh, terms, stem and bare)
-    and every input weighed() reads for the unit (path, title or lead, section, text, its article's Summary, its
+    weights, the stop words of the served roots' languages and the word patterns that terms() reads, and the code of
+    _weigh, terms, the stemmers and bare) and every input weighed() reads for the unit (path, title or lead, section,
+    text, its root's language key and profile files, its article's Summary, its
     expansions, its tested questions), so an unchanged unit keeps its key across an edit elsewhere or a change to
     this file outside the weighing, while an edit to the weighing re-weighs every unit without an INDEX_VERSION bump."""
     if meta and not u["section"].startswith("Summary"):
@@ -62,10 +64,11 @@ def _unit_key(u, art, meta, sums, exps):
         summ = None
     ex = exps.get(fact_key(u["text"]), ()) if exps and u["tags"] and not u.get("root") else ()
     patterns = (WORD.pattern, CAMEL_CLASSES.pattern, NUMBER.pattern, VERSION_ID.pattern, VPREFIX.pattern)
-    wdata = _weigh_data(frozenset(STOP), frozenset(kbid.STOP), patterns)
+    wdata = _weigh_data(frozenset(stop_words()), frozenset(kbid.STOP), patterns)
     raw = json.dumps([INDEX_VERSION, os.environ.get("KB_DOC2QUERY", ""), _weigh_code(), wdata,
                       TITLE_WEIGHT, SUMMARY_WEIGHT, EXPANSION_WEIGHT, u["path"], u["title"], u.get("lead", ""),
-                      u["section"], u["text"], summ, list(ex), [q for _, q in u.get("anchors", ())]], ensure_ascii=False)
+                      u["section"], u["text"], summ, list(ex), [q for _, q in u.get("anchors", ())], list(lk), lang_digest(lk)],
+                     ensure_ascii=False)
     return hashlib.sha1(raw.encode()).digest()
 
 
@@ -132,19 +135,21 @@ def weighed(us, metas, exps):
     except sqlite3.Error:
         memo = {}
     summaries, sums, new, keys = {}, {}, {}, []
+    lks = {r.name: lang_key(r) for r in kbcommon.roots()}  # a unit is stemmed by its own root's profile
     for u in us:
         art = u["path"] if u["path"] in metas else u["path"][:-4] + ".md"
         meta = metas.get(art) or {}
         u["title"] = meta.get("title", "")
+        lk = lks.get(u["path"].split("/", 1)[0], DEFAULT_LK)
         if con:
-            key = _unit_key(u, art, meta, sums, exps)
+            key = _unit_key(u, art, meta, sums, exps, lk)
             keys.append(key)
             hit = memo.get(key)
             if hit is not None:
                 u["len"], own, tf = marshal.loads(hit)
                 u["own"], u["tf"] = frozenset(own), Counter(tf)
                 continue
-        _weigh(u, art, meta, summaries, exps)
+        _weigh(u, art, meta, summaries, exps, lk)
         if con:
             new[key] = marshal.dumps((u["len"], tuple(sorted(u["own"])), dict(u["tf"])))
     if con:
@@ -154,32 +159,33 @@ def weighed(us, metas, exps):
     return us
 
 
-def _weigh(u, art, meta, summaries, exps):
-    """Set unit `u`'s `len`, `own` and `tf` (weighed()'s work for one unit; `summaries` caches each article's)."""
-    tf = Counter(terms(f"{bare(u['path'])} {u['title']} {u['section']} {u['text']}"))  # a root name is no word
+def _weigh(u, art, meta, summaries, exps, lk=DEFAULT_LK):
+    """Set unit `u`'s `len`, `own` and `tf` (weighed()'s work for one unit, stemmed by language key `lk` of its root;
+    `summaries` caches each article's)."""
+    tf = Counter(terms(f"{bare(u['path'])} {u['title']} {u['section']} {u['text']}", lk=lk))  # a root name is no word
     # own: words the unit itself has (verdict, df). Directory names rank but are not own words: every unit of a
     # domain holds its name, so a growing domain (agents/) would push that word past the 20% common-word cut.
-    own = terms(f"{os.path.basename(bare(u['path']))} {u['title']} {u['section']} {u['text']}")
+    own = terms(f"{os.path.basename(bare(u['path']))} {u['title']} {u['section']} {u['text']}", lk=lk)
     u["len"], u["own"] = sum(tf.values()), frozenset(own)
-    for t in terms(u["title"] or u.get("lead", "")):
+    for t in terms(u["title"] or u.get("lead", ""), lk=lk):
         tf[t] += TITLE_WEIGHT - 1
     if meta and not u["section"].startswith("Summary"):
         if art not in summaries:
-            summaries[art] = Counter(terms(summary_text(art)))
+            summaries[art] = Counter(terms(summary_text(art), lk=lk))
         for t, c in summaries[art].items():
             tf[t] += SUMMARY_WEIGHT * c
     for q in exps.get(fact_key(u["text"]), ()) if exps and u["tags"] and not u.get("root") else ():
-        for t in terms(q):
+        for t in terms(q, lk=lk):
             tf[t] += EXPANSION_WEIGHT  # ranks the fact for other wordings; never a verdict word (not in own)
     for _, q in u.get("anchors", ()):
-        for t in terms(q):
+        for t in terms(q, lk=lk):
             tf[t] += EXPANSION_WEIGHT  # a tested question: ranks its passage for other wordings; never a verdict word
     u["tf"] = tf
 
 
 # ---------------------------------------------------------------- the pack index (postings; persisted with sqlite3)
 
-INDEX_VERSION = 8 # bump when the index layout or what goes into a unit's tf/own changes
+INDEX_VERSION = 9 # bump when the index layout or what goes into a unit's tf/own changes
 
 
 class Store:
@@ -199,6 +205,7 @@ class Store:
         self.n_index = next((i for i, p in enumerate(self.passage) if p), len(lens))
         self._own, self._tf, self._main, self._index, self._rules = {}, {}, None, None, None
         self._anchor_words = None  # tested_matches: each anchored question's informative words, per anchor
+        self._lks = None  # lang_keys()
 
     def own(self, t):
         if t not in self._own:
@@ -209,6 +216,26 @@ class Store:
         if t not in self._tf:
             self._tf[t] = self._load_tf(t)
         return self._tf[t]
+
+    def view_paths(self):
+        """The paths of the units of this view."""
+        return self.paths
+
+    def lang_keys(self):
+        """The language keys of the roots this view's units belong to, in the roots' order (DEFAULT_LK too for units of no
+        root, the rule passages): the question is stemmed once per key. The default key alone while every served root is
+        English, without a look at the units."""
+        if self._lks is None:
+            roots = kbcommon.roots()
+            if all(lang_key(r) == DEFAULT_LK for r in roots):
+                self._lks = (DEFAULT_LK,)
+            else:
+                names = {p.split("/", 1)[0] for p in self.view_paths()}
+                keys = [lang_key(r) for r in roots if r.name in names]
+                if names - {r.name for r in roots}:
+                    keys.append(DEFAULT_LK)
+                self._lks = tuple(dict.fromkeys(keys)) or (DEFAULT_LK,)
+        return self._lks
 
     def view(self, domain, index=False):
         """The units a pack (or a search) over `domain` (a path prefix: in_prefix) sees: its units, with `index` its
@@ -371,6 +398,9 @@ class Subset(Store):
             self._own[t] = self.base.own(t) & self.keep
         return self._own[t]
 
+    def view_paths(self):
+        return [self.paths[i] for i in self.keep]
+
     def _load_tf(self, t):
         return [(i, v) for i, v in self.base.tf(t) if i in self.keep]
 
@@ -390,6 +420,9 @@ class Prefix(Store):
         if t not in self._own:
             self._own[t] = {i for i in self.base.own(t) if i < self.n}
         return self._own[t]
+
+    def view_paths(self):
+        return self.paths[:self.n]
 
     def _load_tf(self, t):
         lst = self.base.tf(t)
@@ -510,14 +543,16 @@ def rank(st, question):
     """BM25 over the units of store view `st` for a question: (ranked [(score, unit id)] best first, the question's
     key words, {key word: ids of the units holding it (alias variants included)}, {key word: that count}).
     A Summary unit scores 1.15 times, an untagged one UNTAGGED_WEIGHT times; ties keep corpus order."""
-    q = sorted(set(terms(question)))
-    extra, variants = expand(question, st.rules)
-    whole = set(terms(question, camel=False))
+    lks = st.lang_keys()  # the question is stemmed once per language key of the roots it is matched against
+    with lang_context(lks):
+        q = sorted({t for lk in lks for t in terms(question, lk=lk)})
+        extra, variants = expand(question, st.rules)
+        whole = {t for lk in lks for t in terms(question, camel=False, lk=lk)}
+        keys = sorted(set(key_terms(question)))
     weight = {**extra, **{t: 1.0 if t in whole else PART_WEIGHT for t in q}}
     df = {t: len(st.own(t)) for t in weight}
     n = max(st.n, 1)
     avg = st.lensum / n
-    keys = sorted(set(key_terms(question)))
 
     def has_ids(t):  # the units that hold key word t: itself, or every word of one of its alias variants
         ids = set(st.own(t))
@@ -556,6 +591,11 @@ def search(query, k=8, domain=None, index=False, notes=None, root=None):
     warnings: key words found nowhere in the searched units, or a top hit that holds under half of the informative
     ones (in fewer than 25% of the units)."""
     st = store(scope(domain, root), index)
+    with lang_context(st.lang_keys()):
+        return _search(st, query, k, notes)
+
+
+def _search(st, query, k, notes):
     ranked, keys, holders, kdf = rank(st, query)
     hits, per_file = [], Counter()
     for s, i in ranked:
@@ -799,7 +839,7 @@ def valid_on(text, as_of):
     return True
 
 
-def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", footer=True, root=None, invalidated=False,
+def _pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", footer=True, root=None, invalidated=False,
          item=None, st=None, shares=None, as_of=None):
     """Rank fact units for a question and return {verdict, route, has, lacks, missing, matched, sources, text, ...}.
 
@@ -893,7 +933,7 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     # verdict: named words (product names, ids: a capital or a digit, not the question's first word) that the kb
     # never mentions mean it does not cover the question; else the share of the kb-known key words that the best
     # article's units match
-    named = {stem(w) for w in WORD.findall(nfc(question)) if re.search(r"[A-Z0-9]", w) and fold(w) not in STOP}
+    named = {stem(w) for w in WORD.findall(nfc(question)) if re.search(r"[A-Z0-9]", w) and fold(w) not in stop_words()}
     named = {t for t in named if t in kdf}
     named_missing = sorted(t for t in named if not kdf[t])
     known = [t for t in informative if kdf[t]]
@@ -949,7 +989,7 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
         cand = [u for a in order for _, u in sorted((x for x in by_art[a] if x[0] >= 0.4 * best), key=lambda x: -x[0])[:6]]
 
         # the words the question spells (a one-letter part, the V of Hyper V, included; a stop word excluded)
-        spelled = {stem(p) for p in re.findall(r"\w+", fold(question)) if p not in STOP}
+        spelled = {stem(p) for p in re.findall(r"\w+", fold(question)) if p not in stop_words()}
 
         def holds_name(u, t):
             if not has(u, t):
@@ -1246,6 +1286,19 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
 LANGUAGE_NAMES = frozenset(("t-sql", "tsql", "powershell", "python", "bash", "kql", "json", "yaml", "xml", "csv"))
 
 
+@functools.wraps(_pack)
+def pack(*args, **kw):
+    """_pack inside the language context of its store view: the question's words are stemmed by the profiles of the roots
+    the pack searches (`lang_context`), the stop words are the served roots' together."""
+    given = _PACK_PARAMS.bind(*args, **kw).arguments
+    st = given.get("st") or store(scope(given.get("domain"), given.get("root")))
+    with lang_context(st.lang_keys()):
+        return _pack(*args, **kw)
+
+
+_PACK_PARAMS = inspect.signature(_pack)
+
+
 def route_of(verdict, unmatched, spread, missing, noted=False):
     """Where a question goes after the pack: None (answer from the pack), `split` (the kb has part of it: answer what
     the pack holds, look up what it lacks in the live docs) or `web` (the kb does not cover it). A `good` pack is
@@ -1266,7 +1319,7 @@ def own_words(question, stems):
     want, out = set(stems), {}
     for w in WORD.findall(nfc(question)):
         t = stem(w)
-        if fold(w) not in STOP and len(w) > 1 and t in want:
+        if fold(w) not in stop_words() and len(w) > 1 and t in want:
             out.setdefault(t, w)
     return list(out.values())
 

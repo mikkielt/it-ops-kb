@@ -67,8 +67,9 @@ The modules behind this facade. kf_index.py holds the index, the ranking and `pa
 code. They read the ground in this file (files, tags, units, ledgers, decisions, the index directory) by name and are
 imported at its end, so every name of theirs is also a name of this module: other modules import from `kbfacts`.
 """
-import csv, functools, hashlib, io, json, os, re, subprocess, sys, tempfile, time, unicodedata
+import contextlib, csv, functools, hashlib, io, json, os, re, subprocess, sys, tempfile, threading, time, unicodedata
 from collections import Counter, defaultdict
+from typing import NamedTuple
 from datetime import date, datetime, timezone
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
@@ -469,8 +470,20 @@ def fingerprint_files():
     kf_index.py (the weighing and the index layout) and kbid.py. The domain files come with their directory entry (kb_entries): on Windows its stat() needs no call."""
     extra = [*root_files((kbcommon.SOURCES,)), *index_files(), *alias_files(), *data_files("signals.csv"),
              *data_files("doc2query/expansions.csv"), kbcommon.repo_rel(SELF_EVAL), kbcommon.repo_rel(SELF_ALIASES),
-             os.path.join(TOOLS, "kbfacts.py"), os.path.join(TOOLS, "kf_index.py"), os.path.join(TOOLS, "kbid.py")]
+             os.path.join(TOOLS, "kbfacts.py"), os.path.join(TOOLS, "kf_index.py"), os.path.join(TOOLS, "kbid.py"),
+             *lang_files()]
     return [*((rel, e.path, e) for rel, e in kb_entries()), *((rel, kbcommon.path_of(rel), None) for rel in extra)]
+
+
+def lang_files():
+    """The absolute paths of the language data the tools read: the profile files under _tools/lang/ and under each served
+    root's DATA_DIR/lang/, and each root's ROOT_FILE (its `languages`), sorted."""
+    out = []
+    for base in [kbcommon.LANG_DIR, *(os.path.join(r.path, kbcommon.DATA_DIR, kbcommon.ROOT_LANG) for r in kbcommon.roots())]:
+        for root, dirs, files in os.walk(base):
+            dirs.sort()
+            out += [os.path.join(root, f) for f in sorted(files)]
+    return out + [os.path.join(r.path, kbcommon.ROOT_FILE) for r in kbcommon.roots()]
 
 
 def _stat(path, entry):
@@ -1413,11 +1426,114 @@ def fold(text):
     return nfc(text).casefold()
 
 
+# ---------------------------------------------------------------- language profiles
+# A root names its languages in its ROOT_FILE (`languages: en, de`, default en). Per language a profile directory
+# (kbcommon.lang_dir: the root's own DATA_DIR/lang/<code>/ before _tools/lang/<code>/) holds `stop.txt` (one word per
+# line, `#` comments), `suffixes.csv` (`suffix,replace`: the longest suffix that fits is cut, or swapped for `replace`,
+# once, leaving three letters at least) and `fold.csv` (`plain,form`: a spelling and its form, ö and oe, ł and l). English
+# is built in: its stop words are STOP and its stemmer is _stem_en. A language key is the tuple of a root's profile
+# tokens (`de`, or `qq@lang-own` for a profile the root brings itself); the default key is ("en",).
+
+DEFAULT_LK = kbcommon.DEFAULT_LANGUAGES
+MIN_STEM = 3  # a profile's suffix rule leaves at least this many letters
+MAX_ALTERNATES = 24  # the spellings a question word's fold rules generate, at most
+
+
+class Profile(NamedTuple):
+    stop: frozenset
+    rules: tuple  # ((suffix, replacement), ...) longest suffix first
+    folds: tuple  # ((plain, form), ...)
+    digest: str  # of the profile's files: what the unit cache and the index fingerprint read
+
+
+def _profile_rows(d, name):
+    try:
+        with open(os.path.join(d, name), encoding="utf-8", newline="") as f:
+            return list(csv.DictReader(f))
+    except OSError:
+        return []
+
+
 @functools.lru_cache(maxsize=None)
-def stem(w):
-    """A light suffix stripper, the same for query and kb: disable/disabled/disabling -> disabl, settings -> set; a
-    version without its v prefix (v2.1.294 -> 2.1.294), so a question and a fact spell it either way."""
-    w = VPREFIX.sub("", fold(w))
+def profile(token):
+    """The Profile of language token `token` (`de`, or `qq@lang-own` for the profile root lang-own brings): its files
+    read once per process; empty for English and for a token whose directory is gone."""
+    code, _, name = token.partition("@")
+    root = next((r for r in kbcommon.roots() if r.name == name), None) if name else None
+    d = kbcommon.lang_dir(code, root.path if root else None) if code != "en" else None
+    if not d:
+        return Profile(frozenset(), (), (), "")
+    h, stop = hashlib.sha1(token.encode()), set()
+    try:
+        with open(os.path.join(d, "stop.txt"), encoding="utf-8") as f:
+            text = f.read()
+        h.update(text.encode())
+        stop = {fold(ln.strip()) for ln in text.splitlines() if ln.strip() and not ln.startswith("#")}
+    except OSError:
+        pass
+    rules = [(fold(r["suffix"]), fold(r.get("replace") or "")) for r in _profile_rows(d, "suffixes.csv") if r.get("suffix")]
+    folds = [(fold(r["plain"]), fold(r["form"])) for r in _profile_rows(d, "fold.csv") if r.get("plain") and r.get("form")]
+    h.update(repr((rules, folds)).encode())
+    return Profile(frozenset(stop), tuple(sorted(rules, key=lambda x: (-len(x[0]), x))), tuple(folds), h.hexdigest()[:16])
+
+
+def lang_key(root):
+    """The language key of Root `root`: its languages, each as `code@root` where the root brings the profile itself."""
+    return tuple(c if c == "en" or not os.path.isdir(os.path.join(root.path, kbcommon.DATA_DIR, kbcommon.ROOT_LANG, c))
+                 else f"{c}@{root.name}" for c in root.languages)
+
+
+def lang_digest(lk):
+    """A hash of the profile files a language key reads, '' for the default key (the unit cache key's part)."""
+    return "" if lk == DEFAULT_LK else "|".join(profile(t).digest or t for t in lk)
+
+
+_STOPS = [None, None]  # the served roots' language keys and their stop words
+
+
+def lang_keys_served():
+    """[language key of each served root], in the roots' order."""
+    return [lang_key(r) for r in kbcommon.roots()]
+
+
+def stop_words():
+    """The stop words of the served roots' languages together: English's STOP where some root names en (the default),
+    and each other language's stop.txt. STOP itself while every served root is English, so a kb of English roots reads
+    the one set it always did."""
+    keys = lang_keys_served()
+    if all(k == DEFAULT_LK for k in keys):
+        return STOP
+    if _STOPS[0] != keys:
+        out = set()
+        for k in keys:
+            for t in k:
+                out |= STOP if t == "en" else profile(t).stop
+        _STOPS[:] = [keys, frozenset(out)]
+    return _STOPS[1]
+
+
+_CTX = threading.local()
+
+
+@contextlib.contextmanager
+def lang_context(lks):
+    """Within the block, a word is stemmed (stem, terms, key_terms without an explicit key) by the first of the language
+    keys `lks`, a store view's own: the question is read the way the roots it is matched against are indexed."""
+    prev = getattr(_CTX, "lks", None)
+    _CTX.lks = tuple(lks) or (DEFAULT_LK,)
+    try:
+        yield
+    finally:
+        _CTX.lks = prev
+
+
+def query_lks():
+    """The language keys of the view a lookup runs over (lang_context), else the default key alone."""
+    return getattr(_CTX, "lks", None) or (DEFAULT_LK,)
+
+
+def _stem_en(w):
+    """The English suffix stripper over a folded word: disable/disabled/disabling -> disabl, settings -> set."""
     for _ in range(2):  # settings -> setting -> sett
         for suf in ("ies", "ing", "ed", "es", "s"):
             if len(w) > len(suf) + 3 and w.endswith(suf) and not (suf == "s" and w.endswith(("ss", "us", "is"))):
@@ -1432,9 +1548,54 @@ def stem(w):
     return w
 
 
-def key_terms(text):
+def _stem_profile(w, token):
+    for suf, rep in profile(token).rules:
+        if w.endswith(suf) and len(w) - len(suf) + len(rep) >= MIN_STEM:
+            return w[: len(w) - len(suf)] + rep
+    return w
+
+
+@functools.lru_cache(maxsize=None)
+def _stem(w, lk):
+    w = VPREFIX.sub("", fold(w))
+    for token in lk:
+        w = _stem_en(w) if token == "en" else _stem_profile(w, token)
+    return w
+
+
+def stem(w, lk=None):
+    """A light suffix stripper, the same for query and kb: disable/disabled/disabling -> disabl, settings -> set; a
+    version without its v prefix (v2.1.294 -> 2.1.294), so a question and a fact spell it either way. `lk` (a language
+    key) names the profiles that strip it, English by default; a lookup reads the key of the roots it searches
+    (lang_context)."""
+    return _stem(w, lk or query_lks()[0])
+
+
+def alternates(word, lk=None):
+    """The other spellings of folded `word` its language profiles' fold rules give, either way round (Koenigin ->
+    Königin, ö -> oe; wczytac -> wczytać), at most MAX_ALTERNATES, none when `lk` has no fold rule."""
+    out = {word}
+    for token in lk or query_lks()[0]:
+        for plain, form in profile(token).folds:
+            for a, b in ((plain, form), (form, plain)):
+                for w in sorted(out):
+                    pos = [m.start() for m in re.finditer(re.escape(a), w)]
+                    for mask in range(1, 1 << min(len(pos), 3)):
+                        if len(out) >= MAX_ALTERNATES:
+                            break
+                        parts, last = [], 0
+                        for n, i in enumerate(pos[:3]):
+                            if mask >> n & 1:
+                                parts += [w[last:i], b]
+                                last = i + len(a)
+                        out.add("".join(parts) + w[last:])
+    return sorted(out - {word})
+
+
+def key_terms(text, lk=None):
     """Stems of whole words only (no hyphen/dot parts): what the coverage verdict counts."""
-    return [stem(t) for t in WORD.findall(fold(text)) if t not in STOP and len(t) > 1]
+    stops, lk = stop_words(), lk or query_lks()[0]
+    return [_stem(t, lk) for t in WORD.findall(fold(text)) if t not in stops and len(t) > 1]
 
 
 # the CamelCase split runs over a letter-class string of the word (U upper-case, L any other letter or mark, D digit,
@@ -1461,11 +1622,12 @@ def camel_parts(seg):
     return [seg[m.start():m.end()] for m in CAMEL_CLASSES.finditer(classes)]
 
 
-def terms(text, camel=True):
+def terms(text, camel=True, lk=None):
     """Stems of the words, plus the parts of compounds: hyphen/dot parts (what-if -> what, if), a number joined to a
     unit by a hyphen as the number itself (1.5-second -> 1.5, so a question's `1.5 seconds` finds it) and identifier
-    parts (approximateLastSignInDateTime -> approximate, last, sign, in, date, time; US_NPI -> us, npi)."""
-    out = []
+    parts (approximateLastSignInDateTime -> approximate, last, sign, in, date, time; US_NPI -> us, npi). `lk` is the
+    language key of the stems and the served roots' stop words drop their words (stem, stop_words)."""
+    out, stops, lk = [], stop_words(), lk or query_lks()[0]
     for w in WORD.findall(nfc(text)):
         t = VPREFIX.sub("", fold(w))
         parts = [t] + ([p for p in re.split(r"[.\-]", t) if p] if ("-" in t or "." in t) else [])
@@ -1474,7 +1636,7 @@ def terms(text, camel=True):
             parts += [f"{m[1]}.{m[2]}" for m in VERSION_ID.finditer(t)]
         if camel and ("_" in w or has_camel(w)):
             parts += [fold(p) for seg in re.split(r"[_.\-]", w) for p in camel_parts(seg)]
-        out += [stem(p) for p in dict.fromkeys(parts) if p not in STOP and len(p) > 1]
+        out += [_stem(p, lk) for p in dict.fromkeys(parts) if p not in stops and len(p) > 1]
     return out
 
 
@@ -1539,20 +1701,32 @@ def expand(question, rules=False):
     replaces its entry."""
     toks = WORD.findall(fold(question))
     extra, variants = {}, defaultdict(set)
+    stops, lks = stop_words(), query_lks()
     for canon, forms in aliases(rules).items():
         found = [(i, len(f)) for f in forms for i in range(len(toks) - len(f) + 1) if tuple(toks[i:i + len(f)]) == f]
         if not found:
             continue
         name = tuple(WORD.findall(canon))
-        stems = [tuple(stem(w) for w in f if w not in STOP) for f in dict.fromkeys([*forms, name])]
+        stems = [tuple(stem(w) for w in f if w not in stops) for f in dict.fromkeys([*forms, name])]
         stems = [s for s in stems if s]
         for i, n in found:
             for w in toks[i:i + n]:
-                if w not in STOP and len(w) > 1:
+                if w not in stops and len(w) > 1:
                     variants[stem(w)].update(stems)
         for s in stems:
             for t in s:
                 extra[t] = ALIAS_WEIGHT / len(s)
+    for w in dict.fromkeys(t for t in toks if t not in stops and len(t) > 1):
+        # the other roots' spellings of the word: its stem under each further language key (the question is read once
+        # per root it is matched against), and the spellings its fold rules give under each (Koenigin -> Königin);
+        # they count as present where the word is, like an alias, and are never key words themselves
+        key = stem(w)
+        for lk in lks:
+            for spelling in [w, *alternates(w, lk)]:
+                s = _stem(spelling, lk)
+                if s != key:
+                    variants[key].add((s,))
+                    extra[s] = ALIAS_WEIGHT
     q = set(key_terms(question))  # words the question used as words: a part of its compound still gets its entry
     return {t: w for t, w in extra.items() if t not in q}, {k: sorted(v) for k, v in variants.items()}
 
