@@ -2,7 +2,7 @@
   "id": "ST-u6jyv4ch",
   "kind": "story",
   "title": "claim and land refuse when coord answers that another owner holds the item's run, and stay fail-open when coord is silent",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-jwvaq2hu",
   "priority": "P2",
@@ -63,5 +63,7 @@
     "EP-nij36lt7"
   ],
   "notes": "Planner (SP-jwvaq2hu): check 0 reads cmd_claim and enter_run for the run-key read; the goal names planted repros in a scratch clone with a local bare origin (no test id) for each refusal and fail-open path, so the worker report gives each repro command and its exit.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-557596e3",
+  "operator": "op-f618a13e"
 }
