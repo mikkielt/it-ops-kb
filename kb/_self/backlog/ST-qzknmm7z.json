@@ -2,7 +2,7 @@
   "id": "ST-qzknmm7z",
   "kind": "story",
   "title": "kbmon's session silence metric and alert cover every live session, past the 30 kept rows, and can be narrowed to workers",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-kkov6bbz",
   "priority": "P3",
   "rank": 0,
@@ -36,5 +36,7 @@
   "links": [
     "parked: SP-hxxn6fnv review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-557596e3",
+  "operator": "op-f618a13e"
 }
