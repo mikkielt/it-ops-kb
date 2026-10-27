@@ -18,10 +18,10 @@
   ],
   "touches": [
     "kb/_self/backlog.md",
-    "kb/_self/plugin.md",
-    "_tools/kb_mcp.py"
+    "kb/_self/plugin.md"
   ],
   "links": [
     "parked: SP-rrqlgiff review"
-  ]
+  ],
+  "notes": "Planner (SP-fn7letri): the goal names docs only, so _tools/kb_mcp.py left the touches; the item changes kb/_self/backlog.md or plugin.md text beside KB_BACKLOG_WRITE_TOOLS."
 }

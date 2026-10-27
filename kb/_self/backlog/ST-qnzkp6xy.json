@@ -29,7 +29,8 @@
     "_tools/bl_check.py",
     "_tools/bl_view.py",
     "_tools/test_authority.py",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ],
   "relates_to": [
     "ST-avh536as"

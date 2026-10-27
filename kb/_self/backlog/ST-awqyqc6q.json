@@ -34,7 +34,8 @@
   "touches": [
     ".github/workflows/kb.yml",
     ".gitlab-ci.yml",
-    "kb/_self/git.md"
+    "kb/_self/git.md",
+    "kb/_self/runners.md"
   ],
   "filed_in": "clone-0ea70e5c"
 }

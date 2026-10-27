@@ -32,7 +32,9 @@
     "_tools/bl_procs.py",
     "_tools/mon_sessions.py",
     "_tools/mon_needs.py",
-    "kb/_self/monitoring.md"
+    "kb/_self/monitoring.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ],
   "relates_to": [
     "ST-qzknmm7z"
