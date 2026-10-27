@@ -63,7 +63,12 @@
       ],
       "recommendation": "Match line by line with a line-length cap, refuse rows with nested quantifiers when the table loads, and stop a file after a match-count cap",
       "reason": "because it needs no process and the bound is checked once at load",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Match line by line with a line-length cap, refuse rows with nested quantifiers when the table loads, and stop a file after a match-count cap",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     },
     {
       "id": "g3",
