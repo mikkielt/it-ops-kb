@@ -1413,7 +1413,7 @@ What it shows: `sh _tools/kbpy` adds 3.5 ms at the median to a Python start of 9
 | record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
 |---|---|---|---|---|---|---|
 | 2026-10-26 | 2026-10-26 | 4b064dd | 2.1.310 | 434 | 5 | - |
-| 2026-10-27 | 2026-10-27 | 87c6b88 | 2.1.311 | 442 | 5 | - |
+| 2026-10-27 | 2026-10-27 | bf2212a | 2.1.311 | 442 | 5 | - |
 <!-- /bench -->
 
 The record of 2026-10-26 mixes two commits, both on `main`: its rows of arms `A`, `C` and `D` are at `4b064dd`, those of arm `B` at `786dd41`, the commit that added arm `B`'s pane commands to the tool (the table shows the commit of the first row).
