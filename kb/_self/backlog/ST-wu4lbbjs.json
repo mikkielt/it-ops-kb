@@ -2,7 +2,7 @@
   "id": "ST-wu4lbbjs",
   "kind": "story",
   "title": "coord exchanges claims with any external coordination service through a JSON-lines contract: live intents and touches out, external reservations in as overlaps",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-66qfpegm",
   "sprint": "SP-jxf76aa2",
   "priority": "P2",
@@ -103,5 +103,7 @@
     "moved out: SP-n7f53pgv"
   ],
   "notes": "Plan check 2026-10-26: the old check called digest without --key and --lines, which exits 2 whatever the work. Check 0 posts a live intent and reads export-intents; check 1 imports a 600 s and a 1 s reservation, waits 3 s and reads the digest of a path under them (the first shown, the expired one gone); check 2 reads the coord hook's overlaps() for that path; check 3 reads the contract paragraphs of coordination.md for a product name. The goal names the field names the old check used. On the base: export-intents and import-reservations are invalid choices: premise reproduced. Gate g1 (agents-rule) stands as the operator answered it. Moved out of SP-n7f53pgv by the unattended orchestrator 2026-10-26: the worker raised gates of class agents-rule (the item touches .claude/hooks/coord_hook.py): g2 how an imported reservation is stored and listed (recommended: one lease per path under reservation/SOURCE/HOLDER/PATH, its own digest line), g3 which contract details import-reservations fixes (recommended: source optional, at most 50 paths a line, local store only, one overlap per source and holder with a wait-or-ask line). g1 was answered by the operator earlier. They wait on the operator; work is on branch work/ST-wu4lbbjs.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
