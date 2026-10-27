@@ -63,7 +63,8 @@
     "_tools/build_index.py",
     "_tools/kf_*.py",
     "kb/_self/tools.md",
-    "kb/_self/token-efficiency.md"
+    "kb/_self/token-efficiency.md",
+    "_tools/rag.py"
   ],
   "gates": [
     {
@@ -92,7 +93,7 @@
   "links": [
     "moved out: SP-vlfcgmbu"
   ],
-  "notes": "Plan check 2026-10-26: check 0 (the whole kb lints clean) passes before the work on purpose: it pins that every existing fact stays valid. Checks 1-2 plant a temporary root (KB_ROOTS) and fail on the base: lint draws no window ERROR for a malformed date, an end before a start or a commit range on an unpinned source; audit has no ended-window column. Goal narrowed from \"the index and rag.py audit read the window\" to the audit count: ST-dnpg6e7d carries the index read through pack --as-of. Moved out of SP-vlfcgmbu by the unattended orchestrator 2026-10-26: the worker raised two operator-only gates (class agents-rule, since the item touches .claude/skills/kb-verify/lint.py): g2 \"may the item add the ended column in _tools/rag.py format_audit, outside its touches?\" and g3 \"when does a window count as ended, and which window kinds does the lint refuse on which facts?\". Work for both recommendations is committed on branch work/ST-mp4pjor2. g2 comes from a planning miss: the audit check reads rag.py audit, whose table rag.py prints, and rag.py was not put in the touches.",
+  "notes": "Plan check 2026-10-26: check 0 (the whole kb lints clean) passes before the work on purpose: it pins that every existing fact stays valid. Checks 1-2 plant a temporary root (KB_ROOTS) and fail on the base: lint draws no window ERROR for a malformed date, an end before a start or a commit range on an unpinned source; audit has no ended-window column. Goal narrowed from \"the index and rag.py audit read the window\" to the audit count: ST-dnpg6e7d carries the index read through pack --as-of. Moved out of SP-vlfcgmbu by the unattended orchestrator 2026-10-26: the worker raised two operator-only gates (class agents-rule, since the item touches .claude/skills/kb-verify/lint.py): g2 \"may the item add the ended column in _tools/rag.py format_audit, outside its touches?\" and g3 \"when does a window count as ended, and which window kinds does the lint refuse on which facts?\". Work for both recommendations is committed on branch work/ST-mp4pjor2. g2 comes from a planning miss: the audit check reads rag.py audit, whose table rag.py prints, and rag.py was not put in the touches. 2026-10-27: touches widened to _tools/rag.py by the operator's answer to g2.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-775f1f5d",
   "operator": "op-f618a13e"
