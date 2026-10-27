@@ -2,7 +2,7 @@
   "id": "ST-dktdxpc3",
   "kind": "story",
   "title": "Interactive sessions share one kbmon snapshot, so N panes cost about one refresh, not N",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-nxb7hjwd",
   "sprint": "SP-wpttdu7u",
   "priority": "P2",
@@ -64,6 +64,19 @@
   ],
   "notes": "Premise, measured in SP-3qowbedb's record: one kbmon.py --once of the pane costs about 8 CPU seconds and 690-730 MB peak (session-load arm B, 3 refreshes in a 150 s window), and each interactive session runs it every 60 s on its own; the reviewer measured one --once at 10.8 s user CPU and 493 MB under /usr/bin/time -l at load about 6. Arm B of session-load measures the saving. The notices the mod derives from a frame (needs-you rows, alert receipts) stay per session; the review reads register.tsx's diff for it.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-557596e3",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "f109294de556bc99c566ab8eb071df68cae46878",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport subprocess, time\ndef once(*extra):\n    t = time.perf_counter()\n    p = subprocess.run([sys.executable, '_tools/kbmon.py', '--once', '--shared', *extra], capture_output=True, text=True, timeout=300)\n    return p, time.perf_counter() - t\np0, _ = once('--max-age', '0')\nassert p0.returncode in (0, 1), ('kbmon --once --shared --max-age 0 exit', p0.returncode, p0.stderr[-300:])\np1, t1 = once('--max-age', '0')\np2, t2 = once('--max-age', '600')\nassert p2.returncode in (0, 1), ('kbmon --once --shared exit', p2.returncode, p2.stderr[-300:])\nassert t2 < 2.0 and t2 * 3 < t1, ('a second pane refresh inside --max-age reads no shared snapshot', round(t1, 2), round(t2, 2))\nassert 'shared' in (p2.stdout + p2.stderr), 'the served frame does not say it came from the shared snapshot'\np3, t3 = once('--max-age', '0')\nassert t3 > t2 * 3, ('--max-age 0 serves the snapshot instead of a fresh run', round(t2, 2), round(t3, 2))\nmod = subprocess.run([sys.executable, '-c', \"import re,sys;t=open('.claude/skills/kbmon-pane/hooks/register.tsx',encoding='utf-8').read();sys.exit(0 if re.search(r'--shared', t) else 1)\"])\nassert mod.returncode == 0, 'the kbmon-pane mod does not pass --shared to its refresh'\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
