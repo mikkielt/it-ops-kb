@@ -95,7 +95,11 @@
         "classify takes recorded and fresh pids; bl_procs reads the own records itself, kbmon's sessions panel supplies the fresh pids from its session binding": "ST-kxnlpycw",
         "bl_procs reads sessions through a callback or ~/.claude session files": "ST-kxnlpycw"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "classify takes recorded and fresh pids; bl_procs reads the own records itself, kbmon's sessions panel supplies the fresh pids from its session binding",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
