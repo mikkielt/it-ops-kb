@@ -70,7 +70,11 @@
         "WHOLE term, topic cut to 73 characters plus a hash": "BG-ctp52w3e",
         "keep * and refuse the key": "BG-ctp52w3e"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "WHOLE term, topic cut to 73 characters plus a hash",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
