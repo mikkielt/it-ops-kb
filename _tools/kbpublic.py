@@ -705,7 +705,13 @@ def leak_verdicts(written, proj, tip, final, cwd, pinned=frozenset()):
     with no hit is left out."""
     # scan only the lines a commit adds (the new version's lines its parent's version lacks), a chunk of writes at a
     # time; the whole versions are read only for the files whose added lines hit
-    public = public_values(tip, cwd)
+    memo = []
+
+    def public():  # scanned on first use: a range with no hit never reads the tip's whole tree
+        if not memo:
+            memo.append(public_values(tip, cwd))
+        return memo[0]
+
     pairs, added = list(dict.fromkeys((old, new, x) for c, old, new, x in written)), {}
     for i in range(0, len(pairs), 500):
         part = pairs[i:i + 500]
@@ -714,7 +720,8 @@ def leak_verdicts(written, proj, tip, final, cwd, pinned=frozenset()):
             if new in got:
                 seen = set(got.get(old, "").splitlines())
                 text = "\n".join(ln for ln in got[new].splitlines() if ln not in seen)
-                if any(hit_key(h) not in public for h in file_hits(x, text, {}, pinned)):
+                hits = file_hits(x, text, {}, pinned)
+                if hits and any(hit_key(h) not in public() for h in hits):
                     added[old, new, x] = text
     rows = [(c, old, new, x) for c, old, new, x in written if (old, new, x) in added]
     if not rows:
@@ -732,7 +739,7 @@ def leak_verdicts(written, proj, tip, final, cwd, pinned=frozenset()):
         for k, vals in parse_allowlist(commit_allow.get(f"{c}:{ALLOWLIST_PATH}", "")).items():
             allow.setdefault(k, set()).update(vals)
         kinds = sorted({k for k, val in file_hits(x, added[old, new, x], allow, pinned)
-                        if (k, val) not in known and hit_key((k, val)) not in public})
+                        if (k, val) not in known and hit_key((k, val)) not in public()})
         if kinds:
             res.setdefault(c, []).append((x, kinds))
     return res
@@ -744,7 +751,12 @@ def commit_name(c, sources):
     return src[:12] + (f" (projected {c[:12]})" if src != c else "")
 
 
-def history_refusals(proj, tip, files, cwd, sources=None, bound=None):
+def kept_off(path):
+    """Whether PATH is one publish's projection removes: under PRIVATE or named in PRIVATE_NAMES."""
+    return any(path == p or path.startswith(f"{p}/") for p in PRIVATE) or path.rsplit("/", 1)[-1] in PRIVATE_NAMES
+
+
+def history_refusals(proj, tip, files, cwd, sources=None, bound=None, projected=True):
     """(tree causes, leak causes, paths named) of the commits publish would push: TIP..PROJ, all of PROJ's history when
     TIP is None; FILES are the paths of PROJ's tree. A cause names the source commit (SOURCES: {projected sha: source
     sha}, from project()) and the projected one when they differ. Each commit is checked by what it adds or changes
@@ -759,14 +771,16 @@ def history_refusals(proj, tip, files, cwd, sources=None, bound=None):
     The leak verdict of each commit (its causes, often none) is cached per commit in
     CACHE_DIR/verdicts-<TIP>-<digest of scan_form(), PROJ's allowlist and pinned artifacts>.json, the inputs it depends on beside the commit's own, so a
     range already checked costs one `git log` the next time. With BOUND, raises LongRange before any scan when more
-    than BOUND commits of the range have no cached verdict. Raises RuntimeError on a git error."""
+    than BOUND commits of the range have no cached verdict. PROJECTED False: PROJ is a commit not yet projected, so
+    the writes of the paths the projection removes (kept_off) are left out of the leak check. Raises RuntimeError on a
+    git error."""
     import kbcommon
     sources = sources or {}
     name = lambda c: commit_name(c, sources)  # noqa: E731
     changes = history_changes(proj, tip, cwd)
     final = blobs(proj, [ALLOWLIST_PATH], cwd).get(ALLOWLIST_PATH, "")
     pinned = pinned_paths(proj, files, cwd)
-    inputs = "\0".join([f"scan-form {scan_form()}", final, *sorted(pinned)])
+    inputs = "\0".join([f"scan-form {scan_form()}", f"projected {projected}", final, *sorted(pinned)])
     vname = f"verdicts-{tip or 'none'}-{hashlib.sha256(inputs.encode('utf-8')).hexdigest()[:16]}.json"
     got = cache_load(cwd, vname)
     verdicts = {c: v for c, v in (got.items() if isinstance(got, dict) else ())
@@ -824,11 +838,23 @@ def history_refusals(proj, tip, files, cwd, sources=None, bound=None):
         tree.append(f"commit {name(c)} writes {len(xs)} path(s) under the internal root {r or '.'} "
                     f"({r + '/' if r else ''}{kbcommon.ROOT_FILE} says visibility: internal), e.g. {xs[0]}")
     if todo:
-        found = leak_verdicts([w for w in written if w[0] in todo], proj, tip, parse_allowlist(final), cwd, pinned)
+        found = leak_verdicts([w for w in written if w[0] in todo and (projected or not kept_off(w[3]))],
+                              proj, tip, parse_allowlist(final), cwd, pinned)
         verdicts.update({c: found.get(c, []) for c in todo})
         cache_save(cwd, vname, verdicts, "verdicts-")
     leak = [f"commit {name(c)}: {x} has a leak-scan hit ({', '.join(kinds)})" for c, _ in changes for x, kinds in verdicts[c]]
     return tree, leak, named
+
+
+def range_leaks(up, cwd, rev="HEAD"):
+    """[cause] of the commits UP..REV that add a leak-scan hit, the verdict publish gives each commit
+    (history_refusals' leak causes, REV's allowlist and each commit's own), for the sync gate: a hit a later commit of
+    the range removes still counts, as publish refuses the commit that added it for good. Each cause names the commit
+    and the file, never the value. Raises RuntimeError on a git error."""
+    files = tree_files(rev, cwd)
+    if files is None:
+        raise RuntimeError(f"git ls-tree {rev} failed")
+    return history_refusals(rev, up, files, cwd, projected=False)[1]
 
 
 TRAILER_RX = re.compile(r"[A-Za-z][\w-]*:[ \t]\S")

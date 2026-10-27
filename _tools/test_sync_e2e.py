@@ -49,6 +49,20 @@ class TestRedGate:
         assert r.returncode == 1, r.stdout + r.stderr
         assert "check.py" in r.stdout and "ok: sources" not in r.stdout, r.stdout
         assert scenario.origin.rev("main") == pushed
+        # publish refuses the commit that adds a leak-scan hit for good, so the gate judges every commit of the range:
+        # one that a later commit removes still refuses it
+        c.git("reset", "-q", "--hard", pushed)
+        home = "/".join(("", "Users", "realperson", "docs"))
+        added = []
+        for text in (f"see {home}\n", "see the docs\n"):
+            c.write("probe/leak.txt", text)
+            c.git("add", "-A")
+            c.git("commit", "-q", "--no-verify", "-m", "chore: probe leak")
+            added.append(c.rev("HEAD"))
+        r = sync(c)
+        assert r.returncode == 1, r.stdout + r.stderr
+        assert f"commit {added[0][:12]}: probe/leak.txt has a leak-scan hit" in r.stdout and "realperson" not in r.stdout, r.stdout
+        assert scenario.origin.rev("main") == pushed
 
 
 def test_pool_gate_refuses_only_the_defects_a_landing_adds(monkeypatch):

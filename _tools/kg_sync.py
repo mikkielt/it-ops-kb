@@ -551,7 +551,7 @@ GATE_NOTE = re.compile(r"tests\.py --changed \S+: (no test can be affected by th
 
 def gate_name(label):
     """A check's label as a row token: lower case, one dash for each run of other characters, no revision."""
-    first = "check-trailers" if label.startswith("check-trailers") else label.split(" --since")[0]
+    first = next((n for n in ("check-trailers", "leak-scan") if label.startswith(n)), None) or label.split(" --since")[0]
     return (re.sub(r"[^a-z0-9_.]+", "-", first.lower()).strip("-") or "check")[:40]
 
 
@@ -787,6 +787,17 @@ def gate(r, up, host, fix_check=False, since=None):
             print("\n".join(lines))
         results.append((f"check-trailers {r['target']}..HEAD", f"{'ok' if not audit[2] else 'FAILED'}: commits={audit[0]} bad={len(audit[2])}",
                         not audit[2]))
+    if up:  # every commit of the range, as publish judges it: a hit a later commit removes still blocks publish
+        t0 = time.monotonic()
+        try:
+            leaks = kbpublic.range_leaks(up, KB)
+        except RuntimeError as exc:
+            leaks = [f"leak scan of {rng} failed: {exc}"]
+        gate_mark(r, f"leak-scan {rng}", code=int(bool(leaks)), since=t0)
+        for cause in leaks:
+            print(f"refused: {cause}")
+        results.append((f"leak-scan {rng}", f"{'FAILED' if leaks else 'ok'}: commits with a hit={len({c.split(':')[0] for c in leaks})}",
+                        not leaks))
     r["gate"] = results
     r["gate_ms"] = r.get("gate_ms", 0) + int((time.monotonic() - t_gate) * 1000)
     return all(ok for _, _, ok in results)
@@ -939,7 +950,7 @@ def sync_once(a, r, host):
         print("gate failed: nothing pushed")
         return 1
     r["gated"] = rev_parse("HEAD")
-    if since and all("skipped" in res for lab, res, _ in r["gate"] if not lab.startswith("check-trailers")):
+    if since and all("skipped" in res for lab, res, _ in r["gate"] if not lab.startswith(("check-trailers", "leak-scan"))):
         r["notes"].append("gates not re-run after the rejected push: the rebase changed no path they read")
     if not a.push:
         r["pushed"] = "no (without --push)"
