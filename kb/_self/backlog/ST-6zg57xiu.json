@@ -2,7 +2,7 @@
   "id": "ST-6zg57xiu",
   "kind": "story",
   "title": "session-load measures the intake hook's real cost at session start, its drift scan running item checks",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nxb7hjwd",
   "sprint": "SP-m5m67goe",
   "priority": "P2",

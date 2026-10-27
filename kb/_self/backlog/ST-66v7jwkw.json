@@ -2,7 +2,7 @@
   "id": "ST-66v7jwkw",
   "kind": "story",
   "title": "session-load's replays make no forge call: the red-pipeline hook reads a planted pipeline answer, not gitlab.com",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nxb7hjwd",
   "sprint": "SP-m5m67goe",
   "priority": "P2",

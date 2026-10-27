@@ -2,7 +2,7 @@
   "id": "ST-mbb47xlf",
   "kind": "story",
   "title": "The project settings allow the five scripts the skills tell agents to run, so headless workers are not refused",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-m5m67goe",
   "priority": "P2",
   "rank": 0,

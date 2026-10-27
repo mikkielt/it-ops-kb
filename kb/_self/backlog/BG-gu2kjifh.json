@@ -2,7 +2,7 @@
   "id": "BG-gu2kjifh",
   "kind": "bug",
   "title": "session-load's rss_mean_mb averages each class over only the samples it was alive in, so means are not comparable across classes and arms",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nxb7hjwd",
   "sprint": "SP-m5m67goe",
   "priority": "P2",

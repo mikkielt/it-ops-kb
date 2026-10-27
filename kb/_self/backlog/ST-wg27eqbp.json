@@ -2,7 +2,7 @@
   "id": "ST-wg27eqbp",
   "kind": "story",
   "title": "session-load splits a capture's file reads by kind and counts no device as a path",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nxb7hjwd",
   "sprint": "SP-m5m67goe",
   "priority": "P3",

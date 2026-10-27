@@ -2,7 +2,7 @@
   "id": "BG-juf5gvt4",
   "kind": "bug",
   "title": "A clone that runs the kb-sprint skill's coordination settings init fails its own test suite and push gate",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-m5m67goe",
   "priority": "P2",
   "rank": 0,

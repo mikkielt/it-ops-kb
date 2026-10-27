@@ -2,7 +2,7 @@
   "id": "ST-j7zmbbvs",
   "kind": "story",
   "title": "The session-load docs say arm B leaves out the pane's --receipt run, so it understates the pane",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nxb7hjwd",
   "sprint": "SP-m5m67goe",
   "priority": "P3",
