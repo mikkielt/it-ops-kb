@@ -14,7 +14,7 @@ Background: `kb/_self/reports/benchmarks.md`, "Retrieval quality", and Doc2Query
 Every command works on one root: `python3 _tools/doc2query.py --root <name> <command>` (default public); `stale` and `prune` cover every root.
 
 - `arms.json`: the latest round's pilot and control articles (`doc2query.py split`: stratified by domain, articles with 8 or more facts). `arms-seed7.json` is round 1; round 2 used `--seed 29 --exclude arms-seed7.json`.
-- `expansions.csv`: `key,question`. The key is `kbfacts.fact_key(text)`, sha256 of the whitespace-collapsed fact text, so it survives line moves and changes with the text. `doc2query.py stale` lists orphaned keys (exit 1; `tests.py` fails on them), and `doc2query.py prune` removes them.
+- `expansions.csv`: `key,question`. The key is `kbfacts.fact_key(text)`, sha256 of the whitespace-collapsed fact text, so it survives line moves and changes with the text. `doc2query.py stale` lists orphaned keys (exit 1; `tests.py` fails on them), and `doc2query.py prune` removes them. `factdiff.py close` (a fact that held until its source changed) re-keys the closed fact's rows to the new fact that follows it, so a question that found the old fact finds the current one.
 - One article: `doc2query.py batch --path <domain>/<slug> --out facts.json`, then generation and `ingest`, as in the protocol below.
 - `offkb_questions.txt`: questions the kb does not cover: near-domain questions, common-word questions that match unrelated facts, and questions about other products. Expansion must not make more of them `good`.
 

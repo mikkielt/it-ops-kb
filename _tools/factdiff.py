@@ -17,6 +17,14 @@
       written; --lines N[,N...] (needs one --file F and no other selector) keeps that to the facts on those lines of F, so
       that the rows of facts the caller did not write stay out of its commit, and a line that holds no tagged fact of F
       is refused, exit 2, nothing written; with --propose it keeps the printed lines to those of F
+  factdiff.py [--root NAME] close PATH:LINE --on DATE|REV --text NEW [--from DATE|REV]
+      after a review finds a fact's passage changed so the fact no longer holds: end the validity window of the bullet fact
+      at PATH:LINE at DATE (a DOC or DER fact) or REV (a CODE fact), writing the window `(valid START..DATE)` where it
+      had none (START: --from, else the earliest date its cited sources give, else the commit its CODE source is pinned
+      to), and add NEW right after it as a bullet `(valid DATE..)` that cites the same sources (NEW's own tag, when it
+      holds one, replaces them); doc2query rows of the old text move to the new bullet, the old line's anchor rows follow
+      its new text; the new fact is left unanchored (`anchor --file F --lines N` locates it). Exit 2: no bullet fact on
+      that line, a window closed already or of the other kind, no start
   factdiff.py [--root NAME] snapshot [SELECTION] [--refetch] [--max-age DAYS] [--dry-run]
       write the normalized text of the root's live copy sources, with attribution, to <root>/_snapshots/<id>.txt
   factdiff.py [--root NAME] calibrate history --repo DIR [--path P] [--since D] [--pairs N] | soft404 [--hosts N]
@@ -74,7 +82,7 @@ Exit: 0 ok; 1 anchors --stale found stale anchors or anchors --min found the loc
 
 Answers: which facts of an article still hold when a source page changed, which changed and which are gone
 Answers: where on its source page a fact is anchored
-Use: python3 _tools/factdiff.py anchor|anchors|snapshot|calibrate|review [ARGS]
+Use: python3 _tools/factdiff.py anchor|anchors|snapshot|calibrate|review|close [ARGS]
 """
 import argparse, collections, concurrent.futures as cf, csv, datetime, hashlib, json, math, os, re, shutil, subprocess, sys, tempfile
 import threading, time, unicodedata, urllib.parse
@@ -2526,6 +2534,132 @@ def cmd_dead(a):
     return 0
 
 
+PINNED_REV = re.compile(r"/(?:blob|raw|-/raw)/([0-9a-f]{7,40})/")
+BULLET = re.compile(r"\s*[-*] ")
+OPEN_TAG = re.compile(rf"\[(?:{kbfacts._K})\b")
+
+
+def window_start(unit, on):
+    """Where the closed fact's window starts when it has none: for a date, the earliest date its cited sources give
+    (the leading date of `version_or_date`, else `retrieved_utc`), never after `on`; for a commit, the commit its
+    first cited `CODE` source is pinned to. '' when there is none (the caller asks for `--from`)."""
+    srcs = sources()
+    cited = [sid for p in unit["tags"] for sid in p["ids"] if p["kind"] != "UNK" and sid in srcs]
+    if kbfacts._DATE.fullmatch(on):
+        days = []
+        for sid in cited:
+            row = srcs[sid]
+            m = re.match(r"\d{4}-\d\d-\d\d", row.get("version_or_date", "")) or re.match(r"\d{4}-\d\d-\d\d", row.get("retrieved_utc", ""))
+            if m:
+                days.append(m.group(0))
+        return min(days + [on]) if days else ""
+    for p in unit["tags"]:
+        for sid in p["ids"] if p["kind"] == "CODE" else ():
+            m = PINNED_REV.search(srcs.get(sid, {}).get("url", ""))
+            if m:
+                return m.group(1)[:7]
+    return ""
+
+
+def rekey(path, old, new, root_file):
+    """Move the rows of `path` (a CSV with a `key` column, or the anchors' `fact` column) from key `old` to key `new`;
+    the number of rows moved."""
+    if not os.path.exists(path):
+        return 0
+    with open(path, encoding="utf-8", newline="") as f:
+        rows = list(csv.reader(f))
+    col = rows[0].index(root_file)
+    n = 0
+    for r in rows[1:]:
+        if r and r[col] == old:
+            r[col] = new
+            n += 1
+    if n:
+        with open(path, "w", encoding="utf-8", newline="") as f:
+            f.write(kbcommon.rows_text(rows))
+    return n
+
+
+def cmd_close(a):
+    """Close a fact whose passage changed so it no longer holds: its validity window ends at `--on` (a date for a DOC or
+    DER fact, a commit for a CODE fact) and `--text` is added after it as a new bullet whose window starts there and
+    that cites the same sources. The old line's doc2query rows follow the new line; its anchor rows stay with the old
+    line's new text. Exit 2 for a line that is no bullet fact, a window that is closed already or of the wrong kind."""
+    import doc2query
+    path, _, line = a.target.rpartition(":")
+    path = root_rel(path)
+    if not line.isdigit() or not path:
+        print(f"{a.target}: want PATH:LINE")
+        return 2
+    line = int(line)
+    unit = next((u for u in kbfacts.units(ROOT.name, with_csv=False)
+                 if kbfacts.bare(u["path"]) == path and u["line"] == line and u["tags"]), None)
+    if unit is None or not unit.get("list") or unit["text"].startswith("|"):
+        print(f"{path}:{line}: no bullet fact starts on this line")
+        return 2
+    rev = bool(kbfacts._REV.fullmatch(a.on))
+    if not rev and not (kbfacts._parse_window(a.on + "..")["kind"] == "date" and not kbfacts._parse_window(a.on + "..")["error"]):
+        print(f"--on {a.on}: want a date YYYY-MM-DD or a commit id (7 to 40 lowercase hex digits)")
+        return 2
+    kinds = {p["kind"] for p in unit["tags"]}
+    if rev and "CODE" not in kinds or not rev and kinds == {"CODE"}:
+        print(f"{path}:{line}: a {'commit' if rev else 'date'} window needs a fact with {'a CODE tag' if rev else 'a tag other than CODE only'}")
+        return 2
+    wins = kbfacts.windows_in(unit["text"])
+    if len(wins) > 1 or wins and (wins[0]["error"] or wins[0]["end"] or wins[0]["kind"] != ("rev" if rev else "date")):
+        print(f"{path}:{line}: its window is {'closed already, ' if wins[0]['end'] else ''}not an open window of that kind: edit it by hand")
+        return 2
+    start = a.since or (wins[0]["start"] if wins else window_start(unit, a.on))
+    if not start:
+        print(f"{path}:{line}: no start for its window (no cited source gives a date or a pinned commit): give --from")
+        return 2
+    bad = kbfacts._parse_window(f"{start}..{a.on}")
+    if bad["error"] or bad["kind"] != ("rev" if rev else "date"):
+        print(f"{path}:{line}: the window {start}..{a.on} {bad['error'] or 'mixes a date and a commit'}")
+        return 2
+    full = root_path(path)
+    text = kbcommon.read(full, newline="")
+    eol = "\r\n" if "\r\n" in text else "\n"
+    lines = text.split(eol)
+    last = line - 1
+    while last + 1 < len(lines) and lines[last + 1].strip() and not BULLET.match(lines[last + 1]) \
+            and not lines[last + 1].lstrip().startswith(("|", "#", "```", "~~~")):
+        last += 1
+    old_key = kbfacts.fact_key(unit["text"])
+    mark_old, mark_new = f"(valid {start}..{a.on})", f"(valid {a.on}..)"
+    seg = lines[line - 1:last + 1]
+    if wins:
+        i = next(i for i, ln in enumerate(seg) if kbfacts.WINDOW_MARK.search(ln))
+        seg[i] = kbfacts.WINDOW_MARK.sub(mark_old, seg[i], count=1)
+    else:
+        i = next((i for i, ln in enumerate(seg) if OPEN_TAG.search(ln)), None)
+        if i is None:
+            print(f"{path}:{line}: its tag is not on one line: edit it by hand")
+            return 2
+        m = OPEN_TAG.search(seg[i])
+        seg[i] = seg[i][:m.start()] + mark_old + " " + seg[i][m.start():]
+    tags = " ".join(kbfacts.TAG.findall(unit["text"]))
+    body = " ".join(a.text.split())
+    m = OPEN_TAG.search(body)
+    new = (body[:m.start()] + mark_new + " " + body[m.start():]) if m else f"{body} {mark_new} {tags}"
+    bullet = BULLET.match(lines[line - 1]).group(0) if BULLET.match(lines[line - 1]) else "- "
+    lines[line - 1:last + 1] = seg + [bullet + new]
+    with open(full, "w", encoding="utf-8", newline="") as f:
+        f.write(eol.join(lines))
+    after = {u["line"]: u for u in kbfacts.units(ROOT.name, with_csv=False) if kbfacts.bare(u["path"]) == path}
+    old_new, new_unit = after.get(line), after.get(last + 2)
+    if old_new is None or new_unit is None:
+        print(f"{path}:{line}: the closed fact or the new one is no fact unit after the edit: check the file")
+        return 1
+    new_key = kbfacts.fact_key(new_unit["text"])
+    doc2query.use_root(ROOT.name)
+    moved = rekey(doc2query.EXPANSIONS, old_key, new_key, "key")
+    anchors = rekey(root_path(ANCHORS), old_key, kbfacts.fact_key(old_new["text"]), "fact")
+    print(f"closed {path}:{line} {mark_old}; added {path}:{last + 2} {mark_new}; doc2query rows moved={moved} anchor rows kept={anchors}"
+          f"; anchor the new fact: factdiff.py anchor --file {path} --lines {last + 2}")
+    return 0
+
+
 def select_ids(a, srcs):
     """Source ids of fetch.py's selection flags (every source when none is given)."""
     import fetch
@@ -2675,6 +2809,12 @@ def main():
     ap_.add_argument("--date", help="confirmation date (default today)")
     ap_.add_argument("--dry-run", action="store_true")
     ap_.add_argument("--commit", action="store_true", help="commit the result with a KB-Verified trailer")
+    cl = sub.add_parser("close", help="end a changed fact's validity window and add the new fact after it")
+    cl.add_argument("target", metavar="PATH:LINE", help="the first line of the bullet fact that no longer holds")
+    cl.add_argument("--on", required=True, metavar="DATE|REV", help="the day (a DOC or DER fact) or the commit (a CODE fact) the old fact stops holding")
+    cl.add_argument("--text", required=True, metavar="NEW", help="the new fact's words; its tag is the old fact's unless NEW holds one")
+    cl.add_argument("--from", dest="since", metavar="DATE|REV", help="where the old window starts when it has none (default: the earliest date "
+                                                                  "its sources give, else the commit its CODE source is pinned to)")
     dd = sub.add_parser("dead", help="after review: a gone source with no successor: facts to UNK, gaps, dead marker")
     dd.add_argument("log")
     dd.add_argument("--source", required=True)
@@ -2719,7 +2859,7 @@ def main():
             return run(collections.Counter())
         return ql_capture.census_phase(a.cmd, run, ql_capture.phase_date(getattr(a, "date", None), getattr(a, "log", None)))
     return {"anchor": cmd_anchor, "anchors": cmd_anchors, "snapshot": cmd_snapshot, "calibrate": cmd_calibrate,
-            "dead": cmd_dead}[a.cmd](a)
+            "dead": cmd_dead, "close": cmd_close}[a.cmd](a)
 
 
 if __name__ == "__main__":
