@@ -71,9 +71,6 @@
     "kb/_self/plugin.md",
     "kb/_self/token-efficiency.md"
   ],
-  "depends_on": [
-    "BG-jrs3k6mt"
-  ],
   "gates": [
     {
       "id": "g1",
