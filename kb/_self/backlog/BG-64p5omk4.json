@@ -2,7 +2,7 @@
   "id": "BG-64p5omk4",
   "kind": "bug",
   "title": "kbtail skips a live session whose transcript it cannot find, with no line",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-jxf76aa2",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,7 @@
   "links": [
     "parked: SP-hxxn6fnv review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
