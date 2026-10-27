@@ -1,0 +1,27 @@
+{
+  "id": "ST-dnhmnzij",
+  "kind": "story",
+  "title": "Review sprint: True CI signals, a wider leak gate and recorded authority",
+  "status": "draft",
+  "sprint": "SP-fn7letri",
+  "review": true,
+  "priority": "P1",
+  "rank": 999999,
+  "goal": "Every committed item is done or dropped, provisional answers are confirmed by the operator, and a fresh-context review of the sprint's diff found no unfiled defect.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    }
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

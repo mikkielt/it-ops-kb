@@ -1,0 +1,22 @@
+{
+  "id": "SP-fn7letri",
+  "kind": "sprint",
+  "title": "True CI signals, a wider leak gate and recorded authority",
+  "status": "planned",
+  "goal": "a GitHub test run names its ten slowest tests and its runner's CPU and runs the trailers check whatever the tests say; the commit and publish leak gate catches Bearer and Basic credentials, URL passwords and prose secret assignments on an adversarial corpus; an operator-class gate answer recorded from an agent session says so and horizon and the review list it; kbmon's orphan, landing, runner and needs-you states are true; kb/_self/coordination.md states the coordination guarantee, its failure policy, the peer states and each lock's role; kb_backlog_write's docs name what its call does not check",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e",
+  "filed_in": "clone-0ea70e5c"
+}
