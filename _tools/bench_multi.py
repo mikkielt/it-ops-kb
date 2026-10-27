@@ -26,6 +26,7 @@ import agent_bench
 import bench_pool
 import bench_repro
 import bl_clean
+import coord
 import kbpublic
 from bench_core import (HOME, PRICE, RESULTS, isolate, pinned, read_rows, resolve_model, scratch_dir, spent_run, tier_of, transcript,
                         write_rate, write_rows)
@@ -1896,7 +1897,7 @@ def duplicate_research(root, manifest, lines):
                 m = HOLDER_AGENT.search(holder or "")
                 owner = int(m.group(1)) if m else None
                 for adder, fact in ((y, added[y][j]), (x, added[x][i])):
-                    if (owner in (x, y) and owner != adder and (x, y, key) not in named and fact["path"] == topic + ".md"
+                    if (owner in (x, y) and owner != adder and (x, y, key) not in named and on_topic(fact["path"], topic)
                             and start - 1 <= fact["at"] <= end + 1):
                         named.add((x, y, key))
                         out.append(f"duplicate research: {who[adder]} added a fact for {term!r} on {topic} while {who[owner]} held the "
@@ -2445,12 +2446,18 @@ def dup_commits(workers):
     return sum(max(0, len(agents) - 1) for agents in workers.values())
 
 
+def on_topic(path, topic):
+    """True when the article at `path` (`TOPIC.md`) is the one the topic of a research key stands for: the key holds the topic as
+    `coord.topic_key` makes it, cut and hashed when it is long, so the article's own topic goes through the same function."""
+    return path.endswith(".md") and coord.topic_key(path[:-3]) == topic
+
+
 def worked_key(root, manifest, key, n, agent, workers):
     """True when agent N (`agent`) wrote work for `key`: for a backlog item id a commit that names it (`workers`), for a research key
-    `research:TOPIC:TERM` a fact it added to the article of TOPIC that holds TERM (any fact for `*`)."""
+    `research:TOPIC:TERM` a fact it added to the article of TOPIC that holds TERM (any fact for `coord.WHOLE`, the whole topic)."""
     if key.startswith(RESEARCH):
         topic, _, term = key[len(RESEARCH):].partition(":")
-        return any(f["path"] == topic + ".md" and (term == "*" or term_in_text(term, f["text"]))
+        return any(on_topic(f["path"], topic) and (term == coord.WHOLE or term_in_text(term, f["text"]))
                    for f in added_facts(origin_path(root), manifest["base"], agent_email(n)))
     return agent in workers.get(key, [])
 
