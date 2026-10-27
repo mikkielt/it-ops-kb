@@ -5,6 +5,11 @@
                                querylog, host, sprint, cleanup, bench and log, each with its state (ok, timeout, error, absent or
                                unsupported), its seconds and, unless it timed out or is absent, its data
   kbmon.py --once              print the same panels as plain text, with no escape byte
+  kbmon.py --once --shared [--max-age S]
+                               the same text, served from the clone's one shared snapshot (`_cache/kbmon/shared.json`) when
+                               it is younger than S seconds (default 60), with a last line that says so and its age; else
+                               one fresh run, written there under a lock, so panes that fall due together make one refresh;
+                               --max-age 0 always refreshes
   kbmon.py --metrics           print the snapshot as one JSON object of metric points (name kbmon.<panel>.<measure>, unit,
                                kind gauge or sum, value, attributes of numbers, flags and redacted ids; no claim holder)
   kbmon.py --receipt           print one JSON object of `line` and `fingerprint` for an agent: the line (at most 200
@@ -53,8 +58,8 @@
   --store PATH, --url URL, --key-file PATH   the coord store, or the coord server and its operator's key file
   --from-snapshot FILE         show a snapshot saved with --json instead of reading the sources
 
-A run reads and writes nothing: no index is built, no eval is run, no file of the clone, the query log home or `_cache/`
-is written. Every string printed passes `redact.redact`, a saved snapshot's too (not the command `--split` prints, which
+A run reads and writes nothing (except `--shared`, which keeps the one snapshot file named above): no index is built, no
+eval is run, no file of the clone, the query log home or `_cache/` is written. Every string printed passes `redact.redact`, a saved snapshot's too (not the command `--split` prints, which
 must run as printed). Exit codes: 0 shown (also `--receipt`, with or without an alert, and `--split` in every case), 1 shown and an alert is in the snapshot, 2 a bad argument or an unreadable snapshot. Each panel is `mon_<name>.py` (`mon_base.py` holds the
 run, `mon_view.py` the output, `mon_export.py` the metric points, `mon_events.py` the event and span records).
 
@@ -85,6 +90,10 @@ DEFAULT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_TIMEOUT = 10.0  # seconds a panel may take
 DEFAULT_INTERVAL = 5  # seconds between live frames
 MAX_INTERVAL = 300
+SHARED_FILE = Path("_cache") / "kbmon" / "shared.json"  # under the clone: the snapshot its interactive panes share
+SHARED_MAX_AGE = 60.0  # seconds a shared snapshot is served when --max-age is not given
+SHARED_LOCK_STALE_S = 120.0  # a refresh lock file older than this is a crashed run's
+SHARED_POLL_S = 0.2
 
 
 def positive(text):
@@ -108,6 +117,13 @@ def frames(text):
     return value
 
 
+def age_seconds(text):
+    value = float(text)
+    if value < 0:
+        raise argparse.ArgumentTypeError("must be 0 or more")
+    return value
+
+
 def parser():
     ap = argparse.ArgumentParser(prog="kbmon.py", description=__doc__.split("\n\n")[0].splitlines()[0])
     ap.add_argument("--root", type=Path, default=DEFAULT_ROOT)
@@ -126,6 +142,9 @@ def parser():
     ap.add_argument("--detail", action="store_true", help="with --status sprints: the full lines in place of one row for each sprint")
     ap.add_argument("--dry-run", action="store_true", help="with --split: print the command, run nothing")
     ap.add_argument("--since", metavar="CURSOR", help="with --events: the cursor an earlier call printed (default: the newest records)")
+    ap.add_argument("--shared", action="store_true", help="with --once: serve the clone's shared snapshot while it is fresh")
+    ap.add_argument("--max-age", type=age_seconds, default=SHARED_MAX_AGE, metavar="S",
+                    help="with --shared: the age in seconds up to which the snapshot is served (default %d; 0 always refreshes)" % SHARED_MAX_AGE)
     ap.add_argument("--ansi", action="store_true", help="colour the text view")
     ap.add_argument("--interval", type=interval, default=DEFAULT_INTERVAL, metavar="S")
     ap.add_argument("--count", type=frames, default=None, metavar="N")
@@ -159,6 +178,87 @@ def take(a, names, kept=None):
         ctx = mon_base.Ctx(root=a.root.resolve(), store=a.store, url=a.url, key_file=a.key_file)
         snap = mon_base.snapshot(ctx, names, a.timeout, kept)
     return mon_view.scrub(snap)
+
+
+def shared_age(path):
+    """Seconds since the shared snapshot at `path` was written, or None when there is none."""
+    try:
+        return max(0.0, time.time() - path.stat().st_mtime)
+    except OSError:
+        return None
+
+
+@contextlib.contextmanager
+def shared_lock(path, timeout):
+    """Hold the refresh lock of the shared snapshot for the block: the file `<path>.lock` made by exclusive create (the same
+    on every OS) and removed on exit. A waiter polls; a lock older than `SHARED_LOCK_STALE_S` is a crashed run's and is
+    removed. Past `timeout` seconds of waiting the block runs without the lock, so a stuck file never blocks a pane."""
+    lock = path.with_name(path.name + ".lock")
+    deadline = time.monotonic() + timeout
+    held = False
+    while True:
+        try:
+            os.close(os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY))
+            held = True
+            break
+        except FileExistsError:
+            try:
+                if time.time() - lock.stat().st_mtime > SHARED_LOCK_STALE_S:
+                    lock.unlink()
+                    continue
+            except OSError:
+                continue
+        except OSError:
+            break
+        if time.monotonic() > deadline:
+            break
+        time.sleep(SHARED_POLL_S)
+    try:
+        yield
+    finally:
+        if held:
+            with contextlib.suppress(OSError):
+                lock.unlink()
+
+
+def shared(a, names):
+    """The snapshot of `--once --shared` and its age in seconds: the clone's shared snapshot when it is younger than
+    `--max-age`, else a fresh one of every panel (age 0), written to the file by a temporary file of this process's own
+    under the lock and stamped with the time its run began, so its age counts from when its data was read. A pane that waited on the lock finds the snapshot the holder wrote and serves it, so panes due
+    together make one refresh. A snapshot that cannot be read or written is refreshed or served from memory."""
+    path = a.root.resolve() / SHARED_FILE
+
+    def fresh_enough():
+        age = shared_age(path)
+        if age is None or age >= a.max_age:
+            return None
+        try:
+            return mon_base.load_snapshot(path, names if a.panel else None), age
+        except ValueError:
+            return None
+
+    found = fresh_enough()
+    if found:
+        return found
+    with contextlib.suppress(OSError):
+        path.parent.mkdir(parents=True, exist_ok=True)
+    with shared_lock(path, a.timeout * len(mon_base.PANELS)):
+        found = fresh_enough()
+        if found:
+            return found
+        began = time.time()
+        snap = take(argparse.Namespace(**{**vars(a), "panel": None, "from_snapshot": None}), mon_base.PANELS)
+        tmp = path.with_name(f"{path.name}.{os.getpid()}.tmp")
+        try:
+            tmp.write_text(mon_view.render_json(snap), encoding="utf-8", newline="\n")
+            os.utime(tmp, (began, began))
+            os.replace(tmp, path)
+        except OSError:
+            with contextlib.suppress(OSError):
+                tmp.unlink()
+        if a.panel:
+            snap = {**snap, "panels": {n: p for n, p in snap["panels"].items() if n in names}}
+        return snap, 0.0
 
 
 def colour(a, out, live_view):
@@ -260,6 +360,12 @@ def main(argv=None, out=None):
             ap.error("--status reads the panels its topic needs and takes no --panel")
     if a.backtest is not None and (a.status != "sprints" or a.backtest < 1):
         ap.error("--backtest N (1 or more) needs --status sprints")
+    if a.shared and not a.once:
+        ap.error("--shared needs --once")
+    if a.shared and a.from_snapshot:
+        ap.error("--shared reads the sources and takes no --from-snapshot")
+    if any(x == "--max-age" or x.startswith("--max-age=") for x in args) and not a.shared:
+        ap.error("--max-age needs --shared")
     if a.detail and (a.status != "sprints" or a.backtest is not None):
         ap.error("--detail needs --status sprints and no --backtest")
     if a.since is not None and not a.events:
@@ -287,12 +393,17 @@ def main(argv=None, out=None):
             out.flush()
             return 0
         if a.json or a.once or a.metrics:
-            snap = take(a, names)
+            note = None
+            if a.shared:
+                snap, age = shared(a, names)
+                note = "shared snapshot, %s" % ("refreshed now" if age == 0 else f"{round(age)} s old (max age {a.max_age:g} s)")
+            else:
+                snap = take(a, names)
             if a.metrics:
                 text = mon_export.render(snap)
             else:
                 text = mon_view.render_json(snap) if a.json else frame_text(snap, a, colour(a, out, False), out, 1)
-            out.write(text + "\n")
+            out.write(text + "\n" + (note + "\n" if note else ""))
             out.flush()
             return 1 if snap["alerts"] else 0
         return live(a, names, out)
