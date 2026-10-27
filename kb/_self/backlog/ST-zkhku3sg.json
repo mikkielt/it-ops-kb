@@ -174,6 +174,36 @@
       "operator": "op-f618a13e",
       "role": "interactive",
       "agent_session": true
+    },
+    {
+      "id": "g6",
+      "kind": "blocking",
+      "question": "Where do the languages table and the rules table live, given the item's touches name only _tools/kbingest_patterns.csv?",
+      "options": [
+        "Two sections of _tools/kbingest_patterns.csv, separated by a blank line, each with its header row",
+        "Two files, the rules table in a new _tools/kbingest_rules.csv, after the operator adds that path to the touches"
+      ],
+      "recommendation": "Two sections of _tools/kbingest_patterns.csv, separated by a blank line, each with its header row",
+      "do": {
+        "Two sections of _tools/kbingest_patterns.csv, separated by a blank line, each with its header row": "ST-zkhku3sg",
+        "Two files, the rules table in a new _tools/kbingest_rules.csv, after the operator adds that path to the touches": "ST-zkhku3sg"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g7",
+      "kind": "blocking",
+      "question": "Which caps does the languages table hold, and what bounds them?",
+      "options": [
+        "Per language max_line and max_matches columns (1000 and 2000 for both languages), bounded in code at 4000 and 10000, plus a 200-character regex limit in code",
+        "Caps fixed in code only, the same for every language"
+      ],
+      "recommendation": "Per language max_line and max_matches columns (1000 and 2000 for both languages), bounded in code at 4000 and 10000, plus a 200-character regex limit in code",
+      "do": {
+        "Per language max_line and max_matches columns (1000 and 2000 for both languages), bounded in code at 4000 and 10000, plus a 200-character regex limit in code": "ST-zkhku3sg",
+        "Caps fixed in code only, the same for every language": "ST-zkhku3sg"
+      },
+      "class": "agents-rule"
     }
   ],
   "notes": "Premise (run at plan time): kbingest.MAPPERS languages are dotnet, go, node, python, rust, typescript. python3 _tools/kbingest.py map . --lang powershell exits 2 with: refused: unknown language powershell (known: dotnet, go, node, python, rust, typescript). Reproduces. build_map runs a mapper only after tool_exe(m.tool) finds a program on PATH outside the worktree and a version probe runs; a pattern mapper has no tool, so build_map needs a branch that skips both and records the table's revision under doc[tools]. Fixture names the first check expects: functions Get-Widget (sample.ps1) and load_map (sample.lua) in _tools/fixtures/patterns/ (synthetic, placeholders only). The map goes through redact_leaks as before. The table is read from untrusted repository files with regexes from a data file, so the story needs a bounded match (line length cap, no nested quantifiers in a row, checked when the table loads). Planner (SP-iir3d2tu): after ST-ztsewht6, which also edits AGENTS.md. Checks 4 (the kbingest guards test) each passes before the work and pin behaviour that must stay unchanged (every existing mapper's output and the sandbox guards); every other check fails before the work with a one-line reason, not a traceback. Contract the checks read: _tools/kbingest_patterns.csv has rows for powershell (.ps1 .psm1 .psd1) and lua (.lua); checks 1 and 2 build their own tiny repositories from inline sources, so the fixtures under _tools/fixtures/patterns are the worker's documentation, not the checks' input.",

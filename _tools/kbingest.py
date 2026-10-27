@@ -40,8 +40,10 @@
       PowerShell (.ps1 .psm1 .psd1) and Lua (.lua) need no toolchain: a PatternMapper reads their files line by line
       with the regexes of _tools/kbingest_patterns.csv (definitions, imports, entry points; a reference is a whole-word
       match of a defined name on another line, case-insensitive for PowerShell) and starts no process; its `tools` entry
-      is `patterns` and the table's revision. A table row that could run away (a repeated group that holds a
-      quantifier or an alternation) refuses its language when the table loads; a line over 1000 characters is skipped.
+      is `patterns` and the table's revision. The table has two sections (languages: extensions, case, name characters,
+      caps; rules: role, kind, regex). A rules row that could run away (a repeated group that holds a quantifier or an
+      alternation) is skipped when the table loads, with a note in the map naming the row; the rest of the language
+      maps. A line over the language's max_line (1000) is skipped and a file stops after its max_matches (2000).
       Go and Cargo run at the root; .NET (`dotnet msbuild -getProperty -getItem`, never `-target` or `-restore`, and
       never `dotnet package list`), npm (`npm ls --all --json --package-lock-only`) and TypeScript (`tsc
       --showConfig`, `--listFilesOnly`) run per project directory. `tsc` is the one on PATH, never `npx` and never
@@ -1921,10 +1923,11 @@ class TypeScriptMapper(Mapper):
 
 
 PATTERN_TABLE = Path(__file__).resolve().parent / "kbingest_patterns.csv"  # changed only in this repository's code lane
-PATTERN_COLUMNS = ("language", "extensions", "case", "word", "role", "kind", "pattern")
+LANGUAGE_COLUMNS = ("language", "extensions", "case", "word", "max_line", "max_matches")  # the table's first section
+RULE_COLUMNS = ("language", "role", "kind", "pattern")  # its second section, after a blank line
 PATTERN_GROUPS = {"def": "name", "import": "module", "entry": None}  # the named group a role's regex must capture
-PATTERN_MAX_LINE = 1000  # characters of a line a table regex is run on; a longer line is not read
-PATTERN_MAX_MATCHES = 2000  # matches of a file's rows before the file is left unfinished with a note
+PATTERN_LINE_CEILING = 4000  # a language's max_line (characters of a line its regexes run on) may not exceed this
+PATTERN_MATCH_CEILING = 10000  # likewise its max_matches (matches of a file before the file is left unfinished)
 PATTERN_MAX_REGEX = 200  # characters of one table regex
 
 
@@ -1956,14 +1959,53 @@ def nested_quantifier(pattern):
     return False
 
 
-def pattern_row(row, number):
-    """(rule, why): the compiled rule of one table row, or None and the reason it is refused."""
-    if None in row or any(not (row.get(k) or "").strip() for k in PATTERN_COLUMNS):
+def table_sections(text):
+    """({"languages": [(line, row)], "rules": [(line, row)]}, [why]) of the table TEXT: sections separated by a blank
+    line, each opening with its header row. A row is a dict, or None when its cell count is not the header's."""
+    sections, errors, header, kind = {"languages": [], "rules": []}, [], None, None
+    try:
+        for number, cells in enumerate(csv.reader(text.splitlines()), 1):
+            if not cells:
+                header = None
+            elif header is None:
+                header = tuple(c.strip() for c in cells)
+                kind = {LANGUAGE_COLUMNS: "languages", RULE_COLUMNS: "rules"}.get(header)
+                if kind is None:
+                    errors.append(f"row {number}: a header that is neither the languages nor the rules columns")
+            elif kind:
+                sections[kind].append((number, dict(zip(header, cells)) if len(cells) == len(header) else None))
+    except csv.Error as e:
+        errors.append(f"not read as csv ({e})")
+    return sections, errors
+
+
+def language_row(row, number):
+    """(spec, why): a languages row's settings, or None and the reason it is refused."""
+    if row is None or any(not (row.get(k) or "").strip() for k in LANGUAGE_COLUMNS):
         return None, f"row {number}: a column is missing or empty"
-    role, case = row["role"], row["case"]
-    if role not in PATTERN_GROUPS or case not in ("sensitive", "insensitive"):
-        return None, f"row {number}: role {role!r} or case {case!r} unknown"
-    pattern = row["pattern"]
+    exts, word = row["extensions"].split(), row["word"].strip()
+    if row["case"] not in ("sensitive", "insensitive"):
+        return None, f"row {number}: case {row['case']!r} is neither sensitive nor insensitive"
+    if not all(x.startswith(".") and len(x) > 1 for x in exts):
+        return None, f"row {number}: extensions are not .ext words"
+    if not re.fullmatch(r"\\w|\[[\\\w.-]+\]", word):
+        return None, f"row {number}: word is not one character class"
+    caps = []
+    for key, ceiling in (("max_line", PATTERN_LINE_CEILING), ("max_matches", PATTERN_MATCH_CEILING)):
+        if not row[key].isdigit() or not 0 < int(row[key]) <= ceiling:
+            return None, f"row {number}: {key} is not a number from 1 to {ceiling}"
+        caps.append(int(row[key]))
+    return {"extensions": tuple(x.lower() for x in exts), "case": row["case"], "word": word,
+            "max_line": caps[0], "max_matches": caps[1]}, None
+
+
+def rule_row(row, number, case):
+    """(rule, why): the compiled rule of one rules row under its language's CASE, or None and the reason it is refused."""
+    if row is None or any(not (row.get(k) or "").strip() for k in RULE_COLUMNS):
+        return None, f"row {number}: a column is missing or empty"
+    role, pattern = row["role"].strip(), row["pattern"]
+    if role not in PATTERN_GROUPS:
+        return None, f"row {number}: role {role!r} unknown"
     if len(pattern) > PATTERN_MAX_REGEX:
         return None, f"row {number}: a regex over {PATTERN_MAX_REGEX} characters"
     if nested_quantifier(pattern):
@@ -1975,55 +2017,60 @@ def pattern_row(row, number):
     group = PATTERN_GROUPS[role]
     if group and group not in regex.groupindex:
         return None, f"row {number}: a {role} regex needs the group (?P<{group}>...)"
-    return (role, row["kind"], regex), None
+    return (role, row["kind"].strip(), regex), None
 
 
 def load_patterns(path=PATTERN_TABLE):
-    """([PatternMapper], {language: why}) of the table at PATH. A language with a refused row is refused whole, so a
-    half-read language never maps; a missing table refuses every language under `table`."""
+    """([PatternMapper], {what: why}) of the table at PATH. A refused rules row is skipped alone: its language maps
+    with the rest and the map's notes name the row and the reason. A refused languages row refuses the language (and
+    its rules rows), a missing table every language, under `table`; the refusals are what `map --lang` prints."""
     try:
         data = Path(path).read_bytes()
-        rows = list(csv.DictReader(data.decode("utf-8-sig").splitlines()))
-    except (OSError, UnicodeDecodeError, csv.Error) as e:
+        sections, errors = table_sections(data.decode("utf-8-sig"))
+    except (OSError, UnicodeDecodeError) as e:
         return [], {"table": f"{Path(path).name}: not read ({type(e).__name__})"}
     revision = hashlib.sha256(data).hexdigest()[:12]
-    by_lang, refused = {}, {}
-    for number, row in enumerate(rows, 2):
-        lang = (row.get("language") or "").strip().lower()
-        if not lang or lang in refused:
-            continue
-        rule, why = pattern_row(row, number)
-        shape = tuple((row.get(k) or "").strip() for k in ("extensions", "case", "word"))
-        spec = by_lang.setdefault(lang, {"shape": shape, "rules": []})
-        if rule is None:
+    refused = {f"table {i}": why for i, why in enumerate(errors)}
+    specs = {}
+    for number, row in sections["languages"]:
+        lang = ((row or {}).get("language") or "").strip().lower()
+        spec, why = language_row(row, number)
+        if not lang or lang in specs or lang in refused:
+            refused[f"languages row {number}"] = why or "a language named twice, or none"
+        elif spec is None:
             refused[lang] = why
-        elif shape != spec["shape"]:
-            refused[lang] = f"row {number}: extensions, case or word differ from the language's first row"
-        elif not re.fullmatch(r"\\w|\[[\\\w.-]+\]", shape[2]):
-            refused[lang] = f"row {number}: word is not one character class"
-        elif not all(x.startswith(".") and len(x) > 1 for x in shape[0].split()):
-            refused[lang] = f"row {number}: extensions are not .ext words"
+        else:
+            specs[lang] = dict(spec, rules=[], skipped=[])
+    for number, row in sections["rules"]:
+        lang = ((row or {}).get("language") or "").strip().lower()
+        spec = specs.get(lang)
+        if spec is None:
+            refused[f"rules row {number}"] = f"language {lang!r} has no accepted languages row"
+            continue
+        rule, why = rule_row(row, number, spec["case"])
+        if rule is None:
+            spec["skipped"].append(f"pattern table {why}: skipped")
         else:
             spec["rules"].append(rule)
-    mappers = [PatternMapper(lang, spec["shape"], spec["rules"], revision) for lang, spec in by_lang.items()
-               if lang not in refused]
-    return mappers, refused
+    return [PatternMapper(lang, spec, revision) for lang, spec in specs.items()], refused
 
 
 class PatternMapper(Mapper):
-    """A language read from its source files with the regexes of a table row set (`kbingest_patterns.csv`), no
-    program started and no toolchain needed. A file is read line by line (a line over PATTERN_MAX_LINE characters is
-    skipped; PATTERN_MAX_MATCHES stops a file); a definition is a `def` row's match, an import an `import` row's, an
-    entry point an `entry` row's. A reference is a whole-word match of a defined name on another line of a mapped
-    file, matched by name and never resolved, case-folded for a case-insensitive language."""
+    """A language read from its source files with the rows of the pattern table (`kbingest_patterns.csv`: a languages
+    section with the extensions, case rule, name characters and caps, a rules section with the regexes), no program
+    started and no toolchain needed. A file is read line by line (a line over the language's max_line characters is
+    skipped; max_matches stops a file); a definition is a `def` row's match, an import an `import` row's, an entry
+    point an `entry` row's. A reference is a whole-word match of a defined name on another line of a mapped file,
+    matched by name and never resolved, case-folded for a case-insensitive language. A refused rules row is skipped
+    and noted; the rest of the language maps."""
     tool = ""
 
-    def __init__(self, language, shape, rules, revision):
-        extensions, case, word = shape
+    def __init__(self, language, spec, revision):
         self.language, self.name, self.revision = language, "patterns", revision
-        self.extensions = tuple(extensions.lower().split())
-        self.fold = str.lower if case == "insensitive" else str
-        self.word, self.rules = re.compile(word + "+"), rules
+        self.extensions = spec["extensions"]
+        self.fold = str.lower if spec["case"] == "insensitive" else str
+        self.word, self.rules, self.skipped = re.compile(spec["word"] + "+"), spec["rules"], spec["skipped"]
+        self.max_line, self.max_matches = spec["max_line"], spec["max_matches"]
 
     def files(self, rows):
         return sorted(path for path, _kind in rows if path.lower().endswith(self.extensions))
@@ -2040,6 +2087,8 @@ class PatternMapper(Mapper):
 
     def map(self, ctx, files):
         defs, mapped = [], []
+        for why in self.skipped:
+            ctx.note(why)
         for n, rel in enumerate(files):
             if n >= MAP_MAX_FILES:
                 ctx.note(f"stopped after {MAP_MAX_FILES} files ({len(files) - n} not mapped)")
@@ -2050,7 +2099,7 @@ class PatternMapper(Mapper):
             mapped.append(rel)
             mods, entries, matches, long_lines = set(), set(), 0, 0
             for number, line in enumerate(lines, 1):
-                if len(line) > PATTERN_MAX_LINE:
+                if len(line) > self.max_line:
                     long_lines += 1
                     continue
                 for role, kind, regex in self.rules:
@@ -2065,17 +2114,17 @@ class PatternMapper(Mapper):
                     elif kind not in entries:
                         entries.add(kind)
                         ctx.add_entry_point(rel, kind)
-                if matches >= PATTERN_MAX_MATCHES:
-                    ctx.note(f"{rel}: stopped at line {number} after {PATTERN_MAX_MATCHES} matches")
+                if matches >= self.max_matches:
+                    ctx.note(f"{rel}: stopped at line {number} after {self.max_matches} matches")
                     break
             if long_lines:
-                ctx.note(f"{rel}: {long_lines} lines over {PATTERN_MAX_LINE} characters not read")
+                ctx.note(f"{rel}: {long_lines} lines over {self.max_line} characters not read")
             ctx.add_imports(rel, mods)
         names = {self.fold(d[0]) for d in defs}
         uses = {}
         for rel in mapped:  # a second read: only the defined names are kept, so memory follows the definitions
             for number, line in enumerate(self.read(ctx, rel) or (), 1):
-                if len(line) <= PATTERN_MAX_LINE:
+                if len(line) <= self.max_line:
                     for token in {self.fold(t) for t in self.word.findall(line)} & names:
                         uses.setdefault(token, []).append((rel, number))
         for name, kind, rel, line in sorted(defs, key=lambda d: (d[2], d[3], d[0])):

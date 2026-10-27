@@ -1,13 +1,17 @@
-language,extensions,case,word,role,kind,pattern
-powershell,.ps1 .psm1 .psd1,insensitive,[\w-],def,function,^\s*(?:function|filter)\s+(?:\w+:)?(?P<name>[\w-]+)
-powershell,.ps1 .psm1 .psd1,insensitive,[\w-],def,class,^\s*class\s+(?P<name>\w+)
-powershell,.ps1 .psm1 .psd1,insensitive,[\w-],def,enum,^\s*enum\s+(?P<name>\w+)
-powershell,.ps1 .psm1 .psd1,insensitive,[\w-],import,module,\bImport-Module\s+(?:-Name\s+)?['"]?(?P<module>[\w.\\/-]+)
-powershell,.ps1 .psm1 .psd1,insensitive,[\w-],import,module,^\s*using\s+module\s+['"]?(?P<module>[\w.\\/-]+)
-powershell,.ps1 .psm1 .psd1,insensitive,[\w-],import,dot-source,^\s*\.\s+['"]?(?P<module>[^\s'";]+\.ps1)\b
-powershell,.ps1 .psm1 .psd1,insensitive,[\w-],entry,script-param,^(?:\[CmdletBinding\b|param\s*\()
-powershell,.ps1 .psm1 .psd1,insensitive,[\w-],entry,module-manifest,^\s*RootModule\s*=
-lua,.lua,sensitive,\w,def,function,^\s*local\s+function\s+(?P<name>\w+)
-lua,.lua,sensitive,\w,def,function,^\s*function\s+[\w.:]*?(?P<name>\w+)\s*\(
-lua,.lua,sensitive,\w,import,module,\brequire\s*\(?\s*['"](?P<module>[^'"]+)['"]
-lua,.lua,sensitive,\w,entry,main-guard,^\s*if\s+arg\s+and\s+arg\[0\]
+language,extensions,case,word,max_line,max_matches
+powershell,.ps1 .psm1 .psd1,insensitive,[\w-],1000,2000
+lua,.lua,sensitive,\w,1000,2000
+
+language,role,kind,pattern
+powershell,def,function,^\s*(?:function|filter)\s+(?:\w+:)?(?P<name>[\w-]+)
+powershell,def,class,^\s*class\s+(?P<name>\w+)
+powershell,def,enum,^\s*enum\s+(?P<name>\w+)
+powershell,import,module,\bImport-Module\s+(?:-Name\s+)?['"]?(?P<module>[\w.\\/-]+)
+powershell,import,module,^\s*using\s+module\s+['"]?(?P<module>[\w.\\/-]+)
+powershell,import,dot-source,^\s*\.\s+['"]?(?P<module>[^\s'";]+\.ps1)\b
+powershell,entry,script-param,^(?:\[CmdletBinding\b|param\s*\()
+powershell,entry,module-manifest,^\s*RootModule\s*=
+lua,def,function,^\s*local\s+function\s+(?P<name>\w+)
+lua,def,function,^\s*function\s+[\w.:]*?(?P<name>\w+)\s*\(
+lua,import,module,\brequire\s*\(?\s*['"](?P<module>[^'"]+)['"]
+lua,entry,main-guard,^\s*if\s+arg\s+and\s+arg\[0\]
