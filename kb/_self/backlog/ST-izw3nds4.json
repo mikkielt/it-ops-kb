@@ -102,7 +102,11 @@
         "Every served root": "ST-izw3nds4",
         "No root: the table in the repository is the only one": "ST-izw3nds4"
       },
-      "class": "design"
+      "class": "design",
+      "answer": "Internal roots only; the program must be found on PATH outside every clone; each run prints the program it started",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Premise (run at plan time): fetch.read_text('https://example.test/a.cab', b'MSCF...' + 199 raw bytes, 'application/vnd.ms-cab-compressed') returns None (a cab matches no route), and text_cmd then prints 'no text in this content' and exits 2. Reproduces: read_text only routes PDF (pdftotext), PK zip and xlsx, gzip, bzip2/xz/ustar tar, else to_text. Reusable pieces exist in kbingest.py: scrub_env (allow-list environment), NETWORK_OFF, tool_exe (refuses a program inside the worktree), run_tool and kill_tree (timeout, process group); fetch.py imports none of them and only _pdf_text starts a process, with no scrubbed environment. Zip and tar members are today read in memory only and never written out; the new route writes untrusted archive contents to disk, so it needs caps on total bytes, file count and depth, refusal of absolute and parent paths and of symbolic links in the output, and removal of the directory in a finally. The plan puts the shared sandbox helpers in a new module kbsandbox.py that kbingest.py and fetch.py both import (the gate decides). Overlap: none live on fetch.py or kbingest.py. Shares kb/_self/tools.md with S2 and S3 of this epic: land them one at a time. Premise refinement (run at plan time, synthetic bodies): a zip-based MSIX (PK header) already reads through the zip route (AppxManifest.xml printed), so MSIX does not reproduce as a gap, and an .intunewin whose outer container is a zip (from memory, not checked here) is likewise covered for its plain members; do not list them as new rows. A CAB body (MSCF) and a WIM body (MSWIM) return None (text exits 2). An MSI body (OLE compound header d0cf11e0) is worse: read_text returns the raw bytes decoded as replacement-character text and text exits 0, a wrong answer rather than a refusal. The story must therefore also make an OLE compound file with no extractor row exit 2 instead of printing junk.",
