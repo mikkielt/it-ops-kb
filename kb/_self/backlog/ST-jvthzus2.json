@@ -92,7 +92,9 @@
       },
       "class": "design",
       "answer": "twelve: four each of where defined, who uses it, which docs describe a file",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
@@ -109,7 +111,9 @@
       },
       "class": "design",
       "answer": "the kb tools only: no Read, Grep, Glob or Bash",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g4",
@@ -128,7 +132,9 @@
       },
       "class": "design",
       "answer": "Haiku 5.5 five runs and Sonnet 5.5 three runs per arm, the arms alternating",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g5",

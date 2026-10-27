@@ -60,7 +60,9 @@
       },
       "class": "design",
       "answer": "Content-word stems, TOKEN_OVERLAP kept at 0.5",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [

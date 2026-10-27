@@ -1,0 +1,25 @@
+{
+  "id": "ST-lhq3yk67",
+  "kind": "story",
+  "title": "A pack whose only matching fact has an ended validity window does not print coverage: good",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "With no --as-of, a pack whose matching facts all carry an ended validity window prints coverage weak or none (or a check: line), not good, since AGENTS.md reads good as answer from the pack",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess,sys,tempfile\nF={\"_root.md\": \"---\\nroot: zzplant\\nid_prefix: ZQ\\nvisibility: internal\\ndescription: planted\\n---\\n\\n# zzplant\\n\", \"_sources.csv\": \"id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by\\nZQ-aaaabbbb,https://learn.microsoft.com/x,X,Microsoft,,link,2025-01-10,2025-01-01,,t/a.md,\\n\", \"_coverage.csv\": \"topic,priority,status,files,n_sources\\nt/a,,,t/a.md,1\\n\", \"_coverage.md\": \"# Coverage: zzplant\\n\\n<!-- coverage:start -->\\n| Topic | Priority | Status | Files | Sources |\\n|---|---|---|---|---|\\n| `t/a` |  |  | `t/a.md` | 1 |\\n<!-- coverage:end -->\\n\", \"t/a.md\": \"---\\ntopic: t/a\\nsources: ZQ-aaaabbbb\\n---\\n\\n# A\\n\\n## Summary\\n\\nS.\\n\\n## Facts\\n\\n- Widgets frobnicate through the legacy gateway. (valid 2020-01-01..2022-12-31) [DOC ZQ-aaaabbbb]\\n\\n## Reference\\n\\nR. [DOC ZQ-aaaabbbb]\\n\\n## Examples\\n\\nE.\\n\"}\nd=tempfile.mkdtemp()\nr=os.path.join(d,'zzplant')\nfor k,v in F.items():\n    p=os.path.join(r,k); os.makedirs(os.path.dirname(p),exist_ok=True); open(p,'w',encoding='utf-8').write(v)\nenv=dict(os.environ,KB_ROOTS=r)\no=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','zzplant','widgets frobnicate gateway'],capture_output=True,text=True,env=env).stdout\nfirst=(o.splitlines() or [''])[0]\nprint(first)\nsys.exit(0 if first.startswith('coverage:') and 'coverage: good' not in first else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kf_index.py"
+  ],
+  "links": [
+    "parked: SP-jxf76aa2 review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

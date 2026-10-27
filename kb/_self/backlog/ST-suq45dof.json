@@ -1,0 +1,27 @@
+{
+  "id": "ST-suq45dof",
+  "kind": "story",
+  "title": "kbask ask does not refuse, as ended, a live session whose working directory is outside every checkout of the clone",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "An ask to a session that holds a live lease and intent in the clone coord but whose process runs outside every checkout of the clone (a workspace above it) goes through, and a check plants such a session and finds the ask let through",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsrc=open('_tools/kbask.py',encoding='utf-8').read()\nsys.exit(0 if 'outside every checkout' in src else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbask.py",
+    "_tools/bl_peers.py"
+  ],
+  "links": [
+    "parked: SP-jxf76aa2 review"
+  ],
+  "notes": "Parked from the SP-jxf76aa2 review (reviewer gap, S3, read from the code). Its check only reads source text for a marker phrase: replace it with a planted check of the behaviour before this draft is committed to a sprint.",
+  "filed_in": "clone-0ea70e5c"
+}

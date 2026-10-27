@@ -1,0 +1,24 @@
+{
+  "id": "BG-skqyzfeq",
+  "kind": "bug",
+  "title": "match_facts pairs different rows of one CSV table that cite one source, since the content-word stem share reaches 0.5",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "match_facts and dup_facts pair no two CSV rows of one table that name different properties or settings, while the 15 prose paraphrases of one source the stem share now pairs stay paired",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,'_tools')\nimport bench_repro as br\na={'path':'public/defender/machine-properties.csv','text':'property=lastIpAddress; type=String; description_summary=last IP on local NIC; filterable_get_machines=yes; source_id=S620;S621 [DOC S620]','urls':{'u620'}}\nb={'path':'public/defender/machine-properties.csv','text':'property=lastExternalIpAddress; type=String; description_summary=last internet-facing IP; filterable_get_machines=no; source_id=S620 [DOC S620]','urls':{'u620'}}\np=br.match_facts([a],[b]); print(p); sys.exit(1 if p else 0)\n"
+    ]
+  },
+  "touches": [
+    "_tools/bench_repro.py"
+  ],
+  "links": [
+    "parked: SP-jxf76aa2 review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

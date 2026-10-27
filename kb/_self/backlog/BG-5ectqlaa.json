@@ -1,0 +1,26 @@
+{
+  "id": "BG-5ectqlaa",
+  "kind": "bug",
+  "title": "backlog.md and the backlog skill say referrers kind=ref is a use in code, but it also lists text hits in docstrings and comments",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/_self/backlog.md and the backlog skill say kind=ref also covers a text hit (docstring, comment, string) in a mapped source file, as kb/_self/tools.md says",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re,sys\nt=open('kb/_self/backlog.md',encoding='utf-8').read()+open('skills/backlog/SKILL.md',encoding='utf-8').read()\nbad=[m.group(0) for m in re.finditer(r'[^.\\n]*kind=ref[^.\\n]*(?:using|uses) the term in code[^.\\n]*',t)]\nprint(len(bad)); sys.exit(1 if bad else 0)\n"
+    ]
+  },
+  "repro_reason": "the defect is the wording of two docs against the tool",
+  "touches": [
+    "kb/_self/backlog.md",
+    "skills/backlog/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-jxf76aa2 review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

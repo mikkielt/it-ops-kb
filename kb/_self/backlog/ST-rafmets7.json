@@ -1,0 +1,26 @@
+{
+  "id": "ST-rafmets7",
+  "kind": "story",
+  "title": "kb_mcp.py --register-local --coord-tools keeps the other env of a registered local kb server",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Re-registering the local kb server with --coord-tools on|off keeps every other env variable the user set on it (KB_BACKLOG_WRITE_TOOLS, KB_COORD_URL, KB_COORD_KEY_FILE), and a check registers one with such env on a planted config and finds it kept",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsrc=open('_tools/kb_mcp.py',encoding='utf-8').read()\nsys.exit(0 if 'keeps the env' in src or 'kept_env' in src else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_mcp.py"
+  ],
+  "links": [
+    "parked: SP-jxf76aa2 review"
+  ],
+  "notes": "Parked from the SP-jxf76aa2 review (reviewer gap, S3, read from the code). Its check only reads source text for a marker phrase: replace it with a planted check of the behaviour before this draft is committed to a sprint.",
+  "filed_in": "clone-0ea70e5c"
+}
