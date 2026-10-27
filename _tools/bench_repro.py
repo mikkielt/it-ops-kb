@@ -877,7 +877,9 @@ def record_results(root=None, file=None, briefs_path=None, questions_path=None, 
 
 COMPARE_SCENARIO = "repro-compare"  # the scenario of the rows `compare` merges into the results file
 SAME_CLAIM = 0.8  # the difflib ratio at or above which two facts of one article path are the same claim
-TOKEN_OVERLAP = 0.5  # the share of the words of two facts, on different article paths, that citing one source makes one claim
+TOKEN_OVERLAP = 0.5  # the share of the content words of two facts that cite one source, which makes them one claim
+FILLER = frozenset("a an and are as at be by each for from in into is it of on or per than that the their to up was were "
+                   "when which with".split())  # words that carry no claim: left out of the word share
 LEDGER_FILES = ("_gaps.md", "_conflicts.md", "_answers.md")  # the markdown ledgers whose entries end `(topic: domain/slug)`
 TOPIC_MARK = re.compile(r"\(topic:\s*([^)\s]+)\)")
 TAG_KINDS = ("DOC", "CODE", "DER", "COMMUNITY", "UNK")  # the tag mix `compare` counts, kbfacts.EVIDENCE_KINDS without DECISION
@@ -907,11 +909,26 @@ def source_keys(fact):
     return set(fact.get("urls") or fact.get("ids") or ())
 
 
+def stems(key):
+    """The set of content words of a `factdiff.words_key` text, each cut to its stem (a plural or a verb ending), so two
+    wordings of one claim share them: `retries` and `retried` are one stem, `sends` and `send` too."""
+    out = set()
+    for w in key.split():
+        if w in FILLER:
+            continue
+        for end in ("ies", "ied", "ing", "ed", "es", "s"):
+            if w.endswith(end) and len(w) - len(end) >= 3:
+                w = w[:-len(end)]
+                break
+        out.add(w.rstrip("e"))
+    return out
+
+
 def match_facts(a, b):
     """[(i, j)] the facts of `a` and `b` that are one claim, whatever article each is written in: a pair on the same
     article path whose difflib ratio (factdiff.unit_sim of their claims) is at least SAME_CLAIM, or a pair, on any path,
-    that cites one source (`source_keys`) and whose claims share at least TOKEN_OVERLAP of their words, taken best
-    first, each fact in one pair at most. A pair whose ratio cannot reach SAME_CLAIM by its lengths or letters
+    that cites one source (`source_keys`) and whose claims share at least TOKEN_OVERLAP of their content words (`stems`,
+    so a claim worded differently on the same article still pairs), taken best first, each fact in one pair at most. A pair whose ratio cannot reach SAME_CLAIM by its lengths or letters
     (difflib's two upper bounds) is judged by its words only."""
     import difflib, factdiff
     by_path, by_source = {}, {}
@@ -921,12 +938,13 @@ def match_facts(a, b):
             by_source.setdefault(k, []).append(i)
     texts_a = [claim(f) for f in a]
     keys_a = [factdiff.words_key(t) for t in texts_a]
+    stems_a = [stems(k) for k in keys_a]
     norms_a = [factdiff.norm(t) for t in texts_a]
     sm = difflib.SequenceMatcher(None, autojunk=False)
     found = []
     for j, f in enumerate(b):
         text, key = claim(f), factdiff.words_key(claim(f))
-        words = set(key.split())
+        words = stems(key)
         sm.set_seq2(factdiff.norm(text))
         near = set(by_path.get(f["path"], []))
         shared = {i for k in source_keys(f) for i in by_source.get(k, [])}
@@ -941,7 +959,7 @@ def match_facts(a, b):
             if ratio >= SAME_CLAIM:
                 found.append((-ratio, i, j))
             elif i in shared:
-                theirs = set(keys_a[i].split())
+                theirs = stems_a[i]
                 share = len(words & theirs) / len(words | theirs) if words | theirs else 0.0
                 if share >= TOKEN_OVERLAP:
                     found.append((-share, i, j))

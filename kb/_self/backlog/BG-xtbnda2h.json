@@ -43,6 +43,26 @@
   "depends_on": [
     "ST-jvthzus2"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does match_facts pair two worded-differently facts that cite one source?",
+      "options": [
+        "Content-word stems, TOKEN_OVERLAP kept at 0.5",
+        "Raw words with TOKEN_OVERLAP lowered to 0.45"
+      ],
+      "recommendation": "Content-word stems, TOKEN_OVERLAP kept at 0.5",
+      "reason": "filler dropped and plural or verb endings cut, so a paraphrase pairs without loosening the cut for unrelated facts",
+      "do": {
+        "Content-word stems, TOKEN_OVERLAP kept at 0.5": "BG-xtbnda2h",
+        "Raw words with TOKEN_OVERLAP lowered to 0.45": "BG-xtbnda2h"
+      },
+      "class": "design",
+      "answer": "Content-word stems, TOKEN_OVERLAP kept at 0.5",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-n7f53pgv review"
   ],
