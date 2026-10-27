@@ -112,7 +112,11 @@
         "60 seconds": "ST-zimb7vuu",
         "900 seconds": "ST-zimb7vuu"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "300 seconds",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
@@ -128,7 +132,11 @@
         "agent.run, group stop-finished, ms the time it ran on after its result": "ST-zimb7vuu",
         "stall.remedy, a past event, revived in ql_capture (outside this item's touches)": "ST-zimb7vuu"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "agent.run, group stop-finished, ms the time it ran on after its result",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g4",
@@ -144,7 +152,11 @@
         "no: only the recorded pid is signalled, procs lists the rest": "ST-zimb7vuu",
         "yes: end_orphans runs as after any exit": "ST-zimb7vuu"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "no: only the recorded pid is signalled, procs lists the rest",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
