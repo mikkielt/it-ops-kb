@@ -2,7 +2,7 @@
   "id": "ST-eimj36y3",
   "kind": "story",
   "title": "A root may list its own placeholder names in _root.md while the leak shapes stay the same for every root",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-7vyrared",
   "sprint": "SP-iir3d2tu",
   "priority": "P3",

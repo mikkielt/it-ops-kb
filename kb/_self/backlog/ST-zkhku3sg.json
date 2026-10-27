@@ -2,7 +2,7 @@
   "id": "ST-zkhku3sg",
   "kind": "story",
   "title": "kbingest map reads PowerShell and Lua with a table of patterns and no toolchain, so where, path#symbol and drift work for them",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-7vyrared",
   "sprint": "SP-iir3d2tu",
   "priority": "P2",

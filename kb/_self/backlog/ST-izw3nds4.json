@@ -2,7 +2,7 @@
   "id": "ST-izw3nds4",
   "kind": "story",
   "title": "fetch.py text unpacks MSI, CAB, WIM and similar archives through a table of extractor commands run in the map sandbox, an internal root may add rows, and 7z installs like WezTerm",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-7vyrared",
   "sprint": "SP-iir3d2tu",
   "priority": "P3",

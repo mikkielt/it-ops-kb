@@ -2,7 +2,7 @@
   "id": "ST-yxudqftw",
   "kind": "story",
   "title": "Index and query tokenize Unicode text the same way: CamelCase splits on any letter case, text is NFC, matching is casefolded",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-7vyrared",
   "sprint": "SP-iir3d2tu",
   "priority": "P2",

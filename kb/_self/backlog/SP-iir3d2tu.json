@@ -2,7 +2,7 @@
   "id": "SP-iir3d2tu",
   "kind": "sprint",
   "title": "Roots beyond English text and Python code",
-  "status": "planned",
+  "status": "active",
   "goal": "index and query tokenize Unicode text the same way; a root names its languages and the pack stops, stems and folds its questions by them; kbingest map reads PowerShell and Lua with a table of patterns and no toolchain; fetch.py text unpacks MSI, CAB and WIM through a table of extractor commands run in the map sandbox; a root sets which tag kinds answer and which are only leads; a root may list its own placeholder user names while the leak shapes stay the same for every root",
   "gates": [
     {
@@ -14,9 +14,14 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
+  "notes": "Start gate answered approve by the operator in the interactive orchestrator session on 2026-10-27, after the gate interview.",
   "creator": "op-f618a13e",
   "filed_in": "clone-0ea70e5c"
 }
