@@ -2,7 +2,7 @@
   "id": "ST-deyyxb4c",
   "kind": "story",
   "title": "Code questions are claimed like research: a claim names a repository, path and symbol, and a second agent mapping the same code sees the overlap and gets the results",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-fxrzbuza",
   "sprint": "SP-jxf76aa2",
   "priority": "P2",
@@ -75,5 +75,7 @@
     "moved out: SP-n7f53pgv"
   ],
   "notes": "Plan check 2026-10-26: the old check ran dedup --code with check=True and failed on a traceback; check 0 dedups --code twice on a temp store (a code key beside a research key, the second holder's overlap), check 1 claims a path and dedups a symbol under it plus another path (overlap for the covered one, a claim for the rest), check 2 posts a code_added event and reads it with wait --kind code_added and refuses an unknown kind. The goal now names the event kind and its fields so a check can read them. On the base: --code unknown and code_added an unknown kind: premise reproduced. Moved out of SP-n7f53pgv by the unattended orchestrator 2026-10-26: the worker raised gate g1 of class agents-rule (the item touches the kb-ingest skill and AGENTS.md): how a code claim is keyed and how an overlap or a held path shows (recommended: key code:REPO:PATH[#SYMBOL]; covered targets listed in overlaps as {holder, targets}; a path claimed over another holder symbols is claimed and lists them in held; code_added requires target, ref optional). It waits on the operator; work is on branch work/ST-deyyxb4c.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
