@@ -2,7 +2,7 @@
   "id": "ST-teivhsxq",
   "kind": "story",
   "title": "kbingest map records each symbol's definition and its references, file by file, at the pinned commit",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-rpzrctui",
   "sprint": "SP-jxf76aa2",
   "priority": "P1",
@@ -78,6 +78,28 @@
   ],
   "notes": "Moved out of SP-acysfnxr by the unattended orchestrator 2026-10-26: ST-teivhsxq gate g1 (class agents-rule, \"How does the map match a symbol's references, and how many does it list?\") is operator-only and stays open; the work for its recommended option is committed on branch work/ST-teivhsxq (stage-back of its staged skill text still to run).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-775f1f5d",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "0bd6abfbab4ff02a67ede4d5c08385302641cde1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile;o=os.path.join(tempfile.mkdtemp(),'m.json');s.run([sys.executable,'_tools/kbingest.py','map','.','--lang','python','--out',o],capture_output=True,text=True,timeout=900,check=True);m=json.load(open(o));y=m.get('symbols') or [];hit=[x for x in y if x.get('name')=='pack' and x.get('path','').startswith('_tools/')];print(len(y),hit[:2]);sys.exit(0 if hit and hit[0].get('references') else 1)"
+        ],
+        "exit": 0,
+        "sha256": "6101463e31e194be"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import glob,json,os,subprocess as s,sys;b=set(s.run(['git','status','--porcelain','--','kb'],capture_output=True,text=True).stdout.splitlines());p=s.run([sys.executable,'_tools/kbingest.py','map','.','--lang','python'],capture_output=True,text=True,timeout=900,check=True);a=set(s.run(['git','status','--porcelain','--','kb'],capture_output=True,text=True).stdout.splitlines());f=max(glob.glob('_cache/ingest/*.json'),key=os.path.getmtime);m=json.load(open(f));print(f,m.get('format'),a-b);sys.exit(0 if m.get('format')==2 and 'symbols' in m and not a-b else 1)"
+        ],
+        "exit": 0,
+        "sha256": "c89d57a94880ec35"
+      }
+    ]
+  }
 }
