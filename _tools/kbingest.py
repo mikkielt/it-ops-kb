@@ -28,7 +28,8 @@
       runs its mapper: read-only commands only (kb/public/agents/codebase-mapping.csv), each as an argument list with a
       timeout, in a network-off environment (no credentials or proxies passed; refusing proxies, GOTOOLCHAIN=local,
       offline switches). Writes one JSON map, by default _cache/ingest/<repo>-<commit12>.json, never under kb/, then
-      removes the worktree. The map (format 2) holds the format version, the commit, `tools` (name and version per
+      removes the worktree. The map (format 2) holds the format version, the commit, the origin's `remote` (host and project, when
+      there is one), `tools` (name and version per
       language), `packages`, `imports` (per file), `entry_points`, `symbols` and `notes`. A symbol is a definition:
       `name`, `kind` (class, function, method, or a module-level variable), `path`, `line`, and its `references`
       (`path` and `line` of each use of that name in the repository's kept files, the definition's own line left out;
@@ -58,6 +59,17 @@
       closing bracket, and is compared as text; a file that changed elsewhere, or a definition that only moved to
       another line, is not a finding. It rewrites no fact, source row or date: the findings are for /kb-refresh.
 
+  kbingest.py where NAME (--map FILE | --repo REPO [--rev REV]) [--forge gitlab|github] [--budget N]
+      Read-only and reading only the map: with --repo, the cached map of the commit under _cache/ingest/ (built by `map`
+      and cached when there is none), with --map, that JSON file. Prints the definitions of NAME (kind, path:line and the
+      pinned url of the file at the map's commit; none when the repository has no GitHub or GitLab remote), its
+      references grouped by file (matched by name, never resolved) and, for a package or module name, the package and
+      the files with the modules they import under it (`os` finds `os` and `os.path`; a relative import is matched by its
+      last segment). At most --budget body lines (default 60), shared among the parts: a short part leaves its share to
+      the longer ones, and a cut part ends with a line counting the rest. A name that is no definition, package or
+      import exits 1 with `not found:` and the nearest names by spelling (at most 5, or `nearest: none`); it never picks
+      one. The pinned urls come from the remote the map records (`remote`: host and project), else from --repo's origin.
+
 Everything is read at the commit (git ls-tree, check-attr --source, cat-file), never from the working tree, so the
 facts match the pinned urls. Left out, first reason wins:
   secret-file   names that hold keys or credentials: .env (not .env.example), *.pem, *.key, *.pfx, *.p12, *.jks,
@@ -77,13 +89,15 @@ Pinned urls: GitHub (github.com) as raw.githubusercontent.com/<owner>/<repo>/<co
 a self-managed host) as https://<host>/<project>/-/raw/<commit>/<path>. A host named neither github.com nor gitlab.*
 needs --forge; another forge gets no url (`url` refuses; the skill says what to do).
 
-Exit: 0 done (`drift`: no finding), 1 `map` could not create its worktree or `drift` printed findings, 2 refused (not a
-git repository, an unknown REV, `url` with no pinned url form, `map` with an unknown language or an --out under kb/,
-`drift` with an unknown --root or a repository with no remote and no --remote).
+Exit: 0 done (`drift`: no finding), 1 `map` could not create its worktree (`where` likewise, building a map), `drift`
+printed findings or `where` found no such name, 2 refused (not a git repository, an unknown REV, `url` with no pinned url
+form, `map` with an unknown language or an --out under kb/, `drift` with an unknown --root or a repository with no remote
+and no --remote, `where` with a file that is no map).
 
 Answers: what a git repository holds before its knowledge goes into a kb root: files kept, left out and secrets
 Answers: whether a root's pinned code sources drifted from the repository
-Use: python3 _tools/kbingest.py survey REPO | map | drift | url
+Answers: where a symbol is defined, who uses it and what imports a package, from the pinned code map
+Use: python3 _tools/kbingest.py survey REPO | map | where NAME | drift | url
 """
 import argparse, contextlib, getpass, json, os, posixpath, re, shutil, signal, socket, subprocess, sys, tempfile
 from pathlib import Path
@@ -1929,6 +1943,8 @@ def build_map(repo, commit, rev, rows, langs=None, timeout=MAP_TIMEOUT, base_env
     links = symlinks(repo, commit)
     doc = {"format": MAP_FORMAT, "repo": Path(repo).name, "commit": commit, "rev": rev, "tools": {}, "packages": [],
            "imports": [], "entry_points": [], "symbols": [], "notes": []}
+    if rem := remote_of(repo):
+        doc["remote"] = {"host": rem[1], "project": rem[2]}  # what `where` builds the pinned urls from
     with scratch_worktree(repo, commit) as root:
         env = scrub_env(base_env, root=root, repo=repo)
         for m in MAPPERS:
@@ -2009,6 +2025,22 @@ def under_kb(path):
     return any(p == d or d in p.parents for d in dirs)
 
 
+def map_commit(repo, commit, rev, langs=None, timeout=MAP_TIMEOUT, max_bytes=1_000_000):
+    """The map of REPO at COMMIT (`build_map` over the survey's kept files)."""
+    entries = tree(repo, commit)
+    attrs, _where = attributes(repo, commit, [p for p, k, _, _ in entries if k == "blob"])
+    rows = classify(entries, attrs, max_bytes, lambda oids: contents(repo, oids))
+    return build_map(repo, commit, rev, rows, langs, timeout)
+
+
+def write_map(out, doc):
+    out.parent.mkdir(parents=True, exist_ok=True)
+    tmp = out.with_name(out.name + ".tmp")
+    with open(tmp, "w", encoding="utf-8", newline="\n") as f:
+        f.write(json.dumps(doc, indent=1, ensure_ascii=False) + "\n")
+    os.replace(tmp, out)
+
+
 def cmd_map(a):
     repo = Path(a.repo).expanduser().resolve()
     commit = resolve(repo, a.rev)
@@ -2024,19 +2056,12 @@ def cmd_map(a):
     if langs and langs - known:
         print(f"refused: unknown language {', '.join(sorted(langs - known))} (known: {', '.join(sorted(known))})")
         return 2
-    entries = tree(repo, commit)
-    attrs, _where = attributes(repo, commit, [p for p, k, _, _ in entries if k == "blob"])
-    rows = classify(entries, attrs, a.max_bytes, lambda oids: contents(repo, oids))
     try:
-        doc = build_map(repo, commit, a.rev, rows, langs, a.timeout)
+        doc = map_commit(repo, commit, a.rev, langs, a.timeout, a.max_bytes)
     except RuntimeError as e:
         print(f"failed: {e}")
         return 1
-    out.parent.mkdir(parents=True, exist_ok=True)
-    tmp = out.with_name(out.name + ".tmp")
-    with open(tmp, "w", encoding="utf-8", newline="\n") as f:
-        f.write(json.dumps(doc, indent=1, ensure_ascii=False) + "\n")
-    os.replace(tmp, out)
+    write_map(out, doc)
     print(f"map: {out}")
     print(f"commit: {commit} ({a.rev})")
     for lang, t in sorted(doc["tools"].items()):
@@ -2045,6 +2070,138 @@ def cmd_map(a):
           f"symbols={len(doc['symbols'])} notes={len(doc['notes'])}")
     for n in doc["notes"]:
         print(f"note: {n['language']}: {n['note']}")
+    return 0
+
+
+# ---------------------------------------------------------------- where
+
+WHERE_BUDGET = 60  # body lines `where` prints by default
+WHERE_NEAREST = 5
+WHERE_LINES_PER_FILE = 12  # reference lines listed for one file
+
+
+def read_map(path):
+    """(map, None) of the JSON map at PATH, or (None, why) when it is no map of this format."""
+    try:
+        doc = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, ValueError) as e:
+        return None, f"{path}: not a readable map ({type(e).__name__})"
+    if not isinstance(doc, dict) or doc.get("format") != MAP_FORMAT or not isinstance(doc.get("symbols"), list):
+        return None, f"{path}: not a map of format {MAP_FORMAT}"
+    return doc, None
+
+
+def module_of(imported, name):
+    """True when the imported module IMPORTED is package NAME or a module under it (`os.path` for `os`, `.name` and
+    `pkg/name` for `name` as well: a relative import names its module by its last segment)."""
+    bare = imported.lstrip(".")
+    return (bare == name or bare.startswith(name + ".") or bare.startswith(name + "/")
+            or (imported.startswith(".") and bare.rsplit(".", 1)[-1] == name))
+
+
+def where_sections(doc, name, url_of):
+    """[(title, body lines)] of what the map says about NAME: its definitions (kind, path:line, pinned url), its
+    references grouped by file, the package of that name and the files that import it. All from the map, no file read."""
+    defs = [x for x in doc["symbols"] if x.get("name") == name]
+    sections = []
+    if defs:
+        sections.append((f"definitions: {len(defs)}", [
+            f"  {x.get('kind', '?')} {x['path']}:{x['line']}" + (f" {u}" if (u := url_of(x["path"])) else "") for x in defs]))
+        own = {(x["path"], x["line"]) for x in defs}
+        refs, total = set(), 0
+        for x in defs:
+            got = {(r["path"], r["line"]) for r in x.get("references", ())} - own
+            refs |= got
+            total = max(total, x.get("references_total", 0) - (len(own) - 1))  # the other definitions are no uses
+        if refs:
+            by_file = {}
+            for path, line in sorted(refs):
+                by_file.setdefault(path, []).append(line)
+            more = f", the first {len(refs)} listed" if total > len(refs) else ""
+            body = []
+            for path, lines in by_file.items():
+                shown = ", ".join(map(str, lines[:WHERE_LINES_PER_FILE]))
+                body.append(f"  {path}: {shown}" + (f" (+{len(lines) - WHERE_LINES_PER_FILE})" if len(lines) > WHERE_LINES_PER_FILE else ""))
+            sections.append((f"references: {max(total, len(refs))} in {len(by_file)} files{more} (matched by name, never resolved)", body))
+    pkgs = [p for p in doc.get("packages", ()) if p.get("name") == name]
+    if pkgs:
+        sections.append((f"package: {len(pkgs)}", [f"  {p.get('language', '?')} {p['path']}" for p in pkgs]))
+    users = []
+    for row in doc.get("imports", ()):
+        mods = sorted(m for m in row.get("imports", ()) if module_of(m, name))
+        if mods:
+            users.append(f"  {row['path']}: {', '.join(mods)}")
+    if users:
+        sections.append((f"imported by: {len(users)} files", users))
+    return sections
+
+
+def nearest_names(doc, name):
+    """The names of the map closest to NAME in spelling: definitions, packages and imported modules."""
+    import difflib
+    names = {x["name"] for x in doc["symbols"] if x.get("name")} | {p["name"] for p in doc.get("packages", ()) if p.get("name")}
+    for row in doc.get("imports", ()):
+        names |= {m.lstrip(".") for m in row.get("imports", ()) if m.lstrip(".")}
+    return difflib.get_close_matches(name, sorted(names), n=WHERE_NEAREST, cutoff=0.6)
+
+
+def fair_share(sections, budget):
+    """SECTIONS with each body cut to its share of BUDGET lines; what a short section leaves over goes to the longer
+    ones, and a cut body ends with a line that counts the rest."""
+    left, order, kept = budget, sorted(range(len(sections)), key=lambda i: len(sections[i][1])), {}
+    for n, i in enumerate(order):
+        title, body = sections[i]
+        quota = max(left // (len(order) - n), 1)
+        kept[i] = (title, body[:quota] + ([f"  ... {len(body) - quota} more lines (--budget)"] if len(body) > quota else []))
+        left -= min(len(body), quota)
+    return [kept[i] for i in range(len(sections))]
+
+
+def where_map(a):
+    """(map, commit, (host, project) or None, label, why): the map `where` reads, from --map or, for --repo, the cached
+    one of the commit (built and cached when there is none)."""
+    if a.map:
+        doc, why = read_map(Path(a.map).expanduser())
+        if doc is None:
+            return None, None, None, None, why
+        rem = doc.get("remote") or {}
+        return doc, doc.get("commit", ""), (rem["host"], rem["project"]) if rem.get("host") and rem.get("project") else None, \
+            Path(a.map).name, None
+    repo = Path(a.repo).expanduser().resolve()
+    commit = resolve(repo, a.rev)
+    if commit is None:
+        return None, None, None, None, f"{repo.name}: not a git repository, or {a.rev!r} names no commit"
+    out = INGEST_CACHE / f"{repo.name}-{commit[:12]}.json"
+    doc = read_map(out)[0] if out.is_file() else None
+    if doc is None or doc.get("commit") != commit:
+        try:
+            doc = map_commit(repo, commit, a.rev)
+        except RuntimeError as e:
+            return None, None, None, None, f"failed: {e}"
+        write_map(out, doc)
+    rem = remote_of(repo)
+    return doc, commit, (rem[1], rem[2]) if rem else None, f"{repo.name} at {commit[:12]}", None
+
+
+def cmd_where(a):
+    doc, commit, remote, label, why = where_map(a)
+    if doc is None:
+        print(f"refused: {why}")
+        return 2 if not why.startswith("failed:") else 1
+    forge = forge_of(remote[0], a.forge) if remote else None
+    url_of = (lambda rel: pin_url(forge, remote[0], remote[1], commit, rel)) if forge else (lambda rel: None)
+    sections = where_sections(doc, a.name, url_of)
+    print(f"map: {label}")
+    if not sections:
+        near = nearest_names(doc, a.name)
+        print(f"not found: {a.name!r} is no definition, package or import of the map")
+        print(f"nearest: {', '.join(near) if near else 'none'}")
+        return 1
+    if not forge:
+        print("note: no pinned url: the repository has no GitHub or GitLab remote (or pass --forge)")
+    for title, body in fair_share(sections, a.budget):
+        print(title)
+        print("\n".join(body))
     return 0
 
 
@@ -2299,8 +2456,16 @@ def main(argv=None):
     d.add_argument("--root", help="only the facts of this kb root")
     d.add_argument("--prefix", help="only the facts under this topic or path prefix (`dsc`, `public/dsc/what-if`)")
     d.add_argument("--remote", help="HOST/PROJECT the source rows are matched to (default: the repository's origin)")
+    w = sub.add_parser("where", help="where a name is defined, who uses it and what imports it, from a map")
+    w.add_argument("name")
+    src = w.add_mutually_exclusive_group(required=True)
+    src.add_argument("--map", help="a JSON map written by `map`")
+    src.add_argument("--repo", help="a local clone: its cached map of --rev, built and cached when there is none")
+    w.add_argument("--rev", default="HEAD", help="with --repo (default HEAD)")
+    w.add_argument("--forge", choices=("gitlab", "github"))
+    w.add_argument("--budget", type=int, default=WHERE_BUDGET, help="body lines to print (default %(default)s)")
     a = ap.parse_args(argv)
-    return {"survey": cmd_survey, "url": cmd_url, "map": cmd_map, "drift": cmd_drift}[a.cmd](a)
+    return {"survey": cmd_survey, "url": cmd_url, "map": cmd_map, "drift": cmd_drift, "where": cmd_where}[a.cmd](a)
 
 
 if __name__ == "__main__":

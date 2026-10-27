@@ -234,7 +234,7 @@ def feedback_is_spooled_once_and_refuses_open_fields(tmp_path, monkeypatch):
     assert not settings["isError"] and "strategy.working = ask  (source: default)" in settings["content"][0]["text"]
     with monkeypatch.context() as limited:  # --roots, and kb_http.py always: no such tool
         limited.setattr(kb_mcp, "limited", lambda: True)
-        assert {"kb_feedback", "kb_settings", "kb_backlog", "kb_querylog", "kb_docs", "kb_tools"}.isdisjoint(t["name"] for t in kb_mcp.handle(
+        assert {"kb_feedback", "kb_settings", "kb_backlog", "kb_querylog", "kb_docs", "kb_tools", "kb_code"}.isdisjoint(t["name"] for t in kb_mcp.handle(
             {"jsonrpc": "2.0", "id": 3, "method": "tools/list"})["result"]["tools"])
         assert call(**report)[1] is True and "kb_feedback" not in kb_mcp.instructions() and len(spooled()) == 2
     # the footer: a ready call on a weak or none pack, above the handle that stays last; a good pack prints none
