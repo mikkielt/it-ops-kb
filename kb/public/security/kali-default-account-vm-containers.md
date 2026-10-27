@@ -10,7 +10,7 @@ status: partial
 # Kali's default account, services, VMs and containers
 
 ## Summary
-Since Kali 2020.1 there is no root password: pre-built images (live, VM, ARM) ship a `kali` user with the password `kali` that has `sudo`, and the installer asks for a user. Network services are deliberately not started at boot. Kali also runs as a pre-built VM, a WSL distribution and Docker or LXC/LXD images; a container image is a bare `kali-rolling` rootfs with no tool set until a metapackage is installed. Branches are in `security/kali-releases-rolling-model.md`, metapackages in `security/kali-apt-sources-metapackages.md`, images in `security/kali-images-verification-builds.md`. Read from kali.org on 2026-10-15.
+Since Kali 2020.1 there is no root password; pre-built images (live, VM, ARM) ship a `kali` user with the password `kali` that has `sudo`, and the installer asks for a user. Network services are deliberately not started at boot. Kali also runs as a pre-built VM, a WSL distribution and Docker or LXC/LXD images; a container image is a bare `kali-rolling` rootfs with no tool set until a metapackage is installed. Branches are in `security/kali-releases-rolling-model.md`, metapackages in `security/kali-apt-sources-metapackages.md`, images in `security/kali-images-verification-builds.md`. Read from kali.org on 2026-10-15.
 
 ## Facts
 - Kali has used a non-root user policy by default since 2020.1: the installer of amd64 images prompts for a standard user account. [DOC S-mvp5ewqd]

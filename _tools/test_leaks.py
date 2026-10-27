@@ -99,7 +99,7 @@ def candidate(t, vendored):
     matches only its matching lines (each placeholder shape lies within one line, so the lines hold every hit)."""
     secrets, folded, placeholders, structured = screens()
     if any(rx.search(t) for rx in secrets) or (folded and folded.search(t.casefold())) \
-            or structured.search(t.casefold()):
+            or (not vendored and structured.search(t.casefold())):
         return t
     if vendored:
         return None
@@ -132,9 +132,9 @@ def scan():
         if probe is None:
             continue
         if vendored:
-            if not secrets.search(probe) and not [h for h in kbcommon.leak_hits(probe, allow, kbpublic.structured_kinds(f)) if h[0] == "secret"]:
+            if not secrets.search(probe):
                 continue
-        elif not kbcommon.leak_hits(probe, allow, kbpublic.structured_kinds(f)):
+        elif not kbcommon.leak_hits(probe, allow, kbpublic.structured_kinds(f, False)):
             continue
         out += [(f, k, v) for k, v in kbpublic.file_hits(f, t, allow, pins) if k == "secret" or not f.startswith(internal)]
     return out
@@ -194,11 +194,11 @@ def test_scan_reports_each_planted_leak_and_honours_the_allowlist_and_webfetch_h
             for suffix in (".", "_x", "-x", ".pem"):
                 assert kbcommon.leak_hits(head + " " + body + suffix, allowlist()) == [("secret", head)], (kind, body, suffix)
     # the structured secrets: a header credential and a url password are secrets in any text file, an unquoted assignment
-    # only in a prose file and in item text, a vendor export included; the adversarial corpus holds every guard to its
+    # only in a prose file and in item text, none in a vendor export; the adversarial corpus holds every guard to its
     # known gaps (a row the scan misses is listed, a listed row it now catches is not)
     value, assign = "Zx9Qm4" + "Lp7Rt2Vb8Nc5Kd3Wf6Hj", "password=" + "Fake" + "Pass12345x"
     shapes = {"header": f"Authorization: Bearer {value}", "url": f"https://admin:{value}@db.corp.example.com/x", "assignment": assign}
-    for path, kinds in (("notes.md", 3), ("item.json", 3), ("a.txt", 3), ("a.json", 2), ("kb/x/_snapshots/a.txt", 3)):
+    for path, kinds in (("notes.md", 3), ("item.json", 3), ("a.txt", 3), ("a.json", 2), ("kb/x/_snapshots/a.txt", 0)):
         got = [k for k, v in shapes.items() if [h for h in kbpublic.file_hits(path, f"see {v} here", {}) if h[0] == "secret"]]
         assert len(got) == kinds, (path, got)
     for path in ("notes.md", "a.json"):

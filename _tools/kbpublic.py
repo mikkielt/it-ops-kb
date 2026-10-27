@@ -537,10 +537,12 @@ def pinned_paths(proj, files, cwd):
     return res
 
 
-def structured_kinds(path):
-    """The structured secret shapes (kbcommon.structured_secrets) the leak scan reads in the file PATH, a vendor export
-    too: all three in a prose file and an item's text, the header and url ones elsewhere."""
+def structured_kinds(path, vendored):
+    """The structured secret shapes (kbcommon.structured_secrets) the leak scan reads in the file PATH: none in a vendor
+    export, whose examples hold some; all three in a prose file and an item's text; the header and url ones elsewhere."""
     import kbcommon
+    if vendored:
+        return ()
     return kbcommon.PROSE_STRUCTURED if path.endswith(PROSE_SUFFIXES) or path == ITEM_TEXT else kbcommon.STRUCTURED
 
 
@@ -548,11 +550,12 @@ def file_hits(path, text, allow, pinned=()):
     """[(kind, value)] of the leak scan of the file PATH with TEXT, as the tracked-file scan reads a file: urls are
     stripped except for secrets and the registry's private names (an internal root's qualified path, id, pointer host
     and path, read in each url and after each `/` of it); vendor exports, snapshots (`/artifacts/`, `/_snapshots/`) and
-    the pinned artifacts PINNED lists are scanned for secrets only; a prose file (`.md`, `.txt`) and an
+    the pinned artifacts PINNED lists are scanned for secrets only, the plain shapes (no structured secret: a header
+    credential, a url password, an assignment, which a vendor's example would trip); a prose file (`.md`, `.txt`) and an
     item's text (ITEM_TEXT) also have an unquoted secret assignment flagged; a GUID counts in every other text file."""
     import kbcommon
     vendored = "/artifacts/" in path or f"/{kbcommon.SNAPSHOTS}/" in path or path in pinned
-    kinds = structured_kinds(path)
+    kinds = structured_kinds(path, vendored)
     hits = kbcommon.leak_hits(URL_RX.sub("", text), allow, kinds)
     whole = tuple(k for k in kinds if k != "assign")  # a header credential and a url password stand in a url too
     hits += [h for h in kbcommon.leak_hits(text, allow, whole) if h[0] == "secret" and h not in hits]
