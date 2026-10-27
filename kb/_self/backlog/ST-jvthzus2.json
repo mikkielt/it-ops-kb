@@ -2,7 +2,7 @@
   "id": "ST-jvthzus2",
   "kind": "story",
   "title": "Code questions answered from the map are measured against reading files, per right answer",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-rpzrctui",
   "sprint": "SP-jxf76aa2",
   "priority": "P2",
@@ -155,6 +155,31 @@
   ],
   "notes": "Spend: the operator set a 150 USD cap (gate g1). No dry-run estimate exists at planning: multi run code-lookups --dry-run exits 2 until this story adds the scenario, so the worker prints the dry-run estimate first and stops at a gate if it exceeds 150 USD. Moved out of SP-acysfnxr by the unattended orchestrator 2026-10-26: depends on ST-teivhsxq, whose gate g1 (class agents-rule) waits on the operator.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-775f1f5d",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "622c1379f6f70eae9a017e28e5924b8177d61f98",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "multi",
+          "run",
+          "code-lookups",
+          "--dry-run"
+        ],
+        "exit": 0,
+        "sha256": "b15bccf8e9bf966b"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv,subprocess as s,sys;r=[x for x in csv.DictReader(open('kb/_self/reports/benchmarks.csv',encoding='utf-8')) if 'code' in x['case'] and x['scenario']=='multi'];arms={x['arm'] for x in r};print(len(r),sorted(arms));p=s.run([sys.executable,'_tools/benchmarks.py','report','--check'],capture_output=True,text=True,timeout=600);print(p.stdout[-300:]);t=open('kb/_self/token-efficiency.md',encoding='utf-8').read();sys.exit(0 if len(arms)>=2 and p.returncode==0 and 'code-lookups' in t else 1)"
+        ],
+        "exit": 0,
+        "sha256": "a2e4aa9e888e4ecf"
+      }
+    ]
+  }
 }
