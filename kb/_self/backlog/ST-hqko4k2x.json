@@ -2,7 +2,7 @@
   "id": "ST-hqko4k2x",
   "kind": "story",
   "title": "Planning reads the code map: referrers lists a symbol's code references from the pinned map apart from its text mentions",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-rpzrctui",
   "sprint": "SP-jxf76aa2",
   "priority": "P1",
@@ -75,5 +75,7 @@
     "moved out: SP-acysfnxr"
   ],
   "notes": "Moved out of SP-acysfnxr by the unattended orchestrator 2026-10-26: depends on ST-teivhsxq, whose gate g1 (class agents-rule) waits on the operator.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
