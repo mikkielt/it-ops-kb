@@ -116,7 +116,11 @@
         "header and url shapes in the whole text of any file but a vendor export, the assignment in the url-stripped text of .md and .txt files and item text only": "ST-yl6b2ues",
         "all three shapes everywhere, vendor exports included": "ST-yl6b2ues"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "all three shapes everywhere, vendor exports included",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g4",
