@@ -38,7 +38,11 @@
         "Read the intent events the coord store keeps (read_events intent_at), only when the target has no live intent and no process": "BG-glwivafl",
         "Keep a separate ended-session record in coord": "BG-glwivafl"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Read the intent events the coord store keeps (read_events intent_at), only when the target has no live intent and no process",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "filed_in": "clone-0ea70e5c",
