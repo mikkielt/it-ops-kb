@@ -41,6 +41,6 @@
   "links": [
     "parked: SP-3qowbedb review"
   ],
-  "notes": "Found by the fresh-context review of SP-3qowbedb (gap report in the sprint's review scratch); the operator chose to park it under EP-nxb7hjwd. Fix before the paid session-load record (ST-rodj5ltd) where it changes a figure.",
+  "notes": "Found by the fresh-context review of SP-3qowbedb (gap report in the sprint's review scratch); the operator chose to park it under EP-nxb7hjwd. Fix before the paid session-load record (ST-rodj5ltd) where it changes a figure. Knowledge (researched in ST-x7npr7es): kb/public/python/macos-fs-usage-output.md lines 58-65 say a RdData/RdMeta/PgIn line prints D=, B= and /dev/<disk> before an optionally empty pathname, an errored disk I/O prints D= and [errno] with no /dev token, and CoreStorage lines print no path; a distinct_paths counter skips the /dev token.",
   "filed_in": "clone-0ea70e5c"
 }

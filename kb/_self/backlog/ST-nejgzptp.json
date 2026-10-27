@@ -49,6 +49,6 @@
   "links": [
     "parked: SP-3qowbedb review"
   ],
-  "notes": "Found by the fresh-context review of SP-3qowbedb (gap report in the sprint's review scratch); the operator chose to park it under EP-nxb7hjwd. Fix before the paid session-load record (ST-rodj5ltd) where it changes a figure.",
+  "notes": "Found by the fresh-context review of SP-3qowbedb (gap report in the sprint's review scratch); the operator chose to park it under EP-nxb7hjwd. Fix before the paid session-load record (ST-rodj5ltd) where it changes a figure. Knowledge (researched in ST-x7npr7es): kb/public/python/rusage-maxrss-units.md says Linux RUSAGE_CHILDREN includes waited-for descendants (grandchildren too) when each intervening process waited, so a hook's CPU already holds its git/lsof children's; Apple's getrusage page names no descendant rule (open entry in kb/public/_gaps.md under python/rusage-maxrss-units), so the note on a child class's cpu_s row says the CPU is charged to the parent without claiming a kernel rule on macOS.",
   "filed_in": "clone-0ea70e5c"
 }
