@@ -2,7 +2,7 @@
 topic: python/stdlib-windows-portability
 priority: P3
 applies_to: "CPython 3.14.7 documentation (release tag); stdlib behaviour on Windows versus POSIX for detached processes, file locks, text files and interpreter names"
-retrieved_utc: 2026-10-21
+retrieved_utc: 2026-10-27
 sources: [S-vfd5kpka, S-hlwenztu, S-kyzwo2d6, S-2cf7ptty, S-dabwnzz5, S-ew7mucsg, S-oavxfpsn, S-f5bnvamj, S-ntbllsvy, S-sjuwcuhk, S-6bobcclf, S-e4zz24dq, S-ttcgrkbl, S-obrkrr52, S-hjy5rcb2, S743, S-5brdhqgo, S-jwv5eevl, S-ymqlfpgy, S-ujjrcinq, S-t5ahy22o, S-qz6kfi4i, S-qo63gfo7, S-edjp43o7, S-oqrlzkwe, S-ip5ugdeb, S-5qbsemqm, S-7ctlvynr, S-qvjkxdub, S-kkrnrh7n, S-j6wqryzp, S-iv3usyoz, S-ctjl4gek, S-4a5xeg5l, S-zch3x2zi, S1591, S-5ck3iec5, S-zyrhexwo, S-elctquww, S-cxfkxpxt, S-bq7uyypb, S-wazay7xw, S-4xllwpsz, S-6wdqctea]
 status: partial
 ---
@@ -84,6 +84,11 @@ variable is set to a non-empty value.
 - `msvcrt.locking(fd, mode, nbytes)` locks a byte range of a file from the C runtime and raises `OSError` on failure; `LK_NBLCK` raises at once when the bytes cannot be locked; the module is Windows only. [DOC S-f5bnvamj]
 - On Windows, `os.kill` sends only `CTRL_C_EVENT` and `CTRL_BREAK_EVENT` as signals; any other value terminates the process through `TerminateProcess` with that value as its exit code. [DOC S-ew7mucsg]
 - A stale-lock check must not call `os.kill(pid, 0)` on Windows: 0 is "any other value", so the check would kill the lock holder. A portable lock is an `O_EXCL` file (or a directory from `os.mkdir`) holding the owner's PID and start time, with a staleness rule that does not signal the process, such as an age limit. [DER S-ew7mucsg, S-oavxfpsn: `os.kill` on Windows, `O_EXCL` and `mkdir` on both, `fcntl` Unix-only]
+
+### Replacing a file in one step
+- `os.rename(src, dst)` on Windows always raises `FileExistsError` when `dst` exists, and on Unix it may replace `dst`; either may fail when `src` and `dst` are on different filesystems. [DOC S-5brdhqgo]
+- `os.replace(src, dst)` (3.3+) renames `src` to `dst` and silently replaces `dst` when it is a file and the user has permission; it raises `OSError` when `dst` is a non-empty directory and may fail across filesystems, and "if successful, the renaming will be an atomic operation (this is a POSIX requirement)". [DOC S-5brdhqgo]
+- So a shared snapshot or state file is written to a temporary file in the same directory as its target and moved over it with `os.replace`: a reader opens the old file or the new one, never a half-written one, on POSIX, and the same-directory temporary file avoids the cross-filesystem failure. The page states the atomic guarantee as a POSIX requirement and says nothing of Windows, so atomicity of the replace on Windows is not confirmed; a writer that must not interleave with another still takes a lock (above). [DER S-5brdhqgo: `os.replace` semantics; the Windows case is UNK, no sentence read]
 
 ### Text files
 - In text mode without `encoding`, `open()` uses the locale encoding from `locale.getencoding()`, which is platform dependent. [DOC S-ntbllsvy]

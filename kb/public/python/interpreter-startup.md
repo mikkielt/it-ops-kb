@@ -2,8 +2,8 @@
 topic: python/interpreter-startup
 priority: P3
 applies_to: "CPython 3.14.7 command-line options and environment variables that change what the interpreter does at start (documentation at the v3.14.7 tag); Popen on Windows versus POSIX; compile-time warnings and the warnings filter (CPython 3.14.8 documentation and source)"
-retrieved_utc: 2026-10-21
-sources: [S-d77lvlq4, S-dabwnzz5, S-ew7mucsg, S-nidh245i, S-q5frtccp, S-4yatj52m, S-j7sjakc5, S-mggaarah, S-gmtatolh]
+retrieved_utc: 2026-10-27
+sources: [S-d77lvlq4, S-dabwnzz5, S-ew7mucsg, S-nidh245i, S-q5frtccp, S-4yatj52m, S-j7sjakc5, S-mggaarah, S-gmtatolh, S-dvubtnxa, S-uhbkmspb, S-ygv6hmgj]
 status: partial
 ---
 
@@ -75,6 +75,14 @@ into a `SyntaxError`.
   '\d'` pointing at `f.py` line 1; 3.14 and Windows were not run; the 3.14.8 source words the same error as `"\d" is an
   invalid escape sequence. Did you mean "\\d"?` followed by the raw-string hint, so the message text differs between versions. [DER S-4yatj52m: one run of ours, matching
   the replacement in string_parser.c, not a rule]
+
+### The `.pyc` bytecode cache
+- Python caches the compiled version of each imported module in a `__pycache__` directory under the name `module.version.pyc` (for CPython 3.3, `spam.py` becomes `__pycache__/spam.cpython-33.pyc`), so compiled files of different Python versions coexist. [DOC S-dvubtnxa]
+- Python does not check the cache in two cases: the module loaded directly from the command line is always recompiled and the result is not stored, and a cache is not checked when there is no source module. [DOC S-dvubtnxa]
+- By default a `.pyc` records the source's last-modified timestamp and size, and the import system compares them with the source before loading the cache; hash-based `.pyc` files (3.7+) record a hash of the source instead, and an unchecked hash-based file is assumed valid whenever it exists. [DOC S-uhbkmspb]
+- `PYTHONPYCACHEPREFIX` (or `-X pycache_prefix=PATH`, 3.8+) makes Python write `.pyc` files to a mirror directory tree at that path instead of `__pycache__` directories inside the source tree; `PYTHONDONTWRITEBYTECODE` or `-B` stops writing them. [DOC S-ygv6hmgj]
+- So `python3 tool.py` recompiles `tool.py` on every start while the modules it imports load from their cache once written: a hook script that must start fast keeps its work in imported modules and leaves the script a few lines that import and call them; a run with `-B` or a source tree that cannot be written never gains a cache and recompiles every module each start. [DER S-dvubtnxa, S-ygv6hmgj: the directly-loaded-script rule, the cache location and the `-B` switch; the docs state no cost for compiling, and the cost of a recompile on one host is measured there]
+- The page read does not say what happens when the cache directory cannot be written (a read-only source tree); whether the import then fails or silently goes without a cache is not stated. [UNK: no sentence read in the tutorial, the import reference or the command-line page; log in `_gaps.md`]
 
 ## Reference
 - Related: `python/stdlib-windows-portability.md` (command-line length, detached processes, interpreter names on Windows), `python/pytest-xdist.md` (worker count from `os.cpu_count()`), `python/uv-projects.md` (`uv run` locks and syncs before it runs a command), `gitlab/git-test-repositories.md`, `windows/dev-drive.md`.

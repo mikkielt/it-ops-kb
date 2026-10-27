@@ -4591,3 +4591,13 @@ _Agent: kb-research_
 - See claude/mcp-tool-search.md, agents/mcp-server-lifecycle.md, agents/agent-caching.md.
 
 _Agent: kb-research_
+
+## QK-official-docs-say-about-long-several. What do the official docs say about how long several hooks of one event wait, what a Python hook script recompiles on every start, and whether `os.replace` publishes a shared snapshot atomically?
+- Several hooks on one event: the matching hooks run in parallel (at most 12 prompt or agent hooks at once), every one runs to completion before the results merge, a `deny` of one does not stop its siblings, and an identical handler in several settings files runs once while a plugin's copy of it runs too. (live docs, not in the kb, 2026-10-27, https://code.claude.com/docs/en/hooks-guide and https://code.claude.com/docs/en/hooks) [DOC S743, S-5bb7smtb]
+- A script run as `python3 script.py` is recompiled on every start and its result is not stored, while the modules it imports load from `__pycache__` once written; the `.pyc` is validated by the source's timestamp and size unless it is hash-based, and `-B`, `PYTHONDONTWRITEBYTECODE` and `PYTHONPYCACHEPREFIX` change whether and where it is written. (https://docs.python.org/3/tutorial/modules.html, https://docs.python.org/3/reference/import.html, https://docs.python.org/3/using/cmdline.html) [DOC S-dvubtnxa, S-uhbkmspb, S-ygv6hmgj]
+- `os.replace` replaces a destination file silently and "will be an atomic operation (this is a POSIX requirement)"; it may fail across filesystems, and the page says nothing of Windows. (https://docs.python.org/3/library/os.html) [DOC S-5brdhqgo]
+- Conclusion: the wait at a synchronous hook event is the slowest matching hook, not their sum, so a hook's speed is its own process start plus its own work; a hook script keeps a few lines and imports the work so that the compiled cache is used; and a snapshot shared by several sessions is written to a temporary file in its own directory and moved over its target with `os.replace`, under a lock when two writers must not both refresh, with Windows atomicity unconfirmed. [DER S743, S-5bb7smtb, S-dvubtnxa, S-5brdhqgo]
+- Open: what an import does when the cache directory is unwritable and what a recompile costs on this host, and whether `os.replace` is atomic on Windows (two gap entries under `python/interpreter-startup` and `python/stdlib-windows-portability`). [UNK]
+- See claude/hooks.md, python/interpreter-startup.md, python/stdlib-windows-portability.md.
+
+_Agent: kb-research_

@@ -150,7 +150,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `autopilot/lifecycle` | P1 | complete | `autopilot/lifecycle.md` | 5 |
 | `claude/data-retention` | P1 | complete | `claude/data-retention.md` | 6 |
 | `claude/elicitation` | P1 | complete | `claude/elicitation.md` | 5 |
-| `claude/hooks` | P1 | complete | `claude/hooks.md` | 27 |
+| `claude/hooks` | P1 | complete | `claude/hooks.md` | 28 |
 | `claude/managed-mcp` | P1 | complete | `claude/managed-mcp.md` | 2 |
 | `claude/messages-api` | P1 | complete | `claude/messages-api.md`, `claude/models.csv`, `claude/api-limits.csv` | 12 |
 | `claude/otel-monitoring` | P1 | partial | `claude/otel-monitoring.md` | 10 |
@@ -336,7 +336,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `python/alembic-migrations` | P3 | partial | `python/alembic-migrations.md` | 13 |
 | `python/fastapi-capability-dependencies` | P3 | partial | `python/fastapi-capability-dependencies.md` | 12 |
 | `python/imports-and-modules` | P3 | complete | `python/imports-and-modules.md` | 11 |
-| `python/interpreter-startup` | P3 | partial | `python/interpreter-startup.md` | 9 |
+| `python/interpreter-startup` | P3 | partial | `python/interpreter-startup.md` | 12 |
 | `python/macos-fs-usage-output` | P3 | partial | `python/macos-fs-usage-output.md` | 2 |
 | `python/maturin-pyo3-wheels` | P3 | partial | `python/maturin-pyo3-wheels.md` | 14 |
 | `python/mypy-strict` | P3 | partial | `python/mypy-strict.md` | 8 |

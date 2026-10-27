@@ -21,6 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "Findings 2026-10-27 (kb facts): ST-dmon53is, ST-h7ddg4nu, ST-ztsewht6, ST-qqpcgqe7 read claude/hooks.md:203-207 (matching hooks run in parallel, so a sync event waits for the slowest hook; a command in both the project settings and an installed plugin runs twice) and python/interpreter-startup.md:80-84 (a script run directly is recompiled every start, imported modules load from the pyc cache; -B or an unwritable tree means no cache); ST-dktdxpc3 reads python/stdlib-windows-portability.md:89-91 (os.replace of a same-directory temp file publishes a snapshot atomically on POSIX; Windows atomicity unconfirmed). Already in the kb: hooks.md:80-100,139-141,195-200 (SessionStart wait, timeouts, async, -p runs, disableAllHooks), mods.md:109,127,132 (mod timers and redraws). Gap entries: unwritable __pycache__ behaviour and recompile cost (python/interpreter-startup); os.replace atomicity on Windows (python/stdlib-windows-portability). Answer: QK-official-docs-say-about-long-several.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-557596e3",
   "operator": "op-f618a13e"
