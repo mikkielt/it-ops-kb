@@ -13,7 +13,28 @@
       "run": [
         "python3",
         "-c",
-        "import json,os,shutil,subprocess,sys,tempfile; sys.path.insert(0,'_tools'); import kbingest; kbingest.run_tool=lambda *a,**k: (_ for _ in ()).throw(AssertionError('a pattern mapper started a process')); d=tempfile.mkdtemp(); g=lambda *a: subprocess.run(['git','-C',d,*a],check=True,capture_output=True); g('init','-q'); [shutil.copy(os.path.join('_tools/fixtures/patterns',f),d) for f in ('sample.ps1','sample.lua')]; g('add','.'); g('-c','user.name=jan.kowalski','-c','user.email=jan.kowalski','commit','-qm','x'); m=os.path.join(tempfile.mkdtemp(),'m.json'); assert kbingest.main(['map',d,'--lang','powershell,lua','--out',m])==0; names={s['name'] for s in json.load(open(m))['symbols']}; assert {'Get-Widget','load_map'}<=names, names"
+        "import csv, os, sys\nsys.path.insert(0, '_tools')\nimport kbingest\ncls = getattr(kbingest, 'PatternMapper', None)\n(cls is not None and issubclass(cls, kbingest.Mapper)) or sys.exit('kbingest.PatternMapper (a Mapper subclass) is missing')\nt = '_tools/kbingest_patterns.csv'\nos.path.exists(t) or sys.exit('no pattern table ' + t)\ntext = open(t, encoding='utf-8').read().lower()\nmiss = [w for w in ('powershell', 'lua', '.ps1', '.psm1', '.psd1', '.lua') if w not in text]\nmiss and sys.exit('the pattern table lacks rows for %s' % miss)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import contextlib, io, json, os, subprocess, sys, tempfile\nsys.path.insert(0, '_tools')\nimport kbingest\nPS1 = 'function Get-Widget {\\n    param($Name)\\n    Import-Module Example.Widgets\\n    . ./helpers.ps1\\n}\\nclass Widget { }\\nenum Color { Red }\\nGet-Widget -Name x\\n'\nPSM = 'function Set-Widget { Get-Widget }\\n'\nLUA = \"local util = require('util')\\nlocal function load_map(name)\\n  return util.read(name)\\nend\\nfunction render(x) return load_map(x) end\\nload_map('x')\\n\"\nPY = 'def f():\\n    return 1\\n'\ndef repo(files):\n    d = tempfile.mkdtemp()\n    g = lambda *a: subprocess.run(['git', '-C', d, *a], capture_output=True)\n    g('init', '-q')\n    for name, text in files.items():\n        with open(os.path.join(d, name), 'w') as f:\n            f.write(text)\n    g('add', '.')\n    g('-c', 'user.name=jan.kowalski', '-c', 'user.email=jan.kowalski', 'commit', '-qm', 'x')\n    return d\ndef mapped(d, langs):\n    out = os.path.join(tempfile.mkdtemp(), 'm.json')\n    with contextlib.redirect_stdout(io.StringIO()):\n        rc = kbingest.main(['map', d, '--lang', langs, '--out', out])\n    return rc, (json.load(open(out)) if os.path.exists(out) else {}), out\n\ndef boom(*a, **k):\n    raise AssertionError('a pattern mapper started a process')\nkbingest.run_tool = boom\nd = repo({'sample.ps1': PS1, 'mod.psm1': PSM, 'sample.lua': LUA})\nrc, doc, out = mapped(d, 'powershell,lua')\nrc == 0 or sys.exit('map exited %s' % rc)\nnames = {s['name'] for s in doc.get('symbols', [])}\nwant = {'Get-Widget', 'Widget', 'Color', 'Set-Widget', 'load_map', 'render'}\nwant <= names or sys.exit('symbols missing %s (found %s); notes %s' % (sorted(want - names), sorted(names), [n['note'][:80] for n in doc.get('notes', [])][:3]))"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import contextlib, io, json, os, subprocess, sys, tempfile\nsys.path.insert(0, '_tools')\nimport kbingest\nPS1 = 'function Get-Widget {\\n    param($Name)\\n    Import-Module Example.Widgets\\n    . ./helpers.ps1\\n}\\nclass Widget { }\\nenum Color { Red }\\nGet-Widget -Name x\\n'\nPSM = 'function Set-Widget { Get-Widget }\\n'\nLUA = \"local util = require('util')\\nlocal function load_map(name)\\n  return util.read(name)\\nend\\nfunction render(x) return load_map(x) end\\nload_map('x')\\n\"\nPY = 'def f():\\n    return 1\\n'\ndef repo(files):\n    d = tempfile.mkdtemp()\n    g = lambda *a: subprocess.run(['git', '-C', d, *a], capture_output=True)\n    g('init', '-q')\n    for name, text in files.items():\n        with open(os.path.join(d, name), 'w') as f:\n            f.write(text)\n    g('add', '.')\n    g('-c', 'user.name=jan.kowalski', '-c', 'user.email=jan.kowalski', 'commit', '-qm', 'x')\n    return d\ndef mapped(d, langs):\n    out = os.path.join(tempfile.mkdtemp(), 'm.json')\n    with contextlib.redirect_stdout(io.StringIO()):\n        rc = kbingest.main(['map', d, '--lang', langs, '--out', out])\n    return rc, (json.load(open(out)) if os.path.exists(out) else {}), out\n\nd = repo({'sample.ps1': PS1, 'sample.lua': LUA})\nrc, doc, out = mapped(d, 'powershell,lua')\nrc == 0 or sys.exit('map exited %s' % rc)\nsym = {s['name']: s for s in doc.get('symbols', [])}\n(sym.get('Get-Widget') and sym['Get-Widget'].get('references')) or sys.exit('Get-Widget has no references: %s' % sym.get('Get-Widget'))\n(sym.get('load_map') and sym['load_map'].get('references')) or sys.exit('load_map has no references')\nimp = json.dumps(doc.get('imports', []))\nmiss = [w for w in ('Example.Widgets', 'helpers', 'util') if w not in imp]\nmiss and sys.exit('imports missing %s: %s' % (miss, imp[:200]))\nbuf = io.StringIO()\nwith contextlib.redirect_stdout(buf):\n    wrc = kbingest.main(['where', 'Get-Widget', '--map', out])\n(wrc == 0 and 'sample.ps1' in buf.getvalue()) or sys.exit('where Get-Widget: exit %s, %r' % (wrc, buf.getvalue()[:200]))"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import contextlib, io, json, os, subprocess, sys, tempfile\nsys.path.insert(0, '_tools')\nimport kbingest\nPS1 = 'function Get-Widget {\\n    param($Name)\\n    Import-Module Example.Widgets\\n    . ./helpers.ps1\\n}\\nclass Widget { }\\nenum Color { Red }\\nGet-Widget -Name x\\n'\nPSM = 'function Set-Widget { Get-Widget }\\n'\nLUA = \"local util = require('util')\\nlocal function load_map(name)\\n  return util.read(name)\\nend\\nfunction render(x) return load_map(x) end\\nload_map('x')\\n\"\nPY = 'def f():\\n    return 1\\n'\ndef repo(files):\n    d = tempfile.mkdtemp()\n    g = lambda *a: subprocess.run(['git', '-C', d, *a], capture_output=True)\n    g('init', '-q')\n    for name, text in files.items():\n        with open(os.path.join(d, name), 'w') as f:\n            f.write(text)\n    g('add', '.')\n    g('-c', 'user.name=jan.kowalski', '-c', 'user.email=jan.kowalski', 'commit', '-qm', 'x')\n    return d\ndef mapped(d, langs):\n    out = os.path.join(tempfile.mkdtemp(), 'm.json')\n    with contextlib.redirect_stdout(io.StringIO()):\n        rc = kbingest.main(['map', d, '--lang', langs, '--out', out])\n    return rc, (json.load(open(out)) if os.path.exists(out) else {}), out\n\nd = repo({'a.py': PY})\nrc, doc, out = mapped(d, 'powershell,lua')\nrc == 0 or sys.exit('map of a repository without PowerShell or Lua files exited %s' % rc)\ndoc.get('symbols') == [] or sys.exit('symbols found where there is no PowerShell or Lua: %s' % doc.get('symbols')[:2])\nbad = [n['note'][:90] for n in doc.get('notes', []) if 'toolchain' in n['note'] or 'not installed' in n['note']]\nbad and sys.exit('notes about a missing toolchain: %s' % bad)"
       ]
     },
     {
@@ -22,6 +43,28 @@
         "_tools/tests.py",
         "_tools/test_kbingest_guards.py"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "A PatternMapper, a Mapper subclass driven by a per-language table (file extensions",
+      "check": 0
+    },
+    {
+      "clause": "definition, reference and import regexes), reads source files from the scratch worktree without starting any process",
+      "check": 1
+    },
+    {
+      "clause": "records symbols with references, imports and entry points in the same map format as the toolchain mappers. First rows: PowerShell (.ps1, .psm1, .psd1: function, class, enum, Import-Module, dot-sourcing) and Lua (function, local function, require). kbingest map --lang powershell,lua and where NAME answer from synthetic fixtures",
+      "check": 2
+    },
+    {
+      "clause": "a repository without such files",
+      "check": 3
+    },
+    {
+      "clause": "every existing mapper's output, is unchanged",
+      "check": 4
     }
   ],
   "touches": [
@@ -93,6 +136,6 @@
       "agent_session": true
     }
   ],
-  "notes": "Premise (run at plan time): kbingest.MAPPERS languages are dotnet, go, node, python, rust, typescript. python3 _tools/kbingest.py map . --lang powershell exits 2 with: refused: unknown language powershell (known: dotnet, go, node, python, rust, typescript). Reproduces. build_map runs a mapper only after tool_exe(m.tool) finds a program on PATH outside the worktree and a version probe runs; a pattern mapper has no tool, so build_map needs a branch that skips both and records the table's revision under doc[tools]. Fixture names the first check expects: functions Get-Widget (sample.ps1) and load_map (sample.lua) in _tools/fixtures/patterns/ (synthetic, placeholders only). The map goes through redact_leaks as before. The table is read from untrusted repository files with regexes from a data file, so the story needs a bounded match (line length cap, no nested quantifiers in a row, checked when the table loads). Planner (SP-iir3d2tu): after ST-ztsewht6, which also edits AGENTS.md.",
+  "notes": "Premise (run at plan time): kbingest.MAPPERS languages are dotnet, go, node, python, rust, typescript. python3 _tools/kbingest.py map . --lang powershell exits 2 with: refused: unknown language powershell (known: dotnet, go, node, python, rust, typescript). Reproduces. build_map runs a mapper only after tool_exe(m.tool) finds a program on PATH outside the worktree and a version probe runs; a pattern mapper has no tool, so build_map needs a branch that skips both and records the table's revision under doc[tools]. Fixture names the first check expects: functions Get-Widget (sample.ps1) and load_map (sample.lua) in _tools/fixtures/patterns/ (synthetic, placeholders only). The map goes through redact_leaks as before. The table is read from untrusted repository files with regexes from a data file, so the story needs a bounded match (line length cap, no nested quantifiers in a row, checked when the table loads). Planner (SP-iir3d2tu): after ST-ztsewht6, which also edits AGENTS.md. Checks 4 (the kbingest guards test) pass before the work and pin behaviour that must stay unchanged (every existing mapper's output and the sandbox guards); every other check fails before the work with a one-line reason, not a traceback. Contract the checks read: _tools/kbingest_patterns.csv has rows for powershell (.ps1 .psm1 .psd1) and lua (.lua); checks 1 and 2 build their own tiny repositories from inline sources, so the fixtures under _tools/fixtures/patterns are the worker's documentation, not the checks' input.",
   "filed_in": "clone-0ea70e5c"
 }
