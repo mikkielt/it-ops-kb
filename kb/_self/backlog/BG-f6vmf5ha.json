@@ -2,7 +2,7 @@
   "id": "BG-f6vmf5ha",
   "kind": "bug",
   "title": "The session-start peers line sits above the sprint lines, so the hook's 1000-character cap cuts every sprint line when the checkout lags",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-jxf76aa2",
   "priority": "P1",
   "rank": 0,
@@ -20,5 +20,7 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
