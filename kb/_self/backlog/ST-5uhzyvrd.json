@@ -2,7 +2,7 @@
   "id": "ST-5uhzyvrd",
   "kind": "story",
   "title": "land says a worker's work rows are late, not missing, while a distill is taking its session",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-m5m67goe",
   "priority": "P3",
   "rank": 0,
@@ -31,5 +31,7 @@
     "parked: SP-3qowbedb close"
   ],
   "notes": "From the retrospective of SP-3qowbedb; the operator accepted it at the close.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-557596e3",
+  "operator": "op-f618a13e"
 }
