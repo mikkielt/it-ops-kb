@@ -18,8 +18,8 @@ from fractions import Fraction
 
 import kbcommon, kbid
 from kbfacts import (
-    ID, SELF_ROOT, WORD, articles, bare, cached, clip, data_rows, decision_line, decision_rows, in_prefix,
-    key_terms, ledger_entries, read, root_files, root_name, scope, source_rows, stem, terms
+    ID, SELF_ROOT, WORD, articles, bare, cached, clip, data_rows, decision_line, decision_rows, fold, in_prefix,
+    key_terms, ledger_entries, nfc, read, root_files, root_name, scope, source_rows, stem, terms
 )
 from kf_fresh import cited_lines, format_sources
 from kf_index import pack, store
@@ -217,8 +217,8 @@ def _count_items(question, domain, root, invalidated):
     their statuses, and the article paths when the question asks for a list. Nothing when the question also names a
     topic (`how many articles about Kerberos`), which is a lookup."""
     doms = sorted({bare(p).split("/", 1)[0] for p in articles() if "/" in bare(p)})
-    words = {w.lower() for w in WORD.findall(question)}
-    named = [d for d in doms if d.lower() in words]
+    words = {fold(w) for w in WORD.findall(nfc(question))}
+    named = [d for d in doms if fold(d) in words]
     known = COUNT_STEMS | {stem(d.lower()) for d in named}
     if set(key_terms(question)) - known:
         return []

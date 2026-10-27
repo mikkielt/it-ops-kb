@@ -67,7 +67,7 @@ The modules behind this facade. kf_index.py holds the index, the ranking and `pa
 code. They read the ground in this file (files, tags, units, ledgers, decisions, the index directory) by name and are
 imported at its end, so every name of theirs is also a name of this module: other modules import from `kbfacts`.
 """
-import csv, functools, hashlib, io, json, os, re, subprocess, sys, tempfile, time
+import csv, functools, hashlib, io, json, os, re, subprocess, sys, tempfile, time, unicodedata
 from collections import Counter, defaultdict
 from datetime import date, datetime, timezone
 
@@ -1403,11 +1403,21 @@ NONE_SENTENCE = ("The kb does not cover this. Do not answer from the hits below;
 VPREFIX = re.compile(r"^v(?=\d+\.\d)")  # the v of a version: v2.1.294 and 2.1.294 are one word
 
 
+def nfc(text):
+    """Text in Unicode normal form C: a decomposed Könige (o and a combining diaeresis) is the one word it spells."""
+    return text if text.isascii() else unicodedata.normalize("NFC", text)
+
+
+def fold(text):
+    """The comparison form of a word or text: NFC, casefolded (Straße and strasse meet; ASCII text is just lower-cased)."""
+    return nfc(text).casefold()
+
+
 @functools.lru_cache(maxsize=None)
 def stem(w):
     """A light suffix stripper, the same for query and kb: disable/disabled/disabling -> disabl, settings -> set; a
     version without its v prefix (v2.1.294 -> 2.1.294), so a question and a fact spell it either way."""
-    w = VPREFIX.sub("", w)
+    w = VPREFIX.sub("", fold(w))
     for _ in range(2):  # settings -> setting -> sett
         for suf in ("ies", "ing", "ed", "es", "s"):
             if len(w) > len(suf) + 3 and w.endswith(suf) and not (suf == "s" and w.endswith(("ss", "us", "is"))):
@@ -1424,14 +1434,31 @@ def stem(w):
 
 def key_terms(text):
     """Stems of whole words only (no hyphen/dot parts): what the coverage verdict counts."""
-    return [stem(t) for t in WORD.findall(text.lower()) if t not in STOP and len(t) > 1]
+    return [stem(t) for t in WORD.findall(fold(text)) if t not in STOP and len(t) > 1]
 
 
-CAMEL = re.compile(r"[A-Z]+(?=[A-Z][a-z])|[A-Z]?[a-z]+|[A-Z]+|\d+")
+# the CamelCase split runs over a letter-class string of the word (U upper-case, L any other letter or mark, D digit,
+# x the rest), so a capital of any script splits: PobierzŁącze -> Pobierz, Łącze
+CAMEL_CLASSES = re.compile(r"U+(?=UL)|U?L+|U+|D+")
 NUMBER = re.compile(r"\d+(?:\.\d+)+")  # a decimal or dotted number: its dot parts alone do not match it
 # a version a model id spells with a hyphen, read only after a model family: claude-opus-5-5 is 5.5, claude-3-5-sonnet
 # is 3.5; the S-1-5-18 of a SID or the 8-4-4-4-12 of a GUID is no version
 VERSION_ID = re.compile(r"(?<![a-z0-9])(?:opus|sonnet|haiku|fable|claude)-(\d)-(\d)(?![\d.])")
+
+
+def has_camel(w):
+    """Whether word `w` joins a lower-case letter and a capital (approximateLastSignInDateTime, PobierzŁącze)."""
+    if w.isascii():
+        return re.search(r"[a-z][A-Z]", w) is not None
+    return any(a.islower() and b.isupper() for a, b in zip(w, w[1:]))
+
+
+def camel_parts(seg):
+    """The parts of an identifier segment at its case changes, in their own case: GetEntityÜbersicht -> Get, Entity,
+    Übersicht; XMLHttp -> XML, Http; a digit run is a part."""
+    classes = "".join("U" if c.isupper() else "D" if c.isdecimal() else "L" if c.isalpha() or unicodedata.category(c)[0] == "M"
+                      else "x" for c in seg)
+    return [seg[m.start():m.end()] for m in CAMEL_CLASSES.finditer(classes)]
 
 
 def terms(text, camel=True):
@@ -1439,14 +1466,14 @@ def terms(text, camel=True):
     unit by a hyphen as the number itself (1.5-second -> 1.5, so a question's `1.5 seconds` finds it) and identifier
     parts (approximateLastSignInDateTime -> approximate, last, sign, in, date, time; US_NPI -> us, npi)."""
     out = []
-    for w in WORD.findall(text):
-        t = VPREFIX.sub("", w.lower())
+    for w in WORD.findall(nfc(text)):
+        t = VPREFIX.sub("", fold(w))
         parts = [t] + ([p for p in re.split(r"[.\-]", t) if p] if ("-" in t or "." in t) else [])
         if "-" in t:
             parts += [p for p in t.split("-") if NUMBER.fullmatch(p)]
             parts += [f"{m[1]}.{m[2]}" for m in VERSION_ID.finditer(t)]
-        if camel and ("_" in w or re.search(r"[a-z][A-Z]", w)):
-            parts += [p.lower() for seg in re.split(r"[_.\-]", w) for p in CAMEL.findall(seg)]
+        if camel and ("_" in w or has_camel(w)):
+            parts += [fold(p) for seg in re.split(r"[_.\-]", w) for p in camel_parts(seg)]
         out += [stem(p) for p in dict.fromkeys(parts) if p not in STOP and len(p) > 1]
     return out
 
@@ -1494,8 +1521,8 @@ def _aliases(rules):
         try:
             with open(path, encoding="utf-8", newline="") as f:
                 for r in csv.DictReader(f):
-                    words = tuple(WORD.findall((r.get("term") or "").lower()))
-                    canon = (r.get("canonical") or "").strip().lower()
+                    words = tuple(WORD.findall(fold(r.get("term") or "")))
+                    canon = fold((r.get("canonical") or "").strip())
                     if words and canon and words not in out[canon]:
                         out[canon].append(words)
         except OSError:
@@ -1510,7 +1537,7 @@ def expand(question, rules=False):
     own, so they cannot raise the coverage verdict on words the question did not use. A word the question holds
     only as a part of a compound (`test` of `test-suite`) is returned too; the ranking's own weight for that part
     replaces its entry."""
-    toks = WORD.findall(question.lower())
+    toks = WORD.findall(fold(question))
     extra, variants = {}, defaultdict(set)
     for canon, forms in aliases(rules).items():
         found = [(i, len(f)) for f in forms for i in range(len(toks) - len(f) + 1) if tuple(toks[i:i + len(f)]) == f]
@@ -1997,7 +2024,7 @@ def clip_around(text, n, phrases=(), terms=()):
             return head
         start = max(0, found[0] - max(0, n - (found[1] - found[0])) // 3)
     else:
-        hits = [(m.start(), stem(m.group(0).lower())) for m in WORD.finditer(text)]
+        hits = [(m.start(), stem(m.group(0))) for m in WORD.finditer(text)]
         hits = [(i, t) for i, t in hits if t in terms]
 
         def held(a):

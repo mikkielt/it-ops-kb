@@ -130,6 +130,24 @@
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "Where do NFC and casefolding apply, given WORD matches whatever the text holds?",
+      "options": [
+        "In terms, key_terms, stem and each query site (fold/nfc helpers in kbfacts); WORD pattern unchanged",
+        "Widen the WORD pattern to take combining marks"
+      ],
+      "recommendation": "In terms, key_terms, stem and each query site (fold/nfc helpers in kbfacts); WORD pattern unchanged",
+      "reason": "because a decomposed word then becomes the same word as the composed one instead of a longer match, and ASCII text and the index patterns stay as they were",
+      "do": {
+        "In terms, key_terms, stem and each query site (fold/nfc helpers in kbfacts); WORD pattern unchanged": "ST-yxudqftw",
+        "Widen the WORD pattern to take combining marks": "ST-yxudqftw"
+      },
+      "class": "design",
+      "answer": "In terms, key_terms, stem and each query site (fold/nfc helpers in kbfacts); WORD pattern unchanged",
+      "by": "agent"
     }
   ],
   "notes": "Premise (run at plan time, commit 459853b lineage): CAMEL.findall('PobierzŁącze') -> ['Pobierz', 'cze']; CAMEL.findall('GetEntityÜbersicht') -> ['Get', 'Entity', 'bersicht']; WORD.findall of NFD 'Könige' -> ['Ko', 'nige'] while the NFC form -> ['Könige']; 'Straße'.lower()=='strasse' is False, .casefold() is True. All reproduce. Baseline: rag.py eval -> questions=774 passed=774 verdict_ok=774 found_ok=774. Readers beyond kbfacts: kf_index.py lower()s query words at many sites and its index cache is keyed on the CAMEL/WORD patterns; kf_route.py lower()s question words; every other caller of terms/key_terms inherits the change and needs no edit. re has no \\p{Lu}: the split needs a scan by str.isupper/islower or an explicit class. Checks 3 (rag.py eval) and 4 (perfcheck ids) each passes before the work and pin behaviour that must stay unchanged (the public eval shares and the collected test ids); every other check fails before the work with a one-line reason, not a traceback. Checks 0 to 2 read the public kbfacts.terms/key_terms/stem, which the index and the query both use, so the index side is covered through the same functions.",

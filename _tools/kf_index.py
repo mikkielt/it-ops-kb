@@ -14,13 +14,13 @@ from collections import Counter, defaultdict
 
 import kbcommon, kbid
 from kbfacts import (
-    CAMEL, CLAUSE_CHARS, CONTEXT_SEP, EXPANSION_WEIGHT, ID, ITEM_DECISIONS, LOG_LABEL, MAX_DECISIONS, MAX_FLAGS,
+    CAMEL_CLASSES, CLAUSE_CHARS, CONTEXT_SEP, EXPANSION_WEIGHT, ID, ITEM_DECISIONS, LOG_LABEL, MAX_DECISIONS, MAX_FLAGS,
     MAX_LOGS, NONE_SENTENCE, NUMBER, PARENT_CHARS, PART_WEIGHT, PASSAGES_PER_LINE, PASSAGE_CHARS, SELF_ROOT, STOP,
     SUMMARY_WEIGHT, TITLE_WEIGHT, UNTAGGED_WEIGHT, VERSION_ID, VPREFIX, WORD, aliases, articles, bare, clip,
     clip_around, corpus, decision_block, decision_label, decision_rows, decisions_for, eval_phrases, expand,
-    fact_key, fingerprint, flags_in, home_label, in_prefix, index_dir, item_decisions, key_terms, log_line,
-    logs_for, read, remove_file, scope, self_eval_rows, self_places, source_rows, stem, summary_text, terms,
-    tied_decisions, window_ended, windows_in
+    fact_key, fingerprint, flags_in, fold, home_label, in_prefix, index_dir, item_decisions, key_terms, log_line,
+    logs_for, nfc, read, remove_file, scope, self_eval_rows, self_places, source_rows, stem, summary_text, terms,
+    tied_decisions, window_ended, windows_in, camel_parts, has_camel
 )
 from kf_fresh import format_sources, fresh_mark, fresh_state, ledger_rows, printed_lines
 
@@ -39,7 +39,7 @@ def _code_digest(code):
 @functools.lru_cache(maxsize=1)
 def _weigh_code():
     """The digest of the functions that weigh a unit: _weigh, terms, stem (without its cache wrapper) and bare."""
-    return [_code_digest(f.__code__) for f in (_weigh, terms, getattr(stem, "__wrapped__", stem), bare)]
+    return [_code_digest(f.__code__) for f in (_weigh, terms, getattr(stem, "__wrapped__", stem), bare, fold, camel_parts, has_camel)]
 
 
 @functools.lru_cache(maxsize=4)
@@ -61,7 +61,7 @@ def _unit_key(u, art, meta, sums, exps):
     else:
         summ = None
     ex = exps.get(fact_key(u["text"]), ()) if exps and u["tags"] and not u.get("root") else ()
-    patterns = (WORD.pattern, CAMEL.pattern, NUMBER.pattern, VERSION_ID.pattern, VPREFIX.pattern)
+    patterns = (WORD.pattern, CAMEL_CLASSES.pattern, NUMBER.pattern, VERSION_ID.pattern, VPREFIX.pattern)
     wdata = _weigh_data(frozenset(STOP), frozenset(kbid.STOP), patterns)
     raw = json.dumps([INDEX_VERSION, os.environ.get("KB_DOC2QUERY", ""), _weigh_code(), wdata,
                       TITLE_WEIGHT, SUMMARY_WEIGHT, EXPANSION_WEIGHT, u["path"], u["title"], u.get("lead", ""),
@@ -571,7 +571,7 @@ def search(query, k=8, domain=None, index=False, notes=None, root=None):
                      "matched": matched, "sources": sorted(set(ID.findall(u["text"])), key=kbid.sort_key)})
     if notes is not None:
         word = {}  # stem -> the query's own word, for the notes
-        for w in WORD.findall(query.lower()):
+        for w in WORD.findall(fold(query)):
             word.setdefault(stem(w), w)
         missing = [word.get(t, t) for t in keys if not kdf[t]]
         if missing:
@@ -627,7 +627,7 @@ def specific(st, question, named, known, keys, holders):
     keys = set(keys)
     if named & set(known):
         return True
-    words = [w.lower() for w in WORD.findall(question)]
+    words = [fold(w) for w in WORD.findall(nfc(question))]
     found = {stem(w) for w in words if "-" in w} & set(known)
     for raw in question.split():
         if IDENT.search(raw):
@@ -772,7 +772,7 @@ def name_apart(question, known, held):
     word the kb holds: `Exchange Online`) that none of the lead article's printed facts holds beside any of the
     question's lower-case key words: the name sits in some facts and what is asked about it in others. `held` is the
     set of key words each printed fact holds. [(stems of the name, stems of the lower-case key words)]"""
-    words, run, runs = WORD.findall(question), [], []
+    words, run, runs = WORD.findall(nfc(question)), [], []
     for i, w in enumerate(words + [""]):
         if i and w.istitle() or w[:1].isdigit() and run:
             run.append(stem(w.lower()))
@@ -893,7 +893,7 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     # verdict: named words (product names, ids: a capital or a digit, not the question's first word) that the kb
     # never mentions mean it does not cover the question; else the share of the kb-known key words that the best
     # article's units match
-    named = {stem(w.lower()) for w in WORD.findall(question) if re.search(r"[A-Z0-9]", w) and w.lower() not in STOP}
+    named = {stem(w) for w in WORD.findall(nfc(question)) if re.search(r"[A-Z0-9]", w) and fold(w) not in STOP}
     named = {t for t in named if t in kdf}
     named_missing = sorted(t for t in named if not kdf[t])
     known = [t for t in informative if kdf[t]]
@@ -949,12 +949,12 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
         cand = [u for a in order for _, u in sorted((x for x in by_art[a] if x[0] >= 0.4 * best), key=lambda x: -x[0])[:6]]
 
         # the words the question spells (a one-letter part, the V of Hyper V, included; a stop word excluded)
-        spelled = {stem(p) for p in re.findall(r"\w+", question.lower()) if p not in STOP}
+        spelled = {stem(p) for p in re.findall(r"\w+", fold(question)) if p not in STOP}
 
         def holds_name(u, t):
             if not has(u, t):
                 return False
-            words = WORD.findall(u["text"].lower())
+            words = WORD.findall(fold(u["text"]))
             compounds = [[stem(p) for p in w.split("-")] for w in words if "-" in w]
             # a hyphen part holds the name when another part of its compound is a word of the question too
             # (Hyper V finds hyper-v, Invoke WebRequest finds Invoke-WebRequest; "long-horizon" stays no VMware Horizon)
@@ -1122,7 +1122,7 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
         lead_meta = st.arts.get(paths[0], {})
         lead_own = set(key_terms(f"{lead_meta.get('title', '')} {lead_meta.get('applies_to', '')}"))
         lead_has = set().union(*({t for t in known if has(u, t)} for u in lead_units))
-        plain = {stem(w.lower()) for w in WORD.findall(question) if w.isalpha() and (w.islower() or w.istitle())}
+        plain = {stem(w) for w in WORD.findall(nfc(question)) if w.isalpha() and (w.islower() or w.istitle())}
         rare = sorted(t for t in plain & set(known) if kdf[t] <= PASSING_UNITS and t not in lead_own)
         absent = [t for t in known if t not in lead_has]
         if rare and any(t not in rare for t in absent) and len(absent) >= PASSING_MISSING * len(known):
@@ -1148,7 +1148,7 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
         out.append(f"as of {as_of}: {left_out} matching fact{'' if left_out == 1 else 's'} left out as not yet valid or "
                    "no longer valid then")
     if unmatched:
-        names = {stem(w.lower()): w for w in WORD.findall(question)}
+        names = {stem(w): w for w in WORD.findall(nfc(question))}
         out.append(f"check: {paths[0]} never mentions {', '.join(names.get(t, t) for t in unmatched)}; the facts may be "
                    "about something related. Answer only if a cited line answers the question itself.")
     if spread:
@@ -1264,9 +1264,9 @@ def own_words(question, stems):
     """The question's own words, in question order, whose stems are in `stems` (each stem once, the first spelling):
     the stems the verdict counts, mapped back the way kb_hook.respond names the missing words."""
     want, out = set(stems), {}
-    for w in WORD.findall(question):
-        t = stem(w.lower())
-        if w.lower() not in STOP and len(w) > 1 and t in want:
+    for w in WORD.findall(nfc(question)):
+        t = stem(w)
+        if fold(w) not in STOP and len(w) > 1 and t in want:
             out.setdefault(t, w)
     return list(out.values())
 
