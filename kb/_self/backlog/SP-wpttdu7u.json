@@ -2,7 +2,7 @@
   "id": "SP-wpttdu7u",
   "kind": "sprint",
   "title": "Lighter sessions: one shared monitor, quicker hooks, lean unwatched runs",
-  "status": "planned",
+  "status": "active",
   "goal": "interactive sessions' kbmon panes share one snapshot per clone; kb_hook answers a plain prompt in at most 200 ms, coord_hook a tool call in at most 80 ms and the digest hook a session start in at most 300 ms in the session-load replay; and sessions no person watches skip the hooks only a person reads while keeping coord, the query-log hooks and kb_hook's tool-call guards",
   "gates": [
     {

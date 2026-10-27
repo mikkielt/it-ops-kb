@@ -2,7 +2,7 @@
   "id": "ST-dktdxpc3",
   "kind": "story",
   "title": "Interactive sessions share one kbmon snapshot, so N panes cost about one refresh, not N",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nxb7hjwd",
   "sprint": "SP-wpttdu7u",
   "priority": "P2",
