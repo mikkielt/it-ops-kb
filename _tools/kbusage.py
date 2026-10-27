@@ -3,7 +3,8 @@
 only; no model and no network.
 
   kbusage.py TRANSCRIPT [--prompt PROMPT_ID]   the usage record of each prompt of a transcript (or of one), as JSON
-                                               lines: the numbers the query log's sidecar keeps, nothing else
+                                               lines: the numbers the query log's sidecar keeps and the kb articles
+                                               and repository files the tool calls named, nothing else
   kbusage.py tree PATH [--format json] [--top N]
                                                tool results of a transcript with its subagents/*.jsonl, or of every
                                                transcript of a project directory: calls and characters by tool, Bash
@@ -66,6 +67,14 @@ WORK_BRANCH = re.compile(r"work/((?:EP|ST|TK|SB|BG|SP)-[a-z2-7]{8})")  # a worke
 # a hand-made worker worktree in a command: `<clone>/.claude/worktrees/<id>` (a worker whose working directory stays its
 # session's, so no record of it names a work branch)
 WORK_WORKTREE = re.compile(r"[/\\]\.claude[/\\]worktrees[/\\]((?:EP|ST|TK|SB|BG|SP)-[a-z2-7]{8})(?![\w-])")
+# what a prompt's tool calls named: a kb article by kb_show's path or kb_facts' prefix, a repository file by the path a
+# Read, Edit or Grep call took
+KB_NAMING = {"kb_show": "path", "kb_facts": "prefix"}
+REPO_NAMING = {"Read": "file_path", "Edit": "file_path", "MultiEdit": "file_path", "Grep": "path"}
+SERVED_PATH = re.compile(r"[A-Za-z0-9_][A-Za-z0-9_.-]*(?:/[A-Za-z0-9_][A-Za-z0-9_.-]*){0,11}")
+SERVED_MAX = 24  # the topics, and the files, one record keeps (the first named)
+SERVED_SKIP = ("_cache", "_private")  # a top directory of the clone that is never named
+LINE_SUFFIX = re.compile(r":\d+(?:-\d+)?$")
 TOOL_GROUP = re.compile(r"kb_\w{1,40}|docs:(?:microsoft-learn|claude-code-docs|mcp-docs)|mcp:other|other|"
                         + "|".join(BUILTIN))
 
@@ -307,10 +316,51 @@ def work_item(records):
     return next(iter(ids)) if len(ids) == 1 else None
 
 
+def served_name(path):
+    """`path` as a name a record keeps (SERVED_PATH, no `..`, not under SERVED_SKIP), else None."""
+    path = path.replace("\\", "/")
+    while path.startswith("./"):
+        path = path[2:]
+    ok = SERVED_PATH.fullmatch(path) and ".." not in path.split("/") and path.split("/")[0] not in SERVED_SKIP
+    return path if ok else None
+
+
+def served(records):
+    """([kb article], [repository file]) the tool calls of `records` named, each once in the order first named, at most
+    SERVED_MAX of each: a kb_show or kb_facts call's article (its path or prefix without a line suffix or `.md`), and
+    the file a Read, Edit or Grep call took, relative to the working directory the records name; a path outside the
+    working directory is left out. Only names leave: no call text and no result."""
+    topics, files, cwd = [], [], ""
+    for r in records:
+        if isinstance(r.get("cwd"), str):
+            cwd = r["cwd"]
+        msg = r.get("message") if isinstance(r.get("message"), dict) else {}
+        for b in msg.get("content") if r.get("type") == "assistant" and isinstance(msg.get("content"), list) else ():
+            if not (isinstance(b, dict) and b.get("type") == "tool_use" and isinstance(b.get("input"), dict)):
+                continue
+            name, args = b.get("name"), b["input"]
+            kb = KB_TOOL.fullmatch(name) if isinstance(name, str) else None
+            if kb and kb.group(1) in KB_NAMING:
+                v = args.get(KB_NAMING[kb.group(1)])
+                v = served_name(re.sub(r"\.md$", "", LINE_SUFFIX.sub("", v.strip()))) if isinstance(v, str) else None
+                if v and v not in topics and len(topics) < SERVED_MAX:
+                    topics.append(v)
+            elif name in REPO_NAMING:
+                v = args.get(REPO_NAMING[name])
+                if not isinstance(v, str) or not v.strip():
+                    continue
+                v = file_key(v.strip(), cwd)
+                v = None if v.startswith("/") or re.match(r"[A-Za-z]:", v) else served_name(v)
+                if v and v not in files and len(files) < SERVED_MAX:
+                    files.append(v)
+    return topics, files
+
+
 def prompt_usage(transcript_path, prompt_id):
     """The usage record of one prompt: `main` and `sub` ({model: counts}, `sub` by agent group), `routed` ({item id:
     the `sub` shape}, for the subagents that worked on a `work/<id>` branch, work_item, which `sub` then leaves out),
-    `start` (the input of the prompt's first request), `steps` (at most STEPS_MAX, with `cut` counting the rest);
+    `start` (the input of the prompt's first request), `steps` (at most STEPS_MAX, with `cut` counting the rest),
+    `topics` and `files` (what the prompt's tool calls named, `served`, the subagents routed to an item left out);
     None when the transcript cannot be read or holds no request of the prompt."""
     if not (isinstance(transcript_path, str) and transcript_path and isinstance(prompt_id, str) and prompt_id):
         return None
@@ -325,9 +375,14 @@ def prompt_usage(transcript_path, prompt_id):
     for _, model, c in reqs:
         add(main, model, c)
     sub, routed = {}, {}
+    topics, files = served(r for r in mine if not r.get("isSidechain"))
     for group, f in subagent_files(transcript_path, prompt_id):
         records = read_all(f)
         item = work_item(records)
+        if not item:
+            more = served(records)
+            topics += [t for t in more[0] if t not in topics][:SERVED_MAX - len(topics)]
+            files += [t for t in more[1] if t not in files][:SERVED_MAX - len(files)]
         for _, model, c in requests(records, sidechain=True):
             add((routed.setdefault(item, {}) if item else sub).setdefault(group, {}), model, c)
     st = steps(mine)
@@ -340,6 +395,10 @@ def prompt_usage(transcript_path, prompt_id):
         rec["steps"] = st[:STEPS_MAX]
     if len(st) > STEPS_MAX:
         rec["cut"] = len(st) - STEPS_MAX
+    if topics:
+        rec["topics"] = topics
+    if files:
+        rec["files"] = files
     return rec
 
 

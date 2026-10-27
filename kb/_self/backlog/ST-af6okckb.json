@@ -73,6 +73,84 @@
     "_tools/ql_report.py",
     "_tools/mon_querylog.py"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How is a prompt's cost attributed when it names several kb articles or files?",
+      "options": [
+        "shared evenly over the names, so the ranking adds up to the prompts' cost",
+        "the whole prompt cost to each name"
+      ],
+      "recommendation": "shared evenly over the names, so the ranking adds up to the prompts' cost",
+      "do": {
+        "shared evenly over the names, so the ranking adds up to the prompts' cost": "ST-af6okckb",
+        "the whole prompt cost to each name": "ST-af6okckb"
+      },
+      "class": "agents-rule",
+      "answer": "shared evenly over the names, so the ranking adds up to the prompts' cost",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How many topic points does the day's cost export carry?",
+      "options": [
+        "the day's total and the costliest 20 topics",
+        "one point for every topic of the day"
+      ],
+      "recommendation": "the day's total and the costliest 20 topics",
+      "do": {
+        "the day's total and the costliest 20 topics": "ST-af6okckb",
+        "one point for every topic of the day": "ST-af6okckb"
+      },
+      "class": "agents-rule",
+      "answer": "the day's total and the costliest 20 topics",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "Does the usage reader version change for the new topics and files fields?",
+      "options": [
+        "the reader version stays, the fields are optional and older records count in no ranking",
+        "the reader version is raised so every prompt is read again"
+      ],
+      "recommendation": "the reader version stays, the fields are optional and older records count in no ranking",
+      "do": {
+        "the reader version stays, the fields are optional and older records count in no ranking": "ST-af6okckb",
+        "the reader version is raised so every prompt is read again": "ST-af6okckb"
+      },
+      "class": "agents-rule",
+      "answer": "the reader version stays, the fields are optional and older records count in no ranking",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g4",
+      "kind": "blocking",
+      "question": "May a metric attribute value start with an underscore, so a kb article of the _self root keeps its topic point?",
+      "options": [
+        "yes, the first character may be an underscore",
+        "no, a topic starting with an underscore leaves its point out"
+      ],
+      "recommendation": "yes, the first character may be an underscore",
+      "do": {
+        "yes, the first character may be an underscore": "ST-af6okckb",
+        "no, a topic starting with an underscore leaves its point out": "ST-af6okckb"
+      },
+      "class": "agents-rule",
+      "answer": "yes, the first character may be an underscore",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "moved out: SP-hxxn6fnv"
   ],

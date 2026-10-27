@@ -80,7 +80,7 @@ CLOSED_STAGE = "claim"  # a gap finding at this stage is closed: its _gaps.md en
 USAGE = "usage"
 USAGE_HEADER_KEYS = ("run", "reader", "counts")
 USAGE_COUNT_KEYS = ("entries", "missing")
-USAGE_KEYS = ("id", "main", "sub", "start", "steps", "cut")
+USAGE_KEYS = ("id", "main", "sub", "start", "steps", "cut", "topics", "files")
 USAGE_COUNTS = ("requests", "in", "cw", "cw1h", "cr", "out")
 USAGE_STEP_KEYS = ("tools", "grow")
 USAGE_TOOL_KEYS = ("tool", "ok", "chars")
@@ -280,6 +280,22 @@ def usage_counts(usage):
     """(main, sub) of a usage record that is the closed shape the store keeps, else None."""
     line = usage_line(SAMPLE_ENTRY_ID, usage)
     return None if line is None else (line["main"], line.get("sub", {}))
+
+
+def served_models(usage, key):
+    """{name: models} of a usage record that is the closed shape (`usage_counts`): its main and subagent counts per
+    model, each count shared evenly over the record's `key` names (`topics`, the kb articles its prompt's kb_show and
+    kb_facts calls named, or `files`, the repository files its Read, Edit and Grep calls took), so the figures of all
+    names add up to the record's. {} when the record names none or is not the closed shape."""
+    counts = usage_counts(usage)
+    names = usage.get(key) if counts and isinstance(usage, dict) else None
+    if not names:
+        return {}
+    models = {}
+    add_models(models, counts[0])
+    for group in counts[1].values():
+        add_models(models, group)
+    return {n: {m: {k: v / len(names) for k, v in c.items()} for m, c in models.items()} for n in names}
 
 
 def add_models(into, models):
@@ -952,6 +968,11 @@ def usage_line_problems(u, where):
         out.append(f"{where}: start is not a count")
     if "cut" in u and not (_count(u["cut"]) and u["cut"] > 0):
         out.append(f"{where}: cut is not a positive count")
+    for key in ("topics", "files"):
+        names = u.get(key)
+        if key in u and not (isinstance(names, list) and 0 < len(names) <= kbusage.SERVED_MAX and len(set(map(str, names))) == len(names)
+                             and all(isinstance(n, str) and kbusage.served_name(n) == n for n in names)):
+            out.append(f"{where}: {key} are not 1 to {kbusage.SERVED_MAX} distinct kb or repository paths")
     st = u.get("steps", [])
     if not (isinstance(st, list) and len(st) <= kbusage.STEPS_MAX):
         out.append(f"{where}: steps are not a list of at most {kbusage.STEPS_MAX}")
