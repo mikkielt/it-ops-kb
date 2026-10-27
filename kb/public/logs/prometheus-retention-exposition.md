@@ -2,8 +2,8 @@
 topic: logs/prometheus-retention-exposition
 priority: P3
 applies_to: "Prometheus v3.15.0 (released 2026-09-24); Python prometheus_client 0.26.0; Rust prometheus 0.14.0, prometheus-client 0.25.1, metrics-exporter-prometheus 0.18.3; Alertmanager v0.34.1 (exporter-toolkit v0.17.1); prometheus/docs at commit 605cf81f"
-retrieved_utc: 2026-10-23
-sources: [S-cgscrv4s, S-one7nth5, S-fpf6c56i, S-42nwx5i6, S-a3vg5qlu, S-fauxu5ws, S-bfvveghs, S-eo46iizs, S-zirdyvds, S-ptmbzpgw, S-5tvo6y34, S-zbmhggt3, S-4hvb3m5w, S-bpsk5rak, S-dn4wxw4r, S-wr47t6mb, S-4gvbwjju, S-3ylk7y4h, S-f5e4slzj, S-fr4rpivt, S-lggz7o42, S-fmkur47t, S-uc4rdiul, S-ced5z4pp, S-4dcfdr4h, S-rm4q4usy, S-pf4gtprf, S-sxme5fjq, S744, S-r55gd5ar, S-vjphqfve, S-fejzby56, S-rvqk5nmt, S-dl4d3ktf, S-3dvmby3z]
+retrieved_utc: 2026-10-28
+sources: [S-3uw5ownb, S-cgscrv4s, S-one7nth5, S-fpf6c56i, S-42nwx5i6, S-a3vg5qlu, S-fauxu5ws, S-bfvveghs, S-eo46iizs, S-zirdyvds, S-ptmbzpgw, S-5tvo6y34, S-zbmhggt3, S-4hvb3m5w, S-bpsk5rak, S-dn4wxw4r, S-wr47t6mb, S-4gvbwjju, S-3ylk7y4h, S-f5e4slzj, S-fr4rpivt, S-lggz7o42, S-fmkur47t, S-uc4rdiul, S-ced5z4pp, S-4dcfdr4h, S-rm4q4usy, S-pf4gtprf, S-sxme5fjq, S744, S-r55gd5ar, S-vjphqfve, S-fejzby56, S-rvqk5nmt, S-dl4d3ktf, S-3dvmby3z]
 status: partial
 ---
 
@@ -52,6 +52,9 @@ exporter (`claude/otel-monitoring.md`) is one such scrape target.
 - An alert is active while its `expr` returns one or more vector elements; without `for` it becomes active on the first evaluation, with `for` it stays pending until the condition has held in every evaluation of that period and then fires. [DOC S-r55gd5ar]
 - Annotation values can be templated: `$labels` holds an alert instance's label pairs and `$value` its evaluated value. [DOC S-r55gd5ar]
 - Pending and firing alerts are also stored as synthetic series `ALERTS{alertname="...", alertstate="pending|firing", ...}` with the value `1` while the alert is in that state. [DOC S-r55gd5ar]
+- A vector selector narrows a metric by label matchers in curly braces: `=` (equal), `!=` (not equal), `=~` (regex match) and `!~` (no regex match); a regex matcher is fully anchored, so `env=~"foo"` means `env=~"^foo$"`. [DOC S-3uw5ownb]
+- A matcher that matches the empty string also selects every series that has no such label, so `{environment=""}` returns the series without an `environment` label; a selector must name the metric or hold at least one matcher that does not match the empty string. [DOC S-3uw5ownb]
+- An alert meant for one kind of series (say sessions of one role) therefore writes the equality matcher in its `expr` (`metric{role="worker"}`), and a series whose `role` label is empty or missing is left out of it; `role!="worker"` or `role=""` is the way to select the others. [DER S-3uw5ownb: the equality and empty-value rules above applied to a label name of this kb's own; not run]
 - Prometheus only evaluates alerts and shows them in its Alerts tab; sending notifications is the job of a separate Alertmanager, which Prometheus is configured to push firing alerts to. [DOC S-r55gd5ar]
 - `promtool check rules` checks whether rule files are valid and takes `--lint` (default `duplicate-rules`), `--lint-fatal` (lint errors exit 3) and `--ignore-unknown-fields`. [DOC S-vjphqfve]
 - The `promtool` page lists no option of `check rules` that reads a target or a scrape, so the command is documented as a check of the file, not of whether the metric names an expression uses are served; a check of those names needs another tool. [DER S-vjphqfve: the flag list read in full for `check rules`]

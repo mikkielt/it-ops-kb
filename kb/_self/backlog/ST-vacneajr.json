@@ -21,6 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "Research 2026-10-28: findings in kb/public/_answers.md QK-sprint-linux-ci-timing-leak-gate-monitor-rows. ST-moy5v7tm needs gitlab/github-actions-workflow-syntax (gh workflow run, gh run view --log, image readme, CPU model not documented: gap kept). ST-qzknmm7z needs logs/otel-python-sdk (attribute to label, empty backfill) and logs/prometheus-retention-exposition (role matcher). BG-okrkeohe and BG-yyznpooq: No outside facts: git range and per-commit diff rules are in gitlab/git-history-queries, the rest is the repository's own publish code.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-557596e3",
   "operator": "op-f618a13e"

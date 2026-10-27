@@ -4646,3 +4646,16 @@ _Agent: kb-research_
 - See security/secret-shapes-in-text.md, claude/ci-and-headless.md.
 
 _Agent: kb-research_
+
+## QK-sprint-linux-ci-timing-leak-gate-monitor-rows. What do the sprint's Linux CI timing runs, range-wide leak gate and kbmon session silence items need to know from outside the kb?
+- GitHub's runner reference and its table of standard runners for public repositories give the CPU count, memory, storage and architecture of `ubuntu-latest` (4, 16 GB, 14 GB, x64) and name no processor model or promise that it is fixed; the Ubuntu 24.04 image readme names the OS, an Azure kernel and the installed software, and no processor either. [DOC S-eacxcx4x]
+- The runner's CPU model is therefore read from the run itself, and the image version is part of what a timing was taken on: the readme at the pinned commit is image version 20261023.334.3 with system Python 3.12.3 and cached 3.10 to 3.14. [DOC S-xe4hjxbz]
+- `gh workflow run <file> -f key=value` starts a `workflow_dispatch` run (the file must support that trigger), and `gh run view <id> --log` (with `--job <id>`, `--log-failed`, `--json`) prints a run's log, with a documented slower per-job fallback and `UNKNOWN STEP` lines. [DOC S-meypu6ar, S-w7nxirsy]
+- A boolean `workflow_dispatch` input is read as `inputs.<name>`, not through `github.event.inputs`, where false is a non-empty string. [DOC S-n43vwkxh]
+- The OpenTelemetry Prometheus reader turns each point's attributes (with the resource's and scope's) into labels, replacing runs of characters outside letters and digits with `_`, and gives a point that lacks a key the empty string, so a gauge with a `role` attribute on only some points serves `role=""` for the others. [CODE S-qpknqjro, S-jthqtwbn]
+- A PromQL equality matcher `role="worker"` selects only series with that value; a matcher that matches the empty string also selects series without the label. [DOC S-3uw5ownb]
+- Conclusion: the CI timing item can start dispatched runs and read them with `gh`, and must record the CPU model from the log because no document states it; the silence item can add a `role` attribute and write `role="worker"` in the alert, naming `role` on every point so no sample is served with an empty value. The range-wide leak gate rests on the repository's own publish code and git's range and per-commit diff rules, which the kb holds in `gitlab/git-history-queries`, and needs no outside fact. [DER S-eacxcx4x, S-xe4hjxbz, S-meypu6ar, S-w7nxirsy, S-qpknqjro, S-3uw5ownb: the facts above applied]
+- Open: whether the CPU model differs between runs of `ubuntu-latest` (a measurement, `_gaps.md` entry under `gitlab/github-actions-workflow-syntax`), what a failed `.pyc` write does, and the content of `_check_value`. [UNK]
+- See gitlab/github-actions-workflow-syntax.md, logs/otel-python-sdk.md, logs/prometheus-retention-exposition.md, gitlab/git-history-queries.md.
+
+_Agent: kb-research_
