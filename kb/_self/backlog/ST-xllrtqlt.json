@@ -93,7 +93,12 @@
         "Not added": "ST-xllrtqlt",
         "Added as a pattern with the Q~ marker": "ST-xllrtqlt"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "Not added",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     },
     {
       "id": "g3",
