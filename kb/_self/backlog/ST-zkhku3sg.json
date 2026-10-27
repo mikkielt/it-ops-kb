@@ -2,7 +2,7 @@
   "id": "ST-zkhku3sg",
   "kind": "story",
   "title": "kbingest map reads PowerShell and Lua with a table of patterns and no toolchain, so where, path#symbol and drift work for them",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-7vyrared",
   "sprint": "SP-iir3d2tu",
   "priority": "P2",
@@ -137,5 +137,7 @@
     }
   ],
   "notes": "Premise (run at plan time): kbingest.MAPPERS languages are dotnet, go, node, python, rust, typescript. python3 _tools/kbingest.py map . --lang powershell exits 2 with: refused: unknown language powershell (known: dotnet, go, node, python, rust, typescript). Reproduces. build_map runs a mapper only after tool_exe(m.tool) finds a program on PATH outside the worktree and a version probe runs; a pattern mapper has no tool, so build_map needs a branch that skips both and records the table's revision under doc[tools]. Fixture names the first check expects: functions Get-Widget (sample.ps1) and load_map (sample.lua) in _tools/fixtures/patterns/ (synthetic, placeholders only). The map goes through redact_leaks as before. The table is read from untrusted repository files with regexes from a data file, so the story needs a bounded match (line length cap, no nested quantifiers in a row, checked when the table loads). Planner (SP-iir3d2tu): after ST-ztsewht6, which also edits AGENTS.md. Checks 4 (the kbingest guards test) each passes before the work and pin behaviour that must stay unchanged (every existing mapper's output and the sandbox guards); every other check fails before the work with a one-line reason, not a traceback. Contract the checks read: _tools/kbingest_patterns.csv has rows for powershell (.ps1 .psm1 .psd1) and lua (.lua); checks 1 and 2 build their own tiny repositories from inline sources, so the fixtures under _tools/fixtures/patterns are the worker's documentation, not the checks' input.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-557596e3",
+  "operator": "op-f618a13e"
 }
