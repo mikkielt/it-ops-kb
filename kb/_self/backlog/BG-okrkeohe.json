@@ -2,7 +2,7 @@
   "id": "BG-okrkeohe",
   "kind": "bug",
   "title": "The sync push gate judges a pushed range by its tip, so a commit that adds a leak-scan shape and a later one that removes it passes the gate and then blocks publish for good",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-kkov6bbz",
   "priority": "P2",
   "rank": 0,

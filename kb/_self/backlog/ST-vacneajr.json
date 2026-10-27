@@ -2,7 +2,7 @@
   "id": "ST-vacneajr",
   "kind": "story",
   "title": "Research sprint goal: Linux CI time from measured runs, range-wide leak gate and honest monitor rows",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-kkov6bbz",
   "goal_research": true,
   "priority": "P1",

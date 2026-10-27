@@ -2,7 +2,7 @@
   "id": "BG-yyznpooq",
   "kind": "bug",
   "title": "kbroot.py fetch failure lines keep the host of the pointer's url",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-kkov6bbz",
   "priority": "P3",

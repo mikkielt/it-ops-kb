@@ -2,7 +2,7 @@
   "id": "SP-kkov6bbz",
   "kind": "sprint",
   "title": "Linux CI time from measured runs, range-wide leak gate and honest monitor rows",
-  "status": "planned",
+  "status": "active",
   "goal": "the Linux CI suite's median and p90 time and the bytecode-cache effect are measured on GitHub runners; the Linux CI jobs judge the suite's time by the policy the operator chose; kbgit.py sync --push refuses a range in which any commit adds a leak-scan hit; kbmon's session silence metric covers every live session and carries the role; kbroot.py fetch failure lines keep no part of the pointer's url",
   "gates": [
     {
@@ -14,10 +14,15 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
-  "notes": "Planner: the clause 'the Linux CI jobs judge the suite's time by the policy the operator chose' is met in the tree: ST-jpm6tisw g1 answered 'keep 60 s', so the jobs keep today's 60 s; ST-jpm6tisw left out.",
+  "notes": "Planner: the clause 'the Linux CI jobs judge the suite's time by the policy the operator chose' is met in the tree: ST-jpm6tisw g1 answered 'keep 60 s', so the jobs keep today's 60 s; ST-jpm6tisw left out. Start gate answered approve with --by operator by the orchestrator session under the operator's pre-approval of 2026-10-27 (sprints built only from EP-n4dci4w7's named stories and the named related drafts).",
   "creator": "op-f618a13e",
   "filed_in": "clone-0ea70e5c"
 }
