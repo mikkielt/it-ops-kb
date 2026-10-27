@@ -335,3 +335,4 @@ EV-planning-list-goal-that-says-no,what does planning list for a goal that says 
 EV-claude-code-commit-attribution-include-co-authored-by,"Which Claude Code setting adds or removes the Co-Authored-By trailer in a commit message (attribution.commit, includeCoAuthoredBy)?",gitlab/commit-signing-and-provenance.md,good,
 EV-bug-severity-table-s1-s2-definitions,bug severity table S1 S2 definitions,security/linux-patching-and-pins.md,good,
 EV-ru-maxrss-unit-resource-getrusage-os,ru_maxrss unit in resource.getrusage and os.wait4 on macOS and Linux,python/macos-fs-usage-output.md,good,
+EV-claude-code-permissions-allow-rules-bash,Claude Code permissions allow rules Bash command matching in settings.json for headless claude -p,claude/ci-and-headless.md,good,

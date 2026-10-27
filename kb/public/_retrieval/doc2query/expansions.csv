@@ -945,3 +945,4 @@ e196c0820480,How often is the statusLine script executed?
 0b94b2374f64,"What does the Claude Code status line command receive as input, such as cost, context window use and session id?"
 a28622318a7e,bug severity table S1 S2 definitions
 5eab535124be,ru_maxrss unit in resource.getrusage and os.wait4 on macOS and Linux
+9d526a1123b5,Claude Code permissions allow rules Bash command matching in settings.json for headless claude -p
