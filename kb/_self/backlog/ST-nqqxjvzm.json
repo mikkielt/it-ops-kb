@@ -13,14 +13,14 @@
       "run": [
         "python3",
         "-c",
-        "import os,subprocess,sys; env=dict(os.environ,KB_ROOTS='_tools/fixtures/evidence/strict'); o=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','strict','--format','concise','What does the community report about widget caching?'],env=env,capture_output=True,text=True,check=True).stdout; assert 'evidence:' in o and 'coverage: good' not in o, o[:500]"
+        "import os, subprocess, sys\nsys.path.insert(0, '_tools')\nimport kbcommon\ndef pack(roots, root, q):\n    env = dict(os.environ, KB_ROOTS=os.pathsep.join(roots))\n    return subprocess.run([sys.executable, '_tools/rag.py', 'pack', '--root', root, '--format', 'concise', q], env=env, capture_output=True, text=True).stdout\ndef load(name):\n    try:\n        return kbcommon.load_root('_tools/fixtures/evidence/' + name)\n    except kbcommon.RootError as e:\n        sys.exit('fixture root %s: %s' % (name, str(e)[:200]))\n\no = pack(['_tools/fixtures/evidence/strict'], 'strict', 'What does the community report about widget caching?')\n('evidence:' in o and 'coverage: good' not in o) or sys.exit('a root whose facts are all leads must print an evidence: line and never coverage good: ' + (o.splitlines()[0] if o else '(no output)'))"
       ]
     },
     {
       "run": [
         "python3",
         "-c",
-        "import subprocess,sys; o=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','public','--format','concise','How does Intune turn off a setting?'],capture_output=True,text=True,check=True).stdout; assert 'evidence: answer DOC, CODE, DER; lead COMMUNITY, UNK' in o, o[:500]"
+        "import os, subprocess, sys\nsys.path.insert(0, '_tools')\nimport kbcommon\ndef pack(roots, root, q):\n    env = dict(os.environ, KB_ROOTS=os.pathsep.join(roots))\n    return subprocess.run([sys.executable, '_tools/rag.py', 'pack', '--root', root, '--format', 'concise', q], env=env, capture_output=True, text=True).stdout\ndef load(name):\n    try:\n        return kbcommon.load_root('_tools/fixtures/evidence/' + name)\n    except kbcommon.RootError as e:\n        sys.exit('fixture root %s: %s' % (name, str(e)[:200]))\n\no = pack([], 'public', 'How does Intune turn off a setting?')\n'evidence: answer DOC, CODE, DER; lead COMMUNITY, UNK' in o or sys.exit('the public pack prints no default evidence line: ' + o[:200])"
       ]
     },
     {
@@ -38,6 +38,61 @@
         "--base",
         "origin/main"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, subprocess, sys\nsys.path.insert(0, '_tools')\nimport kbcommon\ndef pack(roots, root, q):\n    env = dict(os.environ, KB_ROOTS=os.pathsep.join(roots))\n    return subprocess.run([sys.executable, '_tools/rag.py', 'pack', '--root', root, '--format', 'concise', q], env=env, capture_output=True, text=True).stdout\ndef load(name):\n    try:\n        return kbcommon.load_root('_tools/fixtures/evidence/' + name)\n    except kbcommon.RootError as e:\n        sys.exit('fixture root %s: %s' % (name, str(e)[:200]))\n\nev = getattr(load('strict'), 'evidence', None)\n(isinstance(ev, dict) and set(ev.get('lead', ())) >= {'COMMUNITY', 'UNK'} and set(ev.get('answer', ())) >= {'DOC', 'CODE', 'DER'}) or sys.exit('Root.evidence is %r, want {answer: [DOC, CODE, DER], lead: [COMMUNITY, UNK]}' % (ev,))"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, subprocess, sys\nsys.path.insert(0, '_tools')\nimport kbcommon\ndef pack(roots, root, q):\n    env = dict(os.environ, KB_ROOTS=os.pathsep.join(roots))\n    return subprocess.run([sys.executable, '_tools/rag.py', 'pack', '--root', root, '--format', 'concise', q], env=env, capture_output=True, text=True).stdout\ndef load(name):\n    try:\n        return kbcommon.load_root('_tools/fixtures/evidence/' + name)\n    except kbcommon.RootError as e:\n        sys.exit('fixture root %s: %s' % (name, str(e)[:200]))\n\nev = getattr(load('decision'), 'evidence', None)\n(isinstance(ev, dict) and 'DECISION' in set(ev.get('lead', ())) | set(ev.get('answer', ()))) or sys.exit('DECISION listed in a policy is not kept: %r' % (ev,))"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, subprocess, sys\nsys.path.insert(0, '_tools')\nimport kbcommon\ndef pack(roots, root, q):\n    env = dict(os.environ, KB_ROOTS=os.pathsep.join(roots))\n    return subprocess.run([sys.executable, '_tools/rag.py', 'pack', '--root', root, '--format', 'concise', q], env=env, capture_output=True, text=True).stdout\ndef load(name):\n    try:\n        return kbcommon.load_root('_tools/fixtures/evidence/' + name)\n    except kbcommon.RootError as e:\n        sys.exit('fixture root %s: %s' % (name, str(e)[:200]))\n\nbad = []\nfor name, kind in (('both', 'COMMUNITY'), ('missing', 'UNK'), ('unknown', 'BOGUS')):\n    try:\n        kbcommon.load_root('_tools/fixtures/evidence/' + name)\n    except kbcommon.RootError as e:\n        kind in str(e) or bad.append('%s: message does not name %s: %s' % (name, kind, str(e)[:120]))\n    else:\n        bad.append('%s: accepted' % name)\nbad and sys.exit('; '.join(bad))"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "_root.md may carry evidence: {answer: [DOC, CODE, DER], lead: [COMMUNITY, UNK]} (each of DOC, CODE, DER, COMMUNITY and UNK in exactly one list",
+      "check": 4
+    },
+    {
+      "clause": "DECISION may be listed in either list as an ordinary kind",
+      "check": 5
+    },
+    {
+      "clause": "unlisted it keeps its own rule of decided and proposed). The pack prints the policy of the roots it searched on a line of its own",
+      "check": 1
+    },
+    {
+      "clause": "a fact whose tags are all lead kinds in its root never makes a verdict good: the pack says so on an evidence: line instead. A root that sets nothing is served as today (the line names the default",
+      "check": 0
+    },
+    {
+      "clause": "a fact whose tags are all lead kinds in its root never makes a verdict good: the pack says so on an evidence: line instead. A root that sets nothing is served as today (the line names the default",
+      "check": 1
+    },
+    {
+      "clause": "public eval shares and test ids unchanged). A policy with a kind in both lists, a required kind in neither, or an unknown kind refuses the root with a message naming it",
+      "check": 2
+    },
+    {
+      "clause": "public eval shares and test ids unchanged). A policy with a kind in both lists, a required kind in neither, or an unknown kind refuses the root with a message naming it",
+      "check": 3
+    },
+    {
+      "clause": "public eval shares and test ids unchanged). A policy with a kind in both lists, a required kind in neither, or an unknown kind refuses the root with a message naming it",
+      "check": 6
     }
   ],
   "touches": [
@@ -111,6 +166,6 @@
       "role": "interactive"
     }
   ],
-  "notes": "Premise (run at plan time): the 'COMMUNITY and UNK are leads, never an answer alone' rule is in AGENTS.md prose, the kb MCP instruction text (_tools/kb_mcp.py:153) and kb_ask's answer text (_tools/kb_ask.py:100); grep of kf_index.py, kf_route.py, kb_hook.py finds no handling of the COMMUNITY or UNK kinds, and a rag.py pack output has no evidence line (a public pack for a settings question prints coverage, route, kb has, kb lacks, fact lines and the pack id only). Reproduces: the rule is not data and not enforced by the pack. Live-repository scan: the public root holds 121 facts carrying COMMUNITY and 239 carrying UNK (rag.py facts public --tag COMMUNITY / --tag UNK); no root sets an evidence policy today, so an opt-in rule changes no live verdict by construction, and the story's first step is to run the draft rule over rag.py eval --all with the public root forced strict and record which rows would move (information for the gate, not a change). _root.md front matter is read line by line as key: value (kbcommon._meta), so the evidence value is the flat text {answer: [...], lead: [...]} and needs its own parse and validation in load_root. AGENTS.md and the MCP instruction text keep stating the default rule and are not in this story's touches (AGENTS.md has a size cap and is a rules file). Operator 2026-10-27: g3 yes, DECISION may be listed as an ordinary kind; g1 print only when a root sets nothing; g2 any answer-kind part makes a mixed-tag fact an answer. Planner (SP-iir3d2tu): after ST-izw3nds4, since S3, S4 and S5 all edit AGENTS.md (4 KB cap). Planner (SP-iir3d2tu): after ST-q5o7z2mf (both edit _tools/rag.py and AGENTS.md).",
+  "notes": "Premise (plan time): the 'COMMUNITY and UNK are leads' rule is prose in AGENTS.md, kb_mcp.py:153 and kb_ask.py:100; kf_index.py, kf_route.py and kb_hook.py handle no COMMUNITY or UNK kind and a pack prints no evidence line. Reproduces. The public root holds 121 COMMUNITY and 239 UNK facts; no root sets a policy today, so the opt-in rule moves no live verdict; the first step runs the draft rule over rag.py eval --all with public forced strict and records which rows would move. _meta() reads flat lines, so the evidence value needs its own parse and validation in load_root. AGENTS.md (4 KB cap) and the MCP text stay out of the touches.\nOperator 2026-10-27: g3 DECISION may be listed as an ordinary kind; g1 print only when a root sets nothing; g2 any answer-kind part makes a mixed fact an answer. Order: after ST-izw3nds4 (AGENTS.md) and ST-q5o7z2mf (rag.py, AGENTS.md).\nChecks 2 (rag.py eval) and 3 (perfcheck ids) pass before the work and pin behaviour that must stay unchanged; every other check fails before it with a one-line reason.\nContract: Root.evidence is None or {'answer': [...], 'lead': [...]}; fixtures _tools/fixtures/evidence/{strict (answer DOC CODE DER, lead COMMUNITY UNK; its only facts are COMMUNITY or UNK about widget caching), decision (DECISION in lead), both (COMMUNITY twice), missing (UNK in neither), unknown (BOGUS)}; default line 'evidence: answer DOC, CODE, DER; lead COMMUNITY, UNK'.",
   "filed_in": "clone-0ea70e5c"
 }
