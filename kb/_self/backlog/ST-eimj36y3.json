@@ -31,6 +31,42 @@
         "--base",
         "origin/main"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport kbcommon, redact\ndef load(name):\n    try:\n        return kbcommon.load_root('_tools/fixtures/placeholders/' + name)\n    except kbcommon.RootError as e:\n        sys.exit('fixture root %s: %s' % (name, str(e)[:200]))\n\nr = load('ok')\n'anna.nowak' in tuple(getattr(r, 'placeholders', ()) or ()) or sys.exit('Root.placeholders is %r' % (getattr(r, 'placeholders', None),))\npath = 'C:' + chr(92) + 'Users' + chr(92) + 'anna.nowak' + chr(92) + 'x'\nkbcommon.leak_hits(path) or sys.exit('the global leak scan must still flag a profile path with another user')\ntry:\n    own = kbcommon.leak_hits(path, root=r)\n    red = redact.redact('logon CORP' + chr(92) + 'anna.nowak', root=r)\nexcept TypeError as e:\n    sys.exit('leak_hits and redact take no root= keyword yet: %s' % e)\nown and sys.exit('the root\\'s own placeholder is still flagged in its files: %s' % own)\n'anna.nowak' in red or sys.exit('redact rewrote the root\\'s own placeholder: ' + red)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport kbcommon, redact\ndef load(name):\n    try:\n        return kbcommon.load_root('_tools/fixtures/placeholders/' + name)\n    except kbcommon.RootError as e:\n        sys.exit('fixture root %s: %s' % (name, str(e)[:200]))\n\ntry:\n    kbcommon.load_root('_tools/fixtures/placeholders/bad')\nexcept kbcommon.RootError as e:\n    '`placeholders`' in str(e) or sys.exit('refusal does not name the `placeholders` key: ' + str(e)[:200])\nelse:\n    sys.exit('a placeholder that matches a leak shape was accepted')"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "_root.md may carry placeholders: a short list of extra example names (a root's own fictitious host, user and device names) that redact and the leak scan treat as placeholders for that root's files only. The set of leak shapes, the shipped placeholders and the scan of every other root, the tools and the docs are unchanged",
+      "check": 0
+    },
+    {
+      "clause": "_root.md may carry placeholders: a short list of extra example names (a root's own fictitious host, user and device names) that redact and the leak scan treat as placeholders for that root's files only. The set of leak shapes, the shipped placeholders and the scan of every other root, the tools and the docs are unchanged",
+      "check": 1
+    },
+    {
+      "clause": "_root.md may carry placeholders: a short list of extra example names (a root's own fictitious host, user and device names) that redact and the leak scan treat as placeholders for that root's files only. The set of leak shapes, the shipped placeholders and the scan of every other root, the tools and the docs are unchanged",
+      "check": 2
+    },
+    {
+      "clause": "_root.md may carry placeholders: a short list of extra example names (a root's own fictitious host, user and device names) that redact and the leak scan treat as placeholders for that root's files only. The set of leak shapes, the shipped placeholders and the scan of every other root, the tools and the docs are unchanged",
+      "check": 3
+    },
+    {
+      "clause": "a root's extra name that matches a leak shape other than as an exact placeholder is refused when the root loads",
+      "check": 4
     }
   ],
   "touches": [
@@ -86,6 +122,6 @@
       "role": "interactive"
     }
   ],
-  "notes": "Premise (run at plan time, synthetic names): redact.redact rewrites a logon shape with a fictitious domain user other than the shipped placeholder to the shipped one, and a Windows profile path with such a user to the shipped user; kbcommon.leak_hits flags the same profile path as a home folder. A fictitious user a root already uses as its example name is therefore rewritten or refused unless it is the one shipped placeholder (jan.kowalski). Reproduces for logon and profile-path shapes; it does not reproduce for a device name like PL-LT-00999, a bare user name or an email on corp.example.com (neither tool touches them), so the need is for user names in logon and profile-path shapes only. PLACEHOLDERS is one module-level dict in redact.py; the live-repository scan is the existing leak scan of every tracked file, which the story's checks must still pass with no root setting anything. Overlap, order: live sessions work ST-yl6b2ues (leak gate) and ST-xllrtqlt (redactor) in SP-fn7letri and SP-jwvaq2hu on _tools/redact.py, _tools/kbcommon.py, _tools/test_redact.py, _tools/test_leaks.py, kb/_self/querylog.md, kb/_self/plugin.md and kb/_self/tools.md. This story starts only after those land. Operator (g1): build after the redaction stories in flight land; depends on ST-xllrtqlt, which follows ST-yl6b2ues. Planner (SP-iir3d2tu): after ST-3j3wlgg4, which also edits _tools/test_redact.py.",
+  "notes": "Premise (plan time, synthetic names): redact.redact rewrites a logon shape with a fictitious user other than the shipped placeholder, and a profile path with such a user; kbcommon.leak_hits flags the same profile path as a home folder. It does not reproduce for a device name like PL-LT-00999, a bare user name or an email on corp.example.com, so the need is logon and profile-path shapes only. PLACEHOLDERS is one dict in redact.py; the scan of every tracked file must still pass with no root setting anything.\nOperator: g1 build after the redaction stories in flight land (ST-xllrtqlt, after ST-yl6b2ues); g2 user names only. Order: after ST-3j3wlgg4 (test_redact.py).\nChecks 0, 1 and 2 (the redact and leak tests, perfcheck ids) pass before the work and pin behaviour that must stay unchanged (the leak shapes, the shipped placeholders, the test ids); checks 3 and 4 fail before it with a one-line reason.\nContract: Root.placeholders is a tuple; kbcommon.leak_hits(text, allow=None, root=None) and redact.redact(text, root=None) let a root's own placeholders pass for its files only; fixtures _tools/fixtures/placeholders/{ok (placeholders: anna.nowak), bad (one that matches a leak shape; the refusal names `placeholders` in backticks)}.",
   "filed_in": "clone-0ea70e5c"
 }
