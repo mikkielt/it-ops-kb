@@ -269,10 +269,30 @@ def without_paths(line):
     return ABS_PATH_BARE.sub("a path", ABS_PATH_QUOTED.sub("", line))
 
 
+URL_PREFIX = re.compile(r"^(?:fatal: |error: )?unable to access '[^']*': ")
+URL_AFTER = re.compile(r"(?i)\b(could not read (?:Username|Password)) for '?\S+?'?(?=: |$)")
+URL_CONNECT = re.compile(r"(?i)\b(failed to connect to|unable to connect to|connect to host) \S+(?: port \d+)?( after \d+ ms)?")
+
+
+def without_url(line, url):
+    """`line` cut to its reason, with no part of the pointer's `url` in it: git's `unable to access 'URL': ` lead and the
+    `for URL` of a credential line are dropped, the host and port of a connect line become "the host", and the url (git
+    adds a `/` to an http one and may drop `.git`) and its host are named "the url" and "the host" wherever else they stand."""
+    line = URL_AFTER.sub(r"\1", URL_PREFIX.sub("", line))
+    line = URL_CONNECT.sub(lambda m: f"{m.group(1)} the host", line)
+    base = re.sub(r"(?:\.git)?/*$", "", url.strip())
+    if base:
+        line = re.sub(re.escape(base) + r"(?:\.git)?/*", "the url", line, flags=re.I)
+    host = kbcommon._url_host_path(url.strip())[0]
+    if host:
+        line = re.sub(r"(?<![\w.-])" + re.escape(host) + r"(?::\d+)?(?![\w-])", "the host", line, flags=re.I)
+    return line
+
+
 def git(args, p, cwd=None, timeout=FETCH_TIMEOUT_S):
     """Run git with `args`; (True, '') or (False, the line of its stderr that gives the reason, without
-    the pointer's url or an absolute path: the `! [rejected]` line of a refused push, else the last line that is no
-    `hint:`)."""
+    the pointer's url, its host and port, or an absolute path: the `! [rejected]` line of a refused push, else the
+    last line that is no `hint:`)."""
     try:
         r = run_bounded(args, cwd, timeout)
     except subprocess.TimeoutExpired:
@@ -285,8 +305,8 @@ def git(args, p, cwd=None, timeout=FETCH_TIMEOUT_S):
     lines = [ln for ln in lines if not ln.startswith("hint:")]
     # a refused push names its reason on the `! [rejected] HEAD -> main (fetch first)` line, above git's summary line
     refused = [ln for ln in lines if ln.startswith("!") and "rejected" in ln]
-    reason = (refused[-1] if refused else lines[-1] if lines else f"git {args[0]} exited {r.returncode}").replace(p.url, "the url")
-    return False, without_paths(reason)
+    reason = (refused[-1] if refused else lines[-1] if lines else f"git {args[0]} exited {r.returncode}")
+    return False, without_paths(without_url(reason, p.url))
 
 
 def git_out(args, p, cwd):
