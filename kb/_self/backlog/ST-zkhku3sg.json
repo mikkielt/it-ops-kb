@@ -46,7 +46,12 @@
       ],
       "recommendation": "A CSV beside kbingest.py (_tools/kbingest_patterns.csv), changed only in this repository's code lane",
       "reason": "because rows are data a reviewer reads without the Python, and a row the ingested repository supplies would let untrusted text choose the regexes run on itself",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "A CSV beside kbingest.py (_tools/kbingest_patterns.csv), changed only in this repository's code lane",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     },
     {
       "id": "g2",
