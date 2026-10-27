@@ -226,23 +226,6 @@ def pin_drift(clone):
         "bench: the item files' mode", cwd=clone)
 
 
-def plant_no_forge(clone):
-    """Make no hook of the clone read a forge: its backlog.json says `"forge": ""`, committed so `reset` keeps it. The
-    red-pipeline hook then answers "not checked" at once, with no `glab` or `gh` process and no request (else it asks
-    gitlab.com about a project the throwaway clone's path names, and its sync_ms and starts move with the network and
-    the operator's sign-in); what the real hook costs with a forge to read is not measured here."""
-    path = Path(clone) / "backlog.json"
-    text = path.read_text(encoding="utf-8")
-    planted = re.sub(r'("forge"\s*:\s*)"[^"]*"', r'\1""', text, count=1)
-    if json.loads(planted).get("forge") != "":
-        raise Skip("session-load: backlog.json has no forge setting to empty, so a replay's hooks could read a forge")
-    if planted != text:
-        path.write_text(planted, encoding="utf-8", newline="\n")
-        git("add", "--", "backlog.json", cwd=clone)
-        git("-c", "user.name=bench", "-c", "user.email=bench@example.com", "commit", "-q", "--no-verify", "-m",
-            "bench: no forge", cwd=clone)
-
-
 def reset(clone):
     """The clone's working tree as the checkout left it, whatever a replay's hooks wrote, and the intake hook's drift
     cursor removed, so each replay's drift scan starts at the same item instead of where the replay before it stopped."""
@@ -384,10 +367,38 @@ class Replay:
                 "pane_failed": [r for r in self.panes if r.get("rc") not in (0, 1)]}  # kbmon exits 1 while an alert is on
 
 
+FORGE_SHIM = """#!/bin/sh
+# a `glab` that answers the reads of the red-pipeline hook from canned JSON, no network: one finished pipeline of main
+# with one job that ran and succeeded (a green main); every other call fails, as a `glab` not signed in does
+case "$*" in
+*"/pipelines?"*) printf '%s\\n' '{pipelines}' ;;
+*"/pipelines/{pid}/jobs?"*) printf '%s\\n' '{jobs}' ;;
+*) exit 1 ;;
+esac
+"""
+FORGE_PIPELINE = {"id": 1, "sha": "0" * 40, "status": "success", "web_url": "https://gitlab.com/it-ops-kb-bench/session-load/-/pipelines/1"}
+FORGE_JOB = {"id": 11, "name": "bench-job", "status": "success", "started_at": "2026-01-01T00:00:00.000Z"}
+
+
+def forge_shim(where):
+    """A directory holding a `glab` that answers the pipeline reads of the red-pipeline hook with a planted green pipeline
+    of main and a `gh` that fails at once, so a replay's hooks read no forge: no request leaves the host and the hook's
+    sync_ms and starts do not move with the network or the operator's sign-in. The hook still parses the answer as it
+    does a real one; what it costs with a real pipeline's size and red logs is not measured here."""
+    d = Path(where)
+    d.mkdir(parents=True, exist_ok=True)
+    body = FORGE_SHIM.format(pipelines=json.dumps([FORGE_PIPELINE]), jobs=json.dumps([FORGE_JOB]), pid=FORGE_PIPELINE["id"])
+    for name, text in (("glab", body), ("gh", "#!/bin/sh\nexit 1\n")):
+        (d / name).write_text(text, encoding="utf-8", newline="\n")
+        (d / name).chmod(0o755)
+    return d
+
+
 def plant(b, clone, name):
     """The scratch directories of one replay: a query log home with mode `local`, a coord store of its own, a `claude`
-    that fails at once and the sitecustomize that logs the processes Python starts; the environment the hooks run in
-    (CLAUDE_PLUGIN_DATA and CLAUDE_PLUGIN_ROOT both set, else the capture hook writes the real spool)."""
+    that fails at once, a `glab` that answers from a planted pipeline (forge_shim) and the sitecustomize that logs the
+    processes Python starts; the environment the hooks run in (CLAUDE_PLUGIN_DATA and CLAUDE_PLUGIN_ROOT both set, else
+    the capture hook writes the real spool)."""
     data = b.scratch / "session-load-data" / name
     shutil.rmtree(data, ignore_errors=True)
     (data / "querylog").mkdir(parents=True)
@@ -398,11 +409,12 @@ def plant(b, clone, name):
     site.mkdir(parents=True, exist_ok=True)
     (site / "sitecustomize.py").write_text(SITE, encoding="utf-8", newline="\n")
     fail = shim_dir(b.scratch / "fail-shim")
+    forge = forge_shim(b.scratch / "forge-shim")
     path = os.pathsep.join(x for x in (str(site), os.environ.get("PYTHONPATH", "")) if x)
     return no_plugin_env({"CLAUDE_PLUGIN_ROOT": str(clone), "CLAUDE_PLUGIN_DATA": str(data), "CLAUDE_PROJECT_DIR": str(clone),
                           "KB_INDEX": str(clone / "_cache"), "KB_COORD_STORE": str(data / "coord.sqlite"),
                           "BENCH_STARTS_DIR": str(data / "starts"), "PYTHONPATH": path,
-                          "PATH": f"{fail}{os.pathsep}{os.environ.get('PATH', '')}"})
+                          "PATH": os.pathsep.join((str(forge), str(fail), os.environ.get("PATH", "")))})
 
 
 def replay(b, clone, hooks, arm, phase, name, pane=None):
@@ -513,7 +525,6 @@ def s_session_load(b):
           "Ctrl-C), then `python3 _tools/benchmarks.py run session-load --fs-usage fs_usage.txt`", flush=True)
     arms =list(getattr(b, "load_arms", None) or DEFAULT_ARMS)
     clone = b.clone("session-load", "local")
-    plant_no_forge(clone)
     pin_drift(clone)
     hooks = hook_commands(clone)
     first_s, refresh_s = pane_schedule(clone)
