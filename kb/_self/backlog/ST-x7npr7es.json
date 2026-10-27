@@ -2,7 +2,7 @@
   "id": "ST-x7npr7es",
   "kind": "story",
   "title": "Research sprint goal: Session-load figures you can trust, and the housekeeping they need",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-m5m67goe",
   "goal_research": true,
   "priority": "P1",
@@ -23,6 +23,20 @@
   ],
   "notes": "Research result: added fs_usage disk-line path facts (macos-fs-usage-output.md) and RUSAGE_CHILDREN descendant-CPU facts (rusage-maxrss-units.md); open gap for the macOS descendant rule in kb/public/_gaps.md. The other stories of the sprint (settings allow rules, replay forge isolation, intake hook cost, rss means, planning wording, land wording) rest on this repository's own code and docs: no outside facts for them.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-557596e3",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "da16319eb0887a73e989e47b064172268edd25d6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-x7npr7es"
+        ],
+        "exit": 0,
+        "sha256": "dbdcb3eb5aca2b5d"
+      }
+    ]
+  }
 }
