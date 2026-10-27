@@ -2,7 +2,7 @@
   "id": "ST-q5o7z2mf",
   "kind": "story",
   "title": "Every sprint review holds the held-out fitness rate at 86 of 99 with at most 8 false good, so token and time savings cannot hide a quality loss",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-jwvaq2hu",
   "priority": "P2",
@@ -107,6 +107,45 @@
   ],
   "notes": "Planner (SP-jwvaq2hu): the goal names kb/public/_retrieval/lookup_heldout.csv only as the file the review reads; the item never edits it (held-out rows are never moved or reworded), so it stays out of the touches. AGENTS.md is in the touches only because the docs map ties rag.py to it; its 4 KB cap holds. Planner (SP-jwvaq2hu): after ST-ztsewht6, which also edits AGENTS.md. Check 2 passes before the work: maintaining.md already says held-out rows are never moved out, and the check pins that rule.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-557596e3",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "319dd4998e8235da058137ee91cf1186cb5845c1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval",
+          "--file",
+          "kb/public/_retrieval/lookup_heldout.csv",
+          "--root",
+          "public",
+          "--min",
+          "86",
+          "--max-false-good",
+          "8"
+        ],
+        "exit": 0,
+        "sha256": "2a8a6fc64d4f47d8"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,sys;d=json.load(open('backlog.json'));s=json.dumps(d.get('review_checks'));ok='lookup_heldout' in s and '--max-false-good' in s;print(ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "a9ac0c3ac83c40e1"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('kb/_self/maintaining.md',encoding='utf-8').read();ok='lookup_heldout.csv' in t and 'never moved' in t;print(ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "a9ac0c3ac83c40e1"
+      }
+    ]
+  }
 }
