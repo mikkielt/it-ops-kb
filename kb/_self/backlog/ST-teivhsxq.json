@@ -2,7 +2,7 @@
   "id": "ST-teivhsxq",
   "kind": "story",
   "title": "kbingest map records each symbol's definition and its references, file by file, at the pinned commit",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-rpzrctui",
   "sprint": "SP-jxf76aa2",
   "priority": "P1",
@@ -55,5 +55,7 @@
     "moved out: SP-acysfnxr"
   ],
   "notes": "Moved out of SP-acysfnxr by the unattended orchestrator 2026-10-26: ST-teivhsxq gate g1 (class agents-rule, \"How does the map match a symbol's references, and how many does it list?\") is operator-only and stays open; the work for its recommended option is committed on branch work/ST-teivhsxq (stage-back of its staged skill text still to run).",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
