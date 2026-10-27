@@ -1,0 +1,18 @@
+{
+  "id": "BG-okcqnkq7",
+  "kind": "bug",
+  "title": "selfdoc check names a heading Plan of kb/_self/backlog.md that is a bold item, not a heading",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "python3 _tools/selfdoc.py check prints problems=0: kb/_self/tools.md line 97 points at a section of kb/_self/backlog.md, Sprints, Plan, that names a real heading",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/selfdoc.py",
+      "check"
+    ]
+  },
+  "filed_in": "clone-0ea70e5c"
+}
