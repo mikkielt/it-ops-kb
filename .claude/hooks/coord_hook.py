@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""SessionStart, SessionEnd, PreToolUse and UserPromptExpansion hook: announce a session's work through coord.py and show overlapping
+"""SessionStart, SessionEnd, PreToolUse, PermissionRequest, Notification and UserPromptExpansion hook: announce a session's work through coord.py and show overlapping
 sessions, leaving the choice to the operator (stdlib only).
 
 Registered in this clone's .claude/settings.json, where it runs always, and in the plugin's manifest with `--opt-in`, where
@@ -37,6 +37,12 @@ command, and the hook adds no state of its own beyond the lease token coord.py s
                   and what it will do, for example "session s-xxxxxx of operator ID, working on ITEM, will wait for your landing
                   of OTHER before editing FILES" (at most COORDINATES_SHOWN lines, then a count); the state file keeps the
                   sequence number read, and a session's first look leaves out events older than COORDINATE_SECONDS
+  PermissionRequest, Notification  a session that waits on the person: a `blocked` event (coord.py, state waiting, on `permission`
+                  for a permission request and a `permission_prompt` notification, on `question` for an `elicitation_dialog`,
+                  `elicitation_url_dialog` or `agent_needs_input` one; any other notification, `idle_prompt` included, waits on
+                  no one and posts nothing) with the session, its first item and its operator id; the state
+                  file keeps `blocked`, and the session's next PreToolUse event of any kind this hook runs on posts the `blocked`
+                  event again with state cleared (kbmon's sessions panel shows a session as blocked from the first to the second)
   SessionEnd      releases the presence lease and forgets the token; a release that could not run (the store busy past
                   the call's timeout) keeps the token, and the next SessionStart of any session retries it
 
@@ -95,6 +101,8 @@ STRATEGIES = ("wait", "ask", "after", "join", "proceed")
 RUN_GROUP = {"claimed": "working", "working": "working", "blocked": "blocked", "returned": "returned", "staging": "returned",
              "landing": "landing", "failed": "returned", "refused": "returned"}  # run state -> the strategy.<key> that covers it
 RUN_ORDER = ("landing", "working", "blocked", "returned")  # the group that counts when one session's items differ
+BLOCKING = {"permission_prompt": "permission", "elicitation_dialog": "question", "elicitation_url_dialog": "question",
+            "agent_needs_input": "question"}  # a Notification type that waits on the person -> what it waits on
 ASKS_SHOWN = 5  # ask lines shown at one event
 ASK_POLL_SECONDS = 10  # a PreToolUse event looks for new asks at most this often; a SessionStart always does
 COORDINATES_SHOWN = 3  # coordinate lines shown at one event; a count line follows when there are more
@@ -846,8 +854,39 @@ def own_items(state, branch):
     return items + [branch] if branch and branch not in items else items
 
 
+def post_blocked(sid, state, branch, waiting, on=None):
+    """Post the `blocked` event of this session: waiting on ON (`permission` or `question`), or cleared. The state keeps
+    `blocked` (what it waits on) while the last event says waiting, so only a session that waits posts a clear."""
+    items = own_items(state, branch)
+    extra = ["--field", "on=" + on] if waiting else []
+    if items and TOUCH_WORD.fullmatch(items[0]):
+        extra += ["--field", "item=" + items[0]]
+    oid = operator_id()
+    if oid:
+        extra += ["--field", "operator=" + oid]
+    rc = coord("post", "--kind", "blocked", "--field", "session=" + sid, "--field", "state=" + ("waiting" if waiting else "cleared"), *extra)[0]
+    if rc == 0:
+        if waiting:
+            state["blocked"] = on
+        else:
+            state.pop("blocked")
+        save(sid, state)
+
+
+def blocked_on(payload, sid, event):
+    """A PermissionRequest or a Notification that waits on the person: record the session as blocked (BLOCKING names the
+    notification types that do)."""
+    on = "permission" if event == "PermissionRequest" else BLOCKING.get(payload.get("notification_type"))
+    if on:
+        state = load(sid)
+        post_blocked(sid, state, where(payload.get("cwd") or os.getcwd())[1], True, on)
+
+
 def pre_tool_use(payload, sid):
     tool, given = payload.get("tool_name"), payload.get("tool_input") or {}
+    state = load(sid)
+    if state.get("blocked"):  # the person answered: the session runs its next tool
+        post_blocked(sid, state, None, False)
     if tool in ("Bash", "Edit", "Write"):
         claimed = claimed_item(given.get("command") or "") if tool == "Bash" else None
         state = load(sid)
@@ -909,6 +948,8 @@ def main():
             session_end(sid)
         elif event == "PreToolUse":
             pre_tool_use(payload, sid)
+        elif event in ("PermissionRequest", "Notification"):
+            blocked_on(payload, sid, event)
         elif event == "UserPromptExpansion":
             research_start(payload, sid, event, payload.get("command_name"))
     except Exception:  # a hook never breaks a session: any error ends in silence
