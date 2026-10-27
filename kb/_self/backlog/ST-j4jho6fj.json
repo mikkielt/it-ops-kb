@@ -2,7 +2,7 @@
   "id": "ST-j4jho6fj",
   "kind": "story",
   "title": "Research sprint goal: Finish the gated work: code map, validity windows, session state, peers, coordination",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-jxf76aa2",
   "goal_research": true,
   "priority": "P1",
@@ -23,6 +23,20 @@
     "kb/public/_gaps.md"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-775f1f5d",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "57679df3637602aa9ddb3310caf1761dbf28c1e4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-j4jho6fj"
+        ],
+        "exit": 0,
+        "sha256": "0d1eb05c29d55260"
+      }
+    ]
+  }
 }
