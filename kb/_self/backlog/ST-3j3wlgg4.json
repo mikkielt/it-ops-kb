@@ -48,6 +48,23 @@
   "depends_on": [
     "ST-xllrtqlt"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the test.run row define its new fields: over, limit_s, ws?",
+      "options": [
+        "over is any ceiling breach (counts or seconds), limit_s the applied seconds limit in whole seconds, ws the junit worker-seconds in whole seconds",
+        "over is the seconds breach only, ws in milliseconds"
+      ],
+      "recommendation": "over is any ceiling breach (counts or seconds), limit_s the applied seconds limit in whole seconds, ws the junit worker-seconds in whole seconds",
+      "do": {
+        "over is any ceiling breach (counts or seconds), limit_s the applied seconds limit in whole seconds, ws the junit worker-seconds in whole seconds": "ST-3j3wlgg4",
+        "over is the seconds breach only, ws in milliseconds": "ST-3j3wlgg4"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "notes": "Planner (SP-jwvaq2hu): after ST-xllrtqlt, which also edits _tools/test_redact.py (the report's item 8 after item 3); check 1 (the ops-row and ceiling tests) passes before the work and pins those critical formats.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-557596e3",
