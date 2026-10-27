@@ -2,7 +2,7 @@
   "id": "ST-dfrnitoi",
   "kind": "story",
   "title": "Review sprint: Finish the gated work: code map, validity windows, session state, peers, coordination",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-jxf76aa2",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,7 @@
       ]
     }
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
