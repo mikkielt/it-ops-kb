@@ -53,6 +53,44 @@
   "relates_to": [
     "ST-qqpcgqe7"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Does --intake-real replay only the intake hook, or also the normal arms?",
+      "options": [
+        "only the intake hook of arm A, the rest of the record kept",
+        "the normal arms as well, then the intake hook"
+      ],
+      "recommendation": "only the intake hook of arm A, the rest of the record kept",
+      "reason": "the normal arms take minutes per rep and the pinned record stays as it is",
+      "do": {
+        "only the intake hook of arm A, the rest of the record kept": "ST-6zg57xiu",
+        "the normal arms as well, then the intake hook": "ST-6zg57xiu"
+      },
+      "class": "design",
+      "answer": "only the intake hook of arm A, the rest of the record kept",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "What does wall_s of the real intake row measure, and what if the hook exits non-zero in a rep?",
+      "options": [
+        "the hook command's own wall time; a non-zero exit writes an errors row",
+        "the whole replay's wall time; a non-zero exit is only counted"
+      ],
+      "recommendation": "the hook command's own wall time; a non-zero exit writes an errors row",
+      "reason": "the replay adds the settle wait, and figures of a failed hook stand for no session",
+      "do": {
+        "the hook command's own wall time; a non-zero exit writes an errors row": "ST-6zg57xiu",
+        "the whole replay's wall time; a non-zero exit is only counted": "ST-6zg57xiu"
+      },
+      "class": "design",
+      "answer": "the hook command's own wall time; a non-zero exit writes an errors row",
+      "by": "agent"
+    }
+  ],
   "notes": "Premise from ST-7nuaruwn's first record (before g8's pin): the SessionStart intake hook's drift scan took about 50 s and 50 CPU seconds per session start in a replay clone, against under 15 starts for every other hook; the pinned record leaves it out (gate g8 of ST-7nuaruwn). The hook files nothing in a linked worktree under .claude/worktrees/ (kb/_self/backlog.md), so dispatched workers skip it; sessions in the main checkout, interactive or headless, pay it. Its figure goes into the switch decision of ST-qqpcgqe7. Operator chose on 2026-10-26: keep the pin and measure this apart. The pinned arm comparison (arms A, C, D) stays as it is; the sprint review's done reruns its checks.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-557596e3",
