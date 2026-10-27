@@ -148,7 +148,12 @@
         "One row per regex: language, extensions, case, word, role, kind, pattern; lines over 1000 characters skipped, 2000 matches per file, regexes up to 200 characters": "ST-zkhku3sg",
         "Separate tables per concern (languages, rules) with other caps": "ST-zkhku3sg"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Separate tables per concern (languages, rules) with other caps",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     },
     {
       "id": "g5",
