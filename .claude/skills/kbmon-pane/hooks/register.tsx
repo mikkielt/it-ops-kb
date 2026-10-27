@@ -6,6 +6,9 @@ import type { KbmonView } from '../types'
 const PANE = 'kbmon'
 const REFRESH_MS = 60_000
 const SETTLE_MS = 1_000
+// A shared snapshot is served up to this old (the refresh period less a slack for timer jitter), so a pane's own next
+// timer run finds it due, while another session's pane that falls due meanwhile reuses it.
+const SHARED_MAX_AGE_S = (REFRESH_MS - 5_000) / 1000
 const FIRST_MS = 1_500
 const RUN_MS = 120_000
 const DEFAULT_COLUMNS = 80
@@ -151,7 +154,7 @@ async function refresh($: EngineInterface): Promise<void> {
   isStale = false
   const width = columns
   try {
-    const text = await kbmon($, ['--once'], width)
+    const text = await kbmon($, ['--once', '--shared', '--max-age', String(SHARED_MAX_AGE_S)], width)
     await update($, view, () => ({ text, columns: width }) as KbmonView)
     await notifyNeeds($, text, width)
     const alerts = alertsOf(text)
