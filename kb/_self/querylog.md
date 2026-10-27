@@ -251,8 +251,9 @@ Every row has `id` (a fresh UUID), `ts` (UTC, milliseconds), `surface` and `v`, 
   - the week is the `--week` argument, else the ISO week of the store's newest entry: nothing else goes in (no clock, no machine, no path in the output), so every clone at one commit prints the same lines but for the `intake:` line, which is checked on two copies of one fixture store.
 - **Shown once a week:** a synchronous `SessionStart` hook, `querylog.py digest --hook` with `timeout` `DIGEST_HOOK_TIMEOUT_S` (`.claude/settings.json` and the plugin), prints last week's digest (the ISO week before the one the machine's UTC date is in) as `{"systemMessage": ...}` at the first `SessionStart` of an ISO week:
   - a synchronous hook's `systemMessage` is shown to the person, while plain stdout goes to Claude's context and an async hook's `systemMessage` reaches only Claude, on the next turn (`claude/hooks.md`, DOC and DER S743), so this hook is synchronous and the distill launcher stays async;
-  - the marker `digest-week` beside the spool (`_cache/querylog/` in a clone, `${CLAUDE_PLUGIN_DATA}/querylog/` in a host) names the week it last showed; it is written before the store is read, so a slow or failed digest is not tried again that week;
-  - nothing shows in mode `off` or with the `DISABLED` marker, for a week with no entry, run file or finding record, or when reading the store took over `DIGEST_BUDGET_S`; the hook always exits 0 and never blocks.
+  - the marker `digest-week` beside the spool (`_cache/querylog/` in a clone, `${CLAUDE_PLUGIN_DATA}/querylog/` in a host) names the week it last showed; it is written once the cached digest is read, so a week is not shown twice;
+  - the hook never reads the store: it reads `digest-<week>.json` beside the spool, last week's digest that `querylog.py digest --cache` computes once per ISO week (it removes other weeks' files); with none cached, the hook starts that computation detached (not again within `DIGEST_PENDING_S`, the file `digest-pending` beside the spool) and prints nothing, so the next `SessionStart` shows the digest;
+  - nothing shows in mode `off` or with the `DISABLED` marker, for a week with no entry, run file or finding record, or before the digest is cached; the hook always exits 0 and never blocks.
 - **Status:** `querylog.py status [--store DIR]` prints three lists:
   - open source findings of the committed store, most result characters first: the `chars` the store's fetches of the host recorded, so the host whose pages cost the most context comes first;
   - open merge requests from a `querylog/` branch to `main` on `origin`'s forge (host from `origin`'s url, as in Delivery): `glab auth status --hostname <host>`, then `glab api --hostname <host> projects/<path>/merge_requests?state=opened&target_branch=main&per_page=100` on GitLab; `gh auth status --hostname <host>`, then `gh pr list -R <host>/<path> --base main --state open --json number,title,headRefName,url -L 100` on GitHub; the branch prefix is matched on the answer, since both filters take one whole branch name (`gitlab/automated-merge-requests.md`, DOC and DER S-4abgkvor, S-dn5ck62j); not signed in, a failed call or no `origin` prints a note instead;
@@ -350,8 +351,8 @@ Every row has `id` (a fresh UUID), `ts` (UTC, milliseconds), `surface` and `v`, 
 | `CONFLICT_BRANCH_PREFIX` | `querylog/` | conflict branches are recognisable, and `status` lists their open MRs |
 | `FALLBACK_GITLAB_HOST` | `gitlab.com` | used only when `origin`'s url names no host |
 | `DIGEST_PERIOD` | one ISO week (Monday to Sunday, UTC days) | the digest shows once, at the first `SessionStart` of the week; an ISO week is named the same in every clone and time zone |
-| `DIGEST_BUDGET_S` | 3 s | the digest hook shows nothing when reading the store took longer; Claude's first response waits for a synchronous `SessionStart` hook (`claude/hooks.md`, DOC S743) |
-| `DIGEST_HOOK_TIMEOUT_S` | 10 s | the digest hook's `timeout` in `.claude/settings.json` and the plugin, above `DIGEST_BUDGET_S` and far below the 600-second default |
+| `DIGEST_PENDING_S` | 300 s | a detached `digest --cache` younger than this is not started a second time; Claude's first response waits for a synchronous `SessionStart` hook (`claude/hooks.md`, DOC S743), so the hook reads a cached digest and never the store |
+| `DIGEST_HOOK_TIMEOUT_S` | 10 s | the digest hook's `timeout` in `.claude/settings.json` and the plugin, far below the 600-second default |
 
 ## When a mechanism can go
 

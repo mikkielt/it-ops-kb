@@ -35,6 +35,26 @@
     "kb/_self/plugin.md",
     "kb/_self/usage.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the digest hook get last week's digest without reading the store in the hook?",
+      "options": [
+        "Cache file computed detached by the hook",
+        "Cache file computed by the session-end distill"
+      ],
+      "recommendation": "Cache file computed detached by the hook",
+      "reason": "the hook reads digest-<week>.json beside the spool, and with none cached it starts digest --cache detached and shows the digest at the next SessionStart",
+      "do": {
+        "Cache file computed detached by the hook": "ST-h7ddg4nu",
+        "Cache file computed by the session-end distill": "ST-h7ddg4nu"
+      },
+      "class": "design",
+      "answer": "Cache file computed detached by the hook",
+      "by": "agent"
+    }
+  ],
   "links": [
     "kb/public/claude/hooks.md:87 (a message for the person comes from a synchronous SessionStart hook's systemMessage)"
   ],

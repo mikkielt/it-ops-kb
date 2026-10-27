@@ -134,8 +134,12 @@ the ql_*.py modules beside it.
   querylog.py digest --hook
                         the SessionStart hook (synchronous, `timeout` DIGEST_HOOK_TIMEOUT_S): at the first
                         SessionStart of an ISO week (the marker `digest-week` beside the spool), last week's digest
-                        as one JSON line {"systemMessage": ...}, which Claude Code shows the person; nothing when
-                        logging is off, the week is empty or reading the store took over DIGEST_BUDGET_S. Exit 0
+                        as one JSON line {"systemMessage": ...}, which Claude Code shows the person, read from the
+                        digest cached beside the spool; with none cached it starts `digest --cache` detached and
+                        prints nothing; nothing too when logging is off or the week is empty. Exit 0
+  querylog.py digest --cache
+                        computes last week's digest (the ISO week before the UTC date's) into the cache file
+                        `digest-<week>.json` beside the spool, removing other weeks' files. Exit 0, 1 on a write error
   querylog.py export --format jsonl [--since DAY] [--event E] [--with-question] [--store DIR]
                         the store's entries, findings, usage, work and ops rows (default: the committed store) as JSON
                         Lines, one record in the OTLP-JSON field names of a log record (timeUnixNano,
@@ -341,10 +345,19 @@ def main(argv=None):
         ap.add_argument("--week", help="the ISO week YYYY-Www (default: the week of the store's newest entry)")
         ap.add_argument("--hook", action="store_true", help="the SessionStart hook: last week's digest as a "
                         "systemMessage, once per ISO week")
+        ap.add_argument("--cache", action="store_true", help="compute last week's digest into the cache file "
+                        "beside the spool, which the hook reads")
         a = ap.parse_args(argv[1:])
         import ql_report
         if a.hook:
             return ql_report.hook_digest()
+        if a.cache:
+            try:
+                ql_report.digest_precompute(store=a.store)
+            except (OSError, ValueError) as e:
+                print(f"digest: {e}", file=sys.stderr)
+                return 1
+            return 0
         try:
             _, lines, _ = ql_report.digest(a.store, a.week)
         except ValueError as e:
