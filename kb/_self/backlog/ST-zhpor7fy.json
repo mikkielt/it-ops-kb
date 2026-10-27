@@ -67,6 +67,40 @@
     "ST-deyyxb4c",
     "ST-6n5xrkbt"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which files does impact count as changed since REV?",
+      "options": [
+        "the commits REV..NEW (git diff --name-only REV NEW), the working tree left out",
+        "REV to the working tree, untracked files included"
+      ],
+      "recommendation": "the commits REV..NEW (git diff --name-only REV NEW), the working tree left out",
+      "reason": "the item's checks compare with that diff, and the fact lines come from the commit NEW too",
+      "do": {
+        "the commits REV..NEW (git diff --name-only REV NEW), the working tree left out": "ST-zhpor7fy",
+        "REV to the working tree, untracked files included": "ST-zhpor7fy"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "What does each impact line carry after its 'doc PATH' or 'fact KBPATH:LINE' key, and what exit does it give?",
+      "options": [
+        "doc line adds a tab and the changed files; fact line adds drift's kind, source id, pointer and detail; exit 1 when any line printed",
+        "the bare key only; exit 0 always"
+      ],
+      "recommendation": "doc line adds a tab and the changed files; fact line adds drift's kind, source id, pointer and detail; exit 1 when any line printed",
+      "reason": "a reader sees why, and the exit follows drift's",
+      "do": {
+        "doc line adds a tab and the changed files; fact line adds drift's kind, source id, pointer and detail; exit 1 when any line printed": "ST-zhpor7fy",
+        "the bare key only; exit 0 always": "ST-zhpor7fy"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "moved out: SP-acysfnxr"
   ],
