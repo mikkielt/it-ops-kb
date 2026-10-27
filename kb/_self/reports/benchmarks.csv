@@ -21359,323 +21359,323 @@ pool,2026-10-23,2026-10-23,d81d20a,2.1.309,430,all,hook,,off_list,0,20,
 pool,2026-10-23,2026-10-23,d81d20a,2.1.309,430,all paid runs,"paid: haiku-4-5,haiku-5-5:default,haiku-5-5:low,hook,router,sonnet-5-5:default,sonnet-5-5:low",,spend_usd,5.7691,120,
 pool,2026-10-23,2026-10-23,d81d20a,2.1.309,430,all paid runs,"paid: haiku-4-5,haiku-5-5:default,haiku-5-5:low,hook,router,sonnet-5-5:default,sonnet-5-5:low",,spend_input_tokens,9136710,120,
 pool,2026-10-23,2026-10-23,d81d20a,2.1.309,430,all paid runs,"paid: haiku-4-5,haiku-5-5:default,haiku-5-5:low,hook,router,sonnet-5-5:default,sonnet-5-5:low",,spend_output_tokens,144969,120,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle kb-tools,A,,cpu_s,16.953514,5,"14 cores, load 6.4 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle kb-tools,A,,rss_peak_mb,232.640625,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle kb-tools,A,,rss_mean_mb,133.050571,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle kb-tools,A,,spawns_per_min,15.0,5,a session of 60 s
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle claude,A,,cpu_s,0.0,5,"14 cores, load 6.4 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle claude,A,,rss_peak_mb,0.0,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle claude,A,,rss_mean_mb,0.0,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle claude,A,,spawns_per_min,0.0,5,a session of 60 s
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle other,A,,cpu_s,0.739855,5,"14 cores, load 6.4 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle other,A,,rss_peak_mb,75.296875,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle other,A,,rss_mean_mb,8.034716,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle other,A,,spawns_per_min,5.0,5,a session of 60 s
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle git,A,,cpu_s,0.0,5,"14 cores, load 6.4 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle git,A,,rss_peak_mb,49.1875,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle git,A,,rss_mean_mb,19.088542,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle git,A,,spawns_per_min,969.0,5,a session of 60 s
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle all,A,,cpu_s,17.695208,5,"14 cores, load 6.4 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle all,A,,rss_peak_mb,307.921875,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle all,A,,rss_mean_mb,137.012051,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle all,A,,spawns_per_min,989.0,5,a session of 60 s
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle replay,A,,wall_s,17.955043,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle replay,A,,hook_failures,0,5,hook commands that exited non-zero
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working kb-tools,A,,cpu_s,16.39891,5,"14 cores, load 6.7 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working kb-tools,A,,rss_peak_mb,267.515625,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working kb-tools,A,,rss_mean_mb,134.132812,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working kb-tools,A,,spawns_per_min,7.4,5,a session of 300 s
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working claude,A,,cpu_s,0.0,5,"14 cores, load 6.7 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working claude,A,,rss_peak_mb,0.0,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working claude,A,,rss_mean_mb,0.0,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working claude,A,,spawns_per_min,0.2,5,a session of 300 s
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working other,A,,cpu_s,1.429012,5,"14 cores, load 6.7 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working other,A,,rss_peak_mb,101.546875,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working other,A,,rss_mean_mb,10.151255,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working other,A,,spawns_per_min,2.4,5,a session of 300 s
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working git,A,,cpu_s,0.0,5,"14 cores, load 6.7 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working git,A,,rss_peak_mb,42.46875,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working git,A,,rss_mean_mb,31.835938,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working git,A,,spawns_per_min,197.6,5,a session of 300 s
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working all,A,,cpu_s,17.969022,5,"14 cores, load 6.7 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working all,A,,rss_peak_mb,309.328125,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working all,A,,rss_mean_mb,139.221434,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working all,A,,spawns_per_min,207.6,5,a session of 300 s
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working replay,A,,wall_s,15.655434,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working replay,A,,hook_failures,0,5,hook commands that exited non-zero
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle kb-tools,C,,cpu_s,12.765888,5,"14 cores, load 6.0 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle kb-tools,C,,rss_peak_mb,222.984375,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle kb-tools,C,,rss_mean_mb,140.302206,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle kb-tools,C,,spawns_per_min,6.0,5,a session of 60 s
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle claude,C,,cpu_s,0.0,5,"14 cores, load 6.0 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle claude,C,,rss_peak_mb,0.0,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle claude,C,,rss_mean_mb,0.0,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle claude,C,,spawns_per_min,0.0,5,a session of 60 s
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle other,C,,cpu_s,0.154265,5,"14 cores, load 6.0 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle other,C,,rss_peak_mb,54.515625,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle other,C,,rss_mean_mb,6.788636,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle other,C,,spawns_per_min,3.0,5,a session of 60 s
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle git,C,,cpu_s,0.0,5,"14 cores, load 6.0 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle git,C,,rss_peak_mb,43.796875,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle git,C,,rss_mean_mb,33.460938,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle git,C,,spawns_per_min,963.0,5,a session of 60 s
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle all,C,,cpu_s,12.920183,5,"14 cores, load 6.0 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle all,C,,rss_peak_mb,267.484375,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle all,C,,rss_mean_mb,146.006455,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle all,C,,spawns_per_min,972.0,5,a session of 60 s
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle replay,C,,wall_s,12.513765,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle replay,C,,hook_failures,0,5,hook commands that exited non-zero
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working kb-tools,C,,cpu_s,15.453421,5,"14 cores, load 5.3 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working kb-tools,C,,rss_peak_mb,270.46875,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working kb-tools,C,,rss_mean_mb,142.63577,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working kb-tools,C,,spawns_per_min,2.4,5,a session of 300 s
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working claude,C,,cpu_s,0.0,5,"14 cores, load 5.3 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working claude,C,,rss_peak_mb,0.0,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working claude,C,,rss_mean_mb,0.0,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working claude,C,,spawns_per_min,0.0,5,a session of 300 s
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working other,C,,cpu_s,0.213275,5,"14 cores, load 5.3 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working other,C,,rss_peak_mb,53.890625,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working other,C,,rss_mean_mb,7.012613,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working other,C,,spawns_per_min,1.2,5,a session of 300 s
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working git,C,,cpu_s,0.0,5,"14 cores, load 5.3 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working git,C,,rss_peak_mb,43.65625,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working git,C,,rss_mean_mb,32.578125,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working git,C,,spawns_per_min,193.0,5,a session of 300 s
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working all,C,,cpu_s,15.666659,5,"14 cores, load 5.3 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working all,C,,rss_peak_mb,315.140625,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working all,C,,rss_mean_mb,148.574066,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working all,C,,spawns_per_min,196.6,5,a session of 300 s
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working replay,C,,wall_s,14.6387,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working replay,C,,hook_failures,0,5,hook commands that exited non-zero
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle kb-tools,D,,cpu_s,0.0,5,"14 cores, load 7.1 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle kb-tools,D,,rss_peak_mb,0.0,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle kb-tools,D,,rss_mean_mb,0.0,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle kb-tools,D,,spawns_per_min,0.0,5,a session of 60 s
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle claude,D,,cpu_s,0.0,5,"14 cores, load 7.1 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle claude,D,,rss_peak_mb,0.0,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle claude,D,,rss_mean_mb,0.0,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle claude,D,,spawns_per_min,0.0,5,a session of 60 s
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle other,D,,cpu_s,0.0,5,"14 cores, load 7.1 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle other,D,,rss_peak_mb,0.0,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle other,D,,rss_mean_mb,0.0,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle other,D,,spawns_per_min,0.0,5,a session of 60 s
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle git,D,,cpu_s,0.0,5,"14 cores, load 7.1 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle git,D,,rss_peak_mb,0.0,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle git,D,,rss_mean_mb,0.0,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle git,D,,spawns_per_min,0.0,5,a session of 60 s
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle all,D,,cpu_s,0,5,"14 cores, load 7.1 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle all,D,,rss_peak_mb,0.0,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle all,D,,rss_mean_mb,0.0,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle all,D,,spawns_per_min,0.0,5,a session of 60 s
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle replay,D,,wall_s,1.5e-05,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle replay,D,,hook_failures,0,5,hook commands that exited non-zero
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working kb-tools,D,,cpu_s,0.0,5,"14 cores, load 7.1 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working kb-tools,D,,rss_peak_mb,0.0,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working kb-tools,D,,rss_mean_mb,0.0,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working kb-tools,D,,spawns_per_min,0.0,5,a session of 300 s
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working claude,D,,cpu_s,0.0,5,"14 cores, load 7.1 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working claude,D,,rss_peak_mb,0.0,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working claude,D,,rss_mean_mb,0.0,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working claude,D,,spawns_per_min,0.0,5,a session of 300 s
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working other,D,,cpu_s,0.0,5,"14 cores, load 7.1 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working other,D,,rss_peak_mb,0.0,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working other,D,,rss_mean_mb,0.0,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working other,D,,spawns_per_min,0.0,5,a session of 300 s
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working git,D,,cpu_s,0.0,5,"14 cores, load 7.1 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working git,D,,rss_peak_mb,0.0,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working git,D,,rss_mean_mb,0.0,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working git,D,,spawns_per_min,0.0,5,a session of 300 s
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working all,D,,cpu_s,0,5,"14 cores, load 7.1 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working all,D,,rss_peak_mb,0.0,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working all,D,,rss_mean_mb,0.0,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working all,D,,spawns_per_min,0.0,5,a session of 300 s
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working replay,D,,wall_s,2.7e-05,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working replay,D,,hook_failures,0,5,hook commands that exited non-zero
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle hook --notice,A,,spawns,1,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle hook .claude/hooks/session_start.py,A,,spawns,6,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle hook .claude/hooks/coord_hook.py,A,,spawns,13,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle hook _tools/querylog.py launch,A,,spawns,2,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle hook _tools/querylog.py digest --hook,A,,spawns,2,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle hook _tools/backlog.py red-pipeline --hook,A,,spawns,8,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle hook _tools/backlog.py intake --file --hook,A,,spawns,950,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle hook _tools/kbgit.py publish --hook,A,,spawns,2,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle hook _tools/kbroot.py fetch --hook,A,,spawns,1,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle hook _tools/backlog.py horizon --hook,A,,spawns,4,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working hook --notice,A,,spawns,1,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working hook .claude/hooks/session_start.py,A,,spawns,6,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working hook .claude/hooks/coord_hook.py,A,,spawns,38,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working hook _tools/querylog.py launch,A,,spawns,5,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working hook _tools/querylog.py digest --hook,A,,spawns,2,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working hook _tools/backlog.py red-pipeline --hook,A,,spawns,8,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working hook _tools/backlog.py intake --file --hook,A,,spawns,950,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working hook _tools/kbgit.py publish --hook,A,,spawns,2,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working hook _tools/kbroot.py fetch --hook,A,,spawns,1,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working hook _tools/backlog.py horizon --hook,A,,spawns,4,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working hook _tools/kb_hook.py,A,,spawns,8,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working hook .claude/hooks/kb_change_router.py,A,,spawns,3,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working hook _tools/querylog.py capture,A,,spawns,10,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle hook --notice,C,,spawns,1,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle hook .claude/hooks/session_start.py,C,,spawns,6,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle hook _tools/backlog.py red-pipeline --hook,C,,spawns,8,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle hook _tools/backlog.py intake --file --hook,C,,spawns,950,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle hook _tools/kbgit.py publish --hook,C,,spawns,2,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle hook _tools/kbroot.py fetch --hook,C,,spawns,1,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,idle hook _tools/backlog.py horizon --hook,C,,spawns,4,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working hook --notice,C,,spawns,1,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working hook .claude/hooks/session_start.py,C,,spawns,6,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working hook _tools/backlog.py red-pipeline --hook,C,,spawns,8,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working hook _tools/backlog.py intake --file --hook,C,,spawns,950,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working hook _tools/kbgit.py publish --hook,C,,spawns,2,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working hook _tools/kbroot.py fetch --hook,C,,spawns,1,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working hook _tools/backlog.py horizon --hook,C,,spawns,4,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working hook _tools/kb_hook.py,C,,spawns,8,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,working hook .claude/hooks/kb_change_router.py,C,,spawns,3,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,SessionStart --notice,A,,sync_ms,7.943979,10,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,SessionStart .claude/hooks/session_start.py,A,,sync_ms,218.264334,10,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,SessionStart .claude/hooks/coord_hook.py,A,,sync_ms,395.604042,10,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,SessionStart _tools/querylog.py launch,A,,async_ms,50.070708,10,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,SessionStart _tools/querylog.py digest --hook,A,,sync_ms,2043.653583,10,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,SessionStart _tools/backlog.py red-pipeline --hook,A,,async_ms,1265.482542,10,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,SessionStart _tools/backlog.py intake --file --hook,A,,async_ms,14423.483083,10,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,SessionStart _tools/kbgit.py publish --hook,A,,async_ms,87.195292,10,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,SessionStart _tools/kbroot.py fetch --hook,A,,async_ms,43.976791,10,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,SessionStart _tools/backlog.py horizon --hook,A,,sync_ms,167.090104,10,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,SessionEnd _tools/querylog.py launch,A,,sync_ms,53.282104,10,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,SessionEnd .claude/hooks/coord_hook.py,A,,sync_ms,141.811,10,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,UserPromptSubmit _tools/kb_hook.py,A,,sync_ms,438.0555,15,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,UserPromptSubmit .claude/hooks/kb_change_router.py,A,,sync_ms,23.479833,15,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,UserPromptSubmit _tools/querylog.py capture,A,,async_ms,46.1275,15,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,PostToolUse _tools/querylog.py capture (mcp__plugin_it-ops-kb_kb__kb_pack),A,,async_ms,46.572875,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,PreToolUse _tools/kb_hook.py (Bash),A,,sync_ms,26.957291,10,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,PreToolUse .claude/hooks/coord_hook.py (Bash),A,,sync_ms,182.468062,10,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,PostToolUse _tools/querylog.py capture (Bash),A,,async_ms,46.372146,10,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,Stop _tools/querylog.py capture,A,,async_ms,41.67875,15,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,PreToolUse .claude/hooks/coord_hook.py (Edit),A,,sync_ms,153.990708,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,PreToolUse _tools/kb_hook.py (WebFetch),A,,sync_ms,42.446583,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,PostToolUse _tools/querylog.py capture (WebFetch),A,,async_ms,46.642833,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,PreToolUse .claude/hooks/coord_hook.py (Skill),A,,sync_ms,153.080583,5,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,SessionStart --notice,C,,sync_ms,6.582021,10,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,SessionStart .claude/hooks/session_start.py,C,,sync_ms,157.889354,10,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,SessionStart _tools/backlog.py red-pipeline --hook,C,,async_ms,1094.415313,10,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,SessionStart _tools/backlog.py intake --file --hook,C,,async_ms,13329.436791,10,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,SessionStart _tools/kbgit.py publish --hook,C,,async_ms,80.450563,10,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,SessionStart _tools/kbroot.py fetch --hook,C,,async_ms,41.086,10,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,SessionStart _tools/backlog.py horizon --hook,C,,sync_ms,148.336958,10,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,UserPromptSubmit _tools/kb_hook.py,C,,sync_ms,431.851542,15,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,UserPromptSubmit .claude/hooks/kb_change_router.py,C,,sync_ms,22.362417,15,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,PreToolUse _tools/kb_hook.py (Bash),C,,sync_ms,27.423479,10,
-session-load,2026-10-26,2026-10-26,1d01e81,2.1.310,434,PreToolUse _tools/kb_hook.py (WebFetch),C,,sync_ms,42.465958,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle kbmon,B,,cpu_s,22.882524,5,"14 cores, load 3.2 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle kbmon,B,,rss_peak_mb,689.28125,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle kbmon,B,,rss_mean_mb,346.626076,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle kbmon,B,,spawns_per_min,2.4,5,"a session of 60 s, the pane's starts per minute of its 150 s window"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle kb-tools,B,,cpu_s,14.830935,5,"14 cores, load 3.2 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle kb-tools,B,,rss_peak_mb,226.5625,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle kb-tools,B,,rss_mean_mb,125.860054,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle kb-tools,B,,spawns_per_min,45.0,5,"a session of 60 s, the pane's starts per minute of its 150 s window"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle claude,B,,cpu_s,0.0,5,"14 cores, load 3.2 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle claude,B,,rss_peak_mb,0.0,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle claude,B,,rss_mean_mb,0.0,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle claude,B,,spawns_per_min,0.0,5,"a session of 60 s, the pane's starts per minute of its 150 s window"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle other,B,,cpu_s,0.61298,5,"14 cores, load 3.2 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle other,B,,rss_peak_mb,82.578125,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle other,B,,rss_mean_mb,10.411716,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle other,B,,spawns_per_min,14.6,5,"a session of 60 s, the pane's starts per minute of its 150 s window"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle git,B,,cpu_s,0.0,5,"14 cores, load 3.2 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle git,B,,rss_peak_mb,58.515625,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle git,B,,rss_mean_mb,33.532452,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle git,B,,spawns_per_min,1007.4,5,"a session of 60 s, the pane's starts per minute of its 150 s window"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle lsof,B,,cpu_s,0.0,5,"14 cores, load 3.2 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle lsof,B,,rss_peak_mb,2.71875,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle lsof,B,,rss_mean_mb,2.05625,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle lsof,B,,spawns_per_min,2.4,5,"a session of 60 s, the pane's starts per minute of its 150 s window"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle all,B,,cpu_s,38.343337,5,"14 cores, load 3.2 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle all,B,,rss_peak_mb,834.828125,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle all,B,,rss_mean_mb,307.980699,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle all,B,,spawns_per_min,1071.8,5,"a session of 60 s, the pane's starts per minute of its 150 s window"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle all,B,,pane_runs,3,5,"--once then --status all, the first after 1.5 s, then every 60 s over a window of 150 s; a tick that falls during a run does nothing"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle replay,B,,wall_s,150.005049,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle replay,B,,hook_failures,0,5,hook commands that exited non-zero
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle replay,B,,pane_failures,0,5,pane commands that exited with 2 or more
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working kbmon,B,,cpu_s,24.874846,5,"14 cores, load 3.3 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working kbmon,B,,rss_peak_mb,731.484375,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working kbmon,B,,rss_mean_mb,364.546561,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working kbmon,B,,spawns_per_min,2.4,5,"a session of 300 s, the pane's starts per minute of its 150 s window"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working kb-tools,B,,cpu_s,17.857489,5,"14 cores, load 3.3 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working kb-tools,B,,rss_peak_mb,274.96875,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working kb-tools,B,,rss_mean_mb,128.887394,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working kb-tools,B,,spawns_per_min,37.4,5,"a session of 300 s, the pane's starts per minute of its 150 s window"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working claude,B,,cpu_s,0.0,5,"14 cores, load 3.3 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working claude,B,,rss_peak_mb,0.0,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working claude,B,,rss_mean_mb,0.0,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working claude,B,,spawns_per_min,0.2,5,"a session of 300 s, the pane's starts per minute of its 150 s window"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working other,B,,cpu_s,1.398101,5,"14 cores, load 3.3 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working other,B,,rss_peak_mb,100.953125,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working other,B,,rss_mean_mb,11.371135,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working other,B,,spawns_per_min,12.0,5,"a session of 300 s, the pane's starts per minute of its 150 s window"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working git,B,,cpu_s,0.0,5,"14 cores, load 3.3 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working git,B,,rss_peak_mb,58.734375,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working git,B,,rss_mean_mb,29.138021,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working git,B,,spawns_per_min,236.0,5,"a session of 300 s, the pane's starts per minute of its 150 s window"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working lsof,B,,cpu_s,0.0,5,"14 cores, load 3.3 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working lsof,B,,rss_peak_mb,2.734375,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working lsof,B,,rss_mean_mb,2.333333,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working lsof,B,,spawns_per_min,2.8,5,"a session of 300 s, the pane's starts per minute of its 150 s window"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working all,B,,cpu_s,44.130436,5,"14 cores, load 3.3 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working all,B,,rss_peak_mb,883.640625,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working all,B,,rss_mean_mb,328.779837,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working all,B,,spawns_per_min,290.8,5,"a session of 300 s, the pane's starts per minute of its 150 s window"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working all,B,,pane_runs,3,5,"--once then --status all, the first after 1.5 s, then every 60 s over a window of 150 s; a tick that falls during a run does nothing"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working replay,B,,wall_s,150.004842,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working replay,B,,hook_failures,0,5,hook commands that exited non-zero
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working replay,B,,pane_failures,0,5,pane commands that exited with 2 or more
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle hook --notice,B,,spawns,1,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle hook .claude/hooks/session_start.py,B,,spawns,6,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle hook .claude/hooks/coord_hook.py,B,,spawns,13,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle hook _tools/querylog.py launch,B,,spawns,2,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle hook _tools/querylog.py digest --hook,B,,spawns,2,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle hook _tools/backlog.py red-pipeline --hook,B,,spawns,8,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle hook _tools/backlog.py intake --file --hook,B,,spawns,950,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle hook _tools/kbgit.py publish --hook,B,,spawns,2,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle hook _tools/kbroot.py fetch --hook,B,,spawns,1,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,idle hook _tools/backlog.py horizon --hook,B,,spawns,4,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working hook --notice,B,,spawns,1,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working hook .claude/hooks/session_start.py,B,,spawns,6,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working hook .claude/hooks/coord_hook.py,B,,spawns,38,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working hook _tools/querylog.py launch,B,,spawns,5,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working hook _tools/querylog.py digest --hook,B,,spawns,2,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working hook _tools/backlog.py red-pipeline --hook,B,,spawns,8,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working hook _tools/backlog.py intake --file --hook,B,,spawns,950,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working hook _tools/kbgit.py publish --hook,B,,spawns,2,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working hook _tools/kbroot.py fetch --hook,B,,spawns,1,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working hook _tools/backlog.py horizon --hook,B,,spawns,4,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working hook _tools/kb_hook.py,B,,spawns,8,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working hook .claude/hooks/kb_change_router.py,B,,spawns,3,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,working hook _tools/querylog.py capture,B,,spawns,10,5,"the command and the processes Python programs of its tree started, per replay"
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,SessionStart --notice,B,,sync_ms,10.078792,10,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,SessionStart .claude/hooks/session_start.py,B,,sync_ms,172.798916,10,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,SessionStart .claude/hooks/coord_hook.py,B,,sync_ms,341.109291,10,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,SessionStart _tools/querylog.py launch,B,,async_ms,45.110979,10,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,SessionStart _tools/querylog.py digest --hook,B,,sync_ms,1686.409292,10,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,SessionStart _tools/backlog.py red-pipeline --hook,B,,async_ms,1257.089646,10,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,SessionStart _tools/backlog.py intake --file --hook,B,,async_ms,13632.164208,10,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,SessionStart _tools/kbgit.py publish --hook,B,,async_ms,85.194917,10,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,SessionStart _tools/kbroot.py fetch --hook,B,,async_ms,42.64475,10,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,SessionStart _tools/backlog.py horizon --hook,B,,sync_ms,161.576209,10,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,SessionEnd _tools/querylog.py launch,B,,sync_ms,52.287396,10,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,SessionEnd .claude/hooks/coord_hook.py,B,,sync_ms,139.249,10,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,UserPromptSubmit _tools/kb_hook.py,B,,sync_ms,435.201375,15,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,UserPromptSubmit .claude/hooks/kb_change_router.py,B,,sync_ms,23.525083,15,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,UserPromptSubmit _tools/querylog.py capture,B,,async_ms,46.369667,15,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,PostToolUse _tools/querylog.py capture (mcp__plugin_it-ops-kb_kb__kb_pack),B,,async_ms,46.08475,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,PreToolUse _tools/kb_hook.py (Bash),B,,sync_ms,27.928208,10,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,PreToolUse .claude/hooks/coord_hook.py (Bash),B,,sync_ms,200.919625,10,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,PostToolUse _tools/querylog.py capture (Bash),B,,async_ms,46.787041,10,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,Stop _tools/querylog.py capture,B,,async_ms,41.717583,15,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,PreToolUse .claude/hooks/coord_hook.py (Edit),B,,sync_ms,157.831917,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,PreToolUse _tools/kb_hook.py (WebFetch),B,,sync_ms,42.540375,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,PostToolUse _tools/querylog.py capture (WebFetch),B,,async_ms,46.624917,5,
-session-load,2026-10-26,2026-10-26,124ca13,2.1.310,434,PreToolUse .claude/hooks/coord_hook.py (Skill),B,,sync_ms,157.93475,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle kb-tools,A,,cpu_s,16.953514,5,"14 cores, load 6.4 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle kb-tools,A,,rss_peak_mb,232.640625,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle kb-tools,A,,rss_mean_mb,133.050571,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle kb-tools,A,,spawns_per_min,15.0,5,a session of 60 s
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle claude,A,,cpu_s,0.0,5,"14 cores, load 6.4 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle claude,A,,rss_peak_mb,0.0,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle claude,A,,rss_mean_mb,0.0,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle claude,A,,spawns_per_min,0.0,5,a session of 60 s
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle other,A,,cpu_s,0.739855,5,"14 cores, load 6.4 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle other,A,,rss_peak_mb,75.296875,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle other,A,,rss_mean_mb,8.034716,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle other,A,,spawns_per_min,5.0,5,a session of 60 s
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle git,A,,cpu_s,0.0,5,"14 cores, load 6.4 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command; git runs only as a child of a hook command (arm B: or a pane command), so its CPU is charged to its parent's class, not to this one, and this row holds none of it"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle git,A,,rss_peak_mb,49.1875,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle git,A,,rss_mean_mb,19.088542,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle git,A,,spawns_per_min,969.0,5,a session of 60 s
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle all,A,,cpu_s,17.695208,5,"14 cores, load 6.4 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle all,A,,rss_peak_mb,307.921875,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle all,A,,rss_mean_mb,137.012051,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle all,A,,spawns_per_min,989.0,5,a session of 60 s
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle replay,A,,wall_s,17.955043,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle replay,A,,hook_failures,0,5,hook commands that exited non-zero
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working kb-tools,A,,cpu_s,16.39891,5,"14 cores, load 6.7 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working kb-tools,A,,rss_peak_mb,267.515625,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working kb-tools,A,,rss_mean_mb,134.132812,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working kb-tools,A,,spawns_per_min,7.4,5,a session of 300 s
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working claude,A,,cpu_s,0.0,5,"14 cores, load 6.7 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working claude,A,,rss_peak_mb,0.0,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working claude,A,,rss_mean_mb,0.0,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working claude,A,,spawns_per_min,0.2,5,a session of 300 s
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working other,A,,cpu_s,1.429012,5,"14 cores, load 6.7 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working other,A,,rss_peak_mb,101.546875,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working other,A,,rss_mean_mb,10.151255,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working other,A,,spawns_per_min,2.4,5,a session of 300 s
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working git,A,,cpu_s,0.0,5,"14 cores, load 6.7 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command; git runs only as a child of a hook command (arm B: or a pane command), so its CPU is charged to its parent's class, not to this one, and this row holds none of it"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working git,A,,rss_peak_mb,42.46875,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working git,A,,rss_mean_mb,31.835938,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working git,A,,spawns_per_min,197.6,5,a session of 300 s
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working all,A,,cpu_s,17.969022,5,"14 cores, load 6.7 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working all,A,,rss_peak_mb,309.328125,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working all,A,,rss_mean_mb,139.221434,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working all,A,,spawns_per_min,207.6,5,a session of 300 s
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working replay,A,,wall_s,15.655434,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working replay,A,,hook_failures,0,5,hook commands that exited non-zero
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle kb-tools,C,,cpu_s,12.765888,5,"14 cores, load 6.0 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle kb-tools,C,,rss_peak_mb,222.984375,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle kb-tools,C,,rss_mean_mb,140.302206,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle kb-tools,C,,spawns_per_min,6.0,5,a session of 60 s
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle claude,C,,cpu_s,0.0,5,"14 cores, load 6.0 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle claude,C,,rss_peak_mb,0.0,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle claude,C,,rss_mean_mb,0.0,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle claude,C,,spawns_per_min,0.0,5,a session of 60 s
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle other,C,,cpu_s,0.154265,5,"14 cores, load 6.0 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle other,C,,rss_peak_mb,54.515625,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle other,C,,rss_mean_mb,6.788636,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle other,C,,spawns_per_min,3.0,5,a session of 60 s
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle git,C,,cpu_s,0.0,5,"14 cores, load 6.0 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command; git runs only as a child of a hook command (arm B: or a pane command), so its CPU is charged to its parent's class, not to this one, and this row holds none of it"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle git,C,,rss_peak_mb,43.796875,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle git,C,,rss_mean_mb,33.460938,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle git,C,,spawns_per_min,963.0,5,a session of 60 s
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle all,C,,cpu_s,12.920183,5,"14 cores, load 6.0 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle all,C,,rss_peak_mb,267.484375,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle all,C,,rss_mean_mb,146.006455,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle all,C,,spawns_per_min,972.0,5,a session of 60 s
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle replay,C,,wall_s,12.513765,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle replay,C,,hook_failures,0,5,hook commands that exited non-zero
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working kb-tools,C,,cpu_s,15.453421,5,"14 cores, load 5.3 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working kb-tools,C,,rss_peak_mb,270.46875,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working kb-tools,C,,rss_mean_mb,142.63577,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working kb-tools,C,,spawns_per_min,2.4,5,a session of 300 s
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working claude,C,,cpu_s,0.0,5,"14 cores, load 5.3 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working claude,C,,rss_peak_mb,0.0,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working claude,C,,rss_mean_mb,0.0,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working claude,C,,spawns_per_min,0.0,5,a session of 300 s
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working other,C,,cpu_s,0.213275,5,"14 cores, load 5.3 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working other,C,,rss_peak_mb,53.890625,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working other,C,,rss_mean_mb,7.012613,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working other,C,,spawns_per_min,1.2,5,a session of 300 s
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working git,C,,cpu_s,0.0,5,"14 cores, load 5.3 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command; git runs only as a child of a hook command (arm B: or a pane command), so its CPU is charged to its parent's class, not to this one, and this row holds none of it"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working git,C,,rss_peak_mb,43.65625,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working git,C,,rss_mean_mb,32.578125,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working git,C,,spawns_per_min,193.0,5,a session of 300 s
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working all,C,,cpu_s,15.666659,5,"14 cores, load 5.3 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working all,C,,rss_peak_mb,315.140625,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working all,C,,rss_mean_mb,148.574066,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working all,C,,spawns_per_min,196.6,5,a session of 300 s
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working replay,C,,wall_s,14.6387,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working replay,C,,hook_failures,0,5,hook commands that exited non-zero
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle kb-tools,D,,cpu_s,0.0,5,"14 cores, load 7.1 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle kb-tools,D,,rss_peak_mb,0.0,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle kb-tools,D,,rss_mean_mb,0.0,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle kb-tools,D,,spawns_per_min,0.0,5,a session of 60 s
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle claude,D,,cpu_s,0.0,5,"14 cores, load 7.1 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle claude,D,,rss_peak_mb,0.0,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle claude,D,,rss_mean_mb,0.0,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle claude,D,,spawns_per_min,0.0,5,a session of 60 s
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle other,D,,cpu_s,0.0,5,"14 cores, load 7.1 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle other,D,,rss_peak_mb,0.0,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle other,D,,rss_mean_mb,0.0,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle other,D,,spawns_per_min,0.0,5,a session of 60 s
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle git,D,,cpu_s,0.0,5,"14 cores, load 7.1 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command; git runs only as a child of a hook command (arm B: or a pane command), so its CPU is charged to its parent's class, not to this one, and this row holds none of it"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle git,D,,rss_peak_mb,0.0,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle git,D,,rss_mean_mb,0.0,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle git,D,,spawns_per_min,0.0,5,a session of 60 s
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle all,D,,cpu_s,0,5,"14 cores, load 7.1 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle all,D,,rss_peak_mb,0.0,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle all,D,,rss_mean_mb,0.0,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle all,D,,spawns_per_min,0.0,5,a session of 60 s
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle replay,D,,wall_s,1.5e-05,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle replay,D,,hook_failures,0,5,hook commands that exited non-zero
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working kb-tools,D,,cpu_s,0.0,5,"14 cores, load 7.1 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working kb-tools,D,,rss_peak_mb,0.0,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working kb-tools,D,,rss_mean_mb,0.0,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working kb-tools,D,,spawns_per_min,0.0,5,a session of 300 s
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working claude,D,,cpu_s,0.0,5,"14 cores, load 7.1 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working claude,D,,rss_peak_mb,0.0,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working claude,D,,rss_mean_mb,0.0,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working claude,D,,spawns_per_min,0.0,5,a session of 300 s
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working other,D,,cpu_s,0.0,5,"14 cores, load 7.1 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working other,D,,rss_peak_mb,0.0,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working other,D,,rss_mean_mb,0.0,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working other,D,,spawns_per_min,0.0,5,a session of 300 s
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working git,D,,cpu_s,0.0,5,"14 cores, load 7.1 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command; git runs only as a child of a hook command (arm B: or a pane command), so its CPU is charged to its parent's class, not to this one, and this row holds none of it"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working git,D,,rss_peak_mb,0.0,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working git,D,,rss_mean_mb,0.0,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working git,D,,spawns_per_min,0.0,5,a session of 300 s
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working all,D,,cpu_s,0,5,"14 cores, load 7.1 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working all,D,,rss_peak_mb,0.0,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working all,D,,rss_mean_mb,0.0,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working all,D,,spawns_per_min,0.0,5,a session of 300 s
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working replay,D,,wall_s,2.7e-05,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working replay,D,,hook_failures,0,5,hook commands that exited non-zero
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle hook --notice,A,,spawns,1,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle hook .claude/hooks/session_start.py,A,,spawns,6,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle hook .claude/hooks/coord_hook.py,A,,spawns,13,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle hook _tools/querylog.py launch,A,,spawns,2,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle hook _tools/querylog.py digest --hook,A,,spawns,2,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle hook _tools/backlog.py red-pipeline --hook,A,,spawns,8,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle hook _tools/backlog.py intake --file --hook,A,,spawns,950,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle hook _tools/kbgit.py publish --hook,A,,spawns,2,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle hook _tools/kbroot.py fetch --hook,A,,spawns,1,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle hook _tools/backlog.py horizon --hook,A,,spawns,4,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working hook --notice,A,,spawns,1,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working hook .claude/hooks/session_start.py,A,,spawns,6,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working hook .claude/hooks/coord_hook.py,A,,spawns,38,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working hook _tools/querylog.py launch,A,,spawns,5,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working hook _tools/querylog.py digest --hook,A,,spawns,2,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working hook _tools/backlog.py red-pipeline --hook,A,,spawns,8,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working hook _tools/backlog.py intake --file --hook,A,,spawns,950,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working hook _tools/kbgit.py publish --hook,A,,spawns,2,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working hook _tools/kbroot.py fetch --hook,A,,spawns,1,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working hook _tools/backlog.py horizon --hook,A,,spawns,4,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working hook _tools/kb_hook.py,A,,spawns,8,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working hook .claude/hooks/kb_change_router.py,A,,spawns,3,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working hook _tools/querylog.py capture,A,,spawns,10,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle hook --notice,C,,spawns,1,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle hook .claude/hooks/session_start.py,C,,spawns,6,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle hook _tools/backlog.py red-pipeline --hook,C,,spawns,8,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle hook _tools/backlog.py intake --file --hook,C,,spawns,950,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle hook _tools/kbgit.py publish --hook,C,,spawns,2,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle hook _tools/kbroot.py fetch --hook,C,,spawns,1,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,idle hook _tools/backlog.py horizon --hook,C,,spawns,4,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working hook --notice,C,,spawns,1,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working hook .claude/hooks/session_start.py,C,,spawns,6,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working hook _tools/backlog.py red-pipeline --hook,C,,spawns,8,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working hook _tools/backlog.py intake --file --hook,C,,spawns,950,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working hook _tools/kbgit.py publish --hook,C,,spawns,2,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working hook _tools/kbroot.py fetch --hook,C,,spawns,1,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working hook _tools/backlog.py horizon --hook,C,,spawns,4,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working hook _tools/kb_hook.py,C,,spawns,8,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,working hook .claude/hooks/kb_change_router.py,C,,spawns,3,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,SessionStart --notice,A,,sync_ms,7.943979,10,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,SessionStart .claude/hooks/session_start.py,A,,sync_ms,218.264334,10,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,SessionStart .claude/hooks/coord_hook.py,A,,sync_ms,395.604042,10,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,SessionStart _tools/querylog.py launch,A,,async_ms,50.070708,10,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,SessionStart _tools/querylog.py digest --hook,A,,sync_ms,2043.653583,10,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,SessionStart _tools/backlog.py red-pipeline --hook,A,,async_ms,1265.482542,10,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,SessionStart _tools/backlog.py intake --file --hook,A,,async_ms,14423.483083,10,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,SessionStart _tools/kbgit.py publish --hook,A,,async_ms,87.195292,10,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,SessionStart _tools/kbroot.py fetch --hook,A,,async_ms,43.976791,10,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,SessionStart _tools/backlog.py horizon --hook,A,,sync_ms,167.090104,10,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,SessionEnd _tools/querylog.py launch,A,,sync_ms,53.282104,10,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,SessionEnd .claude/hooks/coord_hook.py,A,,sync_ms,141.811,10,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,UserPromptSubmit _tools/kb_hook.py,A,,sync_ms,438.0555,15,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,UserPromptSubmit .claude/hooks/kb_change_router.py,A,,sync_ms,23.479833,15,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,UserPromptSubmit _tools/querylog.py capture,A,,async_ms,46.1275,15,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,PostToolUse _tools/querylog.py capture (mcp__plugin_it-ops-kb_kb__kb_pack),A,,async_ms,46.572875,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,PreToolUse _tools/kb_hook.py (Bash),A,,sync_ms,26.957291,10,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,PreToolUse .claude/hooks/coord_hook.py (Bash),A,,sync_ms,182.468062,10,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,PostToolUse _tools/querylog.py capture (Bash),A,,async_ms,46.372146,10,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,Stop _tools/querylog.py capture,A,,async_ms,41.67875,15,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,PreToolUse .claude/hooks/coord_hook.py (Edit),A,,sync_ms,153.990708,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,PreToolUse _tools/kb_hook.py (WebFetch),A,,sync_ms,42.446583,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,PostToolUse _tools/querylog.py capture (WebFetch),A,,async_ms,46.642833,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,PreToolUse .claude/hooks/coord_hook.py (Skill),A,,sync_ms,153.080583,5,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,SessionStart --notice,C,,sync_ms,6.582021,10,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,SessionStart .claude/hooks/session_start.py,C,,sync_ms,157.889354,10,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,SessionStart _tools/backlog.py red-pipeline --hook,C,,async_ms,1094.415313,10,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,SessionStart _tools/backlog.py intake --file --hook,C,,async_ms,13329.436791,10,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,SessionStart _tools/kbgit.py publish --hook,C,,async_ms,80.450563,10,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,SessionStart _tools/kbroot.py fetch --hook,C,,async_ms,41.086,10,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,SessionStart _tools/backlog.py horizon --hook,C,,sync_ms,148.336958,10,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,UserPromptSubmit _tools/kb_hook.py,C,,sync_ms,431.851542,15,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,UserPromptSubmit .claude/hooks/kb_change_router.py,C,,sync_ms,22.362417,15,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,PreToolUse _tools/kb_hook.py (Bash),C,,sync_ms,27.423479,10,
+session-load,2026-10-26,2026-10-26,4b064dd,2.1.310,434,PreToolUse _tools/kb_hook.py (WebFetch),C,,sync_ms,42.465958,5,
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle kbmon,B,,cpu_s,22.882524,5,"14 cores, load 3.2 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command; over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle kbmon,B,,rss_peak_mb,689.28125,5,"over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle kbmon,B,,rss_mean_mb,346.626076,5,"over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle kbmon,B,,spawns_per_min,2.4,5,"a session of 60 s, the pane's starts per minute of its 150 s window"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle kb-tools,B,,cpu_s,14.830935,5,"14 cores, load 3.2 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command; over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle kb-tools,B,,rss_peak_mb,226.5625,5,"over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle kb-tools,B,,rss_mean_mb,125.860054,5,"over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle kb-tools,B,,spawns_per_min,45.0,5,"a session of 60 s, the pane's starts per minute of its 150 s window"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle claude,B,,cpu_s,0.0,5,"14 cores, load 3.2 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command; over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle claude,B,,rss_peak_mb,0.0,5,"over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle claude,B,,rss_mean_mb,0.0,5,"over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle claude,B,,spawns_per_min,0.0,5,"a session of 60 s, the pane's starts per minute of its 150 s window"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle other,B,,cpu_s,0.61298,5,"14 cores, load 3.2 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command; over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle other,B,,rss_peak_mb,82.578125,5,"over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle other,B,,rss_mean_mb,10.411716,5,"over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle other,B,,spawns_per_min,14.6,5,"a session of 60 s, the pane's starts per minute of its 150 s window"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle git,B,,cpu_s,0.0,5,"14 cores, load 3.2 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command; git runs only as a child of a hook command (arm B: or a pane command), so its CPU is charged to its parent's class, not to this one, and this row holds none of it; over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle git,B,,rss_peak_mb,58.515625,5,"over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle git,B,,rss_mean_mb,33.532452,5,"over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle git,B,,spawns_per_min,1007.4,5,"a session of 60 s, the pane's starts per minute of its 150 s window"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle lsof,B,,cpu_s,0.0,5,"14 cores, load 3.2 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command; lsof runs only as a child of a hook command (arm B: or a pane command), so its CPU is charged to its parent's class, not to this one, and this row holds none of it; over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle lsof,B,,rss_peak_mb,2.71875,5,"over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle lsof,B,,rss_mean_mb,2.05625,5,"over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle lsof,B,,spawns_per_min,2.4,5,"a session of 60 s, the pane's starts per minute of its 150 s window"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle all,B,,cpu_s,38.343337,5,"14 cores, load 3.2 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command; over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle all,B,,rss_peak_mb,834.828125,5,"over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle all,B,,rss_mean_mb,307.980699,5,"over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle all,B,,spawns_per_min,1071.8,5,"a session of 60 s, the pane's starts per minute of its 150 s window"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle all,B,,pane_runs,3,5,"--once then --status all, the first after 1.5 s, then every 60 s over a window of 150 s; a tick that falls during a run does nothing"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle replay,B,,wall_s,150.005049,5,
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle replay,B,,hook_failures,0,5,hook commands that exited non-zero
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle replay,B,,pane_failures,0,5,pane commands that exited with 2 or more
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working kbmon,B,,cpu_s,24.874846,5,"14 cores, load 3.3 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command; over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working kbmon,B,,rss_peak_mb,731.484375,5,"over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working kbmon,B,,rss_mean_mb,364.546561,5,"over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working kbmon,B,,spawns_per_min,2.4,5,"a session of 300 s, the pane's starts per minute of its 150 s window"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working kb-tools,B,,cpu_s,17.857489,5,"14 cores, load 3.3 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command; over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working kb-tools,B,,rss_peak_mb,274.96875,5,"over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working kb-tools,B,,rss_mean_mb,128.887394,5,"over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working kb-tools,B,,spawns_per_min,37.4,5,"a session of 300 s, the pane's starts per minute of its 150 s window"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working claude,B,,cpu_s,0.0,5,"14 cores, load 3.3 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command; over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working claude,B,,rss_peak_mb,0.0,5,"over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working claude,B,,rss_mean_mb,0.0,5,"over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working claude,B,,spawns_per_min,0.2,5,"a session of 300 s, the pane's starts per minute of its 150 s window"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working other,B,,cpu_s,1.398101,5,"14 cores, load 3.3 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command; over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working other,B,,rss_peak_mb,100.953125,5,"over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working other,B,,rss_mean_mb,11.371135,5,"over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working other,B,,spawns_per_min,12.0,5,"a session of 300 s, the pane's starts per minute of its 150 s window"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working git,B,,cpu_s,0.0,5,"14 cores, load 3.3 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command; git runs only as a child of a hook command (arm B: or a pane command), so its CPU is charged to its parent's class, not to this one, and this row holds none of it; over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working git,B,,rss_peak_mb,58.734375,5,"over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working git,B,,rss_mean_mb,29.138021,5,"over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working git,B,,spawns_per_min,236.0,5,"a session of 300 s, the pane's starts per minute of its 150 s window"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working lsof,B,,cpu_s,0.0,5,"14 cores, load 3.3 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command; lsof runs only as a child of a hook command (arm B: or a pane command), so its CPU is charged to its parent's class, not to this one, and this row holds none of it; over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working lsof,B,,rss_peak_mb,2.734375,5,"over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working lsof,B,,rss_mean_mb,2.333333,5,"over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working lsof,B,,spawns_per_min,2.8,5,"a session of 300 s, the pane's starts per minute of its 150 s window"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working all,B,,cpu_s,44.130436,5,"14 cores, load 3.3 (1 min at the start of each rep), warm: one unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command; over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working all,B,,rss_peak_mb,883.640625,5,"over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working all,B,,rss_mean_mb,328.779837,5,"over the pane window: the replay plus the pane's 150 s window, not a session"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working all,B,,spawns_per_min,290.8,5,"a session of 300 s, the pane's starts per minute of its 150 s window"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working all,B,,pane_runs,3,5,"--once then --status all, the first after 1.5 s, then every 60 s over a window of 150 s; a tick that falls during a run does nothing"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working replay,B,,wall_s,150.004842,5,
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working replay,B,,hook_failures,0,5,hook commands that exited non-zero
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working replay,B,,pane_failures,0,5,pane commands that exited with 2 or more
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle hook --notice,B,,spawns,1,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle hook .claude/hooks/session_start.py,B,,spawns,6,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle hook .claude/hooks/coord_hook.py,B,,spawns,13,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle hook _tools/querylog.py launch,B,,spawns,2,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle hook _tools/querylog.py digest --hook,B,,spawns,2,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle hook _tools/backlog.py red-pipeline --hook,B,,spawns,8,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle hook _tools/backlog.py intake --file --hook,B,,spawns,950,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle hook _tools/kbgit.py publish --hook,B,,spawns,2,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle hook _tools/kbroot.py fetch --hook,B,,spawns,1,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,idle hook _tools/backlog.py horizon --hook,B,,spawns,4,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working hook --notice,B,,spawns,1,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working hook .claude/hooks/session_start.py,B,,spawns,6,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working hook .claude/hooks/coord_hook.py,B,,spawns,38,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working hook _tools/querylog.py launch,B,,spawns,5,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working hook _tools/querylog.py digest --hook,B,,spawns,2,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working hook _tools/backlog.py red-pipeline --hook,B,,spawns,8,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working hook _tools/backlog.py intake --file --hook,B,,spawns,950,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working hook _tools/kbgit.py publish --hook,B,,spawns,2,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working hook _tools/kbroot.py fetch --hook,B,,spawns,1,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working hook _tools/backlog.py horizon --hook,B,,spawns,4,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working hook _tools/kb_hook.py,B,,spawns,8,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working hook .claude/hooks/kb_change_router.py,B,,spawns,3,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,working hook _tools/querylog.py capture,B,,spawns,10,5,"the command and the processes Python programs of its tree started, per replay"
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,SessionStart --notice,B,,sync_ms,10.078792,10,
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,SessionStart .claude/hooks/session_start.py,B,,sync_ms,172.798916,10,
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,SessionStart .claude/hooks/coord_hook.py,B,,sync_ms,341.109291,10,
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,SessionStart _tools/querylog.py launch,B,,async_ms,45.110979,10,
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,SessionStart _tools/querylog.py digest --hook,B,,sync_ms,1686.409292,10,
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,SessionStart _tools/backlog.py red-pipeline --hook,B,,async_ms,1257.089646,10,
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,SessionStart _tools/backlog.py intake --file --hook,B,,async_ms,13632.164208,10,
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,SessionStart _tools/kbgit.py publish --hook,B,,async_ms,85.194917,10,
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,SessionStart _tools/kbroot.py fetch --hook,B,,async_ms,42.64475,10,
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,SessionStart _tools/backlog.py horizon --hook,B,,sync_ms,161.576209,10,
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,SessionEnd _tools/querylog.py launch,B,,sync_ms,52.287396,10,
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,SessionEnd .claude/hooks/coord_hook.py,B,,sync_ms,139.249,10,
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,UserPromptSubmit _tools/kb_hook.py,B,,sync_ms,435.201375,15,
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,UserPromptSubmit .claude/hooks/kb_change_router.py,B,,sync_ms,23.525083,15,
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,UserPromptSubmit _tools/querylog.py capture,B,,async_ms,46.369667,15,
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,PostToolUse _tools/querylog.py capture (mcp__plugin_it-ops-kb_kb__kb_pack),B,,async_ms,46.08475,5,
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,PreToolUse _tools/kb_hook.py (Bash),B,,sync_ms,27.928208,10,
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,PreToolUse .claude/hooks/coord_hook.py (Bash),B,,sync_ms,200.919625,10,
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,PostToolUse _tools/querylog.py capture (Bash),B,,async_ms,46.787041,10,
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,Stop _tools/querylog.py capture,B,,async_ms,41.717583,15,
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,PreToolUse .claude/hooks/coord_hook.py (Edit),B,,sync_ms,157.831917,5,
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,PreToolUse _tools/kb_hook.py (WebFetch),B,,sync_ms,42.540375,5,
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,PostToolUse _tools/querylog.py capture (WebFetch),B,,async_ms,46.624917,5,
+session-load,2026-10-26,2026-10-26,786dd41,2.1.310,434,PreToolUse .claude/hooks/coord_hook.py (Skill),B,,sync_ms,157.93475,5,
 multi,fabfe75,2026-10-26,fabfe75,,,research-none,concurrent coord=shared stagger=0 model=research=haiku-5-5 pack_budget=1200 tools=kb manager=code,claude-haiku-5-5,research-1/input,284,1,start fabfe7525241230e416a445f2cf3fffe48278a0a; sandbox of 3 agent(s); run started 2026-10-26T20:32:52Z
 multi,fabfe75,2026-10-26,fabfe75,,,research-none,concurrent coord=shared stagger=0 model=research=haiku-5-5 pack_budget=1200 tools=kb manager=code,claude-haiku-5-5,research-1/out,122694,1,start fabfe7525241230e416a445f2cf3fffe48278a0a; sandbox of 3 agent(s); run started 2026-10-26T20:32:52Z
 multi,fabfe75,2026-10-26,fabfe75,,,research-none,concurrent coord=shared stagger=0 model=research=haiku-5-5 pack_budget=1200 tools=kb manager=code,claude-haiku-5-5,research-1/cache_read,22120797,1,start fabfe7525241230e416a445f2cf3fffe48278a0a; sandbox of 3 agent(s); run started 2026-10-26T20:32:52Z

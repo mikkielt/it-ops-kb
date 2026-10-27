@@ -21,6 +21,7 @@ PHASES = ("idle", "working")  # idle: SessionStart then SessionEnd; working: a f
 LEFT_OUT = {"A": (), "B": (), "C": ("coord_hook.py", "querylog.py"), "D": None}  # a hook command naming one of these is not run
 NOMINAL_S = {"idle": 60, "working": 300}  # the seconds of session a replay stands for: the divisor of spawns_per_min
 CLASSES = ("kbmon", "fseventsd", "tests", "kb-tools", "claude", "other", "git", "lsof")  # mon_host's, then two more
+CHILD_CLASSES = ("git", "lsof")  # classes whose processes only hook (or pane) commands start, so wait4 charges them to the parent
 PANE_ARMS = ("B",)  # the arms that run the kbmon pane's commands
 PANE_MOD = ".claude/skills/kbmon-pane/hooks/register.tsx"  # the mod whose FIRST_MS and REFRESH_MS the pane commands follow
 PANE_COMMANDS = (("--once",), ("--status", "all"))  # what the mod's refresh runs, in order, as `python3 _tools/kbmon.py ...`
@@ -402,6 +403,19 @@ def host_note(loads):
             "unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command")
 
 
+def row_note(metric, cls, arm, loads, window):
+    """The note of a cpu_s, rss_peak_mb or rss_mean_mb row: cpu_s says the host (host_note) and, for a class that only ever
+    runs as a child of a hook command, that its CPU is charged to the parent; a row of an arm with the pane's commands says
+    it is over the pane window, not over a session."""
+    note = host_note(loads) if metric == "cpu_s" else ""
+    if metric == "cpu_s" and cls in CHILD_CLASSES:
+        note += (f"; {cls} runs only as a child of a hook command (arm B: or a pane command), so its CPU is charged to its "
+                 "parent's class, not to this one, and this row holds none of it")
+    if arm in PANE_ARMS:
+        note += f"{'; ' if note else ''}over the pane window: the replay plus the pane's {window:g} s window, not a session"
+    return note
+
+
 def warm_pane(b, clone):
     """One unmeasured run of each pane command, so the first measured run of arm B finds the caches warm as a long
     session's does."""
@@ -499,13 +513,12 @@ def s_session_load(b):
     seen = [c for c in CLASSES if any(r["classes"].get(c, {}).get(k) for rs in got.values() for r in rs
                                       for k in ("spawns", "pane_spawns"))]
     for (arm, phase), reps in got.items():
-        note = host_note([r["load"] for r in reps])
-        med = lambda cls, key: statistics.median(r["classes"].get(cls, {}).get(key, 0.0) for r in reps)  # noqa: E731
+        loads = [r["load"] for r in reps]
+        med =lambda cls, key: statistics.median(r["classes"].get(cls, {}).get(key, 0.0) for r in reps)  # noqa: E731
         for cls in [*seen, "all"]:
             case = f"{phase} {cls}"
-            b.row("session-load", case, arm, "cpu_s", med(cls, "cpu_s"), len(reps), note=note)
-            b.row("session-load", case, arm, "rss_peak_mb", med(cls, "peak"), len(reps))
-            b.row("session-load", case, arm, "rss_mean_mb", med(cls, "rss_mean_mb"), len(reps))
+            for metric, key in (("cpu_s", "cpu_s"), ("rss_peak_mb", "peak"), ("rss_mean_mb", "rss_mean_mb")):
+                b.row("session-load", case, arm, metric, med(cls, key), len(reps), note=row_note(metric, cls, arm, loads, window))
             rate = statistics.median(r["classes"].get(cls, {}).get("spawns", 0) / (NOMINAL_S[phase] / 60)
                                      + r["classes"].get(cls, {}).get("pane_spawns", 0) / (window / 60) for r in reps)
             b.row("session-load", case, arm, "spawns_per_min", rate, len(reps),
