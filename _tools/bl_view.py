@@ -6,7 +6,8 @@ They read the backlog and write nothing.
 Standard library only; imports `bl_base` and `bl_check` (the knowledge lines `show`, `next` and `horizon` print), never
 `backlog`. It registers the commands with `bl_cli` itself when imported, and `backlog.py`'s USAGE puts them in
 the usage order."""
-import json, re, subprocess
+import json, os, re, subprocess
+from pathlib import Path
 
 import bl_cli
 from bl_base import (
@@ -356,11 +357,37 @@ def lag_line(root):
             f"git merge --ff-only {LAG_REF}")
 
 
+HOOK_PEERS = 2  # the other live sessions the hook line names; the rest are counted
+
+
+def peers_line(root):
+    """The hook's line naming the other live sessions by label and topic and the command that compares a plan with them
+    (`backlog.py peers`); "" when none is live or the sessions cannot be read. The monitor's modules load here, at the
+    call: the hook is the only reader of them in this module."""
+    own = os.environ.get("CLAUDE_CODE_SESSION_ID") or None
+    try:
+        import mon_base
+        import mon_sessions
+        found = mon_sessions.read_coord(mon_base.Ctx(Path(root).resolve()), events=False) or {"intents": []}
+        peers = [s for s in mon_sessions.live_sessions(root) if not (s["session"] and s["session"] == own)]
+        topics = lambda sid: list(dict.fromkeys(f["topic"] for f in found["intents"] if sid and f.get("session") == sid and f.get("topic")))
+    except Exception:  # no coord store, no process list: the hook still prints its other lines
+        return ""
+    if not peers:
+        return ""
+    named = [(s["label"] or "unbound") + (f" (topic {clip(', '.join(topics(s['session'])), 30)})" if topics(s["session"]) else "")
+             for s in peers[:HOOK_PEERS]]
+    more = f" +{len(peers) - HOOK_PEERS}" if len(peers) > HOOK_PEERS else ""
+    return f"peers: {', '.join(named)}{more}; before planning: python3 _tools/backlog.py peers"
+
+
 def cmd_horizon(bl, a):
     sprints = [a.sprint] if a.sprint else sorted(i for i, it in bl.items.items()
                                                   if it.get("kind") == "sprint" and it.get("status") == "active"
                                                   and (a.all or not bl.is_upstream(i)))
     lines = [lag] if a.hook and (lag := lag_line(bl.root)) else []  # first: the hook's cut drops the last lines
+    if a.hook and (peers := peers_line(bl.root)):
+        lines.append(peers)
     if not sprints:
         planned = [i for i, it in bl.items.items() if it.get("kind") == "sprint" and (a.all or not bl.is_upstream(i))]
         n = sum(1 for i, it in bl.items.items() if it.get("kind") != "sprint" and it.get("status") not in ("done", "dropped")
