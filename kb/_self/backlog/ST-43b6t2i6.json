@@ -2,7 +2,7 @@
   "id": "ST-43b6t2i6",
   "kind": "story",
   "title": "A root names its languages in _root.md and the pack stops, stems and folds its questions by them, with a tiny German and Polish fixture root",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-7vyrared",
   "sprint": "SP-iir3d2tu",
   "priority": "P2",
@@ -257,6 +257,111 @@
   ],
   "notes": "Premise (plan time): key_terms('Wie lade ich X im Kartenskript?') -> ['wie','lade','ich','im','kartenskript'] (wie, ich, im count as key words) and key_terms('Kartenskripte laden Karten') strips no German suffix; the English question gives ['load','usermap']. Reproduces at the key-word level; the pack-level verdict needs this story's fixture. _meta() reads flat key: value lines, so languages needs a list parse. The unit cache key hashes STOP and the token patterns (kf_index.py _weigh_data): profile data enters that hash and INDEX_VERSION bumps. Readers of kbfacts.STOP keep the English base set if the union is a new function.\nOperator 2026-10-27: g1 refuse an unknown code; g2 de and pl shipped plus a root's own profile under _retrieval/; g3 fixture roots keep their own held-out file. Order: after ST-yl6b2ues (kbcommon.py) and ST-q5o7z2mf (tools.md).\nChecks 9 (rag.py eval) and 10 (perfcheck ids) each passes before the work and pin behaviour that must stay unchanged; every other check fails before it with a one-line reason.\nContract the checks read: Root.languages is a tuple (('en',) default); fixtures _tools/fixtures/lang/{de,pl,own,bad} as roots lang-de, lang-pl, lang-own (code qq, stop words ka, zu; fact 'Lodu mapa `LoadMap`.'), bad (languages: xx). de facts: 'Ein Kartenskript laden Sie mit `LoadMap`.', 'Die Königin einer Karte heißt `MapQueen`.'; pl fact 'Skrypt mapy wczytuje się funkcją `LoadMap`.', stop word jak; each of de, pl has _retrieval/lookup_heldout.csv with 3 or more passing rows; nothing about deleting.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-557596e3",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "985ff43c0f18d5021f3bfed66f7cf72d372fe3be",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, sys\nsys.path.insert(0, '_tools')\nimport kbcommon\nmiss = [d for d in ('de', 'pl') if not os.path.isdir('_tools/lang/' + d)]\nmiss and sys.exit('no profile data under _tools/lang/ for %s' % miss)\ntry:\n    de, pub = kbcommon.load_root('_tools/fixtures/lang/de'), kbcommon.load_root('kb/public')\nexcept kbcommon.RootError as e:\n    sys.exit('root not loadable: %s' % e)\nlangs = lambda r: tuple(getattr(r, 'languages', ()) or ())\nlangs(de) == ('de',) or sys.exit('lang-de languages are %s, want (de,)' % (langs(de),))\nlangs(pub) == ('en',) or sys.exit('the public root languages are %s, want the default (en,)' % (langs(pub),))"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, re, subprocess, sys\nsys.path.insert(0, '_tools')\nDE, PL, OWN, BAD = ('_tools/fixtures/lang/' + n for n in ('de', 'pl', 'own', 'bad'))\ndef pack(roots, root, q):\n    env = dict(os.environ, KB_ROOTS=os.pathsep.join(roots))\n    r = subprocess.run([sys.executable, '_tools/rag.py', 'pack', '--root', root, '--format', 'concise', q], env=env, capture_output=True, text=True)\n    return r.stdout\ndef head(o):\n    return o.splitlines()[0] if o else '(no output)'\n\no = pack([OWN], 'lang-own', 'Ka lodu zu mapa?')\n'coverage: good' in o or sys.exit('a root-owned profile (stop words ka, zu) did not give good: ' + head(o))"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, re, subprocess, sys\nsys.path.insert(0, '_tools')\nDE, PL, OWN, BAD = ('_tools/fixtures/lang/' + n for n in ('de', 'pl', 'own', 'bad'))\ndef pack(roots, root, q):\n    env = dict(os.environ, KB_ROOTS=os.pathsep.join(roots))\n    r = subprocess.run([sys.executable, '_tools/rag.py', 'pack', '--root', root, '--format', 'concise', q], env=env, capture_output=True, text=True)\n    return r.stdout\ndef head(o):\n    return o.splitlines()[0] if o else '(no output)'\n\nq = 'Wie lade ich Kartenskript jak?'\nonly, both = head(pack([DE], 'lang-de', q)), head(pack([DE, PL], 'lang-de', q))\n'jak' in only or sys.exit('with only lang-de served, jak should be listed as not in the kb: ' + only)\n'jak' not in both or sys.exit('with lang-pl served, jak (a Polish stop word) should not be a key word: ' + both)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, re, subprocess, sys\nsys.path.insert(0, '_tools')\nDE, PL, OWN, BAD = ('_tools/fixtures/lang/' + n for n in ('de', 'pl', 'own', 'bad'))\ndef pack(roots, root, q):\n    env = dict(os.environ, KB_ROOTS=os.pathsep.join(roots))\n    r = subprocess.run([sys.executable, '_tools/rag.py', 'pack', '--root', root, '--format', 'concise', q], env=env, capture_output=True, text=True)\n    return r.stdout\ndef head(o):\n    return o.splitlines()[0] if o else '(no output)'\n\nroots = [DE, PL]\nbad = []\nfor root, q in (('lang-de', 'Wie lade ich Kartenskripte?'), ('lang-de', 'Wie lade ich ein Kartenskript?'), ('lang-pl', 'Jak wczytać skrypty mapy?')):\n    o = pack(roots, root, q)\n    'coverage: good' in o or bad.append('%s %r: %s' % (root, q, head(o)))\nbad and sys.exit('inflected questions not good with both roots served: ' + '; '.join(bad))"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, re, subprocess, sys\nsys.path.insert(0, '_tools')\nDE, PL, OWN, BAD = ('_tools/fixtures/lang/' + n for n in ('de', 'pl', 'own', 'bad'))\ndef pack(roots, root, q):\n    env = dict(os.environ, KB_ROOTS=os.pathsep.join(roots))\n    r = subprocess.run([sys.executable, '_tools/rag.py', 'pack', '--root', root, '--format', 'concise', q], env=env, capture_output=True, text=True)\n    return r.stdout\ndef head(o):\n    return o.splitlines()[0] if o else '(no output)'\n\no = pack([DE], 'lang-de', 'Wie heisst die Koenigin einer Karte?')\n'coverage: good' in o or sys.exit('folded spelling Koenigin did not meet Königin: ' + head(o))"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, re, subprocess, sys\nsys.path.insert(0, '_tools')\nDE, PL, OWN, BAD = ('_tools/fixtures/lang/' + n for n in ('de', 'pl', 'own', 'bad'))\ndef pack(roots, root, q):\n    env = dict(os.environ, KB_ROOTS=os.pathsep.join(roots))\n    r = subprocess.run([sys.executable, '_tools/rag.py', 'pack', '--root', root, '--format', 'concise', q], env=env, capture_output=True, text=True)\n    return r.stdout\ndef head(o):\n    return o.splitlines()[0] if o else '(no output)'\n\n'coverage: good' in pack([DE], 'lang-de', 'Wie lade ich X im Kartenskript?') or sys.exit('the present fact is not good, so a none proves nothing')\no = pack([DE], 'lang-de', 'Wie lösche ich Y im Kartenskript?')\n'coverage: none' in o or sys.exit('a fact the root lacks should be none: ' + head(o))"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0, '_tools')\nimport kbcommon\ntry:\n    kbcommon.load_root('_tools/fixtures/lang/bad')\nexcept kbcommon.RootError as e:\n    m = str(e)\n    ok = all(w in m for w in ('xx', 'de', 'pl'))\n    ok or sys.exit('refusal does not name the code xx and the codes de, pl: ' + m[:300])\nelse:\n    sys.exit('a root naming a language with no profile was accepted')"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, re, subprocess, sys\nsys.path.insert(0, '_tools')\nDE, PL, OWN, BAD = ('_tools/fixtures/lang/' + n for n in ('de', 'pl', 'own', 'bad'))\ndef pack(roots, root, q):\n    env = dict(os.environ, KB_ROOTS=os.pathsep.join(roots))\n    r = subprocess.run([sys.executable, '_tools/rag.py', 'pack', '--root', root, '--format', 'concise', q], env=env, capture_output=True, text=True)\n    return r.stdout\ndef head(o):\n    return o.splitlines()[0] if o else '(no output)'\n\nfor code_, root in (('de', 'lang-de'), ('pl', 'lang-pl')):\n    f = '_tools/fixtures/lang/%s/_retrieval/lookup_heldout.csv' % code_\n    os.path.exists(f) or sys.exit('no held-out file ' + f)\n    r = subprocess.run([sys.executable, '_tools/rag.py', 'eval', '--root', root, '--file', f], env=dict(os.environ, KB_ROOTS='_tools/fixtures/lang/' + code_), capture_output=True, text=True)\n    m = re.search(r'questions=(\\d+) passed=(\\d+)', r.stdout)\n    (r.returncode == 0 and m and int(m.group(1)) >= 3 and m.group(1) == m.group(2)) or sys.exit('%s held-out eval: exit %s, %s' % (root, r.returncode, (r.stdout or r.stderr).strip()[-200:]))"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, re, subprocess, sys\nsys.path.insert(0, '_tools')\nDE, PL, OWN, BAD = ('_tools/fixtures/lang/' + n for n in ('de', 'pl', 'own', 'bad'))\ndef pack(roots, root, q):\n    env = dict(os.environ, KB_ROOTS=os.pathsep.join(roots))\n    r = subprocess.run([sys.executable, '_tools/rag.py', 'pack', '--root', root, '--format', 'concise', q], env=env, capture_output=True, text=True)\n    return r.stdout\ndef head(o):\n    return o.splitlines()[0] if o else '(no output)'\n\nbad = []\nfor root, q in (('lang-de', 'Wie lade ich X im Kartenskript?'), ('lang-pl', 'Jak wczytać X w skrypcie mapy?')):\n    o = pack([DE, PL], root, q)\n    'coverage: good' in o or bad.append('%s: %s' % (root, head(o)))\nbad and sys.exit('a fact the root holds should be good: ' + '; '.join(bad))"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval"
+        ],
+        "exit": 0,
+        "sha256": "9c8a414c50f8e01b"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/perfcheck.py",
+          "ids",
+          "--base",
+          "origin/main"
+        ],
+        "exit": 0,
+        "sha256": "32d3595b9fb32181"
+      }
+    ]
+  }
 }
