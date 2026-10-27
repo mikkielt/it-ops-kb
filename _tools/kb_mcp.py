@@ -75,6 +75,11 @@ asks and, unasked, for a source past its freshness lifetime):
   kb_tools   (the team's own server only, as kb_monitor_status) the lines of `kbtools.py [NEED]`: the kb's tools, skills,
              agents and MCP tools that answer `need` (all of them when it is left out), each with its command and what it
              answers, through redact.redact; no model is called, an argument other than `need` is a tool error
+  kb_code    (the team's own server only, as kb_monitor_status) where a name is defined, who uses it and what imports it, like
+             `kbingest.py where NAME`: the definitions with path:line and pinned url, the references grouped by file and,
+             for a package name, the files and modules that import it, within `budget` lines, read from the pinned code
+             map of `repo` at `rev` (built once and cached under _cache/ingest/) or of a map file; a name the map lacks
+             comes back with the nearest names and `(exit 1)`; no model is called
   kb_backlog_write  (the team's own server only, and only with KB_BACKLOG_WRITE_TOOLS=1 in its environment: otherwise
              not listed and an unknown tool) `claim`, `release` or `answer` of backlog.py as `command` and `args`, run as a
              child with CLAUDECODE=1, so every gate and authority rule of the command line holds (a ceiling-class gate takes
@@ -1610,9 +1615,10 @@ def facade_args(rest, allowed):
     return rest
 
 
-def facade_run(script, words, findings_exit=False):
+def facade_run(script, words, findings_exit=False, keep=None):
     """What `python3 _tools/SCRIPT WORDS` prints, redacted and capped. An exit 1 that FINDINGS_EXIT says is a finding
-    ends the text with `(exit 1)`; any other non-zero exit is a tool error."""
+    ends the text with `(exit 1)`; any other non-zero exit is a tool error. A match of the pattern KEEP survives the
+    redaction as written (a commit in a pinned url, which the redaction would take for a token)."""
     import redact
     try:
         p = subprocess.run([sys.executable, str(Path(TOOLS, script)), *words], capture_output=True, text=True,
@@ -1624,7 +1630,12 @@ def facade_run(script, words, findings_exit=False):
     text = p.stdout.rstrip("\n")
     if p.returncode and not (findings_exit and p.returncode == 1 and text):
         raise ToolError(redact.redact(p.stderr.strip() or text or f"{script} exited {p.returncode}")[-2000:])
+    kept = []
+    if keep:
+        text = keep.sub(lambda m: kept.append(m.group(0)) or f"\x01{len(kept) - 1}\x01", text)
     text = redact.redact(text)
+    if kept:
+        text = re.sub("\x01(\\d+)\x01", lambda m: kept[int(m.group(1))], text)
     if len(text) > FACADE_MAX_CHARS:
         text = text[:FACADE_MAX_CHARS] + f"\n... cut at {FACADE_MAX_CHARS} characters: run the command line for the rest"
     return text + ("\n(exit 1)" if p.returncode else "")
@@ -1675,7 +1686,52 @@ def kb_tools(args):
     return facade_run("kbtools.py", ["--", need] if need.strip() else [])  # `--`: a need that starts with '-' is no option
 
 
-FACADE_HANDLERS = {"kb_querylog": kb_querylog, "kb_docs": kb_docs, "kb_tools": kb_tools}
+PIN_COMMIT = re.compile(r"(?<=/)[0-9a-f]{40}(?=/)")  # the commit segment of a pinned url
+CODE_TOOL_LIST = [
+    {"name": "kb_code", "title": "Where a name is defined and who uses it",
+     "description": "Where a symbol is defined, who uses it and what depends on a package, from the pinned code map of a "
+                    "repository, read-only (kbingest.py where; not kb facts): the definitions of `name` with path:line and "
+                    "pinned url, its references grouped by file (matched by name, never resolved) and, for a package name, "
+                    "the files and modules that import it, within `budget` lines. Give `repo` (a local clone; its map of "
+                    "`rev` is built once and cached) or `map` (a map file). A name the map lacks comes back with the "
+                    "nearest names and `(exit 1)`. No model call.",
+     "inputSchema": {"type": "object", "properties": {
+         "name": {"type": "string", "minLength": 1, "description": "a symbol or package name, e.g. referrers_of"},
+         "repo": {"type": "string", "description": "a local clone, e.g. '.'"},
+         "rev": {"type": "string", "description": "the commit of `repo` (default HEAD)"},
+         "map": {"type": "string", "description": "a JSON map written by `kbingest.py map`, instead of `repo`"},
+         "budget": {"type": "integer", "minimum": 10, "maximum": 500, "default": 60,
+                    "description": "body lines to print"}},
+         "required": ["name"], "additionalProperties": False},
+     "annotations": {"title": "Where a name is defined and who uses it", **READ_ONLY}},
+]
+
+
+def kb_code(args):
+    extra = sorted(set(args) - {"name", "repo", "rev", "map", "budget"})
+    if extra:
+        raise ToolError(f"unknown argument(s): {', '.join(extra)}")
+    name = args.get("name")
+    if not isinstance(name, str) or not name.strip():
+        raise ToolError("name is a non-empty string")
+    if bool(args.get("repo")) == bool(args.get("map")):
+        raise ToolError("give repo or map, not both")
+    words = []
+    for key in ("repo", "rev", "map"):
+        value = args.get(key)
+        if value is not None:
+            if not isinstance(value, str) or not value or value.startswith("-"):
+                raise ToolError(f"{key} is a string that does not start with '-'")
+            words += [f"--{key}", value]
+    if args.get("budget") is not None:
+        budget = args["budget"]
+        if isinstance(budget, bool) or not isinstance(budget, int) or not 10 <= budget <= 500:
+            raise ToolError("budget is an integer from 10 to 500")
+        words += ["--budget", str(budget)]
+    return facade_run("kbingest.py", ["where", *words, "--", name.strip()], findings_exit=True, keep=PIN_COMMIT)
+
+
+FACADE_HANDLERS = {"kb_querylog": kb_querylog, "kb_docs": kb_docs, "kb_tools": kb_tools, "kb_code": kb_code}
 
 
 def coord_enabled():
@@ -1690,7 +1746,7 @@ def tool_list(every=False):
     the catalog of kbtools.py reads it, so two runs in two environments print the same one."""
     own = not limited() or every
     return (TOOL_LIST + ([FEEDBACK_TOOL] + MONITOR_TOOL_LIST + SETTINGS_TOOL_LIST + BACKLOG_TOOL_LIST
-                         + QUERYLOG_TOOL_LIST + DOCS_TOOL_LIST + TOOLS_TOOL_LIST if own else [])
+                         + QUERYLOG_TOOL_LIST + DOCS_TOOL_LIST + TOOLS_TOOL_LIST + CODE_TOOL_LIST if own else [])
             + (COORD_TOOL_LIST if every or coord_enabled() else [])
             + (BACKLOG_WRITE_TOOL_LIST if every or backlog_write_enabled() else [])
             + (LIVE_TOOL_LIST if every or live_enabled() else []))

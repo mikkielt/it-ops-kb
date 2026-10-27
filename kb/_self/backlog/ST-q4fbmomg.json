@@ -86,6 +86,88 @@
     "ST-wu4lbbjs",
     "ST-6n5xrkbt"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "When --repo has no cached map of the commit, what does where do?",
+      "options": [
+        "build the map and cache it",
+        "refuse and name the map command"
+      ],
+      "recommendation": "build the map and cache it",
+      "reason": "the one call answers a symbol question without a prior step, and a second call reads the cache",
+      "do": {
+        "build the map and cache it": "ST-q4fbmomg",
+        "refuse and name the map command": "ST-q4fbmomg"
+      },
+      "class": "agents-rule",
+      "answer": "build the map and cache it",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How many body lines does where print by default, and what bounds --budget in kb_code?",
+      "options": [
+        "60 lines by default, kb_code takes 10 to 500",
+        "30 lines by default, kb_code takes 10 to 200"
+      ],
+      "recommendation": "60 lines by default, kb_code takes 10 to 500",
+      "reason": "one name with a few definitions and their reference files fits, and the part-share rule keeps the importers visible",
+      "do": {
+        "60 lines by default, kb_code takes 10 to 500": "ST-q4fbmomg",
+        "30 lines by default, kb_code takes 10 to 200": "ST-q4fbmomg"
+      },
+      "class": "agents-rule",
+      "answer": "60 lines by default, kb_code takes 10 to 500",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "Where is kb_code served, and is it read-only though a first call writes the map cache?",
+      "options": [
+        "only the team's own server, readOnlyHint true",
+        "also under --roots and kb_http.py"
+      ],
+      "recommendation": "only the team's own server, readOnlyHint true",
+      "reason": "it reads a local repository and writes only a disposable cache under _cache/ingest/, as kb_backlog reads the clone",
+      "do": {
+        "only the team's own server, readOnlyHint true": "ST-q4fbmomg",
+        "also under --roots and kb_http.py": "ST-q4fbmomg"
+      },
+      "class": "agents-rule",
+      "answer": "only the team's own server, readOnlyHint true",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g4",
+      "kind": "blocking",
+      "question": "What does where count as a name the map has, and what does it list for a missing one?",
+      "options": [
+        "an exact definition name, a package name or an imported module (a prefix, or a relative import's last segment); nearest names by spelling, at most 5",
+        "an exact definition name only"
+      ],
+      "recommendation": "an exact definition name, a package name or an imported module (a prefix, or a relative import's last segment); nearest names by spelling, at most 5",
+      "reason": "a package question has no definition, and a near miss lists names the map really holds",
+      "do": {
+        "an exact definition name, a package name or an imported module (a prefix, or a relative import's last segment); nearest names by spelling, at most 5": "ST-q4fbmomg",
+        "an exact definition name only": "ST-q4fbmomg"
+      },
+      "class": "agents-rule",
+      "answer": "an exact definition name, a package name or an imported module (a prefix, or a relative import's last segment); nearest names by spelling, at most 5",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "moved out: SP-acysfnxr"
   ],
