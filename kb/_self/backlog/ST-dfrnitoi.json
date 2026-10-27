@@ -2,7 +2,7 @@
   "id": "ST-dfrnitoi",
   "kind": "story",
   "title": "Review sprint: Finish the gated work: code map, validity windows, session state, peers, coordination",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-jxf76aa2",
   "review": true,
   "priority": "P1",
@@ -24,6 +24,27 @@
     }
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-775f1f5d",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "020153171a774e43abee0bbfbb1084fdccea9176",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "1abe934441a1d847"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "0282cdf54174a34d"
+      }
+    ]
+  }
 }
