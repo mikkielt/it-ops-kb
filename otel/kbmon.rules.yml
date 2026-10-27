@@ -44,8 +44,9 @@ groups:
         annotations:
           summary: A working run has shown no sign of life for more than an hour
 
+      # role="all" is the most silence of any live session; use role="worker" to alert for workers only
       - alert: KbmonSessionSilent
-        expr: kbmon_sessions_silent_seconds > 3600
+        expr: kbmon_sessions_silent_seconds{role="all"} > 3600
         for: 5m
         labels:
           severity: warning

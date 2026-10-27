@@ -998,6 +998,7 @@ def collect(ctx):
     if why_states:
         data["agent_states_unread"] = why_states
     data["sessions"] = [{k: v for k, v in e.items() if k not in RAW_KEYS} for e in entries[:SESSIONS_KEPT]]
+    data["silent_all"] = silent_all(entries)
     waits = wait_rows(ctx, data["sessions"], bl)
     if waits is not None:
         data["waits"] = waits
@@ -1008,6 +1009,17 @@ def collect(ctx):
     if items is not None:
         data["stalled"] = items
     return data
+
+
+def silent_all(entries):
+    """{role: the most `silent_s` of a live session of that role} over ENTRIES, all of them (`sessions` keeps SESSIONS_KEPT
+    rows, oldest first, so the metric reads this instead); a session with no known silence counts for no role."""
+    out = {}
+    for e in entries:
+        secs = e.get("silent_s")
+        if isinstance(secs, (int, float)) and not isinstance(secs, bool):
+            out[e["role"]] = max(out.get(e["role"], 0), secs)
+    return out
 
 
 def alerts(data):

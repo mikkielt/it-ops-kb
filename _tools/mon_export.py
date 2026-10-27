@@ -110,9 +110,17 @@ def sessions_points(data):
         out.append(point("kbmon.sessions.worktrees", "{worktree}", "gauge", len(data["worktrees"])))
     if isinstance(data.get("stalled"), list):
         out.append(point("kbmon.sessions.stalled", "{item}", "gauge", len(data["stalled"])))
-    if isinstance(data.get("sessions"), list):  # the most `silent_s` of a live session, 0 with none
-        secs = [s["silent_s"] for s in data["sessions"] if isinstance(s, dict) and number(s.get("silent_s"))]
-        out.append(point("kbmon.sessions.silent", "s", "gauge", max(secs, default=0)))
+    silent = data.get("silent_all")  # the most `silent_s` of a live session of each role, past the rows `sessions` keeps
+    if not isinstance(silent, dict) and isinstance(data.get("sessions"), list):  # a snapshot from before the field
+        silent = {}
+        for s in data["sessions"]:
+            if isinstance(s, dict) and isinstance(s.get("role"), str) and number(s.get("silent_s")):
+                silent[s["role"]] = max(silent.get(s["role"], 0), s["silent_s"])
+    if isinstance(silent, dict):  # role `all` is the most of every role, 0 with none
+        secs = {r: v for r, v in silent.items() if isinstance(r, str) and number(v)}
+        out.append(point("kbmon.sessions.silent", "s", "gauge", max(secs.values(), default=0), role="all"))
+        for role, value in sorted(secs.items()):
+            out.append(point("kbmon.sessions.silent", "s", "gauge", value, role=role.replace(" ", "_")))
     return out
 
 
