@@ -2,7 +2,7 @@
   "id": "ST-dmon53is",
   "kind": "story",
   "title": "coord_hook answers a tool call in at most 80 ms, so every Bash, Edit, Write and Skill call waits less",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nxb7hjwd",
   "sprint": "SP-wpttdu7u",
   "priority": "P2",
@@ -48,5 +48,7 @@
     "kb/_self/monitoring.md"
   ],
   "notes": "Check 1 passes before the work by design: it pins ask delivery from a planted coord store. The session lease, intents and overlap notices stay as they are (the sprint review reads the diff). The worker measures the sync_ms figure's run-to-run spread before relying on the 80 ms bound.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-557596e3",
+  "operator": "op-f618a13e"
 }
