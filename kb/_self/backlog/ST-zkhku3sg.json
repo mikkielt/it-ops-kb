@@ -80,7 +80,12 @@
       ],
       "recommendation": "A whole-word match of the defined name in another line of a mapped file, case-insensitive for PowerShell and case-sensitive for Lua",
       "reason": "because where and drift need references to say what a change touches, and the language rule matches how each language resolves names",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "A whole-word match of the defined name in another line of a mapped file, case-insensitive for PowerShell and case-sensitive for Lua",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "notes": "Premise (run at plan time): kbingest.MAPPERS languages are dotnet, go, node, python, rust, typescript. python3 _tools/kbingest.py map . --lang powershell exits 2 with: refused: unknown language powershell (known: dotnet, go, node, python, rust, typescript). Reproduces. build_map runs a mapper only after tool_exe(m.tool) finds a program on PATH outside the worktree and a version probe runs; a pattern mapper has no tool, so build_map needs a branch that skips both and records the table's revision under doc[tools]. Fixture names the first check expects: functions Get-Widget (sample.ps1) and load_map (sample.lua) in _tools/fixtures/patterns/ (synthetic, placeholders only). The map goes through redact_leaks as before. The table is read from untrusted repository files with regexes from a data file, so the story needs a bounded match (line length cap, no nested quantifiers in a row, checked when the table loads).",
