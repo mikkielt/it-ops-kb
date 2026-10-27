@@ -78,6 +78,23 @@
     "ST-dnpg6e7d",
     "ST-gfabhgqf"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "When --coord-tools is given and a kb server is already registered for the clone, what does --register-local do?",
+      "options": [
+        "replace the registered kb server (remove at local scope, then add) so the choice is recorded",
+        "skip it as already registered, like the other servers"
+      ],
+      "recommendation": "replace the registered kb server (remove at local scope, then add) so the choice is recorded",
+      "do": {
+        "replace the registered kb server (remove at local scope, then add) so the choice is recorded": "ST-lb4k4oga",
+        "skip it as already registered, like the other servers": "ST-lb4k4oga"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "notes": "Planning 2026-10-27: carries BG-xwarblkp (stale coord-tools docs) since both edit the same docs; that bug closes when this lands.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-775f1f5d",
