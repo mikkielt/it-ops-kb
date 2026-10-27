@@ -1069,8 +1069,8 @@ def coord_cursor(iid, pid=None, settle_s=0, after=0):
 def detached_line(bl, iid, proc, log, scratch, since=0):
     """The line a detached dispatch prints: the item, the pid, the log and the wait command, which starts after the
     coord event SINCE."""
-    return (f"dispatching {bl.label(iid)} detached: pid {proc.pid}, log {log} (its last line, `worker of {iid} exited`, "
-            f"ends it; the session's JSON is in {scratch / RESULT_NAME}); wait in the background with "
+    return (f"dispatching {bl.label(iid)} detached: pid {proc.pid}, log {log} (its exit lines start at `worker of {iid} "
+            f"exited` and the process ends after them; the session's JSON is in {scratch / RESULT_NAME}); wait in the background with "
             f"`python3 {shlex.quote(str(bl_clean.COORD))} wait --since {since} --timeout 3600 --kind progress --item {iid} --pid {proc.pid}`")
 
 

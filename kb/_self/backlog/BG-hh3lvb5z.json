@@ -2,7 +2,7 @@
   "id": "BG-hh3lvb5z",
   "kind": "bug",
   "title": "dispatch --detach says the last line of dispatch.log is 'worker of ID exited', but begin and dispatch print rows and report lines after it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-jxf76aa2",
   "priority": "P3",
   "rank": 0,
@@ -20,10 +20,34 @@
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the printed detach line stop claiming the log ends at 'worker of ID exited'?",
+      "options": [
+        "reword the printed line: the exit lines start at that line",
+        "reorder dispatch output so the exit line is printed last"
+      ],
+      "recommendation": "reword the printed line: the exit lines start at that line",
+      "reason": "it is the smaller change and touches no output order a reader of the log relies on",
+      "do": {
+        "reword the printed line: the exit lines start at that line": "BG-hh3lvb5z",
+        "reorder dispatch output so the exit line is printed last": "BG-hh3lvb5z"
+      },
+      "class": "agents-rule",
+      "answer": "reword the printed line: the exit lines start at that line",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-vxdacfpl review",
     "moved out: SP-hxxn6fnv"
   ],
   "notes": "Moved out of SP-hxxn6fnv by the unattended orchestrator 2026-10-26: the worker raised gate g1 (class agents-rule, since the item touches _tools/bl_dispatch.py) \"How does the printed detach line stop claiming the log ends at worker of ID exited?\" (reword the printed line, recommended, or reorder dispatch output). It waits on the operator; work so far is on branch work/BG-hh3lvb5z.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
