@@ -2,6 +2,7 @@
 and a code commit goes to a code/ branch while main stays."""
 import pytest
 
+import kbpublic
 from conftest import requires_git
 
 pytestmark = [pytest.mark.git, requires_git]
@@ -48,6 +49,9 @@ class TestRedGate:
         # publish refuses the commit that adds a leak-scan hit for good, so the gate judges every commit of the range:
         # one that a later commit removes still refuses it
         home = "/".join(("", "Users", "realperson", "docs"))
+        # the scan of the upstream's whole tree is the same code publish runs (kbpublic.public_values) and takes seconds:
+        # an empty value set cached for the upstream tip stands for a public home that holds none of the hit's value
+        kbpublic.cache_save(c.path, f"public-{kbpublic.scan_form()}-{c.rev('origin/main')}.json", [], "public-")
         for text in (f"see {home}\n", "see the docs\n"):
             c.write("probe/leak.txt", text)
             c.git("add", "-A")
