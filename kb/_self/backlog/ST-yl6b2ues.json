@@ -2,7 +2,7 @@
   "id": "ST-yl6b2ues",
   "kind": "story",
   "title": "The commit and publish leak gate catches Bearer and Basic credentials, URL passwords and prose secret assignments, measured on an adversarial corpus",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-fn7letri",
   "priority": "P1",
@@ -23,6 +23,31 @@
         "_tools/test_leaks.py",
         "_tools/test_redact.py"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import kbpublic as p;u='see https://admin:'+'S3cr'+'etPw-2026x'+'@db.corp.example.com/x now';b='curl -H \"Authorization: Bea'+'rer '+'Zx9Qm4'+'Lp7Rt2Vb8Nc5Kd3Wf6Hj\" https://api.example.com/v1';ok=bool([h for h in p.file_hits('kb/public/x.md',u,{}) if h[0]=='secret']) and bool([h for h in p.file_hits('kb/public/y.md',b,{}) if h[0]=='secret']);print(ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbcommon.leak_hits (kind secret) carries three structured shapes the query-log redactor already has (redact.AUTH_HEADER, URL_USERINFO, ASSIGNMENT), moved into kbcommon beside SECRETS with one owner: an Authorization scheme word and a value of 12 or more characters with none of $ { } < > *, a scheme://user:password@ url",
+      "check": 0
+    },
+    {
+      "clause": "an unquoted secret assignment in prose files and item text only",
+      "check": 1
+    },
+    {
+      "clause": "kbpublic.file_hits scans Bearer and userinfo in the whole text, not the url-stripped text (kbpublic.py:545). An adversarial corpus file under _tools/fixtures/redact/ (rows assembled from parts at run time: key x separator x value matrix, quoting depth 0 to 3, urls, layouts, IT-ops command lines, domain secrets",
+      "check": 2
+    },
+    {
+      "clause": "utility rows such as KB and CVE ids, cmdlets, sha pins, docs urls, prose with the word password) runs inside the existing redact and planted-leak test functions with a known_gap list that may only shrink: 0 new test ids, under 0.3 s. On today's tree and git history the new shapes hit nothing (documented placeholders stay clean). Evidence: reliability-authority-review.md RD-1",
+      "check": 1
     }
   ],
   "touches": [
@@ -36,6 +61,9 @@
     "kb/_self/git.md",
     "kb/_self/plugin.md",
     "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-juf5gvt4"
   ],
   "gates": [
     {
@@ -55,5 +83,6 @@
       "role": "interactive"
     }
   ],
+  "notes": "Planner (SP-fn7letri): check 1 (the leak and redact test files) passes before the work and pins the critical leak guard; the corpus and known_gap list land inside those test functions. Depends on BG-juf5gvt4 (SP-m5m67goe), which also edits _tools/test_redact.py. Check 2 builds its fake secrets at run time.",
   "filed_in": "clone-0ea70e5c"
 }

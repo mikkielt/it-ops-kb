@@ -2,7 +2,7 @@
   "id": "ST-ur767dzs",
   "kind": "story",
   "title": "kb/_self/coordination.md states the coordination guarantee, its failure policy, the peer states and each lock's role",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-fn7letri",
   "priority": "P1",
@@ -32,10 +32,40 @@
         "_tools/selfdoc.py",
         "check"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/_self/coordination.md',encoding='utf-8').read().lower();miss=[w for w in ('fail open','positive evidence','lease-expired','ended','unknown') if w not in t];print(miss);sys.exit(0 if not miss else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "A section of kb/_self/coordination.md says coord gives advisory leases and git arbitrates accepted state (push compare-and-swap, the landing lock, the merge request), so no fencing token exists because no non-git resource takes one",
+      "check": 1
+    },
+    {
+      "clause": "what each consumer does on exit 1, exit 2 and silence (fail open for announcements and run states, refusal only on positive evidence)",
+      "check": 3
+    },
+    {
+      "clause": "the peer states live, ended, unknown and lease-expired as backlog.py peers and reach() derive them",
+      "check": 3
+    },
+    {
+      "clause": "and a table of every lock, lease and claim marked efficiency or correctness with the check that guards each correctness one. rag.py pack answers 'does coord fence a stale worker' from it. Docs overlap ST-dmon53is and BG-juf5gvt4 (planned sprints): rebase on them if they land first. Evidence: reliability-authority-review.md CO-1, CO-3 and section 2",
+      "check": 1
+    },
+    {
+      "clause": "and a table of every lock, lease and claim marked efficiency or correctness with the check that guards each correctness one. rag.py pack answers 'does coord fence a stale worker' from it. Docs overlap ST-dmon53is and BG-juf5gvt4 (planned sprints): rebase on them if they land first. Evidence: reliability-authority-review.md CO-1, CO-3 and section 2",
+      "check": 0
     }
   ],
   "touches": [
     "kb/_self/coordination.md"
   ],
+  "notes": "Planner (SP-fn7letri): checks 0 (the pack) and 2 (selfdoc.py check) pass before the work: the pack exits 0 whatever it finds, so the worker's report quotes the pack's lead line from the new section; selfdoc pins the docs' consistency. Check 3 (fails today: no 'fail open', 'positive evidence', 'lease-expired') reads clauses 1 and 2.",
   "filed_in": "clone-0ea70e5c"
 }

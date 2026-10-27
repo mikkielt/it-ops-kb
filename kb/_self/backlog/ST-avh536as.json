@@ -2,7 +2,7 @@
   "id": "ST-avh536as",
   "kind": "story",
   "title": "kb_backlog_write's docs name what its call does not check: user-level and managed settings, the coord hook's claim notice, and --by operator on operator-only classes other than ceiling",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-fn7letri",
   "priority": "P3",
   "rank": 0,
@@ -12,8 +12,18 @@
       "run": [
         "python3",
         "-c",
-        "import re\nt = open(\"kb/_self/backlog.md\", encoding=\"utf-8\").read() + open(\"kb/_self/plugin.md\", encoding=\"utf-8\").read()\nparas = [p for p in t.split(\"\\n\") if \"KB_BACKLOG_WRITE_TOOLS\" in p]\nassert paras, \"no doc line names KB_BACKLOG_WRITE_TOOLS\"\nlow = \" \".join(paras).lower()\nmiss = [w for w in (\"user-level\", \"coord\", \"--by operator\") if w not in low]\nassert not miss, (\"the docs of kb_backlog_write do not name these limits\", miss)\n"
+        "import sys;t=open('kb/_self/backlog.md',encoding='utf-8').read()+open('kb/_self/plugin.md',encoding='utf-8').read();low=' '.join(p for p in t.split(chr(10)) if 'KB_BACKLOG_WRITE_TOOLS' in p).lower();miss=[w for w in ('user-level','coord','--by operator','ceiling') if w not in low];print(miss);sys.exit(0 if low and not miss else 1)"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb/_self/backlog.md or plugin.md says, beside KB_BACKLOG_WRITE_TOOLS, that the deny check reads only the clone's two settings files, that a call made through kb_backlog_write skips the PreToolUse Bash hook's backlog-claim notice",
+      "check": 0
+    },
+    {
+      "clause": "that --by operator is accepted on every operator-only class except ceiling, as on the command line in an agent session",
+      "check": 0
     }
   ],
   "touches": [
