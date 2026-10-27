@@ -1,0 +1,10 @@
+{
+  "id": "EP-7vyrared",
+  "kind": "epic",
+  "title": "Roots beyond English text and Python code",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A root can opt in, by data it owns, to non-English prose, to code in a language without a toolchain mapper, to archive formats the kb cannot unpack today, and to its own rule for what counts as an answer; a root that opts into nothing is served exactly as before (public eval and test ids unchanged).",
+  "filed_in": "clone-0ea70e5c"
+}
