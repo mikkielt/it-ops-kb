@@ -86,7 +86,11 @@
         "map references plus text hits in mapped source files": "ST-hqko4k2x",
         "map references only": "ST-hqko4k2x"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "map references plus text hits in mapped source files",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
