@@ -56,7 +56,11 @@
         "widen the touches to _tools/kf_fresh.py, _tools/kbfacts.py, _tools/ql_store.py and the tests that pin them": "ST-ztsewht6",
         "keep the touches and drop the item": "ST-ztsewht6"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "widen the touches to _tools/kf_fresh.py, _tools/kbfacts.py, _tools/ql_store.py and the tests that pin them",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Check 1 passes before the work by design: it pins kb_hook's answers so the speed-up cannot drop them. The worker measures the sync_ms figure's run-to-run spread before relying on the 200 ms bound (the planning rule ST-7qait5zh files).",
