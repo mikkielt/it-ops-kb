@@ -2,7 +2,7 @@
   "id": "ST-wg27eqbp",
   "kind": "story",
   "title": "session-load splits a capture's file reads by kind and counts no device as a path",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-nxb7hjwd",
   "sprint": "SP-m5m67goe",
   "priority": "P3",
@@ -43,6 +43,19 @@
   ],
   "notes": "Found by the fresh-context review of SP-3qowbedb (gap report in the sprint's review scratch); the operator chose to park it under EP-nxb7hjwd. Fix before the paid session-load record (ST-rodj5ltd) where it changes a figure. Knowledge (researched in ST-x7npr7es): kb/public/python/macos-fs-usage-output.md lines 58-65 say a RdData/RdMeta/PgIn line prints D=, B= and /dev/<disk> before an optionally empty pathname, an errored disk I/O prints D= and [errno] with no /dev token, and CoreStorage lines print no path; a distinct_paths counter skips the /dev token.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-557596e3",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "1bc718541ddccde72522e7236c378558ee3f6d8e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport csv, os, shutil, subprocess, tempfile\nT = tempfile.mkdtemp()\ncap = os.path.join(T, 'fs_usage.txt')\nL = [\n    '13:21:46.312411  open              F=3        (R_____N____)  /work/kb/_tools/kbcommon.py                 0.000030   python3.4101',\n    '13:21:46.312499  read              F=3    B=0x1a2b                                                       0.000011   python3.4101',\n    '13:21:46.314000  RdData[A]         D=0x0012a3b0  B=0x1000   /dev/disk3s1                                0.000150 W python3.4101',\n]\nopen(cap, 'w').write('\\n'.join(L) + '\\n')\nout = os.path.join(T, 'out.csv')\np = subprocess.run([sys.executable, '_tools/benchmarks.py', 'run', 'session-load', '--fs-usage', cap, '--out', out],\n                   capture_output=True, text=True, timeout=600)\nrows = list(csv.DictReader(open(out, encoding='utf-8'))) if os.path.exists(out) else []\nshutil.rmtree(T, ignore_errors=True)\nassert p.returncode == 0, ('run session-load --fs-usage exit', p.returncode, p.stderr[-400:])\nval = {(r['case'], r['metric']): float(r['value']) for r in rows if r['scenario'] == 'session-load'}\nfor m in ('opens_read', 'descriptor_reads', 'disk_reads'):\n    assert val.get(('capture kb-tools', m)) == 1, ('no split row of 1', m, val.get(('capture kb-tools', m)))\nassert val.get(('capture kb-tools', 'distinct_paths')) == 1, ('a device counted as a path', val.get(('capture kb-tools', 'distinct_paths')))\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
