@@ -2,7 +2,7 @@
   "id": "ST-x2ayo2yk",
   "kind": "story",
   "title": "Planning skills and the session-start line point every planner at peers, and an overlap is settled by asking the other session",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-zv3duelo",
   "sprint": "SP-jxf76aa2",
   "priority": "P1",
@@ -47,5 +47,7 @@
     "moved out: SP-basca7ae"
   ],
   "notes": "skills/sprint/SKILL.md is also in the touches of ST-qqpcgqe7 (the session-load benchmark's lean hooks) and the three parked process stories ST-mhto5pkz, ST-72wajowg, ST-367rldvi: whichever is planned second orders after the other. The operator settled the design choices (2026-10-26). Plan check 2026-10-26: on the base the session-start horizon --hook line names no live peer and no peers command, /kb-sprint plan step 2 does not run peers and still says it never messages, and /kb-backlog Plan step 1 does not run peers (premise reproduced). The hook case runs the code path; the skill-step reads sit beside it. Moved out of SP-basca7ae by the unattended orchestrator 2026-10-26: builds on ST-hjl7dhyh (backlog.py peers, bl_peers.py), whose gates g1 and g2 (class agents-rule) wait on the operator.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
