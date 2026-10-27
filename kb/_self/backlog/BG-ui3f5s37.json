@@ -1,0 +1,18 @@
+{
+  "id": "BG-ui3f5s37",
+  "kind": "bug",
+  "title": "Two session-load runs at once share one sandbox clone, so the later one records only a git checkout error",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Two session-load runs started at once each get their own sandbox clone and record their own rows; neither records a CalledProcessError from git checkout (seen 2026-10-27: a run beside two others recorded one row, run errors 1, git checkout -q -- . exit 128; rerun alone gave 99 rows).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys; c=[sys.executable,\"-c\",\"import sys; sys.path.insert(0,\\\"_tools\\\"); import bench_core; print(bench_core.scratch_dir())\"]; a,b=(subprocess.run(c,capture_output=True,text=True).stdout for _ in (1,2)); sys.exit(0 if a!=b else 1)"
+    ]
+  },
+  "filed_in": "clone-0ea70e5c"
+}
