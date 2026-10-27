@@ -46,7 +46,6 @@
     "kb/_self/usage.md"
   ],
   "depends_on": [
-    "ST-yl6b2ues",
     "ST-xllrtqlt"
   ],
   "notes": "Planner (SP-jwvaq2hu): after ST-xllrtqlt, which also edits _tools/test_redact.py (the report's item 8 after item 3); check 1 (the ops-row and ceiling tests) passes before the work and pins those critical formats.",

@@ -147,8 +147,7 @@
     "kb/_self/plugin.md"
   ],
   "depends_on": [
-    "ST-yxudqftw",
-    "ST-yl6b2ues"
+    "ST-yxudqftw"
   ],
   "gates": [
     {

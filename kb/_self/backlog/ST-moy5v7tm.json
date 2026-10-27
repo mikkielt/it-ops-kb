@@ -35,9 +35,6 @@
     "kb/_self/reports/ci-linux-timing.md",
     "kb/_self/README.md"
   ],
-  "depends_on": [
-    "ST-awqyqc6q"
-  ],
   "gates": [
     {
       "id": "g1",

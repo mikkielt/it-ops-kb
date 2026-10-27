@@ -54,9 +54,6 @@
     "kb/_self/plugin.md",
     "kb/_self/tools.md"
   ],
-  "depends_on": [
-    "ST-yl6b2ues"
-  ],
   "gates": [
     {
       "id": "g1",
