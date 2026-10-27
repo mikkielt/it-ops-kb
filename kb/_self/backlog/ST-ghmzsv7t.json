@@ -78,7 +78,11 @@
         "skip experiment 2, record why"
       ],
       "recommendation": "token file path given to the worker",
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "skip experiment 2, record why",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Planner (SP-jwvaq2hu): check 2 asks section 10 of the review report to state an outcome for each of the two experiments (the word outcome twice; today none); check 1 (selfdoc.py check) passes before the work and pins docs consistency. Experiment 2 uses the Developer-role token file the operator gave (g1); a worker that cannot find it stops that experiment with a report.",
