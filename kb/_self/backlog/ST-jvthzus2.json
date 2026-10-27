@@ -74,6 +74,80 @@
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How many code questions does the pool hold, and of which kinds?",
+      "options": [
+        "twelve: four each of where defined, who uses it, which docs describe a file",
+        "six, two of each kind",
+        "twenty-four, eight of each kind"
+      ],
+      "recommendation": "twelve: four each of where defined, who uses it, which docs describe a file",
+      "do": {
+        "twelve: four each of where defined, who uses it, which docs describe a file": "ST-jvthzus2",
+        "six, two of each kind": "ST-jvthzus2",
+        "twenty-four, eight of each kind": "ST-jvthzus2"
+      },
+      "class": "design",
+      "answer": "twelve: four each of where defined, who uses it, which docs describe a file",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Which tools may the kb arm of the code questions use?",
+      "options": [
+        "the kb tools only: no Read, Grep, Glob or Bash",
+        "the kb tools and the file tools"
+      ],
+      "recommendation": "the kb tools only: no Read, Grep, Glob or Bash",
+      "do": {
+        "the kb tools only: no Read, Grep, Glob or Bash": "ST-jvthzus2",
+        "the kb tools and the file tools": "ST-jvthzus2"
+      },
+      "class": "design",
+      "answer": "the kb tools only: no Read, Grep, Glob or Bash",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "Which models and how many runs per arm are recorded?",
+      "options": [
+        "Haiku 5.5 five runs and Sonnet 5.5 three runs per arm, the arms alternating",
+        "Haiku 5.5 only, five runs per arm",
+        "Haiku, Sonnet and Opus 5.5, five runs per arm"
+      ],
+      "recommendation": "Haiku 5.5 five runs and Sonnet 5.5 three runs per arm, the arms alternating",
+      "do": {
+        "Haiku 5.5 five runs and Sonnet 5.5 three runs per arm, the arms alternating": "ST-jvthzus2",
+        "Haiku 5.5 only, five runs per arm": "ST-jvthzus2",
+        "Haiku, Sonnet and Opus 5.5, five runs per arm": "ST-jvthzus2"
+      },
+      "class": "design",
+      "answer": "Haiku 5.5 five runs and Sonnet 5.5 three runs per arm, the arms alternating",
+      "by": "agent"
+    },
+    {
+      "id": "g5",
+      "kind": "blocking",
+      "question": "How are tokens and USD per right answer and their spread put in the report?",
+      "options": [
+        "run rows tokens_per_right and usd_per_right in the results file, shown by a generated table with every record's value",
+        "a new report table of bench_report.py with min, mean and max"
+      ],
+      "recommendation": "run rows tokens_per_right and usd_per_right in the results file, shown by a generated table with every record's value",
+      "do": {
+        "run rows tokens_per_right and usd_per_right in the results file, shown by a generated table with every record's value": "ST-jvthzus2",
+        "a new report table of bench_report.py with min, mean and max": "ST-jvthzus2"
+      },
+      "class": "secrets",
+      "answer": "run rows tokens_per_right and usd_per_right in the results file, shown by a generated table with every record's value",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
