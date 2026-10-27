@@ -2,7 +2,7 @@
   "id": "ST-5cjtt3e4",
   "kind": "story",
   "title": "peers shows each peer's liveness and open asks, and kbask refuses an ask to a session that has ended",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-zv3duelo",
   "sprint": "SP-jxf76aa2",
   "priority": "P1",
@@ -43,5 +43,7 @@
     "moved out: SP-basca7ae"
   ],
   "notes": "Half of the 40 coord asks so far went unanswered, many to ended sessions. Plan check 2026-10-26: the check now plants a second live session in another checkout working on the same item as the ended one, and asks that the refusal name it (by id or its session label), plus a session with no process and no successor that is refused as ended. On the base peers does not exist and kbask ask to an ended session exits 0 (premise reproduced). Moved out of SP-basca7ae by the unattended orchestrator 2026-10-26: builds on ST-hjl7dhyh (backlog.py peers, bl_peers.py), whose gates g1 and g2 (class agents-rule) wait on the operator.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
