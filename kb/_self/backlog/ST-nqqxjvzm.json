@@ -100,7 +100,11 @@
         "No: DECISION is outside the policy and keeps its rule (decided answers, proposed never does)": "ST-nqqxjvzm",
         "Yes, as an ordinary kind": "ST-nqqxjvzm"
       },
-      "class": "design"
+      "class": "design",
+      "answer": "Yes, as an ordinary kind",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Premise (run at plan time): the 'COMMUNITY and UNK are leads, never an answer alone' rule is in AGENTS.md prose, the kb MCP instruction text (_tools/kb_mcp.py:153) and kb_ask's answer text (_tools/kb_ask.py:100); grep of kf_index.py, kf_route.py, kb_hook.py finds no handling of the COMMUNITY or UNK kinds, and a rag.py pack output has no evidence line (a public pack for a settings question prints coverage, route, kb has, kb lacks, fact lines and the pack id only). Reproduces: the rule is not data and not enforced by the pack. Live-repository scan: the public root holds 121 facts carrying COMMUNITY and 239 carrying UNK (rag.py facts public --tag COMMUNITY / --tag UNK); no root sets an evidence policy today, so an opt-in rule changes no live verdict by construction, and the story's first step is to run the draft rule over rag.py eval --all with the public root forced strict and record which rows would move (information for the gate, not a change). _root.md front matter is read line by line as key: value (kbcommon._meta), so the evidence value is the flat text {answer: [...], lead: [...]} and needs its own parse and validation in load_root. AGENTS.md and the MCP instruction text keep stating the default rule and are not in this story's touches (AGENTS.md has a size cap and is a rules file).",
