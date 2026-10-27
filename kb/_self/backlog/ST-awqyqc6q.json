@@ -2,7 +2,7 @@
   "id": "ST-awqyqc6q",
   "kind": "story",
   "title": "A GitHub test run names its ten slowest tests and its runner's CPU, runs the trailers check whatever the tests say, and can be dispatched with or without bytecode files",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-fn7letri",
   "priority": "P1",
@@ -67,5 +67,7 @@
     "kb/_self/runners.md"
   ],
   "notes": "Planner (SP-fn7letri): check 2 (selfdoc.py check) passes before the work and pins that the docs stay consistent; check 3 reads git.md's check-lanes lines (fails today: line 8 names the manual CI job).",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-557596e3",
+  "operator": "op-f618a13e"
 }
