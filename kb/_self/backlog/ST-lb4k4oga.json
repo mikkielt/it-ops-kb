@@ -19,7 +19,7 @@
       "run": [
         "python3",
         "-c",
-        "import re,sys\nt=open('.claude/skills/kb-setup/SKILL.md').read();s=t[t.index('## 4. MCP servers'):];s=s[:s.index('\n## ',5)]\nok='--coord-tools' in s and 'KB_COORD_TOOLS' in s and 'AskUserQuestion' in s\nprint('step 4 asks coord tools:',ok);sys.exit(0 if ok else 1)\n"
+        "import re,sys\nt=open('.claude/skills/kb-setup/SKILL.md').read();s=t[t.index('## 4. MCP servers'):];s=s[:s.index('\\n## ',5)]\nok='--coord-tools' in s and 'KB_COORD_TOOLS' in s and 'AskUserQuestion' in s\nprint('step 4 asks coord tools:',ok);sys.exit(0 if ok else 1)\n"
       ]
     },
     {
@@ -77,6 +77,27 @@
     "ST-zhpor7fy",
     "ST-dnpg6e7d",
     "ST-gfabhgqf"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "When --coord-tools is given and a kb server is already registered for the clone, what does --register-local do?",
+      "options": [
+        "replace the registered kb server (remove at local scope, then add) so the choice is recorded",
+        "skip it as already registered, like the other servers"
+      ],
+      "recommendation": "replace the registered kb server (remove at local scope, then add) so the choice is recorded",
+      "do": {
+        "replace the registered kb server (remove at local scope, then add) so the choice is recorded": "ST-lb4k4oga",
+        "skip it as already registered, like the other servers": "ST-lb4k4oga"
+      },
+      "class": "agents-rule",
+      "answer": "replace the registered kb server (remove at local scope, then add) so the choice is recorded",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
   ],
   "notes": "Planning 2026-10-27: carries BG-xwarblkp (stale coord-tools docs) since both edit the same docs; that bug closes when this lands.",
   "filed_in": "clone-0ea70e5c",
