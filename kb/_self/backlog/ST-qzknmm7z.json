@@ -33,6 +33,26 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does kbmon.sessions.silent carry the role, and which series does KbmonSessionSilent read?",
+      "options": [
+        "One point per role plus role=all (the most of every role, 0 with none); the rule reads role=all",
+        "Per-role points only; the rule takes max() over them"
+      ],
+      "recommendation": "One point per role plus role=all (the most of every role, 0 with none); the rule reads role=all",
+      "reason": "which keeps the metric name served and the rule one alert with no live session",
+      "do": {
+        "One point per role plus role=all (the most of every role, 0 with none); the rule reads role=all": "ST-qzknmm7z",
+        "Per-role points only; the rule takes max() over them": "ST-qzknmm7z"
+      },
+      "class": "design",
+      "answer": "One point per role plus role=all (the most of every role, 0 with none); the rule reads role=all",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-hxxn6fnv review"
   ],
