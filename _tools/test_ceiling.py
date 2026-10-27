@@ -1,6 +1,7 @@
 """The suite's ceiling (tests.py, _tools/tests_ceiling.json): the live file is accepted and holds the suite, and each
 way to break it is refused."""
 import json
+import subprocess
 
 import pytest
 
@@ -33,7 +34,7 @@ def test_live_ceiling_holds_the_suite_and_recorded_numbers_are_accepted_and_a_ra
             tests.read_ceiling(*planted(tmp_path, **who))
 
 
-def test_counts_over_the_ceiling_are_named_and_the_seconds_factor_applies_only_on_a_ci_runner_and_changed_paths_pick_the_scope():
+def test_counts_over_the_ceiling_are_named_and_the_seconds_factor_applies_only_on_a_ci_runner_and_changed_paths_pick_the_scope(monkeypatch):
     c = {**NUMBERS, "decision": "D-planted"}
     assert tests.ceiling_problems(c, files=2, ids=3, seconds=5.0, platform="darwin") == []
     over = tests.ceiling_problems(c, files=3, ids=4, seconds=5.5, platform="darwin")
@@ -43,6 +44,15 @@ def test_counts_over_the_ceiling_are_named_and_the_seconds_factor_applies_only_o
     assert tests.scope(["kb/_self/backlog/ST-aaaaaaaa.json", "kb/_querylog/ops/x.jsonl"]) == "none"
     assert tests.scope(["kb/public/auth/kerberos.md", "kb/_self/backlog/ST-aaaaaaaa.json"]) == "content"
     assert tests.scope(["kb/public/auth/kerberos.md", "_tools/check.py"]) == "all"
+    calls = []
+
+    def fake(cmd, **kw):
+        calls.append(cmd)
+        return subprocess.CompletedProcess(cmd, 0, stdout="abc\n" if "merge-base" in cmd else "", stderr="")
+
+    monkeypatch.setattr(tests.subprocess, "run", fake)
+    tests.changed("origin/main")  # a rename out of _tools/ lists its source too, so the scope is the whole suite
+    assert any("diff" in c and "--no-renames" in c for c in calls)
 
 
 def test_busy_profile_multiplies_the_seconds_by_15_in_its_clone_only_is_named_in_a_refusal_and_is_set_by_the_operator_outside_an_agent_session(tmp_path):

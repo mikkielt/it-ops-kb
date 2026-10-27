@@ -52,8 +52,10 @@ cut a test; a run over max_seconds says to run again once the host is quiet, els
 Each run appends one ops row `test.run` to the query log's spool (ql_capture.record, best effort: nothing is written
 when capture is off, inside a test, or when the row breaks its closed shape, and a failure to write never changes the
 exit code): mode, selected and total test files, workers, milliseconds, exit, passed, failed and skipped counts, the
-slowest files, every file's time for a full run, the names of the test files with a failure and, for a reused run,
-`reused` true. A run a backlog check
+slowest files, every file's time for a full run, the names of the test files with a failure, the worker-seconds the
+tests took (`ws`), whether the run breached the ceiling (`over`) with the seconds limit it was held to (`limit_s`), the
+`platform` and the clone's `profile` and, for a reused run, `reused` true; the row is written after the ceiling's
+verdict, with the worker count taken before the pytest start. A run a backlog check
 makes writes it to the spool of the query log directory KB_TEST_RUN_HOME names (bl_base.check_env: the clone's real
 one), the one capture of that check outside its isolated home.
 
@@ -263,8 +265,10 @@ def collect_ids():
     return sum(1 for ln in p.stdout.splitlines() if "::" in ln and not ln.startswith(" "))
 
 
-def ceiling_report(ids=None, seconds=None):
-    """Print the ceiling's verdict for the measured counts; 0 when within it, 1 when over or the file is refused."""
+def ceiling_report(ids=None, seconds=None, info=None):
+    """Print the ceiling's verdict for the measured counts; 0 when within it, 1 when over or the file is refused. `info`,
+    a dict, is filled with what the run's `test.run` row says of it: `over` (a breach), `limit_s` (this platform's
+    seconds limit as applied, when the file names one), `platform` and `profile`."""
     try:
         c = read_ceiling()
     except CeilingError as e:
@@ -272,7 +276,13 @@ def ceiling_report(ids=None, seconds=None):
         return 1
     over_count = ceiling_problems(c, files=len(test_files()), ids=ids)
     profile = read_profile()
-    over_time = ceiling_problems(c, seconds=seconds, factor=seconds_factor() * PROFILES[profile], profile=profile)
+    factor = seconds_factor() * PROFILES[profile]
+    over_time = ceiling_problems(c, seconds=seconds, factor=factor, profile=profile)
+    if info is not None:
+        limit = c["max_seconds"].get(sys.platform)
+        info.update({"over": bool(over_count or over_time), "platform": sys.platform, "profile": profile})
+        if limit is not None:
+            info["limit_s"] = int(round(limit * factor))
     for b in over_count + over_time:
         print(f"tests.py: over the ceiling: {b}", file=sys.stderr)
     if over_count:
@@ -310,11 +320,12 @@ def junit_files(path):
     return {k: [int(round(v[0] * 1000))] + v[1:] for k, v in out.items()}
 
 
-def run_fields(mode, entry, workers, full, reused=False):
+def run_fields(mode, entry, workers, full, reused=False, ceiling=None):
     """The keys of the ops row `test.run` for one pytest run (`entry`: {"exit", "ms", "files"}, `files` from
     junit_files): counts and times only, and test file names that match the row's closed shape. `full`: the run
     covered every test file, so each file's time is kept. `reused`: no pytest ran, a recorded passing run of the same
-    key stood for it."""
+    key stood for it. `ceiling`: what ceiling_report put in its `info` (`over`, `limit_s`, `platform`, `profile`); `ws`
+    is the worker-seconds the files' tests took, whole seconds."""
     import ql_capture
     files = entry["files"]
     ok = {k: v for k, v in files.items() if ql_capture.OPS_TEST_FILE.fullmatch(k)}
@@ -329,8 +340,11 @@ def run_fields(mode, entry, workers, full, reused=False):
     failed = sorted(k for k, v in ok.items() if v[2])
     if failed:
         f["failed_files"] = failed[:ql_capture.OPS_LIST_MAX]
+    if files:
+        f["ws"] = int(round(sum(v[0] for v in files.values()) / 1000))
     if reused:
         f["reused"] = True
+    f.update(ceiling or {})
     return f
 
 
@@ -339,9 +353,9 @@ def inside_test():
     return bool(os.environ.get("PYTEST_CURRENT_TEST"))
 
 
-def record_run(mode, entry, args, workers=None, reused=False):
+def record_run(mode, entry, args, workers=None, reused=False, ceiling=None):
     """Append the `test.run` row of one tests.py run (`workers`: the count to record, default the run's
-    worker_count; `reused`: a recorded run stood for it); best effort: it returns None and raises nothing when ops capture is
+    worker_count; `reused`: a recorded run stood for it; `ceiling`: the verdict dict of ceiling_report); best effort: it returns None and raises nothing when ops capture is
     unavailable, when the run is inside a test (a scenario clone's run never writes into the real spool) or when the
     row breaks its shape. A run a backlog check makes (bl_base.check_env) has KB_TEST_RUN_HOME, the clone's real query
     log directory: the row goes to that spool, not to the check's isolated home."""
@@ -353,13 +367,14 @@ def record_run(mode, entry, args, workers=None, reused=False):
         if home:
             ql_capture.spool_dir = lambda: pathlib.Path(home) / "spool"
         return ql_capture.record("ops", event="test.run", **run_fields(
-            mode, entry, worker_count(args) if workers is None else workers, mode == "full", reused))
+            mode, entry, worker_count(args) if workers is None else workers, mode == "full", reused, ceiling))
     except Exception:  # noqa: BLE001 - a run never fails for its log
         return None
 
 
-def run_pytest(args):
-    """Run pytest with the default workers; {"exit", "ms", "files"} of the run, or None when pytest is missing."""
+def run_pytest(args, workers=None):
+    """Run pytest with `workers` (default: worker_count(args)); {"exit", "ms", "files"} of the run, or None when pytest
+    is missing."""
     cmd = pytest_cmd()
     if cmd is None:
         print("pytest and pytest-xdist are needed: install uv (https://docs.astral.sh/uv/) and rerun, or "
@@ -369,7 +384,7 @@ def run_pytest(args):
     os.close(fd)
     start = time.monotonic()
     try:
-        code = subprocess.run(cmd + ["-n", str(worker_count(args)), "--dist", "load", f"--junitxml={xml}"] + args,
+        code = subprocess.run(cmd + ["-n", str(worker_count(args) if workers is None else workers), "--dist", "load", f"--junitxml={xml}"] + args,
                               cwd=KB).returncode
         return {"exit": code, "ms": int((time.monotonic() - start) * 1000), "files": junit_files(xml)}
     finally:
@@ -442,7 +457,7 @@ def changed(since):
             raise SystemExit(f"tests.py: git {' '.join(args)} failed: {p.stderr.strip()}")
         return p.stdout
     base = git("merge-base", since, "HEAD").strip()
-    names = git("diff", "--name-only", base).splitlines() + git("ls-files", "--others", "--exclude-standard").splitlines()
+    names = git("diff", "--name-only", "--no-renames", base).splitlines() + git("ls-files", "--others", "--exclude-standard").splitlines()
     return sorted({n.strip().replace("\\", "/") for n in names if n.strip()})
 
 
@@ -981,17 +996,19 @@ def run_main(argv):
             record_run(mode, {"exit": EMPTY_EXIT, "ms": int((time.monotonic() - start) * 1000), "files": {}}, args,
                        workers=0)
             return EMPTY_EXIT
-    entry = run_pytest(pytest_args)
+    workers = worker_count(args)  # counted before the run: the live runs it divides the CPUs among include this one
+    entry = run_pytest(pytest_args, workers)
     if entry is None:
         return 2
     if entry["exit"] == 5:  # the collection above could not tell (or was not asked): the run's own exit 5 is refused too
         print(empty_selection_line(argv, args), file=sys.stderr, flush=True)
         entry["exit"] = EMPTY_EXIT
-    record_run(mode, entry, args)
     whole = not path_args(args) and not keyword_run(args) and "-m" not in args
     ran = sum(v[1] + v[2] + v[3] for v in entry["files"].values())
+    verdict = {}
     over = ceiling_report(ids=ran if whole and not fast else None,
-                          seconds=entry["ms"] / 1000 if mode == "full" else None)
+                          seconds=entry["ms"] / 1000 if mode == "full" else None, info=verdict)
+    record_run(mode, entry, args, workers=workers, ceiling=verdict)
     code = entry["exit"] or over
     remember(key, code == 0, mode)
     return code

@@ -178,6 +178,10 @@ def test_an_ops_row_has_a_closed_shape_and_a_free_text_value_is_refused_and_kb_f
     assert ql_capture.ops_problems({**ok, "step": free})
     assert ql_capture.ops_problems({**ok, "note": free})
     assert ql_capture.ops_problems({**ok, "item": TOKEN})
+    run = {"event": "test.run", "mode": "full", "ms": 9000, "exit": 0, "workers": 4, "ws": 31, "over": False,
+           "limit_s": 20, "platform": "darwin", "profile": "usual"}
+    assert ql_capture.ops_problems(run) == []
+    assert ql_capture.ops_problems({**run, "profile": free}) and ql_capture.ops_problems({**run, "over": "yes"})
     monkeypatch.setenv("CLAUDE_PLUGIN_ROOT", KB)
     monkeypatch.setenv("CLAUDE_PLUGIN_DATA", str(tmp_path))
     (tmp_path / "querylog").mkdir()
