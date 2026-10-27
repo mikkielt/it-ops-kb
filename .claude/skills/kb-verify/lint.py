@@ -27,7 +27,10 @@ without a source id, a bare [DER] (tags are parsed by _tools/kbfacts.py, the gra
 a CODE part without a `path#symbol` pointer, whose pointer path matches no pinned file path of its sources, or citing a source that is not pinned to a tag or commit; a `SNIPPET:`
 bullet without `context:`, a `checked: no|syntax|run` value, an evidence tag other than UNK, or a fenced block right
 below it; a `checked: syntax` json, toml or python block that does not parse; a Facts line where a tag is followed by
-`- `, a second bullet joined onto it (named by path:line).
+`- `, a second bullet joined onto it (named by path:line); a validity window `(valid START..END)` that is malformed
+(neither dates nor short commit ids, a date that does not exist, no dots), ends before it starts, stands after the fact's
+tag, is given twice, is a commit range on a fact with no CODE tag or whose cited source is not pinned, or a date range on a
+fact with only CODE tags (kbfacts.windows_in; the grammar is in kb/_self/content-rules.md).
 WARN: no H1 title; a Facts bullet mixing tag kinds; a DER Facts bullet (not a SNIPPET) that says it rests on a run or
 probe of our own (OBSERVED_RUN) and names no version (has_version: 2.1.285, 3.3, "version N", "vN"; a measurement
 such as 2.5 s or TLS 1.2 is none); header source ids never cited in the body, or cited ids missing from the header; a
@@ -117,6 +120,29 @@ def has_version(item):
         if not UNIT_AFTER.match(item, m.end()) and not NOT_A_VERSION_BEFORE.search(item[:m.start()]):
             return True
     return False
+
+
+def window_problems(item, kinds, sources):
+    """What is wrong with the validity windows `(valid START..END)` of one Facts bullet (kbfacts.windows_in): each message
+    names the window; [] for a bullet with none or well-formed ones."""
+    wins = kbfacts.windows_in(item)
+    out = [f"validity window `(valid {w['raw']})` {w['error']}" for w in wins if w["error"]]
+    if len(wins) > 1:
+        out.append("more than one validity window on a fact")
+    for w in wins:
+        if w["error"]:
+            continue
+        if not w["before_tag"]:
+            out.append(f"validity window `(valid {w['raw']})` must stand before the fact's tag")
+        if w["kind"] == "rev":
+            ids = [i for part in kbfacts.tags_in(item) if part["kind"] == "CODE" or "CODE" not in kinds for i in part["ids"]]
+            if any(i not in sources or not kbfacts.pinned_source(sources[i]) for i in ids):
+                out.append(f"validity window `(valid {w['raw']})` is a commit range on a fact whose cited source is not pinned")
+            elif "CODE" not in kinds:
+                out.append(f"validity window `(valid {w['raw']})` is a commit range on a fact with no CODE tag")
+        elif kinds == {"CODE"}:
+            out.append(f"validity window `(valid {w['raw']})` is a date range on a CODE fact (use short commit ids)")
+    return out
 
 
 def unversioned_run(item, kinds):
@@ -428,6 +454,8 @@ def lint_root(root, args, add, base="HEAD"):
                     add("ERROR", q(p), f"untagged fact: {item[2:80]!r}")
                 elif len(kinds) > 1:
                     add("WARN", q(p), f"fact mixes tags {sorted(kinds)}: {item[2:60]!r}")
+                for problem in window_problems(item, kinds, sources):
+                    add("ERROR", q(p), f"{problem}: {item[2:60]!r}")
                 if unversioned_run(item, kinds):
                     add("WARN", q(p), f"DER fact rests on a run or probe but names no version: {item[2:60]!r}")
         for n, ln in joined_bullets(text):

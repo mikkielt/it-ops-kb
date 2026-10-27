@@ -69,6 +69,7 @@ imported at its end, so every name of theirs is also a name of this module: othe
 """
 import csv, functools, hashlib, io, json, os, re, subprocess, sys, tempfile, time
 from collections import Counter, defaultdict
+from datetime import date, datetime, timezone
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, TOOLS)
@@ -141,6 +142,60 @@ def log_ids_in(text):
 
 def kinds_of(parts):
     return sorted({p["kind"] for p in parts}, key=KINDS.index)
+
+
+# ---------------------------------------------------------------- validity windows
+
+# `(valid START..END)` before a fact's tag: dates for a DOC or DER fact, short commit ids for a CODE fact, an open end
+# written as nothing after the dots. A parenthesis of prose that starts `(valid signature` is no marker: a marker is one
+# token that holds `..` or starts with a digit.
+WINDOW_MARK = re.compile(r"\(valid\s+([^\s()]+)\)")
+_DATE = re.compile(r"\d{4}-\d\d-\d\d")
+_REV = re.compile(r"[0-9a-f]{7,40}")
+
+
+def _parse_window(raw):
+    """`2024-03-01..2025-09-30` -> {"kind": "date", "start": ..., "end": ..., "error": ""}; kind is "rev" for commit ids and
+    "" with an `error` when the token is no window (end before start, an impossible date, one end of each kind, no dots)."""
+    out = {"raw": raw, "kind": "", "start": "", "end": "", "error": ""}
+    start, dots, end = raw.partition("..")
+    if not dots:
+        out["error"] = "needs two dots between its start and its end"
+    elif _DATE.fullmatch(start) and (not end or _DATE.fullmatch(end)):
+        out.update(kind="date", start=start, end=end)
+        try:
+            if date.fromisoformat(start) and end and date.fromisoformat(end) < date.fromisoformat(start):
+                out["error"] = "ends before it starts"
+        except ValueError:
+            out["error"] = "holds a date that does not exist"
+    elif _REV.fullmatch(start) and (not end or _REV.fullmatch(end)):
+        out.update(kind="rev", start=start, end=end)
+    else:
+        out["error"] = "is neither YYYY-MM-DD..[YYYY-MM-DD] nor REV..[REV] (7 to 40 lowercase hex digits)"
+    return out
+
+
+def windows_in(text):
+    """The validity markers of a fact's text, in order, each as `_parse_window` gives it plus `before_tag` (the marker
+    stands before the fact's first tag, where the content rules put it)."""
+    tag = TAG.search(text)
+    out = []
+    for m in WINDOW_MARK.finditer(text):
+        tok = m.group(1)
+        if ".." in tok or tok[0].isdigit():
+            out.append({**_parse_window(tok), "before_tag": not tag or m.start() < tag.start()})
+    return out
+
+
+def window_ended(text, today=None):
+    """Whether a fact's validity window has ended: a date window whose end is before `today` (an ISO date, default
+    today in UTC), or a commit window with an end. A fact with no window, or an open one, has not ended."""
+    for w in windows_in(text):
+        if w["error"] or not w["end"]:
+            continue
+        if w["kind"] == "rev" or w["end"] < (today or datetime.now(timezone.utc).date().isoformat()):
+            return True
+    return False
 
 
 # a file name carries an extension, or sits under a directory (src/adr-new, a script with none)
@@ -785,7 +840,8 @@ def _source_rows():
 
 def audit(prefix=None, status=None, root=None):
     """One row per article under a prefix (bare or qualified: in_prefix), in one root or all: status, dates, fact
-    counts by kind (a fact counts once per kind it carries), the gap/conflict entries linked to it and `flags`, the
+    counts by kind (a fact counts once per kind it carries), `ended` (the facts whose validity window has ended,
+    window_ended), the gap/conflict entries linked to it and `flags`, the
     lines of its files that a committed feedback report flags (feedback_flags)."""
     prefix = scope(prefix, root)
     tfiles = topic_files()
@@ -805,6 +861,7 @@ def audit(prefix=None, status=None, root=None):
         row = {"path": rel, "topic": topic, "status": meta.get("status", ""), "priority": meta.get("priority", ""),
                "retrieved_utc": meta.get("retrieved_utc", ""), "facts": sum(1 for u in us if u["tags"]),
                **{k: counts.get(k, 0) for k in EVIDENCE_KINDS},
+               "ended": sum(1 for u in us if u["tags"] and window_ended(u["text"])),
                "flags": sum(len(flags.get(f, {})) for f in tfiles.get(topic, [rel]))}
         for n, key in ((kbcommon.GAPS, "gaps"), (kbcommon.CONFLICTS, "conflicts")):
             row[key] = [e for e in ledgers[n] if topic in e["explicit"]]
