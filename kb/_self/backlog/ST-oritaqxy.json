@@ -2,7 +2,7 @@
   "id": "ST-oritaqxy",
   "kind": "story",
   "title": "Planning maps each goal clause to a check that reads every part of it, its isolation parts included",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-m5m67goe",
   "priority": "P3",
   "rank": 0,
@@ -46,5 +46,7 @@
     "parked: SP-3qowbedb close"
   ],
   "notes": "From the retrospective of SP-3qowbedb; the operator accepted it at the close.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-557596e3",
+  "operator": "op-f618a13e"
 }
