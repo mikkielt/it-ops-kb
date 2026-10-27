@@ -101,7 +101,11 @@
         "build the map and cache it": "ST-q4fbmomg",
         "refuse and name the map command": "ST-q4fbmomg"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "build the map and cache it",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -117,7 +121,11 @@
         "60 lines by default, kb_code takes 10 to 500": "ST-q4fbmomg",
         "30 lines by default, kb_code takes 10 to 200": "ST-q4fbmomg"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "60 lines by default, kb_code takes 10 to 500",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
@@ -133,7 +141,11 @@
         "only the team's own server, readOnlyHint true": "ST-q4fbmomg",
         "also under --roots and kb_http.py": "ST-q4fbmomg"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "only the team's own server, readOnlyHint true",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g4",
@@ -149,7 +161,11 @@
         "an exact definition name, a package name or an imported module (a prefix, or a relative import's last segment); nearest names by spelling, at most 5": "ST-q4fbmomg",
         "an exact definition name only": "ST-q4fbmomg"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "an exact definition name, a package name or an imported module (a prefix, or a relative import's last segment); nearest names by spelling, at most 5",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
