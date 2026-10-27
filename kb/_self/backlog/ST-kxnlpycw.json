@@ -76,7 +76,11 @@
         "after a land.end of exit 0 only": "ST-kxnlpycw",
         "after any land.end": "ST-kxnlpycw"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "after a land.end of exit 0 only",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
