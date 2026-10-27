@@ -104,7 +104,11 @@
       ],
       "recommendation": "No: the fixture roots carry their own held-out file and eval, the public rate and its sprint-review bar stay as they are",
       "reason": "because the public file measures English facts about Windows management and mixing in fixture questions would blur that bar",
-      "class": "design"
+      "class": "design",
+      "answer": "No: the fixture roots carry their own held-out file and eval, the public rate and its sprint-review bar stay as they are",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Premise (run at plan time): kbfacts.key_terms('How do I load X in a usermap?') -> ['load', 'usermap']; key_terms('Wie lade ich X im Kartenskript?') -> ['wie', 'lade', 'ich', 'im', 'kartenskript'] (wie, ich, im count as key words); key_terms('Kartenskripte laden Karten') -> ['kartenskript', 'laden', 'karten'] (no German suffix stripped: laden stays laden). Reproduces at the key-word level. The pack-level good-versus-none verdict was not re-run: it needs the fixture root this story adds (no German root exists to run it on). _meta() in kbcommon.py reads one flat key: value per line, so languages needs a list parse. The index unit cache key already hashes STOP, kbid.STOP and the token patterns (kf_index.py _weigh_data), so profile data must enter that hash and INDEX_VERSION bumps. Existing readers of kbfacts.STOP (bench_pool, factdiff, kbid, kbtools, ql_apply, ql_learn) keep the English base set and need no edit if the union is a new function. Overlap: ST-q5o7z2mf (sprint SP-jwvaq2hu) touches _tools/rag.py, AGENTS.md, kb/_self/tools.md; this story touches kb/_self/tools.md too, so land after it or rebase.",
