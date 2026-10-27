@@ -1,0 +1,24 @@
+{
+  "id": "BG-f6vmf5ha",
+  "kind": "bug",
+  "title": "The session-start peers line sits above the sprint lines, so the hook's 1000-character cap cuts every sprint line when the checkout lags",
+  "status": "todo",
+  "sprint": "SP-jxf76aa2",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "The session-start hook keeps at least the first sprint line under its 1000-character cap when the checkout-lag line and the peers line are both present, the peers line being cut before any sprint line, and a check plants a lag line, a peers line and an active sprint and finds a sprint line in the hook's systemMessage",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,subprocess,sys; m=json.loads(subprocess.run([sys.executable,\"_tools/backlog.py\",\"horizon\",\"--hook\"],capture_output=True,text=True).stdout)[\"systemMessage\"]; sys.exit(0 if \"sprint SP-\" in m else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_view.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
