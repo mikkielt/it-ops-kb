@@ -68,7 +68,11 @@
       ],
       "recommendation": "A new module kbsandbox.py that both import, moved out of kbingest.py without a change of behaviour",
       "reason": "because one sandbox with one test is safer than two, and fetch.py should not load a 2300-line module to unpack a file",
-      "class": "design"
+      "class": "design",
+      "answer": "A new module kbsandbox.py that both import, moved out of kbingest.py without a change of behaviour",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
