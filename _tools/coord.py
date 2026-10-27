@@ -86,7 +86,8 @@ holds the question) and `answer` (fields id, state, ref: state is one of working
 rejected, the names A2A gives its task states; ref is the key whose `put` value holds the answer text). An event keeps
 references only, so the text is put under a key such as `ask/ID` and `answer/ID` first; an ask or answer without id or
 ref, an ask without to, or an answer with another state exits 2. Behind `serve`, an ask carries the server's `operator`
-field like every event. `digest` is the one command that prints text, not JSON:
+field like every event. `blocked` (fields session, state waiting or cleared, and the optional on, permission or question, item and
+operator) says a session waits on the person or no longer does; the coord hook posts it. `digest` is the one command that prints text, not JSON:
 one line per live intent (posted within a day, its items not all done, landed or released by a later progress event, and, when it names a
 session, that session's presence lease `session/<id>` still held: a release or an expiry drops the session's intents) or
 live claim (a held lease) with a value that overlaps a key (equal, a directory-style prefix either way, or a glob match either
@@ -187,11 +188,14 @@ EVENTS_SCHEMA = (
     "CREATE TABLE IF NOT EXISTS events ("
     "seq INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT NOT NULL, fields TEXT NOT NULL, at REAL NOT NULL)"
 )
-KINDS = ("claim", "release", "dedup", "fact_added", "gap_opened", "dup_of", "lesson", "heartbeat", "intent", "progress", "ask", "answer", "coordinate")
+KINDS = ("claim", "release", "dedup", "fact_added", "gap_opened", "dup_of", "lesson", "heartbeat", "intent", "progress", "ask", "answer", "coordinate", "blocked")
 KIND_FIELDS = {"intent": ("session", "item", "topic", "touch", "operator"), "progress": ("item", "state", "exit", "gates", "step"),
                "ask": ("id", "to", "ref"), "answer": ("id", "state", "ref"),
-               "coordinate": ("item", "other", "strategy", "touch", "session", "operator")}
+               "coordinate": ("item", "other", "strategy", "touch", "session", "operator"),
+               "blocked": ("session", "state", "on", "item", "operator")}
 STRATEGIES = ("wait", "ask", "after", "join", "proceed")  # what a coordinate event says its session will do about the other item
+BLOCKED_STATES = ("waiting", "cleared")  # what a `blocked` event says of its session: it waits on the person, or no longer does
+BLOCKED_ON = ("permission", "question")  # what a session waits on: a permission prompt, or a question put to the person
 RUN_STATES = ("claimed", "working", "blocked", "returned", "failed", "staging", "landing", "landed", "refused", "released")
 TRANSITIONS = {"none": ("claimed",), "claimed": ("working", "released", "landed"), "working": ("returned", "failed", "blocked"),
                "blocked": ("working", "returned", "failed"), "returned": ("staging", "landing", "working", "released"),
@@ -523,7 +527,7 @@ def parse_fields(pairs, kind=""):
 
 
 def check_kind(kind, fields):
-    """The closed field names (and the closed states) of the intent, progress, ask, answer and coordinate kinds."""
+    """The closed field names (and the closed states) of the intent, progress, ask, answer, coordinate and blocked kinds."""
     names = KIND_FIELDS.get(kind)
     if names is None:
         return
@@ -540,6 +544,10 @@ def check_kind(kind, fields):
         raise Refused({"ok": False, "error": "a coordinate takes item (the item of the session that chose), other (the item it coordinates "
                                              "with) and strategy (one of " + ", ".join(STRATEGIES) + "), and optionally touch, session "
                                              "and operator"}, 2)
+    if kind == "blocked" and ("session" not in fields or fields.get("state") not in BLOCKED_STATES
+                              or fields.get("on", BLOCKED_ON[0]) not in BLOCKED_ON):
+        raise Refused({"ok": False, "error": "a blocked takes session, state (one of " + ", ".join(BLOCKED_STATES) + "), and optionally "
+                                             "on (one of " + ", ".join(BLOCKED_ON) + "), item and operator"}, 2)
     if kind == "ask" and not {"id", "to", "ref"} <= set(fields):
         raise Refused({"ok": False, "error": "an ask takes id, to (a session, item or agent id, or any) and ref (the key whose value holds the question)"}, 2)
     if kind == "answer" and ("id" not in fields or "ref" not in fields or fields.get("state") not in ANSWER_STATES):

@@ -95,6 +95,44 @@
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Which closed event kind records a blocked session, and which tool events clear it?",
+      "options": [
+        "a new coord kind blocked (session, state waiting or cleared, on permission or question), cleared at the next Bash, Skill, Edit or Write event the hook runs on",
+        "the progress kind of the session's item, cleared at any tool event (a hook on every tool)"
+      ],
+      "recommendation": "a new coord kind blocked (session, state waiting or cleared, on permission or question), cleared at the next Bash, Skill, Edit or Write event the hook runs on",
+      "do": {
+        "a new coord kind blocked (session, state waiting or cleared, on permission or question), cleared at the next Bash, Skill, Edit or Write event the hook runs on": "ST-oykcufk5",
+        "the progress kind of the session's item, cleared at any tool event (a hook on every tool)": "ST-oykcufk5"
+      },
+      "class": "agents-rule",
+      "answer": "a new coord kind blocked (session, state waiting or cleared, on permission or question), cleared at the next Bash, Skill, Edit or Write event the hook runs on",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "Which notification types mark a session blocked, and where does the needs-you line name it?",
+      "options": [
+        "permission_prompt as permission, elicitation_dialog, elicitation_url_dialog and agent_needs_input as question; the line names it as a prompt entry after the asks",
+        "permission_prompt only; the line names it among the runs"
+      ],
+      "recommendation": "permission_prompt as permission, elicitation_dialog, elicitation_url_dialog and agent_needs_input as question; the line names it as a prompt entry after the asks",
+      "do": {
+        "permission_prompt as permission, elicitation_dialog, elicitation_url_dialog and agent_needs_input as question; the line names it as a prompt entry after the asks": "ST-oykcufk5",
+        "permission_prompt only; the line names it among the runs": "ST-oykcufk5"
+      },
+      "class": "agents-rule",
+      "answer": "permission_prompt as permission, elicitation_dialog, elicitation_url_dialog and agent_needs_input as question; the line names it as a prompt entry after the asks",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
