@@ -378,8 +378,8 @@ def digest(store=None, week=None, backlog=None):
 
 def digest_precompute(now_dt=None, store=None):
     """`digest --cache`: last week's digest (the ISO week before the one the UTC date is in) is written to the cache
-    file beside the spool, `{"week", "found", "lines"}`, and the cache files of other weeks are removed. Backlog
-    drafts go in no line (the hook's digest has no `intake:` line). Returns the file."""
+    file beside the spool, `{"week", "found", "lines"}`, and the cache files of other weeks are removed. Its
+    `intake:` line is the backlog's as of the computation. Returns the file."""
     qdir, _ = places()
     last = iso_week((now_dt or datetime.datetime.now(datetime.timezone.utc)).date() - datetime.timedelta(days=7))
     _, lines, found = digest(store, last)
