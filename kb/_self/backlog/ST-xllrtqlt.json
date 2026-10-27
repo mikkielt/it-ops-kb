@@ -72,7 +72,12 @@
         "One entry with the AWS key id as alternatives": "ST-xllrtqlt",
         "Four new entries, with test_leaks.secret_plants extended": "ST-xllrtqlt"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "One entry with the AWS key id as alternatives",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     },
     {
       "id": "g2",
