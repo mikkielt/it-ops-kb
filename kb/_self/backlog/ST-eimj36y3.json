@@ -76,7 +76,11 @@
         "A user name only, and only for logon and profile-path shapes, listed in _root.md and checked at load against every shape": "ST-eimj36y3",
         "Any name of any shape": "ST-eimj36y3"
       },
-      "class": "design"
+      "class": "design",
+      "answer": "A user name only, and only for logon and profile-path shapes, listed in _root.md and checked at load against every shape",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Premise (run at plan time, synthetic names): redact.redact rewrites a logon shape with a fictitious domain user other than the shipped placeholder to the shipped one, and a Windows profile path with such a user to the shipped user; kbcommon.leak_hits flags the same profile path as a home folder. A fictitious user a root already uses as its example name is therefore rewritten or refused unless it is the one shipped placeholder (jan.kowalski). Reproduces for logon and profile-path shapes; it does not reproduce for a device name like PL-LT-00999, a bare user name or an email on corp.example.com (neither tool touches them), so the need is for user names in logon and profile-path shapes only. PLACEHOLDERS is one module-level dict in redact.py; the live-repository scan is the existing leak scan of every tracked file, which the story's checks must still pass with no root setting anything. Overlap, order: live sessions work ST-yl6b2ues (leak gate) and ST-xllrtqlt (redactor) in SP-fn7letri and SP-jwvaq2hu on _tools/redact.py, _tools/kbcommon.py, _tools/test_redact.py, _tools/test_leaks.py, kb/_self/querylog.md, kb/_self/plugin.md and kb/_self/tools.md. This story starts only after those land.",
