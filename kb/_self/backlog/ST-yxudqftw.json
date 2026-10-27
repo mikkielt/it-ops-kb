@@ -74,7 +74,12 @@
       ],
       "recommendation": "Prose words and split identifier parts only; ids, paths and symbols are compared as written",
       "reason": "because a code symbol's case is part of its name and the code map matches it exactly",
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "Prose words and split identifier parts only; ids, paths and symbols are compared as written",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     },
     {
       "id": "g3",
