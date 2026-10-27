@@ -2,7 +2,7 @@
   "id": "ST-tq6yo2si",
   "kind": "story",
   "title": "precheck warns of each committed item's file that another live session or sprint also plans, until an order settles it",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-zv3duelo",
   "sprint": "SP-jxf76aa2",
   "priority": "P1",
@@ -42,5 +42,7 @@
     "moved out: SP-basca7ae"
   ],
   "notes": "Seen 2026-10-26: an overlap with a session whose intent has a topic but no item (the session-load benchmark topic intent) cannot be settled by kbask.py coordinate, which needs the other side item, so kbmon keeps it under needs-you as undecided. The settling rule here (a depends_on or a coordinate event) needs a form for an item-less peer: a coordinate naming the other session, or the peer topic. Plan check 2026-10-26: the check now plants one case per condition: a file shared with a live session and a planned sprint (warned as undecided), a shared kb/_self doc (no warning), a file only another planned sprint item plans, a file only another live session intent names, then a depends_on and a kbask.py coordinate event that each settle one warning. On the base precheck warns of none of them (premise reproduced); the coordinate event itself is accepted on the base. Moved out of SP-basca7ae by the unattended orchestrator 2026-10-26: builds on ST-hjl7dhyh (backlog.py peers, bl_peers.py), whose gates g1 and g2 (class agents-rule) wait on the operator.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-775f1f5d",
+  "operator": "op-f618a13e"
 }
