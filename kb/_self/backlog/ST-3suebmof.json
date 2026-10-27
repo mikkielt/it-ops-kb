@@ -55,7 +55,11 @@
         "all items' files, every chunk": "ST-3suebmof",
         "open items' files, first chunk only": "ST-3suebmof"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "open items' files, every chunk",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -71,7 +75,11 @@
         "id and title (from this clone's item files, else the integration main's)": "ST-3suebmof",
         "id only": "ST-3suebmof"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "id and title (from this clone's item files, else the integration main's)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
