@@ -4611,3 +4611,14 @@ _Agent: kb-research_
 - See python/ps-process-cpu.md.
 
 _Agent: kb-research_
+
+## QK-github-actions-workflow-take-boolean-workflow. How does a GitHub Actions workflow take a boolean workflow_dispatch input, time out a job and still run a check after failed tests?
+- A `workflow_dispatch` input has a `type` (`boolean`, `choice`, `number`, `environment` or `string`); the `inputs` context keeps a boolean a boolean, `github.event.inputs` turns it into a string; the button needs the workflow file on the default branch. [DOC S-or6ws3uz, S-n43vwkxh, S-766tl7fe]
+- `jobs.<job_id>.timeout-minutes` cancels the job after that many minutes (default 360); a step's own `timeout-minutes` is a positive integer of at most 360. [DOC S-or6ws3uz]
+- An `if` without a status check function gets `success()`, so a step after a failed one is skipped; `always()` runs it even when the run was cancelled, and the documented alternative is `!cancelled()`. A job that `needs` a failed job is skipped unless its `if` says otherwise. [DOC S-vvhj543i, S-v5kpgm6y]
+- A standard Linux runner (`ubuntu-latest`) for a public repository has 4 CPUs, 16 GB of memory and 14 GB of storage. [DOC S-eacxcx4x]
+- Conclusion: a trailers check that must run whatever the tests do takes `if: ${{ !cancelled() }}` in the test job or its own job with `needs` on the test job and that `if`; a bytecode switch reads `inputs.<name>` as a boolean, never the string of `github.event.inputs`. [DER S-vvhj543i, S-v5kpgm6y, S-n43vwkxh]
+- Open: which CPU model a runner gets was not found in the docs. [UNK]
+- See gitlab/github-actions-workflow-syntax.md, python/pytest.md.
+
+_Agent: kb-research_

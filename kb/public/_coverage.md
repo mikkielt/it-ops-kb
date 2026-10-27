@@ -211,6 +211,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `gitlab/git-refs` | P3 | complete | `gitlab/git-refs.md` | 6 |
 | `gitlab/git-test-repositories` | P3 | complete | `gitlab/git-test-repositories.md` | 57 |
 | `gitlab/git-trailers-and-hooks` | P3 | partial | `gitlab/git-trailers-and-hooks.md` | 30 |
+| `gitlab/github-actions-workflow-syntax` | P3 | complete | `gitlab/github-actions-workflow-syntax.md` | 8 |
 | `gitlab/github-branch-rules-and-auto-merge` | P3 | complete | `gitlab/github-branch-rules-and-auto-merge.md` | 18 |
 | `gitlab/github-issue-forms` | P3 | partial | `gitlab/github-issue-forms.md` | 11 |
 | `gitlab/hosted-runners-windows` | P3 | complete | `gitlab/hosted-runners-windows.md` | 5 |
