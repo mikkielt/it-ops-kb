@@ -13,6 +13,9 @@ appends a report to the local query log spool. The Claude Code plugin starts it.
   python3 _tools/kb_mcp.py --register-local --project DIR [--dry-run]   the same for a directory above the clone that
                                      sessions start in (a VS Code workspace), where the clone's registration does not
                                      apply; --dry-run prints the `claude mcp` commands and runs none
+  python3 _tools/kb_mcp.py --register-local --coord-tools on|off   whether the server lists the coord_ tools (on by
+                                     default): off registers it with KB_COORD_TOOLS=0 in its env, replacing a `kb` server
+                                     already registered for the clone, on with no such variable
   python3 _tools/kb_mcp.py --status --project DIR   also print what DIR registers and any .mcp.json there that does not
                                      parse (such as a Windows path with single backslashes), with the servers it leaves unloaded
 
@@ -123,7 +126,7 @@ client's `server/discover` gets supportedVersions, and each modern request's `_m
 requires. Only JSON-RPC messages go to stdout; the server exits on EOF.
 
 Answers: how the kb MCP server runs over stdio, which tools it lists and how to register it
-Use: python3 _tools/kb_mcp.py [--status] [--roots NAME[,NAME]] [--register-local]
+Use: python3 _tools/kb_mcp.py [--status] [--roots NAME[,NAME]] [--register-local [--coord-tools on|off]]
 """
 import contextlib, csv, hashlib, http.client, io, json, os, re, subprocess, sys, threading, time
 import urllib.error, urllib.request
@@ -1958,23 +1961,28 @@ def registration():
     return out
 
 
-def register_local(project=None, dry_run=False):
+def register_local(project=None, dry_run=False, coord_tools=None):
     """A clone gets the servers a host gets from the plugins, under the names the clone's settings allow: `kb`
     (tools mcp__kb__*) and the docs servers (mcp__microsoft-learn__*, ...). The root has no .mcp.json because a
     plugin sourced from the root would load it. A `kb` server that runs another clone's kb_mcp.py is replaced: removed
     first when it is at local scope, and shadowed by the local one at project or user scope. With `project`, a
     directory above the clone that sessions start in (a VS Code workspace), the servers are registered for that
-    directory instead. `dry_run` prints the commands and runs none. Returns the exit code."""
+    directory instead. `dry_run` prints the commands and runs none. `coord_tools` "off" registers `kb` with
+    KB_COORD_TOOLS=0 in its env, "on" with none; either one given replaces a `kb` server already registered, so the
+    choice is recorded. Returns the exit code."""
     with open(DOCS_MCP, encoding="utf-8") as f:
         servers = {"kb": {"command": sys.executable, "args": [str(SCRIPT)]}, **json.load(f)["mcpServers"]}
+    if coord_tools == "off":
+        servers["kb"]["env"] = {"KB_COORD_TOOLS": "0"}
     where = str(project) if project else kbcommon.HOME
     scope, script = registered_kb(project)
     other = other_clone(script)
+    replace = bool(other or (coord_tools and scope))
     code = 0
     for name, cfg in servers.items():
         add = ["claude", "mcp", "add-json", "--scope", "local", name, json.dumps(cfg)]
         try:
-            if name == "kb" and other:
+            if name == "kb" and replace:
                 if scope == "local":
                     if dry_run:
                         print(f"{name}: would run in {where}: claude mcp remove --scope local {name}")
@@ -1985,7 +1993,8 @@ def register_local(project=None, dry_run=False):
                             print(f"{name}: runs {script}; removing it failed: {(rm.stderr or rm.stdout).strip()}")
                             code = code or rm.returncode
                             continue
-                print(f"{name}: replacing the {scope} scope server, which runs another clone's {script}")
+                print(f"{name}: replacing the {scope} scope server, which runs "
+                      + (f"another clone's {script}" if other else f"{script}, to record --coord-tools {coord_tools}"))
             elif not dry_run:
                 have = subprocess.run(["claude", "mcp", "get", name], cwd=where, capture_output=True, text=True,
                                       encoding="utf-8", timeout=60)
@@ -2073,8 +2082,12 @@ def main():
     argv = sys.argv[1:]
     try:
         project = project_arg(argv)
+        coord_tools = coord_tools_arg(argv)
     except ValueError as e:
         print(f"kb_mcp: {e}", file=sys.stderr)
+        sys.exit(2)
+    if coord_tools and "--register-local" not in argv:
+        print("kb_mcp: --coord-tools goes with --register-local", file=sys.stderr)
         sys.exit(2)
     if "--dry-run" in argv and "--register-local" not in argv:
         print("kb_mcp: --dry-run goes with --register-local", file=sys.stderr)
@@ -2083,7 +2096,7 @@ def main():
         print("kb_mcp: --project goes with --register-local or --status", file=sys.stderr)
         sys.exit(2)
     if "--register-local" in argv:
-        sys.exit(register_local(project, "--dry-run" in argv))
+        sys.exit(register_local(project, "--dry-run" in argv, coord_tools))
     script = session_script()
     if script:
         redirect(script)
@@ -2118,6 +2131,20 @@ def project_arg(argv):
     if not value.strip():
         raise ValueError("--project needs a directory: --project DIR")
     return os.path.abspath(value)
+
+
+def coord_tools_arg(argv):
+    """The choice `--coord-tools on|off` (or `--coord-tools=...`) gives, None without the flag; ValueError when it
+    names neither."""
+    value = None
+    for i, a in enumerate(argv):
+        if a == "--coord-tools":
+            value = argv[i + 1] if i + 1 < len(argv) else ""
+        elif a.startswith("--coord-tools="):
+            value = a.split("=", 1)[1]
+    if value is not None and value not in ("on", "off"):
+        raise ValueError("--coord-tools needs on or off: --coord-tools on|off")
+    return value
 
 
 def roots_arg(argv):
