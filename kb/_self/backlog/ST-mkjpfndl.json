@@ -1,0 +1,26 @@
+{
+  "id": "ST-mkjpfndl",
+  "kind": "story",
+  "title": "The publish scan's SCAN_FORM is bumped for the leak rule's final form, so verdicts cached under the intermediate rules are recomputed",
+  "status": "draft",
+  "parent": "EP-n4dci4w7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbpublic.SCAN_FORM is 7, one past the value c9732c3471 set, since 3c51b9650b and b604cb3b6b widened and then narrowed the rule after it; a clone's cached publish verdicts are recomputed under the final rule (SP-fn7letri review G7 on ST-yl6b2ues).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import kbpublic as p;print(p.SCAN_FORM);sys.exit(0 if p.SCAN_FORM>=7 else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbpublic.py"
+  ],
+  "links": [
+    "parked: SP-fn7letri review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

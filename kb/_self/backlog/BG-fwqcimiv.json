@@ -1,0 +1,28 @@
+{
+  "id": "BG-fwqcimiv",
+  "kind": "bug",
+  "title": "The leak scan reads a prose secret assignment followed by a comma, bracket or backtick as a placeholder and passes it",
+  "status": "draft",
+  "parent": "EP-n4dci4w7",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kbpublic.file_hits flags an unquoted prose secret assignment whose value is followed by , ) ] } or a backtick, as it flags one followed by a full stop or a space; the adversarial corpus gains rows for those layouts. Found by the SP-fn7letri review (G1): ASSIGNMENT's value swallows the trailing punctuation and _value then reads it as a code expression (kbcommon.py:260-291).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kbpublic as p;v='Pass'+'12345x';r=[bool([h for h in p.file_hits('kb/public/x.md',t,{}) if h[0]=='secret']) for t in ['the password: '+v+', then rotate','(password='+v+')','password=`'+v+'`']];print(r);sys.exit(0 if all(r) else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/kbcommon.py",
+    "_tools/fixtures/redact/adversarial.json",
+    "_tools/test_leaks.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-fn7letri review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

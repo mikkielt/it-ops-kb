@@ -1,0 +1,26 @@
+{
+  "id": "ST-j65e5bgs",
+  "kind": "story",
+  "title": "kb/_self/coordination.md says claim reads coord state where take_claim refuses on the run key, and its lock table counts the refusals and own records consistently",
+  "status": "draft",
+  "parent": "EP-n4dci4w7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "coordination.md no longer says claim's refusal reads no coord state (take_claim refuses when the run key holds another claimer's state, after ST-u6jyv4ch); the lock-role table counts the claim refusals it lists and names own/ records once, as correctness, since bl_procs.recorded_pids reads own/process records (SP-fn7letri review G4, G5).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/_self/coordination.md',encoding='utf-8').read();rows=[l for l in t.splitlines() if l.startswith('|') and 'own/' in l];bad='reads no coord state' in t;print(bad,len(rows));sys.exit(0 if not bad and len(rows)==1 else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/coordination.md"
+  ],
+  "links": [
+    "parked: SP-fn7letri review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

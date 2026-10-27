@@ -1,0 +1,29 @@
+{
+  "id": "BG-d6znzh6b",
+  "kind": "bug",
+  "title": "selfcheck and backlog.py procs still call a fresh-transcript claude session an orphan: no caller passes fresh= to bl_procs.classify",
+  "status": "draft",
+  "parent": "EP-n4dci4w7",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bl_selfcheck.check_orphans and backlog.py procs count a claude session whose transcript was written within the last 10 minutes as detached, as the sessions panel does, by passing fresh pids to bl_procs.classify (SP-fn7letri review G2 on ST-kxnlpycw clause 1).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re,glob,sys;n=sum(len(re.findall(r'classify\\([^)]*fresh=',open(f,encoding='utf-8').read())) for f in glob.glob('_tools/*.py'));print(n);sys.exit(0 if n else 1)"
+    ]
+  },
+  "repro_reason": "the end-to-end failure needs a live orphaned claude pid with a fresh transcript; the repro counts callers that pass fresh= to classify",
+  "touches": [
+    "_tools/bl_procs.py",
+    "_tools/bl_selfcheck.py",
+    "_tools/mon_sessions.py",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-fn7letri review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

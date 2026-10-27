@@ -1,0 +1,27 @@
+{
+  "id": "BG-v53lnj6a",
+  "kind": "bug",
+  "title": "kbmon's landing_steps ignores every land.step of an item that once landed with exit 0, so a reopened item's second landing never shows",
+  "status": "draft",
+  "parent": "EP-n4dci4w7",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "mon_sessions.landing_steps ignores a land.step row only when a land.end of exit 0 for the same item comes after it, so a reopened item's later landing shows as in landing (SP-fn7letri review G6 on ST-kxnlpycw; the operator's g1 answer).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import inspect,sys;sys.path.insert(0,'_tools');import mon_sessions as m;s=inspect.getsource(m.landing_steps);print('ended' in s and 'ended.discard' not in s and 'ended.remove' not in s);sys.exit(1 if 'ended' in s and 'ended.discard' not in s and 'ended.remove' not in s else 0)"
+    ]
+  },
+  "repro_reason": "landing_steps reads the clone's ops rows; planting rows needs a spool fixture, so the repro reads the function for a permanent per-item ended set",
+  "touches": [
+    "_tools/mon_sessions.py",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-fn7letri review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
