@@ -992,14 +992,16 @@ COORD_TOOL_LIST = [
                      "required": ["key", "token"], "additionalProperties": False},
      "annotations": {"title": "Release a claim", **COORD_WRITE, "destructiveHint": True}},
     {"name": "coord_post", "title": "Post an event",
-     "description": COORD_DOCS + "Add an event: kind (claim, release, fact_added, gap_opened, dup_of, lesson, heartbeat, "
+     "description": COORD_DOCS + "Add an event: kind (claim, release, fact_added, code_added, gap_opened, dup_of, lesson, heartbeat, "
                     "intent, progress, ask, answer) and up to 8 id fields. A value is an id of at most 120 characters of letters, "
                     "digits and _ . : / # @ -; free text is refused. intent takes session, item, topic, touch; an intent "
                     "with a session shows in coord_digest only while coord_claim holds the key session/<that id>: without "
                     "that claim it is posted and never shown, with no error. progress takes item and state (claimed, working, "
                     "blocked, returned, failed, staging, landing, landed, refused, released, or done) and the fields exit, gates and step. ask takes id, to (a session, item or agent id, or any) and ref (the key whose value holds "
                     "the question); answer takes id, state (working, input-required, completed, failed, rejected) and "
-                    "ref (the key whose value holds the answer): put the text under that key first. Returns seq.",
+                    "ref (the key whose value holds the answer): put the text under that key first. code_added takes target "
+                    "(REPO:PATH[#SYMBOL]) and ref (path:line): post one for each code fact or map entry you add under a coord_dedup "
+                    "code claim. Returns seq.",
      "inputSchema": {"type": "object", "properties": {
          "kind": {"type": "string"},
          "fields": {"type": "object", "maxProperties": 8, "additionalProperties": {"type": "string"},
@@ -1050,13 +1052,17 @@ COORD_TOOL_LIST = [
                     "it claims the terms the kb lacks that no overlapping live claim covers and returns topic, terms, "
                     "uncovered (research only these), overlaps (each other holder's claim and the terms it shares), held, "
                     "claimed and token (only when it claimed: keep it for coord_renew and coord_release of the claimed "
-                    "keys and as token of a later dedup under the same holder). Takes up to two minutes: it runs the pack.",
+                    "keys and as token of a later dedup under the same holder). code claims code targets the same way "
+                    "(a claim on a path covers its symbols): overlaps then also lists each other holder's covering claim as "
+                    "holder and targets, code_uncovered the targets to map yourself; read the code_added events of the holders "
+                    "(coord_wait kind code_added) instead of reading the code they mapped. Takes up to two minutes: it runs the pack.",
      "inputSchema": {"type": "object", "properties": {
          "question": {"type": "string", "minLength": 1, "description": "the research question, as it would be asked of kb_pack"},
          "holder": {"type": "string", "description": "name shown to a later question that overlaps this one (default anonymous)"},
          "topic": {"type": "string", "description": "the article path to anchor the claim on, instead of the pack's first article"},
          "token": {"type": "string", "minLength": 1, "description": "the token an earlier coord_dedup printed: its claims under this holder are yours, not an overlap"},
-         "ttl": {"type": "number", "exclusiveMinimum": 0, "description": "lease length in seconds (default 3600)"}},
+         "ttl": {"type": "number", "exclusiveMinimum": 0, "description": "lease length in seconds (default 3600)"},
+         "code": {"type": "array", "items": {"type": "string"}, "description": "code targets to claim beside the research terms, each REPO:PATH or REPO:PATH#SYMBOL"}},
          "required": ["question"], "additionalProperties": False},
      "annotations": {"title": "Check a research question against live claims", **COORD_WRITE}},
 ]
@@ -1176,8 +1182,8 @@ def coord_dedup(args):
     question = args.get("question")
     if not isinstance(question, str) or not question.strip():
         raise ToolError("question is required: the research question to check against the live claims")
-    flags = coord_argv("dedup", {k: v for k, v in args.items() if k != "question"}, ("holder", "topic", "token", "ttl"),
-                       {"holder": "--holder", "topic": "--topic", "token": "--token", "ttl": "--ttl"})
+    flags = coord_argv("dedup", {k: v for k, v in args.items() if k != "question"}, ("holder", "topic", "token", "ttl", "code"),
+                       {"holder": "--holder", "topic": "--topic", "token": "--token", "ttl": "--ttl", "code": "--code"})
     return coord_run([*flags, "--", question], wait_s=COORD_DEDUP_WAIT_S)
 
 

@@ -71,6 +71,27 @@
     "ST-oykcufk5",
     "BG-ctp52w3e"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How is a code claim keyed and how does an overlap or held path show: the goal leaves the key shape, the covered-target output and a path claimed over held symbols open",
+      "options": [
+        "Key code:REPO:PATH[#SYMBOL]; covered targets listed in overlaps as {holder, targets}; a path claimed over another holder's symbols is claimed and lists them in held; code_added requires target and takes ref path:line optional",
+        "Key code:REPO:PATH[#SYMBOL]; a path over another holder's symbols is covered too and not claimed"
+      ],
+      "recommendation": "Key code:REPO:PATH[#SYMBOL]; covered targets listed in overlaps as {holder, targets}; a path claimed over another holder's symbols is claimed and lists them in held; code_added requires target and takes ref path:line optional",
+      "do": {
+        "Key code:REPO:PATH[#SYMBOL]; covered targets listed in overlaps as {holder, targets}; a path claimed over another holder's symbols is claimed and lists them in held; code_added requires target and takes ref path:line optional": "ST-deyyxb4c",
+        "Key code:REPO:PATH[#SYMBOL]; a path over another holder's symbols is covered too and not claimed": "ST-deyyxb4c"
+      },
+      "class": "agents-rule",
+      "answer": "Key code:REPO:PATH[#SYMBOL]; covered targets listed in overlaps as {holder, targets}; a path claimed over another holder's symbols is claimed and lists them in held; code_added requires target and takes ref path:line optional",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "moved out: SP-n7f53pgv"
   ],

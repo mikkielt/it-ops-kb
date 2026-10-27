@@ -31,9 +31,10 @@
                                                      S seconds pass; --kind keeps one kind, --item the events whose
                                                      item field is one of IDS (comma-separated); --pid (repeatable,
                                                      local store only) also ends the wait when that process has ended
-  coord.py dedup QUESTION [--holder NAME] [--topic PATH] [--token T] [--ttl S]
-                                                     claim the question's lack terms that no overlapping live claim
-                                                     covers (through --url too: the server runs the pack on its own kb)
+  coord.py dedup QUESTION [--holder NAME] [--topic PATH] [--token T] [--ttl S] [--code REPO:PATH[#SYMBOL] ...]
+                                                     claim the question's lack terms (and each --code target) that no
+                                                     overlapping live claim covers (through --url too: the server runs
+                                                     the pack on its own kb)
 
 The store is one SQLite file: `--store PATH` (before or after the command), else the environment variable
 KB_COORD_STORE, else `kb-coord/coord.sqlite` in the common git directory of the project (CLAUDE_PROJECT_DIR, else the
@@ -54,7 +55,7 @@ item and its descendants, read through `bl_cost.spend_usd`, the reader `backlog.
 `bench_core.PRICE`; null without a budget) and `over_budget` (true when the spend is above the budget), and `digest`
 adds `over budget` to the line of such a claim. Nothing is stopped: the claim, its renewals and its holder go on.
 
-An event is a kind from a closed list (claim, release, dedup, fact_added, gap_opened, dup_of, lesson, heartbeat, intent, progress, ask, answer, coordinate) and up to
+An event is a kind from a closed list (claim, release, dedup, fact_added, code_added, gap_opened, dup_of, lesson, heartbeat, intent, progress, ask, answer, coordinate) and up to
 eight fields, each NAME=VALUE: an event carries references only, so a VALUE is an id of at most 120 characters of
 letters, digits and `_ . : / # @ -` (a source id, a `path:line` fact key, a QK answer id, a backlog item id, a pack
 handle) and free text is refused. `post` numbers events 1, 2, 3 ... in the store; `wait` polls the store every 50 ms
@@ -95,7 +96,7 @@ way), newest first, cut at N lines; an intent line ends with `state=` and `age=`
 later progress event moved its items, those of its items that overlap a key when any do (an intent for A,B read for B shows B's
 state, not A's), else all of them; with nothing to show it prints nothing.
 
-A `claim` of a research key (`research:TOPIC:TERM`) or a backlog item id leaves a `claim` event (fields key, holder), its `release`
+A `claim` of a research key (`research:TOPIC:TERM`), a code key (`code:REPO:PATH[#SYMBOL]`) or a backlog item id leaves a `claim` event (fields key, holder), its `release`
 a `release` event and a claim the store refuses a `dup_of` event (key, holder of the refused claim, held_by); a session's presence
 lease `session/ID` and any other key leave none. `dedup` leaves a `claim` event for each key it claims and one `dedup` event
 (holder, topic, terms, claimed, overlapping, held: lack terms, comma-separated, `-` for none).
@@ -114,6 +115,16 @@ claims every term not covered (one lease, one token, shown once, for the keys in
 already holds, below the overlap threshold: `term`, `holder`; `dedup` claims no key a live claim holds), `claimed`,
 `ttl`, `token` (only when it claimed) and `seq` (the newest event, for `wait --since`). A question every term of which
 is covered prints `uncovered` empty and claims nothing; exit 0 either way.
+
+`dedup --code REPO:PATH[#SYMBOL]` (repeatable) claims code targets beside the research terms, each under the key `code:` and the
+target, in the same transaction, lease and token. A target is a repository name, a path and, after `#`, an optional symbol, an id
+like an event's field value (REPO has no `:`, the whole target at most 115 characters). Another holder's live claim covers a target
+when it is the same target or a claim on its path (a claim on a path covers its symbols): the target is listed in `overlaps` as
+`{holder, targets}` and claimed by nobody, while the targets not covered are claimed (their keys in `claimed`, the targets in
+`code_uncovered`). A claim on a path while another holder holds symbols under it is made and lists those symbols in `held`
+(`term` the symbol's target, `holder`). A token holder's own claims are never an overlap. The holder posts each code fact or map
+entry it adds as a `code_added` event (fields `target`, REPO:PATH[#SYMBOL], and optionally `ref`, `path:line`), which
+`wait --kind code_added` returns: an agent that waits on the claim reads those events instead of reading the code.
 
   coord.py serve --bind [HOST:]PORT --keys DIR       answer every command above as a JSON request over HTTP, on the store
   coord.py --url URL --key-file PATH COMMAND ...     send COMMAND to such a server instead of a local store
@@ -181,6 +192,7 @@ RESEARCH = "research:"  # a research claim's key: research:<anchor topic>:<lack 
 WHOLE = "WHOLE"  # the term of a research claim on a topic as a whole: research:<anchor topic>:WHOLE (upper case: no term id is)
 KEY_TOPIC = 80  # the most characters of an anchor topic a research key holds; a longer one is cut and hashed, which leaves the term room
 PLAIN_LETTERS = str.maketrans({"ł": "l", "đ": "d", "ø": "o", "ß": "ss", "æ": "ae", "œ": "oe", "ð": "d", "þ": "th"})
+CODE = "code:"  # a code claim's key: code:<repository>:<path>[#<symbol>]
 HOLDER_ENV = "KB_COORD_HOLDER"
 DEDUP_SECONDS = 3600
 SCHEMA = (
@@ -191,9 +203,9 @@ EVENTS_SCHEMA = (
     "CREATE TABLE IF NOT EXISTS events ("
     "seq INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT NOT NULL, fields TEXT NOT NULL, at REAL NOT NULL)"
 )
-KINDS = ("claim", "release", "dedup", "fact_added", "gap_opened", "dup_of", "lesson", "heartbeat", "intent", "progress", "ask", "answer", "coordinate", "blocked")
+KINDS = ("claim", "release", "dedup", "fact_added", "code_added", "gap_opened", "dup_of", "lesson", "heartbeat", "intent", "progress", "ask", "answer", "coordinate", "blocked")
 KIND_FIELDS = {"intent": ("session", "item", "topic", "touch", "operator"), "progress": ("item", "state", "exit", "gates", "step"),
-               "ask": ("id", "to", "ref"), "answer": ("id", "state", "ref"),
+               "ask": ("id", "to", "ref"), "answer": ("id", "state", "ref"), "code_added": ("target", "ref"),
                "coordinate": ("item", "other", "strategy", "touch", "session", "operator"),
                "blocked": ("session", "state", "on", "item", "operator")}
 STRATEGIES = ("wait", "ask", "after", "join", "proceed")  # what a coordinate event says its session will do about the other item
@@ -213,6 +225,8 @@ STEP_FIELDS = ("exit", "gates", "step")  # the fields of a progress event beside
 ANSWER_STATES = ("working", "input-required", "completed", "failed", "rejected")  # A2A's task states
 FIELD_NAME = re.compile(r"[a-z][a-z0-9_]{0,31}")
 FIELD_VALUE = re.compile(r"[A-Za-z0-9_.:/#@-]{1,120}")
+CODE_TARGET = re.compile(r"(?=.{1,%d}$)([A-Za-z0-9_.@-]+):([A-Za-z0-9_./@-]+)(?:#([A-Za-z0-9_.:@-]+))?" % (120 - len(CODE)))
+CODE_REF = re.compile(r"[A-Za-z0-9_.:/#@-]+:[0-9]+")  # a path:line fact key
 ID_LIST = re.compile(r"(?=.{1,120}$)[A-Za-z0-9_.:/#@-]+(,[A-Za-z0-9_.:/#@-]+)*")
 GLOB_LIST = re.compile(r"(?=.{1,120}$)[A-Za-z0-9_.:/#@*?-]+(,[A-Za-z0-9_.:/#@*?-]+)*")
 LIST_VALUES = {("intent", "item"): ID_LIST, ("intent", "topic"): ID_LIST, ("intent", "touch"): GLOB_LIST,
@@ -334,9 +348,9 @@ def team_refusal(args):
 
 
 def recorded(key):
-    """Whether a claim of KEY leaves events: a research key or a backlog item id, never a session's presence lease (the
+    """Whether a claim of KEY leaves events: a research key, a code key or a backlog item id, never a session's presence lease (the
     coord hook renews those all session long)."""
-    if key.startswith(RESEARCH):
+    if key.startswith((RESEARCH, CODE)):
         return True
     if key.startswith(SESSION_LEASE):
         return False
@@ -551,6 +565,11 @@ def check_kind(kind, fields):
                               or fields.get("on", BLOCKED_ON[0]) not in BLOCKED_ON):
         raise Refused({"ok": False, "error": "a blocked takes session, state (one of " + ", ".join(BLOCKED_STATES) + "), and optionally "
                                              "on (one of " + ", ".join(BLOCKED_ON) + "), item and operator"}, 2)
+    if kind == "code_added":
+        if "target" not in fields or CODE_TARGET.fullmatch(fields["target"]) is None:
+            raise Refused({"ok": False, "error": "a code_added takes target (REPO:PATH[#SYMBOL]) and optionally ref (path:line)"}, 2)
+        if "ref" in fields and CODE_REF.fullmatch(fields["ref"]) is None:
+            raise Refused({"ok": False, "error": f"a code_added ref is a path:line, not {fields['ref'][:40]!r}"}, 2)
     if kind == "ask" and not {"id", "to", "ref"} <= set(fields):
         raise Refused({"ok": False, "error": "an ask takes id, to (a session, item or agent id, or any) and ref (the key whose value holds the question)"}, 2)
     if kind == "answer" and ("id" not in fields or "ref" not in fields or fields.get("state") not in ANSWER_STATES):
@@ -840,6 +859,50 @@ def research_key(topic, term):
     return f"{RESEARCH}{topic_key(topic)}:{term}"
 
 
+def code_target(text):
+    """A --code value as REPO:PATH[#SYMBOL], an id the claim key `code:` + target takes (at most 115 characters)."""
+    if CODE_TARGET.fullmatch(text) is None:
+        raise argparse.ArgumentTypeError("must be REPO:PATH or REPO:PATH#SYMBOL, up to 115 characters of letters, digits and _ . / @ - "
+                                         "(a : only after REPO or inside SYMBOL)")
+    return text
+
+
+def covers(theirs, mine):
+    """Whether a claim on the code target THEIRS covers MINE: the same target, or THEIRS is the path of MINE's symbol."""
+    a, b = CODE_TARGET.fullmatch(theirs), CODE_TARGET.fullmatch(mine)
+    return bool(a and b and a.group(1, 2) == b.group(1, 2) and (a.group(3) is None or a.group(3) == b.group(3)))
+
+
+def code_claims(con, holder, token, code, ttl, now, fresh):
+    """Claim the code targets CODE that no live claim covers, inside dedup's transaction. A claim of another holder (or of
+    this holder without the caller's TOKEN) that covers a target is an overlap and is not claimed again; the caller's own
+    is skipped; FRESH is the token of the new claims.
+    Returns (uncovered targets, overlaps as {holder, targets}, held as {term, holder}, claimed keys, claimed targets)."""
+    live, own = {}, set()
+    for row in con.execute("SELECT key, holder, token FROM entries WHERE holder IS NOT NULL AND substr(key, 1, ?) = ? ORDER BY key",
+                           (len(CODE), CODE)):
+        target = row["key"][len(CODE):]
+        if row["holder"] == holder and token and row["token"] == token:
+            own.add(target)
+        else:
+            live.setdefault(row["holder"], []).append(target)
+    shared, uncovered, held, keys = {}, [], [], []
+    for target in dict.fromkeys(code):
+        if any(covers(o, target) for o in own):
+            continue
+        who = next((w for w, held_by in sorted(live.items(), key=lambda pair: str(pair[0])) if any(covers(t, target) for t in held_by)), None)
+        if who is not None:
+            shared.setdefault(who, []).append(target)
+            continue
+        uncovered.append(target)
+        if CODE_TARGET.fullmatch(target).group(3) is None:
+            held += [{"term": t, "holder": w} for w, held_by in sorted(live.items(), key=lambda pair: str(pair[0]))
+                     for t in held_by if covers(target, t) and t != target]
+        take(con, CODE + target, holder, fresh, ttl, now)
+        keys.append(CODE + target)
+    return uncovered, [{"holder": w, "targets": t} for w, t in sorted(shared.items(), key=lambda pair: str(pair[0]))], held, keys
+
+
 def dedup(args, clock):
     """Claim the lack terms of the question's pack that no overlapping live claim covers; name the claims that do.
     A claim on the same anchor topic overlaps when it shares at least half of the smaller lack-set's terms. A pack with
@@ -855,7 +918,9 @@ def dedup(args, clock):
         if term_id(word, room) not in terms:
             terms.append(term_id(word, room))
     token = secrets.token_hex(16)
+    code = getattr(args, "code", None) or []
     overlapping, covered, own, taken, others = [], set(), set(), [], []
+    code_uncovered, shared, code_held, code_keys = [], [], [], []
     with Tx(args.store) as con:
         now = clock()
         end_leases(con, now)
@@ -890,15 +955,23 @@ def dedup(args, clock):
                 take(con, research_key(topic, term), holder, token, args.ttl, now)
                 taken.append(research_key(topic, term))
                 add_event(con, args, "claim", {"key": taken[-1], "holder": holder}, now)
+        if code:
+            code_uncovered, shared, code_held, code_keys = code_claims(con, holder, args.token, code, args.ttl, now, token)
+            for key in code_keys:
+                add_event(con, args, "claim", {"key": key, "holder": holder}, now)
         add_event(con, args, "dedup", {
             "holder": holder, "topic": topic, "terms": term_list(terms),
             "claimed": term_list(t for t in wanted if research_key(topic, t) in taken),
             "overlapping": term_list(sorted(covered or {t for o in overlapping for t in o["terms"]})),
-            "held": term_list(o["term"] for o in others)}, now)
+            "held": term_list(o["term"] for o in others),
+            **({"code": term_list(k[len(CODE):] for k in code_keys)} if code else {})}, now)
         last = con.execute("SELECT COALESCE(MAX(seq), 0) FROM events").fetchone()[0]
     body = {"ok": True, "topic": topic, "holder": holder, "terms": terms, "uncovered": uncovered, "overlaps": overlapping,
             "held": others, "claimed": taken, "ttl": args.ttl, "seq": last}
-    if taken:
+    if code:
+        body.update({"overlaps": overlapping + shared, "held": others + code_held, "claimed": taken + code_keys,
+                     "code_uncovered": code_uncovered})
+    if taken or code_keys:
         body["token"] = token
     return body
 
@@ -1035,6 +1108,8 @@ def build_parser(parser_class=argparse.ArgumentParser, remote=False):
     p.add_argument("--topic", type=topic_path, help="the article path to anchor the claim on, instead of the pack's first article")
     p.add_argument("--token", type=token, help="the token an earlier dedup printed: its claims under --holder are yours, not an overlap")
     p.add_argument("--ttl", type=positive, default=DEDUP_SECONDS, help=f"lease length in seconds (default {DEDUP_SECONDS})")
+    p.add_argument("--code", type=code_target, action="append", default=[], metavar="REPO:PATH[#SYMBOL]",
+                   help="a code target to claim beside the research terms; a claim on a path covers its symbols; repeatable")
     if not remote:
         p = sub.add_parser("serve", parents=parents)
         p.add_argument("--bind", required=True, metavar="[HOST:]PORT", help="host (default 127.0.0.1) and port (0: a free one)")
