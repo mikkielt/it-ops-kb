@@ -2,7 +2,7 @@
   "id": "ST-x7npr7es",
   "kind": "story",
   "title": "Research sprint goal: Session-load figures you can trust, and the housekeeping they need",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-m5m67goe",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-557596e3",
+  "operator": "op-f618a13e"
 }
