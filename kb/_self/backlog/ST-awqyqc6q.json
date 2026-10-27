@@ -81,7 +81,11 @@
         "step with if: always() in the kb-tests job; workflow env empties PYTHONDONTWRITEBYTECODE when write_bytecode is true": "ST-awqyqc6q",
         "own job with needs: kb-tests; env set per job": "ST-awqyqc6q"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "step with if: always() in the kb-tests job; workflow env empties PYTHONDONTWRITEBYTECODE when write_bytecode is true",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Planner (SP-fn7letri): check 2 (selfdoc.py check) passes before the work and pins that the docs stay consistent; check 3 reads git.md's check-lanes lines (fails today: line 8 names the manual CI job).",
