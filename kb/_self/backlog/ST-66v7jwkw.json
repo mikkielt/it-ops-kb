@@ -37,6 +37,28 @@
   "relates_to": [
     "ST-rodj5ltd"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does a session-load replay keep the red-pipeline hook from reading a forge?",
+      "options": [
+        "set forge to empty in the replay clone's backlog.json (committed), so the hook answers not checked",
+        "plant a canned pipeline answer through a glab shim on PATH"
+      ],
+      "recommendation": "set forge to empty in the replay clone's backlog.json (committed), so the hook answers not checked",
+      "reason": "a shim is still a glab process, and a canned answer needs a hook in bl_forge outside the touches",
+      "do": {
+        "set forge to empty in the replay clone's backlog.json (committed), so the hook answers not checked": "ST-66v7jwkw",
+        "plant a canned pipeline answer through a glab shim on PATH": "ST-66v7jwkw"
+      },
+      "class": "design",
+      "answer": "plant a canned pipeline answer through a glab shim on PATH",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-3qowbedb review"
   ],
