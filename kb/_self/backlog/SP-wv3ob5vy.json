@@ -2,7 +2,7 @@
   "id": "SP-wv3ob5vy",
   "kind": "sprint",
   "title": "Many sessions at once and the paid session-load record",
-  "status": "planned",
+  "status": "active",
   "goal": "session-load replays 1, 4 and 8 sessions at once; its live mode attributes the running sessions' process trees through the shared live-session reader; its paid mode runs capped Haiku 5.5 sessions per arm with a dry-run plan; and benchmarks.csv holds the paid record of arms A, C, D and the lean worker arm at 1, 4 and 8 sessions under the 4 USD cap, with file reads from the operator's capture",
   "gates": [
     {

@@ -2,7 +2,7 @@
   "id": "ST-5fakffyb",
   "kind": "story",
   "title": "session-load runs 1, 4 and 8 sessions at once and records what they cost together",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nxb7hjwd",
   "sprint": "SP-wv3ob5vy",
   "priority": "P3",

@@ -2,7 +2,7 @@
   "id": "ST-i5az334d",
   "kind": "story",
   "title": "session-load --paid runs real Haiku 5.5 sessions per arm, with a dry-run plan and a spend cap",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-nxb7hjwd",
   "sprint": "SP-wv3ob5vy",
   "priority": "P3",
