@@ -2,7 +2,7 @@
   "id": "SP-m5m67goe",
   "kind": "sprint",
   "title": "Session-load figures you can trust, and the housekeeping they need",
-  "status": "planned",
+  "status": "active",
   "goal": "session-load's mean memory is over every sample of its phase, its rows say what each counts, a replay makes no forge call, a capture's file reads are split by kind, and the intake hook's real session-start cost is measured; the docs say arm B leaves out the pane's --receipt run; the project settings allow the five scripts the skills run; a clone that saves its coordination settings passes its own push gate; and planning states a check's margin against measured spread, reads every part of a clause, and land calls late work rows late",
   "gates": [
     {
