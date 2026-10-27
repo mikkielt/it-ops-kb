@@ -2,7 +2,7 @@
   "id": "ST-h7ddg4nu",
   "kind": "story",
   "title": "The weekly digest hook adds at most 300 ms to a session's start, still shown to the person",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-nxb7hjwd",
   "sprint": "SP-wpttdu7u",
   "priority": "P2",
@@ -60,6 +60,19 @@
   ],
   "notes": "The digest is still shown to the person once per week as the systemMessage of a synchronous hook (an async hook's message reaches Claude instead, per the linked kb fact); the review reads that. The worker measures the sync_ms figure's run-to-run spread before relying on the 300 ms bound.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-557596e3",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "4aa2fef1b6345491543222abd385ca7fc367ac1d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport csv, os, shutil, subprocess, tempfile\nCASE, BOUND_MS = 'SessionStart _tools/querylog.py digest --hook', 300\nT = tempfile.mkdtemp()\nB = os.path.join(T, 'bin'); os.mkdir(B)\nopen(os.path.join(B, 'claude'), 'w').write('#!/bin/sh\\nexit 1\\n')\nos.chmod(os.path.join(B, 'claude'), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ['PATH'])\nout = os.path.join(T, 'out.csv')\np = subprocess.run([sys.executable, '_tools/benchmarks.py', 'run', 'session-load', '--arms', 'A', '--reps', '3', '--out', out],\n                   capture_output=True, text=True, env=ENV, timeout=1800)\nrows = list(csv.DictReader(open(out, encoding='utf-8'))) if os.path.exists(out) else []\nshutil.rmtree(T, ignore_errors=True)\nassert p.returncode == 0, ('run session-load exit', p.returncode, p.stderr[-400:])\ngot = [float(r['value']) for r in rows if r['scenario'] == 'session-load' and r['arm'] == 'A' and r['metric'] == 'sync_ms' and r['case'] == CASE]\nassert got, ('no sync_ms row for', CASE)\nassert got[0] <= BOUND_MS, (CASE, 'sync_ms', got[0], 'over', BOUND_MS)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
