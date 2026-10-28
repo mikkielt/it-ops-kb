@@ -156,7 +156,12 @@
         "Only leak_hits and redact take a root; the tracked-file scan passes none": "ST-eimj36y3",
         "The tracked-file scan passes the root of each file as well": "ST-eimj36y3"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "Only leak_hits and redact take a root; the tracked-file scan passes none",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     },
     {
       "id": "g5",
