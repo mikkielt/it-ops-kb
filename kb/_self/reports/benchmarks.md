@@ -1413,7 +1413,6 @@ What it shows: `sh _tools/kbpy` adds 3.5 ms at the median to a Python start of 9
 | record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
 |---|---|---|---|---|---|---|
 | 2026-10-26 | 2026-10-26 | 4b064dd | 2.1.310 | 434 | 5 | - |
-| 2026-10-27 | 2026-10-27 | 343d41b | 2.1.311 | 442 | 5 | - |
 <!-- /bench -->
 
 The record of 2026-10-26 mixes two commits, both on `main`: its rows of arms `A`, `C` and `D` are at `4b064dd`, those of arm `B` at `786dd41`, the commit that added arm `B`'s pane commands to the tool (the table shows the commit of the first row).
@@ -1472,12 +1471,6 @@ The record of 2026-10-26 mixes two commits, both on `main`: its rows of arms `A`
 | idle hook _tools/kbgit.py publish --hook | B | 2 |
 | idle hook _tools/kbroot.py fetch --hook | B | 1 |
 | idle hook _tools/backlog.py horizon --hook | B | 4 |
-<!-- /bench -->
-
-<!-- bench:table session-load metrics=cpu_s,wall_s,spawns cases=idle hook intake real arms=A -->
-| case | arm | cpu_s | wall_s | spawns |
-|---|---|---|---|---|
-| idle hook intake real | A | 49.28 s | 50 s | 674 |
 <!-- /bench -->
 
 <!-- bench:table session-load metrics=sync_ms,async_ms -->
@@ -1547,7 +1540,6 @@ The record of 2026-10-26 mixes two commits, both on `main`: its rows of arms `A`
 What it shows (macOS, 14 cores, a load of 7.6 at the start of the reps, caches warm, one record of 5 reps):
 - **The hooks C leaves out start 17 processes in an idle session and cost about 5 CPU seconds there, 2 in the working phase.** Arm `A` starts 989 processes in the idle phase and arm `C` 972; `coord_hook.py` starts 13 of the 17 (a SessionStart and a SessionEnd call), the two `querylog.py` launch calls 2 and the digest 2. Their CPU is 17.7 s in arm `A` and 12.9 s in arm `C` idle, and 18.0 s and 15.7 s in the working phase; arm `D` starts nothing.
 - **Most starts and CPU come from hooks both arms run, the intake hook first.** It starts 950 of the idle phase's processes, about 930 of them `git log -1`, in about 14 s; `red-pipeline` starts 8, `session_start.py` 6, `horizon` 4. Only its scan of the items is measured: the replay clone has no item eligible for the drift checks the hook runs in a real clone, within its budget.
-- **The intake hook with its drift scan running item checks costs about 49 CPU seconds and runs to its wait limit.** `run session-load --intake-real` replays arm `A`'s SessionStart intake hook alone in a clone left as the checkout is, so the scan runs the checks of the items whose touches changed, until its 30 s budget is spent (record of 2026-10-27, 5 reps, a load of 6.8 at the start of the reps): `cpu_s` 49.3, `wall_s` 50.2 (the hook stops waiting for its detectors after 50 s) and 674 starts, against about 950 in the pinned replay above, where the scan only reads the items. The checks that fit the budget, and so the starts and the CPU, move with the host's speed and load. A session in the main checkout pays this once at its start, beside its work (the hook is async); the record holds these rows only, taken at a later commit than the 2026-10-26 record's.
 - **The synchronous hooks are a few hundred milliseconds each, the digest hook excepted.** `coord_hook.py` takes 142-396 ms per event, `kb_hook.py` 438 ms on a prompt and 27-43 ms on a tool call, the change router 24 ms; `querylog.py digest --hook` takes 2.0 s at SessionStart because the replay's query log home has no digest of the week yet, which a real session meets once a week. The async `capture` takes 42-47 ms per event.
 - **The replay waits for async hooks, a session does not.** Claude Code does not await them (`kb/public/claude/hooks.md`), so the intake hook's time is CPU a session spends beside its work, not time it waits; in a `-p` run it is killed at teardown. The starts counted are those of Python programs (the audit hook), the CPU of a hook command is charged to its own class (so `git` shows starts and memory, no CPU), and the memory columns are the largest process and the largest sampled sum of a class, not the host's.
 - **Arm `B`: the kbmon pane about doubles the CPU of the measured replay and is the largest memory in it** (record of 5 reps at the default 150 s window, three pane runs per phase, a load of 3.2 at the start of the reps; arm `B`'s rows are at commit `786dd41`, those of `A`, `C` and `D` at `4b064dd`). The `kbmon` class costs 22.9 s of CPU in the idle phase and 24.9 s in the working one, about 7.6 s and 8.3 s a pane run, against 17.7 s and 18.0 s for all the hooks of arm `A`; arm `B`'s total is 38.3 s and 44.1 s. Its peak memory is 689-731 MiB (one `kbmon.py` process, `ru_maxrss`) and its mean over the samples 347-365 MiB, above the 308-309 MiB peak of arm `A`'s hooks. It starts few processes of its own (2.4 `kbmon.py` starts per minute of the window, 3 pane runs of two commands). These are the pane's figures while a person watches the session, not a headless one (the mod returns at `session.start` when `isInteractive` is false); a pane run here asks `--status all` each time, so the mod's runs that need none cost less, but the mod's first refresh also runs `--receipt`, which arm `B` never does, so these figures understate the mod's by about one `--once`-sized run in the window. The 5 reps are one host at one load, and the replay's hooks and the pane run at once, so the sum is not a sum of the arms' separate figures.
