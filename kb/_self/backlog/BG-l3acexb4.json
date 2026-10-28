@@ -1,0 +1,23 @@
+{
+  "id": "BG-l3acexb4",
+  "kind": "bug",
+  "title": "benchmarks.md still says the real intake hook's cost is not measured and shows none of the 2026-10-28 intake-real rows",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/_self/reports/benchmarks.md shows the intake-real record's cpu_s, wall_s and spawns and its Setup no longer says the cost is not measured",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "t=open('kb/_self/reports/benchmarks.md',encoding='utf-8').read()\nassert 'intake real' in t, 'no intake-real figure in the report'"
+    ]
+  },
+  "repro_reason": "the gap is report text: the generated report omits rows the csv holds, so its text is the thing to read",
+  "links": [
+    "parked: SP-m5m67goe review"
+  ],
+  "notes": "Review G3: benchmarks.md:1410 Setup and :1543 bullet; the 2026-10-28 record is in the records table with no figures.",
+  "filed_in": "clone-0ea70e5c"
+}
