@@ -136,7 +136,11 @@
         "Keep the two fixture roots in this item and widen its touches to _tools/fixtures/placeholders/**": "ST-eimj36y3",
         "Leave the fixture roots out of this item": "ST-eimj36y3"
       },
-      "class": "design"
+      "class": "design",
+      "answer": "Keep the two fixture roots in this item and widen its touches to _tools/fixtures/placeholders/**",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g4",
