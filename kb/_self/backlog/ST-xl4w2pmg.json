@@ -2,7 +2,7 @@
   "id": "ST-xl4w2pmg",
   "kind": "story",
   "title": "A gate whose only operator class comes from its item's touches is held: the agent goes on with the recommendation and the operator confirms it at the review",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-lmpjclxz",
   "priority": "P1",
   "rank": 0,
@@ -91,5 +91,7 @@
     "ST-yahbzaws"
   ],
   "notes": "Design, settled at planning 2026-10-28: bl_authority.disposition(item, gate) gives block (start gate, --kind blocking, a class of the gate's own text among ceiling, secrets, push, agents-rule, querylog or delete, a strict signal, an option naming a path outside the touches or a rule-text path: AGENTS.md, CLAUDE.md, .claude/, .claude-plugin/, skills/, agents/, or the item's title giving secrets, push, ceiling or querylog), hold (any other gate whose touch-derived class is an operator class) or agent; the class stays derived as now, so kbdecide, bl_plan's start gate and horizon read it unchanged; check accepts a held gate that is provisional or agent-answered; set --touch re-derives each gate and a held gate that now blocks turns blocking; kb/_self/backlog.md (Rule-guarding work, Gate classes) and kb/_self/tools.md describe it; the item skill's step 5 says, as agents/worker.md does, that a worker goes on with the recommendation of a gate made blocking mid-work, which delivers ST-nq4pme2q (dropped at the sprint's close). Evidence: in the 2026-10-27 drain all 17 agents-rule gates and 3 of 5 push gates were classed by touches alone; ST-zkhku3sg g4 and g5 were raised after the code was committed. Checks 3 and 4 pass before the work: they pin the critical test and the eval the work changes. Premise run 2026-10-28 on origin/main 80725b09a9: check 0 fails (made blocking), check 1 fails on the title case only, check 2 fails on four lines. The _self eval rows SE-004 and SS1-077 (lookup_eval.csv) are reworded to the held rule, so the eval keeps passing. 2026-10-28 run: the dependency on ST-qqpcgqe7 (shared skills/sprint/SKILL.md) dropped on the operator's word; the second to land resolves the overlap at its rebase.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-a3c0c63f",
+  "operator": "op-f618a13e"
 }
