@@ -50,6 +50,23 @@
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How are the 20 runs split between the default arm and the two write_bytecode arms?",
+      "options": [
+        "10 default runs, then 5 true and 5 false (20 runs); bytecode-off figures also reported pooled",
+        "10 runs in all, 5 true and 5 false"
+      ],
+      "recommendation": "10 default runs, then 5 true and 5 false (20 runs); bytecode-off figures also reported pooled",
+      "do": {
+        "10 default runs, then 5 true and 5 false (20 runs); bytecode-off figures also reported pooled": "ST-moy5v7tm",
+        "10 runs in all, 5 true and 5 false": "ST-moy5v7tm"
+      },
+      "class": "design",
+      "answer": "10 default runs, then 5 true and 5 false (20 runs); bytecode-off figures also reported pooled",
+      "by": "agent"
     }
   ],
   "filed_in": "clone-0ea70e5c",
