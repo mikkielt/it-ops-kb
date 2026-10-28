@@ -126,7 +126,9 @@
       },
       "class": "design",
       "answer": "Haiku default model, tools kb and tools files, ten runs each, concurrent, the scenario's three agents and twelve questions per run",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Planner (SP-jwvaq2hu): check 0 (report --check) passes before the work and pins that benchmarks.md and README stay true to the csv; the worker runs each probe's --dry-run first and records its estimate beside the cap before paying. Planner (SP-jwvaq2hu): after ST-6zg57xiu, the last session-load item of SP-m5m67goe's chain that also writes benchmarks.csv, benchmarks.md and README.md.",
