@@ -164,6 +164,48 @@
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
+    },
+    {
+      "id": "g4",
+      "kind": "blocking",
+      "question": "When the roots a pack searched have different evidence policies, how does the evidence: line print them?",
+      "options": [
+        "One evidence: line per pack: the shared policy alone, or each policy with the roots it holds for, joined by ' | '",
+        "One evidence: line per root searched"
+      ],
+      "recommendation": "One evidence: line per pack: the shared policy alone, or each policy with the roots it holds for, joined by ' | '",
+      "reason": "because it keeps the line one short line for the common case of every root on the default",
+      "do": {
+        "One evidence: line per pack: the shared policy alone, or each policy with the roots it holds for, joined by ' | '": "ST-nqqxjvzm",
+        "One evidence: line per root searched": "ST-nqqxjvzm"
+      },
+      "class": "agents-rule",
+      "answer": "One evidence: line per pack: the shared policy alone, or each policy with the roots it holds for, joined by ' | '",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    },
+    {
+      "id": "g5",
+      "kind": "blocking",
+      "question": "Where does a root's evidence policy hold back a verdict?",
+      "options": [
+        "Only the pack's own ranking verdict: the _self rule-doc pack, the decision lift of a decided decision row and the routed experts are unchanged",
+        "Every verdict the pack prints, a decided decision row included"
+      ],
+      "recommendation": "Only the pack's own ranking verdict: the _self rule-doc pack, the decision lift of a decided decision row and the routed experts are unchanged",
+      "reason": "because the operator's decisions are not tagged facts of a root and the rule docs carry no policy",
+      "do": {
+        "Only the pack's own ranking verdict: the _self rule-doc pack, the decision lift of a decided decision row and the routed experts are unchanged": "ST-nqqxjvzm",
+        "Every verdict the pack prints, a decided decision row included": "ST-nqqxjvzm"
+      },
+      "class": "agents-rule",
+      "answer": "Only the pack's own ranking verdict: the _self rule-doc pack, the decision lift of a decided decision row and the routed experts are unchanged",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "notes": "Premise (plan time): the 'COMMUNITY and UNK are leads' rule is prose in AGENTS.md, kb_mcp.py:153 and kb_ask.py:100; kf_index.py, kf_route.py and kb_hook.py handle no COMMUNITY or UNK kind and a pack prints no evidence line. Reproduces. The public root holds 121 COMMUNITY and 239 UNK facts; no root sets a policy today, so the opt-in rule moves no live verdict; the first step runs the draft rule over rag.py eval --all with public forced strict and records which rows would move. _meta() reads flat lines, so the evidence value needs its own parse and validation in load_root. AGENTS.md (4 KB cap) and the MCP text stay out of the touches.\nOperator 2026-10-27: g3 DECISION may be listed as an ordinary kind; g1 print only when a root sets nothing; g2 any answer-kind part makes a mixed fact an answer. Order: after ST-izw3nds4 (AGENTS.md) and ST-q5o7z2mf (rag.py, AGENTS.md).\nChecks 2 (rag.py eval) and 3 (perfcheck ids) each passes before the work and pin behaviour that must stay unchanged; every other check fails before it with a one-line reason.\nContract: Root.evidence is None or {'answer': [...], 'lead': [...]}; fixtures _tools/fixtures/evidence/{strict (answer DOC CODE DER, lead COMMUNITY UNK; its only facts are COMMUNITY or UNK about widget caching), decision (DECISION in lead), both (COMMUNITY twice), missing (UNK in neither), unknown (BOGUS)}; default line 'evidence: answer DOC, CODE, DER; lead COMMUNITY, UNK'.",

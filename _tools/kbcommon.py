@@ -80,7 +80,7 @@ def utf8_stdio():
 
 
 utf8_stdio()  # every tool imports this module before it prints
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 HOME = os.path.dirname(TOOLS)  # this repository: the tools' code, the shared product aliases
@@ -455,6 +455,7 @@ class Root(NamedTuple):
     description: str
     team: str = ""  # '' when the root names none
     languages: tuple = DEFAULT_LANGUAGES  # the language codes of its text (`languages` in ROOT_FILE), the first one primary
+    evidence: Optional[dict] = None  # {'answer': [...], 'lead': [...]} tag kinds of its `evidence` policy; None: sets none
 
 
 class RootError(Exception):
@@ -508,6 +509,45 @@ def _languages(path, raw):
     return codes
 
 
+REQUIRED_KINDS = ("DOC", "CODE", "DER", "COMMUNITY", "UNK")  # a root's evidence policy lists each in exactly one list
+POLICY_KINDS = REQUIRED_KINDS + ("DECISION",)  # DECISION may be listed in either list, and unlisted keeps its own rule
+DEFAULT_EVIDENCE = {"answer": ["DOC", "CODE", "DER"], "lead": ["COMMUNITY", "UNK"]}  # what a root that sets none is served as
+
+
+_EVIDENCE_LIST = re.compile(r"([A-Za-z]+)\s*:\s*\[([^\]]*)\]\s*,?")
+
+
+def _evidence(path, raw):
+    """The policy of a ROOT_FILE's `evidence` value (`{answer: [DOC, CODE, DER], lead: [COMMUNITY, UNK]}`) as
+    {'answer': [...], 'lead': [...]}, None when it sets none; RootError naming a kind that is in both lists, one required
+    kind that is in neither, an unknown kind or a key that is no list."""
+    if not raw:
+        return None
+    where = f"{path}/{ROOT_FILE}: `evidence`"
+    body = re.fullmatch(r"\{(.*)\}", raw.strip())
+    pairs = _EVIDENCE_LIST.findall(body.group(1)) if body else []
+    if not body or _EVIDENCE_LIST.sub("", body.group(1)).strip() or sorted(k for k, _ in pairs) != ["answer", "lead"]:
+        raise RootError(f"{where} must be `{{answer: [KIND, ...], lead: [KIND, ...]}}`, got {raw!r}")
+    out = {k: [x for x in re.split(r"[\s,]+", v) if x] for k, v in pairs}
+    listed = out["answer"] + out["lead"]
+    unknown = sorted({k for k in listed if k not in POLICY_KINDS})
+    if unknown:
+        raise RootError(f"{where} names {', '.join(map(repr, unknown))}, which is no tag kind; kinds: {', '.join(POLICY_KINDS)}")
+    both = sorted({k for k in listed if listed.count(k) > 1})
+    if both:
+        raise RootError(f"{where} lists {', '.join(both)} more than once; each kind belongs to exactly one of answer and lead")
+    missing = [k for k in REQUIRED_KINDS if k not in listed]
+    if missing:
+        raise RootError(f"{where} lists {', '.join(missing)} in neither answer nor lead; each of {', '.join(REQUIRED_KINDS)} belongs to one")
+    return out
+
+
+def evidence_line(policy):
+    """`answer DOC, CODE, DER; lead COMMUNITY, UNK` for a policy dict (None: the default)."""
+    policy = policy or DEFAULT_EVIDENCE
+    return f"answer {', '.join(policy['answer'])}; lead {', '.join(policy['lead'])}"
+
+
 def load_root(path):
     """The Root of a directory with a ROOT_FILE (RootError when it has none or it is malformed)."""
     path = os.path.abspath(os.path.expanduser(path))
@@ -529,7 +569,8 @@ def load_root(path):
     team = meta.get("team", "")
     if team and not TEAM.fullmatch(team):
         raise RootError(f"{path}/{ROOT_FILE}: `team` must be a lowercase name (a-z, 0-9, -), got {team!r}")
-    return Root(name, path, prefix, vis, meta.get("description", ""), team, _languages(path, meta.get("languages", "")))
+    return Root(name, path, prefix, vis, meta.get("description", ""), team, _languages(path, meta.get("languages", "")),
+                _evidence(path, meta.get("evidence", "")))
 
 
 class Pointer(NamedTuple):

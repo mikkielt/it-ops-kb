@@ -839,6 +839,25 @@ def valid_on(text, as_of):
     return True
 
 
+def evidence_note(st, policies, held_back):
+    """The `evidence:` line of a pack: the policy of the roots it searched (one line when they agree, else one per policy
+    with the roots it holds for), `answer DOC, CODE, DER; lead COMMUNITY, UNK` for a root that sets none; and, when a
+    policy kept the verdict from `good`, a note that the matching facts are leads in their root."""
+    if not policies:
+        return f"evidence: {kbcommon.evidence_line(None)}"
+    names = {p.split("/", 1)[0] for p in st.view_paths()}
+    by_line = defaultdict(list)
+    for r in kbcommon.roots():
+        if r.name in names:
+            by_line[kbcommon.evidence_line(r.evidence)].append(r.name)
+    text = "evidence: " + (next(iter(by_line)) if len(by_line) == 1 else
+                           " | ".join(f"{', '.join(v)}: {k}" for k, v in sorted(by_line.items(), key=lambda x: x[1])))
+    if held_back:
+        text += ("\nevidence: the facts that match are leads in their root, not answers (their tags are all lead kinds), "
+                 "so the coverage is not good; read them as leads")
+    return text
+
+
 def _pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", footer=True, root=None, invalidated=False,
          item=None, st=None, shares=None, as_of=None):
     """Rank fact units for a question and return {verdict, route, has, lacks, missing, matched, sources, text, ...}.
@@ -940,32 +959,48 @@ def _pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", fo
     # the verdict counts the key words of the top-ranked article (among the first 40 units) that matches the most
     # `good` needs tagged facts; untagged rows and lines (reference data, Summary, Examples) can lift a question
     # from `none` to `weak` but never to `good`, since a list row that merely names a product is no answer
-    arts_hit, arts_fact = defaultdict(set), defaultdict(set)
+    arts_hit = defaultdict(set)
     for s_, u in scored[:40]:
-        words = {t for t in known if has(u, t)}
-        arts_hit[u["path"]] |= words
-        if u["tags"]:
-            arts_fact[u["path"]] |= words
+        arts_hit[u["path"]] |= {t for t in known if has(u, t)}
     hit = max(arts_hit.values(), key=len, default=set())
-    fact_hit = max(arts_fact.values(), key=len, default=set())
     share = len(hit) / len(known) if known else 0.0
-    fact_share = len(fact_hit) / len(known) if known else 0.0
     # one unknown abbreviation (AV, PC) among well-matched words; a longer unknown name (NinjaOne, Ivanti) is the subject
     lone_name = len(named_missing) == 1 and len(named_missing[0]) <= 3 and share >= 0.75
-    if not scored or (named and len(named_missing) * 3 >= len(named) and not lone_name) or (informative and len(missing) * 2 >= len(informative)):
-        verdict = "none"
-    elif fact_share >= 0.6 and not named_missing and (not missing or fact_share >= 0.8) and not (named & set(known)) - set().union(*arts_fact.values()):
-        verdict = "good"  # and every informative name the question uses (Okta, SCIM) is in a top-ranked fact
-    elif share >= 0.34:
-        verdict = "weak"
-    else:
-        verdict = "none"
-    # a `good` on common words only ("email attachment size" matched the Email* hunting tables, "mailbox size limit" a
-    # batching fact and a manifest row): a question that names nothing specific needs one tagged fact holding every
-    # key word
-    if (verdict == "good" and len(known) >= 2 and not any(u["tags"] and all(has(u, t) for t in known) for _, u in scored)
-            and not specific(st, question, named, known, keys, holders)):
-        verdict = "weak"
+
+    def judge(fact_of):
+        """The verdict when only the units `fact_of` accepts count as tagged facts."""
+        arts_fact = defaultdict(set)
+        for s_, u in scored[:40]:
+            if fact_of(u):
+                arts_fact[u["path"]] |= {t for t in known if has(u, t)}
+        fact_hit = max(arts_fact.values(), key=len, default=set())
+        fact_share = len(fact_hit) / len(known) if known else 0.0
+        if not scored or (named and len(named_missing) * 3 >= len(named) and not lone_name) or (informative and len(missing) * 2 >= len(informative)):
+            v = "none"
+        elif fact_share >= 0.6 and not named_missing and (not missing or fact_share >= 0.8) and not (named & set(known)) - set().union(*arts_fact.values()):
+            v = "good"  # and every informative name the question uses (Okta, SCIM) is in a top-ranked fact
+        elif share >= 0.34:
+            v = "weak"
+        else:
+            v = "none"
+        # a `good` on common words only ("email attachment size" matched the Email* hunting tables, "mailbox size limit" a
+        # batching fact and a manifest row): a question that names nothing specific needs one tagged fact holding every
+        # key word
+        if (v == "good" and len(known) >= 2 and not any(fact_of(u) and all(has(u, t) for t in known) for _, u in scored)
+                and not specific(st, question, named, known, keys, holders)):
+            v = "weak"
+        return v
+
+    # an evidence policy of a root (Root.evidence) keeps a fact whose tags are all lead kinds from making a verdict
+    # good; a root that sets none counts every tagged fact, as before
+    policies = {r.name: r.evidence for r in kbcommon.roots() if r.evidence} if not rules else {}
+
+    def answers(u):
+        pol = policies.get(u["path"].split("/", 1)[0])
+        return bool(u["tags"]) and (not pol or any(p["kind"] not in pol["lead"] for p in u["tags"]))
+
+    verdict = judge(answers if policies else (lambda u: bool(u["tags"])))
+    held_back = bool(policies) and verdict == "weak" and judge(lambda u: bool(u["tags"])) == "good"
     # group the best units by article, strongest article first
     by_art, order = defaultdict(list), []
     for s, u in scored[:40]:
@@ -1187,6 +1222,8 @@ def _pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", fo
     if left_out is not None:
         out.append(f"as of {as_of}: {left_out} matching fact{'' if left_out == 1 else 's'} left out as not yet valid or "
                    "no longer valid then")
+    if not rules:
+        out.append(evidence_note(st, policies, held_back))
     if unmatched:
         names = {stem(w): w for w in WORD.findall(nfc(question))}
         out.append(f"check: {paths[0]} never mentions {', '.join(names.get(t, t) for t in unmatched)}; the facts may be "
