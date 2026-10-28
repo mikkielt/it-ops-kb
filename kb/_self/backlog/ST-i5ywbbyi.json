@@ -2,7 +2,7 @@
   "id": "ST-i5ywbbyi",
   "kind": "story",
   "title": "session-load's 5-rep record of the real intake hook, run after its tool landed",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nxb7hjwd",
   "sprint": "SP-m5m67goe",
   "priority": "P2",
@@ -32,5 +32,7 @@
     "ST-6zg57xiu"
   ],
   "notes": "Split from ST-6zg57xiu by the operator's answer to its gate land (2026-10-28): the tool lands without record rows, since the landing rebase rewrites the tool commit's sha; this item records the rows once that sha is final on origin/main. Check 0 is ST-6zg57xiu's former check 1.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-557596e3",
+  "operator": "op-f618a13e"
 }
