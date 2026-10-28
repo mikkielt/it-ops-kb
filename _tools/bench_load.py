@@ -72,7 +72,8 @@ WORKING = [  # the script of a working phase: (prompt, [(tool, tool_input, tool_
     ("kb: default Windows LAPS password length",
      [("mcp__plugin_it-ops-kb_kb__kb_pack", {"question": "LAPS password length"},
        [{"type": "text", "text": "coverage: good\n## public/windows/laps.md"}]),
-      ("Bash", {"command": "python3 _tools/rag.py show public/windows/laps.md:1"}, {"stdout": "line"})],
+      ("Bash", {"command": "python3 _tools/rag.py show public/windows/laps.md:1"}, {"stdout": "line"}),
+      ("Bash", {"command": "python3 _tools/backlog.py release ST-aaaaaaaa"}, {"stdout": ""})],  # a work row, whatever the branch
      "The default is 14 characters."),
     ("How do I rename a branch?",
      [("Edit", {"file_path": "NOTES.md", "old_string": "a", "new_string": "b"}, {"ok": True}),
@@ -440,7 +441,7 @@ def work_rows(data):
     """The `work` rows the replay's hooks wrote to the spool under the query log home DATA / "querylog"."""
     n = 0
     for f in (Path(data) / "querylog").rglob("*.jsonl"):
-        n += sum(1 for ln in f.read_text(encoding="utf-8", errors="replace").splitlines() if '"surface": "work"' in ln)
+        n += sum(1 for ln in f.read_text(encoding="utf-8", errors="replace").splitlines() if re.search(r'"surface":\s*"work"', ln))
     return n
 
 
