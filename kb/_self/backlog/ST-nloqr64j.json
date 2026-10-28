@@ -49,7 +49,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "up to now",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Design, settled at planning 2026-10-28: the disposition is bl_authority.disposition of each gate of the sprint's items, the start gate left out; an answer counts as the recommendation when it equals it or begins with it; the hours run from the first coord progress event that names the gate as blocked to the item's next event that no longer names it, summed per item with overlaps counted once; when coord cannot be read the line says blocked ? h and the command still exits 0; it reads only (no item file, coord key or spool row is written); kb/_self/backlog.md (The horizon) and kb/_self/tools.md describe it. Evidence: the 2026-10-28 gate-triage measurement rebuilt these figures by hand from git history and the coord event log (44.7 item-hours over 14 items in the 2026-10-27 drain). Premise run 2026-10-28 on origin/main 80725b09a9: the check fails (horizon has no --gates).",

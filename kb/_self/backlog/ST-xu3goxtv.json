@@ -72,7 +72,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "Both held and agent gates, any gate whose disposition is not block",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Design, settled at planning 2026-10-28: bl_authority.detail_only(item, gate) is true when the gate's disposition is not block and its question asks one of the listed details; the line reads detail only: settle it in the goal before the start or answer it provisionally, and the gate is still added; kb/_self/backlog.md and kb/_self/tools.md describe it. Evidence: 14 of the 25 mid-work gates of the 2026-10-27 drain asked columns, caps, units, file layout or report shape (ST-zkhku3sg g4 to g7, ST-3j3wlgg4 g1, ST-kxnlpycw g2, ST-qnzkp6xy g2). Premise run 2026-10-28 on origin/main 80725b09a9: all three checks fail (no detail-only line anywhere).",
