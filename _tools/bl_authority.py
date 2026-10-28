@@ -5,8 +5,11 @@ Every gate has a class, one of CLASSES, listed from the most restricted to the l
 it from the item's `touches` and the gate's question and id: the strictest class any of them names, `design` when none
 does; `class_reasons` also names the touches and words that set it, which `gate add` prints. A class a gate stores (`gate add` writes it) is read as a floor for nothing but the record: the class in force is
 the stricter of the stored and the derived, so an agent that writes a lower class into an item file changes nothing,
-and `lowered` names it for `check`. A gate of a class in OPERATOR_CLASSES (ceiling, secrets, push and agents-rule) is
-blocking and takes only the operator's answer; the operator answers every class. The class in TERMINAL_CLASSES (ceiling,
+and `lowered` names it for `check`. A gate of a class in OPERATOR_CLASSES (ceiling, secrets, push and agents-rule) takes
+only the operator's answer when it blocks and is confirmed by the operator when it is held: `disposition` says which,
+`block` for a gate whose own words (BLOCK_CLASSES: those four and the query log and delete classes), options or item
+title give the class or another reason, or whose touches give `ceiling` or `secrets`, `hold` for one only its item's
+touches class `push` or `agents-rule`. The operator answers every class. The class in TERMINAL_CLASSES (ceiling,
 the test suite's ceiling) is stricter still: `--by operator` from a Claude Code session (`in_agent_session`: the
 environment names one, attended or not, headless or delegated) is no operator's answer, so it is recorded only from a
 terminal of the operator's own, which an IDE's integrated terminal is not (IDE_ROUTE).
@@ -22,6 +25,9 @@ from bl_base import START_GATE
 
 CLASSES = ("ceiling", "secrets", "push", "start", "querylog", "agents-rule", "delete", "design")
 OPERATOR_CLASSES = ("ceiling", "secrets", "push", "agents-rule")  # the classes only the operator answers
+# the classes of a gate's own text that make it blocking: the operator classes, the query log and deleting
+BLOCK_CLASSES = OPERATOR_CLASSES + ("querylog", "delete")
+HOLD_CLASSES = ("push", "agents-rule")  # of those, the classes a touch alone holds; a touch of ceiling or secrets blocks
 TERMINAL_CLASSES = ("ceiling",)  # of those, the classes no agent session answers, whatever `--by` says
 AGENT_SESSION_ENV = "CLAUDECODE"  # set in the environment of every Claude Code session and of each command it runs
 # CLAUDE_CODE_CHILD_SESSION is set only in subprocesses Claude Code starts, so `CLAUDECODE= ...` alone does not clear it
@@ -369,14 +375,10 @@ def rank(cls):
     return CLASSES.index(cls) if cls in CLASSES else 0
 
 
-def class_reasons(item, gate):
-    """The strictest class the item's touches and the gate's id and question name (`design` when none), with what set
-    it: each touch (`touch '_tools/bl_items.py'`) and each word of the gate's text (`matched 'rule'`) that names that
-    class, in that order; no reason for `design`. The word `rule` is a reason for `agents-rule` only beside a touch or a
-    path in the text that names a rule-guarding file. `derived_class` reads its class here, so the two never diverge."""
+def touch_found(item):
+    """{class: [reasons]} for each class the item's touches name (`touch '_tools/bl_items.py'`), none for a touch that
+    names no class."""
     found = {}
-    if gate.get("id") == START_GATE:
-        found.setdefault("start", []).append(f"gate id '{START_GATE}'")
     touches = [t for t in item.get("touches", []) or [] if isinstance(t, str)]
     for cls, paths in PATHS.items():
         for t in touches:
@@ -385,6 +387,20 @@ def class_reasons(item, gate):
     for t in touches:
         if names_secret(t):
             found.setdefault("secrets", []).append(f"touch '{t}'")
+    return found
+
+
+def class_reasons(item, gate, touches=True):
+    """The strictest class the item's touches and the gate's id and question name (`design` when none), with what set
+    it (`touches` False: the gate's id and text alone, the item's touches left out, so the class its own words give): each touch (`touch '_tools/bl_items.py'`) and each word of the gate's text (`matched 'rule'`) that names that
+    class, in that order; no reason for `design`. The word `rule` is a reason for `agents-rule` only beside a touch or a
+    path in the text that names a rule-guarding file. `derived_class` reads its class here, so the two never diverge."""
+    found = {}
+    if gate.get("id") == START_GATE:
+        found.setdefault("start", []).append(f"gate id '{START_GATE}'")
+    if touches:
+        for cls, why in touch_found(item).items():
+            found.setdefault(cls, []).extend(why)
     options = [str(o) for o in gate.get("options", []) or []]
     text = f"{gate.get('question', '')} {' '.join(options)} {command_words(gate)}"
     commands = command_words(gate)
@@ -439,6 +455,88 @@ def lowered(item, gate):
         return None
     d = derived_class(item, gate)
     return stored if stored not in CLASSES or rank(stored) > rank(d) else None
+
+
+# The rule-text paths: the files that carry the rules agents run under (a subset of PATHS["agents-rule"]), so a gate option
+# that names one is about a rule's wording and blocks, whatever the item's touches are.
+RULE_TEXT_PATHS = ("AGENTS.md", "CLAUDE.md", ".claude/", ".claude-plugin/", "skills/", "agents/")
+RULE_TEXT_FILES = ("agents.md", "claude.md")
+# The classes of an item's title that make every gate of the item block: the title says what the item is about
+TITLE_CLASSES = ("ceiling", "secrets", "push", "querylog")
+PATH_EXT = re.compile(r"\.(?:py|md|csv|json|yml|yaml|toml|sh|txt)$", re.I)
+TOP_DIRS = frozenset(("kb", "skills", "agents", "docs", "src", "tests", "code", "scripts"))
+
+
+def option_paths(options):
+    """The path-like words of the gate's options, each option read alone: a word with a `/` that ends in `/`, has a file
+    extension in its last part or starts with a top-level directory, `_` or `.` (`and/or` is none), or a bare file
+    name with a known extension (`AGENTS.md`, `bl_items.py`)."""
+    out = []
+    for opt in options:
+        for word in re.findall(r"[\w.*\\/-]+", str(opt)):
+            word = word.rstrip(".").replace("\\", "/")
+            if not word:
+                continue
+            first = word.split("/")[0]
+            path = ("/" in word and (word.endswith("/") or PATH_EXT.search(word) or first in TOP_DIRS
+                                     or first.startswith(("_", ".")))) or ("/" not in word and PATH_EXT.search(word))
+            if path:
+                out.append(word)
+    return list(dict.fromkeys(out))
+
+
+def names_rule_text(word):
+    """Whether the path-like word names a rule-text path (RULE_TEXT_PATHS), a directory above it or its file name."""
+    low = word.lower()
+    return posixpath.basename(low.rstrip("/")) in RULE_TEXT_FILES or (
+        "/" in low and any(touch_names(low, p) for p in RULE_TEXT_PATHS))
+
+
+def block_reasons(item, gate):
+    """Why the gate blocks, [] when none of the reasons holds: it is the sprint's start gate or is `blocking`, its own
+    words (the item's touches left out) give a class of BLOCK_CLASSES, they name a strict signal, an option names a
+    path outside the item's touches or a rule-text path, or the item's title names TITLE_CLASSES."""
+    why = []
+    if gate.get("id") == START_GATE:
+        why.append("the sprint's start gate")
+    if gate.get("kind") == "blocking":
+        why.append("kind blocking")
+    cls, reasons = class_reasons(item, gate, touches=False)
+    if cls in BLOCK_CLASSES:
+        why.append(f"class {cls} ({', '.join(reasons)})")
+    signals = strict_signals(gate)
+    if signals:
+        why.append(strict_text(signals))
+    touches = [t for t in item.get("touches", []) or [] if isinstance(t, str)]
+    for word in option_paths(gate.get("options", []) or []):
+        if names_rule_text(word):
+            why.append(f"option names rule text '{word}'")
+        elif not any(touch_names(t, word) for t in touches):
+            why.append(f"option names '{word}', outside the touches")
+    title = str(item.get("title") or "")
+    tcls, treasons = class_reasons({"touches": []}, {"question": title}) if title else ("design", [])
+    if tcls in TITLE_CLASSES:
+        why.append(f"title names {tcls} ({', '.join(treasons)})")
+    return why
+
+
+def disposition(item, gate):
+    """(`block`, `hold` or `agent`, reasons): who settles the gate. `block`: the operator answers it and no agent does
+    (block_reasons), and so does a gate the item's touches class `ceiling` or `secrets`, which always reaches the
+    operator. `hold`: the gate is not blocking and only the item's touches give the class `agents-rule` or `push` (HOLD_CLASSES), so the agent goes on with its recommendation (`answer --provisional`)
+    and the operator confirms it at the review; the reasons name those touches. `agent`: every other gate. The class
+    stays what `gate_class` derives."""
+    why = block_reasons(item, gate)
+    if why:
+        return "block", why
+    found = touch_found(item)
+    for cls in ("ceiling", "secrets"):  # a touch of the suite ceiling or of secrets blocks every gate of the item
+        if cls in found:
+            return "block", [f"class {cls} ({', '.join(found[cls])})"]
+    ops = [c for c in found if c in HOLD_CLASSES]
+    if ops:
+        return "hold", list(dict.fromkeys(found[min(ops, key=rank)]))
+    return "agent", []
 
 
 def sprint_scope(item, gate, members):
