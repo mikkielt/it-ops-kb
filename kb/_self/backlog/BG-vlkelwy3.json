@@ -2,7 +2,7 @@
   "id": "BG-vlkelwy3",
   "kind": "bug",
   "title": "gate remove lets an agent clear a gate made blocking by a strict signal, an option path or the item's title, since it guards only the operator classes",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-lmpjclxz",
   "priority": "P1",
   "rank": 0,
@@ -31,5 +31,7 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-a3c0c63f",
+  "operator": "op-f618a13e"
 }
