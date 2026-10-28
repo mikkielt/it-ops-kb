@@ -2,7 +2,7 @@
   "id": "ST-wfyoazv5",
   "kind": "story",
   "title": "Research sprint goal: Fewer gates from planning, and a measure of the gates that remain",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-v6crf4rx",
   "goal_research": true,
   "priority": "P1",
@@ -22,6 +22,20 @@
     "kb/public/**"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-a3c0c63f",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "b35e938330a5d1f29e4eea72fe7cd204a048251c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-wfyoazv5"
+        ],
+        "exit": 0,
+        "sha256": "6cdb060eb994a7d2"
+      }
+    ]
+  }
 }
