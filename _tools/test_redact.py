@@ -125,6 +125,15 @@ def test_redact_replaces_every_class_of_value_leaves_ordinary_text_and_a_second_
     assert "email\t" + EMAIL in capsys.readouterr().out
     f.write_text(ORDINARY, encoding="utf-8", newline="\n")
     assert redact.main(["--scan", str(f)]) == 0
+    # a root's own `placeholders` pass as the user of a logon or profile path in its files only; a name that matches a
+    # leak shape is refused when the root loads
+    fx = Path(TOOLS) / "fixtures" / "placeholders"
+    own, home = kbcommon.load_root(str(fx / "ok")), "C:" + chr(92) + "Users" + chr(92) + "anna.nowak" + chr(92) + "x"
+    assert kbcommon.leak_hits(home) and not kbcommon.leak_hits(home, root=own)
+    assert "anna.nowak" in redact.redact("logon CORP" + chr(92) + "anna.nowak", root=own)
+    assert "anna.nowak" not in redact.redact(home) + redact.redact("logon CORP" + chr(92) + "anna.nowak")
+    with pytest.raises(kbcommon.RootError, match="`placeholders`"):
+        kbcommon.load_root(str(fx / "bad"))
 
 
 def test_distill_stores_a_captured_prompt_and_answer_redacted_and_the_capture_row_of_a_kb_pack_keeps_its_pack_handle(tmp_path, monkeypatch):

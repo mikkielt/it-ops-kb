@@ -182,9 +182,14 @@ def _segment(seg, k):
     return seg if all(w in k.words for w in words) else PLACEHOLDERS["path"]
 
 
-def _path(tail, k, users_first):
+def _own(root):
+    """The lowercased user names a root's `placeholders` list (kbcommon.Root), () for no root."""
+    return frozenset(p.lower() for p in getattr(root, "placeholders", ()) or ())
+
+
+def _path(tail, k, users_first, own=()):
     """Redact the segments of a path tail (`\\a\\b` or `/a/b`), separators kept; with `users_first`, a tail starting
-    at `Users\\<name>` gets the placeholder user."""
+    at `Users\\<name>` gets the placeholder user, unless the user is generic or one of `own`."""
     parts = re.split(r"([\\/]+)", tail)
     out, seen = [], []
     for p in parts:
@@ -192,7 +197,7 @@ def _path(tail, k, users_first):
             out.append(p)
             continue
         if users_first and len(seen) == 1 and seen[0].lower() == "users":
-            p = p if p.lower() in kbcommon.HOME_GENERIC else PLACEHOLDERS["user"]
+            p = p if p.lower() in kbcommon.HOME_GENERIC or p.lower() in own else PLACEHOLDERS["user"]
         else:
             p = _segment(p, k)
         seen.append(p)
@@ -200,12 +205,14 @@ def _path(tail, k, users_first):
     return "".join(out)
 
 
-def _logon(m, k):
+def _logon(m, k, own=()):
     dom, s = m.group(1).lower(), m.group(0)
     before = m.string[max(0, m.start() - 40):m.start()].lower() + dom
     if dom in REGISTRY_ROOTS or dom.startswith("hkey_") or s.lower() in k.logons \
             or any(before.endswith(a) for a in AUTHORITIES):
         return s
+    if m.group(2).lower() in own:  # the root's own user stays, under the placeholder domain
+        return PLACEHOLDERS["org"] + "\\" + m.group(2)
     return PLACEHOLDERS["logon"]
 
 
@@ -259,10 +266,12 @@ def _token(m, k):
     return PLACEHOLDERS["secret"]
 
 
-def redact(text, k=None):
+def redact(text, k=None, root=None):
     """The rules pass: every identifier shape in `text` becomes its kb placeholder; what the public root contains, the
-    well-known and documentation values and the placeholders stay. Idempotent."""
+    well-known and documentation values and the placeholders stay. `root`: a Root whose `placeholders` also stay as the
+    user of a logon or a profile path. Idempotent."""
     k = k or known()
+    own = _own(root)
     text = KEY_BLOCK.sub(PLACEHOLDERS["secret"], text)
     for rx in SECRETS:
         text = rx.sub(_secret, text)
@@ -270,13 +279,14 @@ def redact(text, k=None):
     text = AUTH_HEADER.sub(lambda m: _credential(m, True), text)
     text = URL_USERINFO.sub(_credential, text)
     text = UNC.sub(lambda m: PLACEHOLDERS["unc"] + _path(m.group(2), k, False), text)
-    text = DRIVE.sub(lambda m: m.group(0)[:2] + _path(m.group(1), k, True), text)
+    text = DRIVE.sub(lambda m: m.group(0)[:2] + _path(m.group(1), k, True, own), text)
     text = HOME.sub(lambda m: m.group(0)[:m.start(1) - m.start(0)] + (
-        m.group(1) if m.group(1).lower() in kbcommon.HOME_GENERIC else PLACEHOLDERS["user"]) + _path(m.group(2), k, False),
+        m.group(1) if m.group(1).lower() in kbcommon.HOME_GENERIC or m.group(1).lower() in own
+        else PLACEHOLDERS["user"]) + _path(m.group(2), k, False),
                     text)
     text = EMAIL.sub(lambda m: m.group(0) if m.group(0).lower() in k.emails
                      or EXAMPLE_HOST.search(m.group(0).split("@", 1)[1]) else PLACEHOLDERS["email"], text)
-    text = LOGON.sub(lambda m: _logon(m, k), text)
+    text = LOGON.sub(lambda m: _logon(m, k, own), text)
     text = SID.sub(lambda m: m.group(0) if m.group(1, 2, 3) == ("0", "0", "0") else PLACEHOLDERS["sid"] + m.group(4), text)
     text = GUID.sub(lambda m: m.group(0) if m.group(0).lower().replace("-", "") in k.guids
                     or kbcommon.GUID_OK.fullmatch(m.group(0).lower()) else PLACEHOLDERS["guid"], text)
@@ -290,10 +300,10 @@ def redact(text, k=None):
     return TOKEN.sub(lambda m: _token(m, k), text)
 
 
-def scan(text, k=None):
+def scan(text, k=None, root=None):
     """The leak scan (kbcommon.leak_hits) with what the public root contains allowed: [(kind, value)]."""
     k = k or known()
-    return kbcommon.leak_hits(text, _scan_allow(k))
+    return kbcommon.leak_hits(text, _scan_allow(k), root=root)
 
 
 _ALLOW = {}  # id(known) -> (known, sizes it was built at, allow map): scan builds it once per process, not per text
@@ -309,11 +319,11 @@ def _scan_allow(k):
     return hit[2]
 
 
-def finish(text, k=None):
+def finish(text, k=None, root=None):
     """Stage 3 on Haiku's output: the rules again, then the leak scan; None (drop the entry) on any hit."""
     k = k or known()
-    out = redact(text, k)
-    return None if scan(out, k) else out
+    out = redact(text, k, root)
+    return None if scan(out, k, root) else out
 
 
 # --- the Haiku stage ------------------------------------------------------------------------------------------------
