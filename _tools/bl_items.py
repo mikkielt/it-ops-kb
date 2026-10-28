@@ -499,21 +499,26 @@ def cmd_answer(bl, a):
     if delegate is not None and not a.confirm:
         raise Rejected(f"--by delegate:{delegate} only confirms a provisional answer (--confirm), it answers nothing")
     held = bl_authority.gate_class(scope, g)
-    if held in bl_authority.TERMINAL_CLASSES and bl_authority.in_agent_session():
+    disp, why_disp = bl_authority.disposition(scope, g)
+    # a held gate's provisional answer is the agent's (the operator confirms it at the review), whatever its class
+    if held in bl_authority.TERMINAL_CLASSES and bl_authority.in_agent_session() \
+            and not (a.provisional and disp == "hold"):
         raise Rejected(f"gate {a.gate} of {bl.label(iid)} is class {held}: no agent session answers it, so --by "
                        f"{a.by or 'operator'} from this one is not the operator's; the operator answers it in a "
                        f"terminal of their own: python3 _tools/backlog.py answer {iid} {a.gate} --answer TEXT --by "
                        f"operator [--record]; {bl_authority.IDE_ROUTE}")
     if a.by != "operator" and (a.by or a.provisional):
         cls = bl_authority.derived_class(scope, g)
-        if cls in bl_authority.OPERATOR_CLASSES:
-            refuse = Rejected if a.provisional or a.confirm else Refused  # --answer by an agent: exit 1, as a blocking gate
+        refuse = Rejected if a.provisional or a.confirm else Refused  # --answer by an agent: exit 1, as a blocking gate
+        if cls in bl_authority.OPERATOR_CLASSES and (disp == "block" or delegate is not None):
             raise refuse(f"gate {a.gate} of {bl.label(iid)} is class {cls}: only the operator answers it "
                          "(--by operator)")
         strict = bl_authority.strict_text(bl_authority.strict_signals(g))
         if strict:
-            refuse = Rejected if a.provisional or a.confirm else Refused
             raise refuse(f"gate {a.gate} of {bl.label(iid)} is {strict}: only the operator answers it (--by operator)")
+        if disp == "block" and "kind blocking" not in why_disp:  # an option's path or the item's title blocks it
+            raise refuse(f"gate {a.gate} of {bl.label(iid)} is blocking ({'; '.join(why_disp)}): only the operator "
+                         "answers it (--by operator)")
     if a.confirm:
         if g.get("by") != "agent":
             raise Refused(f"gate {a.gate} of {bl.label(iid)} has no agent answer to confirm")
@@ -659,14 +664,21 @@ def appended(old, values):
 def reclass_gate(item, gate):
     """Store the stricter of the gate's class and the one `item`'s touches and the gate's text derive now, so widened
     touches re-class a gate already written; a class never goes down here. An unanswered provisional gate that
-    becomes one only the operator answers, or that names a strict signal, is made blocking, as `gate add` does."""
+    now blocks (`bl_authority.disposition`) is made blocking, as `gate add` does, and one that is held keeps
+    `hold: true`, one that is not drops it."""
     stored = gate.get("class")
     d = bl_authority.derived_class(item, gate)
     if stored not in bl_authority.CLASSES or bl_authority.rank(d) < bl_authority.rank(stored):
         gate["class"] = d
-    if (bl_authority.gate_class(item, gate) in bl_authority.OPERATOR_CLASSES or bl_authority.strict_signals(gate)) \
-            and gate.get("kind") != "blocking" and "answer" not in gate:
+    if "answer" in gate:
+        return
+    disp = bl_authority.disposition(item, gate)[0]
+    if disp == "block":
         gate["kind"] = "blocking"
+    if disp == "hold":
+        gate["hold"] = True
+    else:
+        gate.pop("hold", None)
 
 
 # what names one item and so is refused with several ids, each with its flag
@@ -1036,7 +1048,7 @@ def gate_remove(bl, a):
         raise Rejected(f"gate remove refuses gate {a.gate} of {bl.label(iid)}: it is answered ({g['answer']!r} by "
                        f"{g.get('by')}), and a gate's answer is not taken back")
     cls = bl_authority.gate_class(it, g)
-    if cls in bl_authority.OPERATOR_CLASSES and a.by != "operator":
+    if cls in bl_authority.OPERATOR_CLASSES and bl_authority.disposition(it, g)[0] == "block" and a.by != "operator":
         raise Rejected(f"gate remove refuses gate {a.gate} of {bl.label(iid)}: it is class {cls}, which only the "
                        "operator answers, so only the operator removes it (--by operator)")
 
@@ -1130,9 +1142,17 @@ def gate_add(bl, a):
     signals = bl_authority.strict_signals(gate)
     if signals:
         why += ", " + bl_authority.strict_text(signals)
-    if (gate["class"] in bl_authority.OPERATOR_CLASSES or signals) and gate["kind"] != "blocking":
+    disp, reasons_disp = bl_authority.disposition(it, gate)
+    if disp == "block" and gate["kind"] != "blocking":
         gate["kind"] = "blocking"
+        extra = [r for r in reasons_disp if not r.startswith(("class ", "strict ", "kind blocking"))]
+        if extra:  # an option's path or the item's title blocks it
+            why += ", " + "; ".join(extra)
         say(f"gate {gid} of {bl.label(iid)} is {why}: made blocking, only the operator answers it")
+    elif disp == "hold":
+        gate["hold"] = True
+        say(f"gate {gid} of {bl.label(iid)} is held by {', '.join(reasons_disp)}: provisional, the agent goes on with "
+            "its recommendation and the operator confirms it at the review")
     same =[g for g in gates if g.get("question") == gate["question"] or g.get("id") == gid]
     if same:
         known = same[0]

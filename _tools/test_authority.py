@@ -354,10 +354,58 @@ def together(tmp_path, *bodies):
         body(root)
 
 
+def a_gate_only_the_touches_class_is_held_and_one_with_an_option_path_or_a_title_is_blocking(tmp_path):
+    plain = {"id": "g", "kind": "provisional", "question": "Which columns?", "options": ["one table", "two tables"]}
+    item = {"title": "S", "touches": ["AGENTS.md", "src/b.py"]}
+    assert ba.disposition(item, plain)[0] == "hold" and ba.disposition({"touches": ["src/a.py"]}, plain)[0] == "agent"
+    for opts, title in ((["edit src/b.py", "none"], "S"), (["edit src/c.py", "none"], "S"), (["a line in AGENTS.md", "no"], "S"),
+                        (["one table", "two tables"], "Rotate the credentials")):
+        got = ba.disposition({**item, "title": title}, {**plain, "options": opts})[0]
+        assert got == ("hold" if opts[0] == "edit src/b.py" else "block"), (opts, title, got)
+    iid = new_item(tmp_path, touch="AGENTS.md")
+    assert bl(tmp_path, "set", iid, "--add-touch", "src/b.py")[0] == 0
+    code, out = add_gate(tmp_path, iid, "Which columns?", "--kind", "provisional")  # held: provisional, the agent answers it
+    assert code == 0 and "held by touch 'AGENTS.md'" in out and "made blocking" not in out, out
+    assert (gate(tmp_path, iid)["kind"], gate(tmp_path, iid)["hold"]) == ("provisional", True)
+    code, out = bl(tmp_path, "answer", iid, "g", "--provisional")
+    assert code == 0 and gate(tmp_path, iid)["by"] == "agent" and bl(tmp_path, "check")[0] == 0, out
+    code, out = bl(tmp_path, "answer", iid, "g", "--confirm", "--by", "delegate:mgr")  # the operator confirms it, no delegate
+    assert code in (1, 2), out
+    for n, (question, options, kind) in enumerate((("Where?", ["edit src/c.py", "none"], "provisional"),
+                                                   ("Which line?", ["a line in AGENTS.md", "none"], "provisional"),
+                                                   ("Which one?", ["a", "b"], "blocking"))):
+        code, out = bl(tmp_path, "gate", "add", iid, "--id", f"b{n}", "--kind", kind, "--question", question,
+                       "--option", options[0], "--option", options[1], "--recommendation", options[0])
+        assert code == 0 and (n == 2 or "made blocking" in out) and "(blocking)" in out, out
+        code, out = bl(tmp_path, "answer", iid, f"b{n}", "--provisional")
+        assert code == 2, out
+    # check: a held gate stands, whether provisional or answered by an agent; one that blocks is an error in both
+    item_file = json.loads(path(tmp_path, iid).read_text(encoding="utf-8"))
+    item_file["gates"][1].update(kind="provisional")
+    path(tmp_path, iid).write_text(json.dumps(item_file, indent=2) + "\n", encoding="utf-8", newline="\n")
+    code, out = bl(tmp_path, "check")
+    assert code == 1 and "outside the touches" in out and "and provisional" in out, out
+    # set --touch re-derives: a held gate whose option path falls outside the new touches turns blocking, and a gate the
+    # touches no longer hold drops the mark
+    hid = new_item(tmp_path, touch="AGENTS.md")
+    assert bl(tmp_path, "set", hid, "--add-touch", "src/b.py")[0] == 0
+    assert bl(tmp_path, "gate", "add", hid, "--id", "g", "--kind", "provisional", "--question", "Where?", "--option",
+              "edit src/b.py", "--option", "none", "--recommendation", "none")[0] == 0
+    assert (gate(tmp_path, hid)["kind"], gate(tmp_path, hid).get("hold")) == ("provisional", True)
+    assert bl(tmp_path, "set", hid, "--touch", "AGENTS.md")[0] == 0
+    assert (gate(tmp_path, hid)["kind"], gate(tmp_path, hid).get("hold")) == ("blocking", None)
+    # title: every gate of an item whose title names a secret, a push, the ceiling or the query log blocks
+    code, out = bl(tmp_path, "new", "bug", "--title", "The publish leak gate catches credentials", "--goal", "g", "--touch",
+                   "src/a.py", "--severity", "S3", "--repro", REPRO)
+    code, out = add_gate(tmp_path, out.split()[2], "Which files?", "--kind", "provisional")
+    assert code == 0 and "title names" in out and "(blocking)" in out, out
+
+
 def test_operator_class_is_derived_and_gate_add_makes_an_operator_class_gate_blocking(tmp_path):
     operator_class_is_derived_from_touches_and_question_a_lower_stored_class_changes_nothing_and_secrets_fail_closed_inside_token_exceptions()
     together(tmp_path, gate_add_makes_an_operator_class_gate_blocking_whatever_kind_says,
-             a_gate_that_names_money_an_operator_act_a_scope_change_or_a_program_is_blocking_whatever_its_class)
+             a_gate_that_names_money_an_operator_act_a_scope_change_or_a_program_is_blocking_whatever_its_class,
+             a_gate_only_the_touches_class_is_held_and_one_with_an_option_path_or_a_title_is_blocking)
 
 
 def test_an_agent_cannot_confirm_an_operator_gate_check_reports_an_answer_or_a_lowered_class_and_a_delegate_grant_needs_the_operator(

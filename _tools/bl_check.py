@@ -742,19 +742,15 @@ def validate(bl, pieces=None):
                   "item's touches and its question give it")
             settled = it.get("status") in CLOSED_STATUSES and g.get("by") == "agent" \
                 and "answer" in g  # a warning (refused_answer_warnings), not an error
-            if bl_authority.derived_class(it, g) in bl_authority.OPERATOR_CLASSES and not settled:
+            if "hold" in g and g["hold"] is not True:
+                e(f"gate {g['id']}: hold is true, the mark of a gate held by its item's touches")
+            disp, dwhy = bl_authority.disposition(it, g)
+            if disp == "block" and "kind blocking" not in dwhy and not settled:  # a held gate is not one: it is provisional
+                what = f"blocking ({'; '.join(dwhy)})"
                 if g["kind"] == "provisional" and g.get("by") != "operator":  # one the operator answered stands
-                    e(f"gate {g['id']} is class {bl_authority.derived_class(it, g)} and provisional: it is blocking, "
-                      "only the operator answers it")
+                    e(f"gate {g['id']} is {what} and provisional: it is blocking, only the operator answers it")
                 if g.get("by") == "agent":
-                    e(f"gate {g['id']} is class {bl_authority.derived_class(it, g)}: an answer by agent is not "
-                      "the operator's")
-            strict = bl_authority.strict_text(bl_authority.strict_signals(g))
-            if strict and it.get("status") not in CLOSED_STATUSES:  # a closed item's gate cannot be answered again
-                if g["kind"] == "provisional" and g.get("by") != "operator":
-                    e(f"gate {g['id']} is {strict} and provisional: it is blocking, only the operator answers it")
-                if g.get("by") == "agent":
-                    e(f"gate {g['id']} is {strict}: an answer by agent is not the operator's")
+                    e(f"gate {g['id']} is {what}: an answer by agent is not the operator's")
             if g["kind"] == "blocking" and g.get("by") == "agent":
                 e(f"gate {g['id']} is blocking: only the operator answers it")
             hc = g.get("host_check")
@@ -1048,7 +1044,7 @@ def refused_answer_warnings(bl):
             if not isinstance(g, dict) or g.get("by") != "agent" or "answer" not in g:
                 continue
             cls = bl_authority.derived_class(it, g)
-            if cls in bl_authority.OPERATOR_CLASSES:
+            if cls in bl_authority.OPERATOR_CLASSES and bl_authority.disposition(it, g)[0] == "block":
                 out.append(f"{bl.label(iid)}: gate {g.get('id')} class {cls}: answered by {g['by']} in a refused "
                            "class: the operator re-confirms")
     return out

@@ -90,6 +90,100 @@
   "depends_on": [
     "ST-yahbzaws"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which text classes make a gate blocking in disposition?",
+      "options": [
+        "the four operator classes (ceiling, secrets, push, agents-rule), as gate add makes blocking today",
+        "those four plus the query log and delete classes"
+      ],
+      "recommendation": "the four operator classes (ceiling, secrets, push, agents-rule), as gate add makes blocking today",
+      "reason": "the extra two would block every gate whose text says delete",
+      "do": {
+        "the four operator classes (ceiling, secrets, push, agents-rule), as gate add makes blocking today": "ST-xl4w2pmg",
+        "those four plus the query log and delete classes": "ST-xl4w2pmg"
+      },
+      "class": "secrets"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which words does disposition read as a path in a gate option?",
+      "options": [
+        "a word with a slash that ends in a slash, has a known file extension, or starts with a top directory, an underscore or a dot, and a bare file name with a known extension",
+        "any word with a slash"
+      ],
+      "recommendation": "a word with a slash that ends in a slash, has a known file extension, or starts with a top directory, an underscore or a dot, and a bare file name with a known extension",
+      "reason": "and/or and read/write stay prose",
+      "do": {
+        "a word with a slash that ends in a slash, has a known file extension, or starts with a top directory, an underscore or a dot, and a bare file name with a known extension": "ST-xl4w2pmg",
+        "any word with a slash": "ST-xl4w2pmg"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "a word with a slash that ends in a slash, has a known file extension, or starts with a top directory, an underscore or a dot, and a bare file name with a known extension",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Does the lookup eval row EV-gate-classes-only-operator-answers keep its old expected words?",
+      "options": [
+        "reword the expected words to the new sentence, a gate whose own words give the class",
+        "keep the old words and leave the sentence unqualified"
+      ],
+      "recommendation": "reword the expected words to the new sentence, a gate whose own words give the class",
+      "reason": "the old sentence would claim every gate of the class blocks, which a held gate does not",
+      "do": {
+        "reword the expected words to the new sentence, a gate whose own words give the class": "ST-xl4w2pmg",
+        "keep the old words and leave the sentence unqualified": "ST-xl4w2pmg"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "reword the expected words to the new sentence, a gate whose own words give the class",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "Who may remove an unanswered held gate, and may a held gate in the terminal-only class take a provisional answer in an agent session?",
+      "options": [
+        "an agent removes a held gate and answers it provisionally, only a blocking gate needs the operator",
+        "a held gate keeps every refusal of its class"
+      ],
+      "recommendation": "an agent removes a held gate and answers it provisionally, only a blocking gate needs the operator",
+      "reason": "a reword is then possible, and the operator confirms the answer at the review from a terminal",
+      "do": {
+        "an agent removes a held gate and answers it provisionally, only a blocking gate needs the operator": "ST-xl4w2pmg",
+        "a held gate keeps every refusal of its class": "ST-xl4w2pmg"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "an agent removes a held gate and answers it provisionally, only a blocking gate needs the operator",
+      "by": "agent"
+    },
+    {
+      "id": "g5",
+      "kind": "provisional",
+      "question": "Is a gate held when its paths give an operator class even if another class of the same paths ranks above it?",
+      "options": [
+        "yes, any operator class among the item's paths holds the gate",
+        "no, only the strictest class overall counts, as derived_class reads it"
+      ],
+      "recommendation": "yes, any operator class among the item's paths holds the gate",
+      "reason": "the strictest-class reading let a query log path hide an agents-rule path from the hold, failing open",
+      "do": {
+        "yes, any operator class among the item's paths holds the gate": "ST-xl4w2pmg",
+        "no, only the strictest class overall counts, as derived_class reads it": "ST-xl4w2pmg"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "yes, any operator class among the item's paths holds the gate",
+      "by": "agent"
+    }
+  ],
   "notes": "Design, settled at planning 2026-10-28: bl_authority.disposition(item, gate) gives block (start gate, --kind blocking, a class of the gate's own text among ceiling, secrets, push, agents-rule, querylog or delete, a strict signal, an option naming a path outside the touches or a rule-text path: AGENTS.md, CLAUDE.md, .claude/, .claude-plugin/, skills/, agents/, or the item's title giving secrets, push, ceiling or querylog), hold (any other gate whose touch-derived class is an operator class) or agent; the class stays derived as now, so kbdecide, bl_plan's start gate and horizon read it unchanged; check accepts a held gate that is provisional or agent-answered; set --touch re-derives each gate and a held gate that now blocks turns blocking; kb/_self/backlog.md (Rule-guarding work, Gate classes) and kb/_self/tools.md describe it; the item skill's step 5 says, as agents/worker.md does, that a worker goes on with the recommendation of a gate made blocking mid-work, which delivers ST-nq4pme2q (dropped at the sprint's close). Evidence: in the 2026-10-27 drain all 17 agents-rule gates and 3 of 5 push gates were classed by touches alone; ST-zkhku3sg g4 and g5 were raised after the code was committed. Checks 3 and 4 pass before the work: they pin the critical test and the eval the work changes. Premise run 2026-10-28 on origin/main 80725b09a9: check 0 fails (made blocking), check 1 fails on the title case only, check 2 fails on four lines. The _self eval rows SE-004 and SS1-077 (lookup_eval.csv) are reworded to the held rule, so the eval keeps passing. 2026-10-28 run: the dependency on ST-qqpcgqe7 (shared skills/sprint/SKILL.md) dropped on the operator's word; the second to land resolves the overlap at its rebase.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-a3c0c63f",
