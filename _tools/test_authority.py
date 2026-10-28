@@ -406,6 +406,16 @@ def a_gate_only_the_touches_class_is_held_and_one_with_an_option_path_or_a_title
         assert code == 0 and (n == 2 or "made blocking" in out) and "(blocking)" in out, out
         code, out = bl(tmp_path, "answer", iid, f"b{n}", "--provisional")
         assert code == 2, out
+        before = path(tmp_path, iid).read_bytes()  # an agent cannot remove it and re-add it reworded as provisional
+        code, out = bl(tmp_path, "gate", "remove", iid, f"b{n}")
+        assert code == 2 and "blocking" in out and "--by operator" in out, out
+        assert path(tmp_path, iid).read_bytes() == before
+    sid = new_item(tmp_path, touch="src/a.py")  # a strict signal (money) alone makes the gate blocking
+    code, out = add_gate(tmp_path, sid, "May the run spend 20 USD?", "--kind", "provisional")
+    assert code == 0 and "(blocking)" in out, out
+    code, out = bl(tmp_path, "gate", "remove", sid, "g")
+    assert code == 2 and "blocking" in out, out
+    assert bl(tmp_path, "gate", "remove", sid, "g", "--by", "operator")[0] == 0
     # check: a held gate stands, whether provisional or answered by an agent; one that blocks is an error in both
     item_file = json.loads(path(tmp_path, iid).read_text(encoding="utf-8"))
     item_file["gates"][1].update(kind="provisional")
