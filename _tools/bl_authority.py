@@ -302,6 +302,51 @@ def command_words(gate):
     return " ".join(out)
 
 
+# Words that make a gate blocking whatever its class (STRICT_KINDS, the order `strict_signals` lists them in): a gate that
+# names money, an act only the operator can do, a scope change of the item or running a program on input is one an agent
+# does not answer, not even provisionally. The class is unchanged: `gate_class` and `derived_class` do not read them.
+STRICT_WORDS = {
+    "money": re.compile(r"\bUSD\b|\bUS dollars?\b|\bdollars?\b|\bpaid\b|\bspen(?:d|ds|ding|t)\b|\bbilling\b|"
+                        r"\bActions minutes\b|\$\s?\d[\d.,]*", re.I),
+    "operator-act": re.compile(r"\bsudo\b|\bonly the operator\b|\bthe operator (?:creates?|runs?|makes?|gives?|adds?|sets?)\b",
+                               re.I),
+    "scope": re.compile(r"\btouches\b|\bdrop the item\b|\bskip(?:s|ping)? (?:the )?experiment\b|\bworth building\b|"
+                        r"\bdefer(?:s|red|ring)?\b", re.I),
+    "execute": re.compile(r"\bexecut(?:e|es|ed|ing|ion)\b", re.I),
+}
+STRICT_KINDS = tuple(STRICT_WORDS)
+PROGRAM_WORD = re.compile(r"\bprograms?\b", re.I)
+RUN_WORD = re.compile(r"\b(?:run|runs|running|ran)\b", re.I)
+
+
+def strict_signals(gate):
+    """[(kind, word)] for each of STRICT_KINDS that the gate's question, options, `do` and `host_check` words name, the
+    first word of each kind in text order; [] for a design question with none. `execute` is `execute` with its endings,
+    or `program` and `run` within one clause (a stretch with no `.`, `;`, `:`, `?` or `!` in it)."""
+    options = [str(o) for o in gate.get("options", []) or []]
+    texts = [str(gate.get("question", "")), *options, command_words(gate)]
+    out = []
+    for kind, rx in STRICT_WORDS.items():
+        word = next((m.group(0) for t in texts for m in [rx.search(t)] if m), None)
+        if kind == "execute" and not word:
+            for t in texts:
+                for clause in re.split(r"[.;:?!\n]", t):
+                    p, r = PROGRAM_WORD.search(clause), RUN_WORD.search(clause)
+                    if p and r:
+                        word = f"{p.group(0)} ... {r.group(0)}"
+                        break
+                if word:
+                    break
+        if word:
+            out.append((kind, word))
+    return out
+
+
+def strict_text(signals):
+    """The signals as `gate add` prints them: `strict money 'USD', strict scope 'drop the item'`."""
+    return ", ".join(f"strict {kind} '{word}'" for kind, word in signals)
+
+
 def in_agent_session(env=None):
     """Whether the process runs in a Claude Code session (its environment, `os.environ` by default, sets one of
     AGENT_SESSION_ENVS): the operator's own terminal does not, and an IDE's integrated terminal does (IDE_ROUTE). The
