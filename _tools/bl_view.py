@@ -6,7 +6,7 @@ They read the backlog and write nothing.
 Standard library only; imports `bl_base` and `bl_check` (the knowledge lines `show`, `next` and `horizon` print), never
 `backlog`. It registers the commands with `bl_cli` itself when imported, and `backlog.py`'s USAGE puts them in
 the usage order."""
-import json, os, re, subprocess
+import json, os, re, subprocess, sys, time
 from pathlib import Path
 
 import bl_cli
@@ -400,8 +400,102 @@ def peers_line(root):
     return f"peers: {', '.join(named)}{more}; before planning: python3 _tools/backlog.py peers"
 
 
-def cmd_horizon(bl, a):
+def progress_events(root):
+    """The coord store's `progress` events (oldest first) of the clone at ROOT, or None where the store or its events
+    cannot be read. The monitor's modules load here, at the call: this view is their only reader in this module."""
+    try:
+        import mon_base
+        import mon_sessions
+        conn = mon_sessions.coord_conn(mon_base.Ctx(Path(root).resolve()))
+        if conn is None:
+            return None
+        import mon_coord
+        p = subprocess.run([sys.executable, str(mon_coord.COORD), *conn, "wait", "--since", "0", "--timeout", "0",
+                            "--kind", "progress"], capture_output=True, text=True, encoding="utf-8", errors="replace",
+                           timeout=mon_sessions.COORD_SECONDS, stdin=subprocess.DEVNULL)
+        got = json.loads(p.stdout)["events"] if p.returncode == 0 else None
+    except Exception:  # no coord store, no process, a reply that is no JSON: the line says "?"
+        return None
+    return got if isinstance(got, list) else None
+
+
+def blocked_seconds(events, items, now):
+    """{item: seconds} of the sprint's ITEMS (ids) that a gate held: from the first `progress` event that names a gate as
+    blocked (state blocked, the gate in its `gates`) to the item's next event that no longer names it (NOW while none
+    does), summed over the item's gates with an overlap counted once. An item no gate held is left out."""
+    by_item = {}
+    for e in events:
+        f = e.get("fields") if isinstance(e, dict) and isinstance(e.get("fields"), dict) else {}
+        if f.get("item") in items and isinstance(e.get("at"), (int, float)):
+            by_item.setdefault(f["item"], []).append((e["at"], set(str(f.get("gates") or "").split(",")) - {""}
+                                                      if f.get("state") == "blocked" else set()))
+    out = {}
+    for item, evs in by_item.items():
+        spans, began = [], {}
+        for at, named in sorted(evs, key=lambda x: x[0]):
+            for g in [g for g in began if g not in named]:
+                spans.append((began.pop(g), at))
+            for g in named:
+                began.setdefault(g, at)
+        spans += [(at, now) for at in began.values()]
+        total, end = 0.0, None
+        for s, e_ in sorted(spans):
+            s = s if end is None else max(s, end)
+            if e_ > s:
+                total += e_ - s
+            end = e_ if end is None else max(end, e_)
+        if total:
+            out[item] = total
+    return out
+
+
+def gates_line(bl, sid, upstream=False, events=None, now=None):
+    """`gates SP: block N, held N, agent N, recommendation taken K of M, blocked H h over I items` for sprint SID: the
+    disposition (`bl_authority.disposition`) of each gate of the sprint's items but a dropped one, the start gate left
+    out; M the answered gates that carry a recommendation and K those answered with it (an answer equal to it or
+    beginning with it); H the hours EVENTS (`progress_events`) show gates holding I items (`blocked_seconds`), `?` where
+    EVENTS is None."""
+    from bl_authority import disposition
+    items = [i for i in bl.sprint_items(sid) if bl.items[i].get("status") != "dropped" and (upstream or not bl.is_upstream(i))]
+    kinds, taken, asked = {"block": 0, "hold": 0, "agent": 0}, 0, 0
+    for i in items:
+        for g in bl.items[i].get("gates", []) or []:
+            if not isinstance(g, dict) or g.get("id") == START_GATE:
+                continue
+            kinds[disposition(bl.items[i], g)[0]] += 1
+            rec, ans = g.get("recommendation"), g.get("answer")
+            if rec and isinstance(ans, str):
+                asked += 1
+                taken += ans == rec or ans.startswith(rec)
+    if events is None:
+        held = "blocked ? h"
+    else:
+        secs = blocked_seconds(events, set(items), time.time() if now is None else now)
+        held = f"blocked {sum(secs.values()) / 3600:.1f} h over {len(secs)} items"
+    return (f"gates {sid}: block {kinds['block']}, held {kinds['hold']}, agent {kinds['agent']}, "
+            f"recommendation taken {taken} of {asked}, {held}")
+
+
+def cmd_gates(bl, a):
+    """`horizon --gates`: one `gates_line` per sprint (the one --sprint names, else each active one); it reads the item
+    files and the coord store and writes nothing."""
     sprints = [a.sprint] if a.sprint else sorted(i for i, it in bl.items.items()
+                                                  if it.get("kind") == "sprint" and it.get("status") == "active"
+                                                  and (a.all or not bl.is_upstream(i)))
+    if not sprints:
+        say("gates: no active sprint")
+        return 0
+    events = progress_events(bl.root)
+    for sid in sprints:
+        need(bl, sid)
+        say(gates_line(bl, sid, a.all, events))
+    return 0
+
+
+def cmd_horizon(bl, a):
+    if a.gates:
+        return cmd_gates(bl, a)
+    sprints =[a.sprint] if a.sprint else sorted(i for i, it in bl.items.items()
                                                   if it.get("kind") == "sprint" and it.get("status") == "active"
                                                   and (a.all or not bl.is_upstream(i)))
     lines = [lag] if a.hook and (lag := lag_line(bl.root)) else []  # first: the hook's cut drops the last lines
@@ -561,6 +655,8 @@ def args_horizon(p):
     p.add_argument("--hook", action="store_true")
     p.add_argument("--opt-in", action="store_true",
                    help="with --hook: do nothing unless backlog.json's `hooks` setting names horizon (the plugin's entry)")
+    p.add_argument("--gates", action="store_true",
+                   help="instead: one line per sprint with its gates by disposition, the recommendation share and the hours gates held items")
 
 
 bl_cli.register("similar", cmd_similar, args_similar)
