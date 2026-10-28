@@ -76,7 +76,8 @@
     "_tools/test_leaks.py",
     "kb/_self/querylog.md",
     "kb/_self/tools.md",
-    "kb/_self/plugin.md"
+    "kb/_self/plugin.md",
+    "_tools/fixtures/placeholders/**"
   ],
   "depends_on": [
     "ST-nqqxjvzm",
@@ -120,6 +121,56 @@
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "The checks load fixture roots under _tools/fixtures/placeholders, a path outside this item's touches: keep them in this item's commits?",
+      "options": [
+        "Keep the two fixture roots in this item and widen its touches to _tools/fixtures/placeholders/**",
+        "Leave the fixture roots out of this item"
+      ],
+      "recommendation": "Keep the two fixture roots in this item and widen its touches to _tools/fixtures/placeholders/**",
+      "reason": "because checks 3 and 4 cannot load a root that does not exist",
+      "do": {
+        "Keep the two fixture roots in this item and widen its touches to _tools/fixtures/placeholders/**": "ST-eimj36y3",
+        "Leave the fixture roots out of this item": "ST-eimj36y3"
+      },
+      "class": "design"
+    },
+    {
+      "id": "g4",
+      "kind": "blocking",
+      "question": "Should the push-time scan of tracked files read each root's placeholders too, or only leak_hits and redact take a root?",
+      "options": [
+        "Only leak_hits and redact take a root; the tracked-file scan passes none",
+        "The tracked-file scan passes the root of each file as well"
+      ],
+      "recommendation": "Only leak_hits and redact take a root; the tracked-file scan passes none",
+      "reason": "because that module is outside this item's touches and no root sets a placeholder yet",
+      "do": {
+        "Only leak_hits and redact take a root; the tracked-file scan passes none": "ST-eimj36y3",
+        "The tracked-file scan passes the root of each file as well": "ST-eimj36y3"
+      },
+      "class": "push"
+    },
+    {
+      "id": "g5",
+      "kind": "provisional",
+      "question": "In a logon whose user is a root's placeholder, what happens to the domain part?",
+      "options": [
+        "The domain becomes the placeholder domain CORP and the user stays",
+        "The whole logon stays as written"
+      ],
+      "recommendation": "The domain becomes the placeholder domain CORP and the user stays",
+      "reason": "because a real domain with a fictitious user would still name the organisation",
+      "do": {
+        "The domain becomes the placeholder domain CORP and the user stays": "ST-eimj36y3",
+        "The whole logon stays as written": "ST-eimj36y3"
+      },
+      "class": "design",
+      "answer": "The domain becomes the placeholder domain CORP and the user stays",
+      "by": "agent"
     }
   ],
   "notes": "Premise (plan time, synthetic names): redact.redact rewrites a logon shape with a fictitious user other than the shipped placeholder, and a profile path with such a user; kbcommon.leak_hits flags the same profile path as a home folder. It does not reproduce for a device name like PL-LT-00999, a bare user name or an email on corp.example.com, so the need is logon and profile-path shapes only. PLACEHOLDERS is one dict in redact.py; the scan of every tracked file must still pass with no root setting anything.\nOperator: g1 build after the redaction stories in flight land (ST-xllrtqlt, after ST-yl6b2ues); g2 user names only. Order: after ST-3j3wlgg4 (test_redact.py).\nChecks 0, 1 and 2 (the redact and leak tests, perfcheck ids) each passes before the work and pin behaviour that must stay unchanged (the leak shapes, the shipped placeholders, the test ids); checks 3 and 4 fail before it with a one-line reason.\nContract: Root.placeholders is a tuple; kbcommon.leak_hits(text, allow=None, root=None) and redact.redact(text, root=None) let a root's own placeholders pass for its files only; fixtures _tools/fixtures/placeholders/{ok (placeholders: anna.nowak), bad (one that matches a leak shape; the refusal names `placeholders` in backticks)}.",
