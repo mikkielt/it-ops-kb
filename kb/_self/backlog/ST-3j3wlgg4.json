@@ -62,7 +62,12 @@
         "over is any ceiling breach (counts or seconds), limit_s the applied seconds limit in whole seconds, ws the junit worker-seconds in whole seconds": "ST-3j3wlgg4",
         "over is the seconds breach only, ws in milliseconds": "ST-3j3wlgg4"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "over is any ceiling breach (counts or seconds), limit_s the applied seconds limit in whole seconds, ws the junit worker-seconds in whole seconds",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "notes": "Planner (SP-jwvaq2hu): after ST-xllrtqlt, which also edits _tools/test_redact.py (the report's item 8 after item 3); check 1 (the ops-row and ceiling tests) passes before the work and pins those critical formats.",
