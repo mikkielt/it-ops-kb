@@ -5,7 +5,7 @@
   benchmarks.py run [SCENARIO ...] [--reps N] [--arm ARM] [--out FILE] [--arms A,B] [--kinds K,K] [--effort L,L] [--dry-run]
                     [--shape fresh|session|fresh,session] [--seed N] [--jobs N] [--max-usd X] [--sample N]
                     [--arm-reps ARM=N,...] [--arm-kinds ARM=K+K,...]
-                    [--sessions N,N] [--window SECONDS] [--pane-every SECONDS] [--fs-usage FILE] [--intake-real]
+                    [--sessions N,N] [--window SECONDS] [--pane-every SECONDS] [--fs-usage FILE] [--intake-real] [--live [--live-pids PID,PID]]
                                             run every scenario, or the named ones, and write their rows to the results
                                             file (kb/_self/reports/benchmarks.csv; rows of the same scenario and date
                                             are replaced), or to FILE; prints each scenario's rows and the spend;
@@ -390,7 +390,7 @@ def main(argv=None):
                    + ",".join(bench_pool.OPT_IN) + ", named here only), and of `session-load` (default: " + ",".join(bench_load.DEFAULT_ARMS)
                    + "; also B, named here only)")
     r.add_argument("--window", type=float, metavar="SECONDS",
-                   help="`session-load` arm B: the seconds of each phase the kbmon pane's commands run over (default: "
+                   help="`session-load` arm B: the seconds of each phase the kbmon pane's commands run over, and with --live the seconds sampled (default: "
                    + f"{bench_load.WINDOW_S})")
     r.add_argument("--pane-every", type=float, metavar="SECONDS",
                    help="`session-load` arm B: the seconds between two pane runs (default: the kbmon-pane mod's REFRESH_MS)")
@@ -405,6 +405,12 @@ def main(argv=None):
                    help="`session-load` alone, arm A only: replay only arm A's SessionStart intake hook in a clone left as the checkout "
                    "is (the other replays pin the item files so its drift scan runs no item check) and write its cpu_s, wall_s and "
                    "spawns, case 'idle hook intake real', keeping the rest of the record")
+    r.add_argument("--live", action="store_true",
+                   help="`session-load` alone: replay nothing; for --window seconds (default: " + f"{bench_load.WINDOW_S}" + ") sample the process "
+                   "trees of the live Claude Code sessions of this clone (or of the --live-pids roots) and write, arm live, case 'live "
+                   "<class>' and 'live all', cpu_s, rss_peak_mb, rss_mean_mb and spawns_per_min, with a snapshot of the samples under _cache/")
+    r.add_argument("--live-pids", metavar="PID,PID",
+                   help="`session-load --live`: follow the trees of these processes instead of the sessions of this clone")
     r.add_argument("--kinds", help="the pool kinds `pool` runs, comma separated (default: every kind; the opus-5-5 arm: its sanity subset, "
                    + "+".join(bench_pool.SUBSET_KINDS["opus-5-5"]) + ")")
     r.add_argument("--effort", help="the effort levels of the kb arms of `pool`, comma separated (default: "
@@ -674,6 +680,21 @@ def main(argv=None):
             problems.append(f"--sessions: {a.sessions!r} is not whole numbers of 1 or more, comma separated")
         if "session-load" not in names or a.fs_usage or a.intake_real:
             problems.append("--sessions: name `session-load` for it, without --fs-usage or --intake-real, which start no replay")
+    live_pids = None
+    if a.live_pids is not None and not a.live:
+        problems.append("--live-pids: only with --live")
+    if a.live_pids is not None and a.live:
+        try:
+            live_pids = [int(x) for x in a.live_pids.split(",")]
+            if min(live_pids) < 1:
+                raise ValueError
+        except ValueError:
+            problems.append(f"--live-pids: {a.live_pids!r} is not process ids, comma separated")
+    if a.live:
+        if names != ["session-load"]:
+            problems.append("--live: name `session-load` alone, as the other scenarios would run")
+        elif a.fs_usage or a.intake_real or a.sessions is not None or a.pane_every is not None or load_arms:
+            problems.append("--live: replays nothing; it takes no --fs-usage, --intake-real, --sessions, --arms or --pane-every")
     if a.intake_real:
         if names != ["session-load"]:
             problems.append("--intake-real: name `session-load` alone, as the other scenarios would run")
@@ -699,7 +720,7 @@ def main(argv=None):
     b.arm = a.arm
     b.arms, b.efforts, b.dry, b.shape, b.seed = arms, efforts, a.dry_run, a.shape, a.seed
     b.load_arms, b.window, b.pane_every, b.capture = load_arms, a.window, a.pane_every, capture
-    b.intake_real, b.sessions = a.intake_real, sessions
+    b.intake_real, b.sessions, b.live, b.live_pids = a.intake_real, sessions, a.live, live_pids
     b.jobs, b.max_usd, b.sample = a.jobs, a.max_usd, a.sample
     b.kinds, b.arm_reps, b.arm_kinds = kinds, arm_reps, arm_kinds
     out = Path(a.out) if a.out else RESULTS
