@@ -1,5 +1,5 @@
 """The benchmarks' session-load scenario: what one Claude Code session of this clone costs the host, measured with no
-model (stdlib only).
+model, or with `--paid` with real Haiku 5.5 sessions (stdlib only).
 
 benchmarks.py registers the scenario in SCENARIOS and holds the command line; the harness is bench_core.py
 (kb/_self/code.md, Layout and Imports; the scenario is described in kb/_self/reports/benchmarks.md). It replays the hook
@@ -8,12 +8,16 @@ Code starts them (`sh -c`, the event as JSON on stdin, CLAUDE_PROJECT_DIR set), 
 `os.wait4` (CPU and peak memory, which include the children the process waited for) and, for the processes those start,
 with a sampler of `ps` (their memory) and a `sitecustomize` audit hook that logs each process a Python program starts
 (their number and programs). Arm B adds the commands the kbmon-pane mod runs in an interactive session, on the mod's schedule.
+With `--paid` (paid_rows) it starts, per arm, phase, session count and rep, `claude -p` sessions instead, in the same
+throwaway clones with the arm's settings, and samples their process trees into the same rows with the model column set.
 This module imports no facade; `mon_host` is imported where a process is given its class.
 """
-import json, os, re, shutil, statistics, subprocess, sys, threading, time, uuid
+import json, os, re, shutil, signal, statistics, subprocess, sys, tempfile, threading, time, uuid
 from pathlib import Path
 
-from bench_core import HOME, Skip, git, need_sh, no_plugin_env, shim_dir
+from bench_core import (HOME, PRICE, RAW, RESULTS, Bench, Skip, git, need_sh, no_plugin_env, read_rows, shim_dir, spent, spent_usd,
+                        write_rate)
+from kbcommon import NO_HOOKS
 
 ARMS = ("A", "B", "C", "D", "worker")  # A: every hook; B: A and the kbmon pane's commands; C: coord_hook.py and querylog.py left out; D: none; worker: A under a dispatched worker's environment
 DEFAULT_ARMS = ("A", "C", "D")  # B and worker run only when named: B adds WINDOW_S seconds to each phase
@@ -44,6 +48,19 @@ LIVE_TICK_S = 1.0  # the pause between two `ps` listings of a live run
 LIVE_HEADLESS_ROLES = ("worker", "sprint runner", "reviewer", "benchmark agent", "bare twin", "observer")  # the roles of mon_sessions.ROLES that run headless: the others are interactive
 LIVE_ITEM_ID = re.compile(r"[A-Z]{2}-[a-z2-7]{8}")  # a backlog item id, as kbtail keeps one
 SETTLE_S = 30  # seconds a replay waits for the processes it left running in the clone
+PAID_ARMS = ("A", "C", "D")  # the arms of `run session-load --paid`: B needs an interactive session, worker is A in another environment
+PAID_MODEL = "claude-haiku-5-5"  # the model of every paid session, pinned by id
+PAID_RUN_USD = 0.50  # the --max-budget-usd of one paid session
+PAID_TIMEOUT_S = 600  # seconds one paid session may run before its process group is killed
+PAID_TICK_S = 0.2  # the pause between two `ps` listings while paid sessions run
+PAID_TOOLS = "Read,Bash(git status:*),Bash(python3 _tools/rag.py:*)"  # what a paid session may call, so a working phase needs no prompt
+PAID_PROMPTS = {  # the prompt of a paid session per phase: idle calls no tool, working calls three (the hooks of PreToolUse, PostToolUse and Stop run)
+    "idle": "Reply with the single word ready and call no tool.",
+    "working": "Run `git status --short`, then run `python3 _tools/rag.py search LAPS -k 1`, then read the first 20 lines of README.md "
+               "with the Read tool, then answer in one sentence what this repository is."}
+PAID_TOKENS = {  # the tokens of one paid session per phase an estimate assumes when the results hold no paid record: a session's cached start is mostly written once (1-hour rate)
+    "idle": {"uncached": 2_000, "cache_write": 25_000, "cache_read": 0, "out": 200},
+    "working": {"uncached": 6_000, "cache_write": 35_000, "cache_read": 120_000, "out": 800}}
 SITE = '''# logs each process a Python program starts (the audit events of subprocess.Popen, os.posix_spawn and os.system) to the
 # file BENCH_STARTS_LOG, then runs the sitecustomize this file shadows
 import os, sys
@@ -798,6 +815,291 @@ def live_rows(b):
     print(f"session-load: live snapshot written to {live_snapshot(live, described, window)}", flush=True)
 
 
+class PaidBench(Bench):
+    """The Bench of `run session-load --paid`. `Bench` reads the Claude Code version with a `claude --version` of its own, and a
+    paid run starts no `claude` that is not a capped session, so that one runs a `claude` that fails at once (the version
+    stays `?`, then the init event of the first session names it, `paid_rows`)."""
+
+    def __init__(self, scratch, reps):
+        with tempfile.TemporaryDirectory() as d:
+            path = os.environ.get("PATH", "")
+            os.environ["PATH"] = os.pathsep.join((str(shim_dir(d)), path))
+            try:
+                super().__init__(scratch, reps)
+            finally:
+                os.environ["PATH"] = path
+
+
+def arm_settings(clone, arm):
+    """Write into `clone` the .claude/settings.json of `arm`: the project's own, less the hook commands the arm leaves out
+    (LEFT_OUT, as `arm_hooks` does). Arm D has its hooks turned off by NO_HOOKS on the command line instead."""
+    out = LEFT_OUT[arm]
+    if not out:
+        return
+    path = Path(clone) / ".claude" / "settings.json"
+    spec = json.loads(path.read_text(encoding="utf-8"))
+    hooks = {}
+    for ev, groups in spec.get("hooks", {}).items():
+        kept = []
+        for g in groups:
+            left = [h for h in g["hooks"] if not any(x in h.get("command", "") for x in out)]
+            if left:
+                kept.append({**g, "hooks": left})
+        if kept:
+            hooks[ev] = kept
+    spec["hooks"] = hooks
+    path.write_text(json.dumps(spec, indent=2) + "\n", encoding="utf-8", newline="\n")
+
+
+def paid_argv(arm):
+    """The `claude -p` of one paid session of `arm`: Haiku 5.5, a budget cap, the project's and local settings only (the user's
+    own hooks and plugins are not the clone's), the prompt on stdin."""
+    return [shutil.which("claude") or "claude", "-p", "--model", PAID_MODEL, "--max-budget-usd", f"{PAID_RUN_USD:g}",
+            "--output-format", "stream-json", "--verbose", "--no-session-persistence", "--setting-sources", "project,local",
+            "--allowedTools", PAID_TOOLS, *(NO_HOOKS if arm == "D" else [])]
+
+
+def read_stream(path):
+    """(the result event, the Claude Code version of the init event) of a stream-json file; None and "" for what it lacks."""
+    result, version = None, ""
+    for ln in Path(path).read_text(encoding="utf-8", errors="replace").splitlines():
+        try:
+            ev = json.loads(ln)
+        except ValueError:
+            continue
+        if isinstance(ev, dict) and ev.get("type") == "result":
+            result = ev
+        elif isinstance(ev, dict) and ev.get("type") == "system" and ev.get("subtype") == "init":
+            version = ev.get("claude_code_version") or version
+    return result, version
+
+
+class Ticker(threading.Thread):
+    """The `ps` listings of one group of paid sessions: every PAID_TICK_S one `cpu_listing`, handed to the `Live` of each
+    session still running (its root registered with `add` until `finish`), so N sessions at once cost one listing a tick."""
+
+    def __init__(self, clones):
+        super().__init__(daemon=True)
+        self.lives, self.lock, self.stop = [Live(c, {}) for c in clones], threading.Lock(), threading.Event()
+
+    def add(self, i, pid):
+        with self.lock:
+            self.lives[i].roots[pid] = "claude"
+
+    def finish(self, i, pid):
+        with self.lock:
+            self.lives[i].roots.pop(pid, None)
+
+    def run(self):
+        while not self.stop.wait(PAID_TICK_S):
+            with self.lock:
+                if not any(live.roots for live in self.lives):
+                    continue
+            listed, now = cpu_listing(), time.monotonic()
+            have = {row[0] for row in listed}
+            with self.lock:
+                for live in self.lives:
+                    if have & set(live.roots):
+                        live.tick(listed, now)
+
+
+def paid_classes(live, cpu_s):
+    """{class: {cpu_s, peak, mean, spawns}} of one paid session's ticks, and `all`: the CPU of the others is the difference of
+    the `ps` times from a process's first listing to its last, `all`'s the `cpu_s` os.wait4 gave the session; the memory is
+    in MiB, `spawns` the processes first seen after the first listing."""
+    out = {}
+    for cls in sorted({c["class"] for c in live.procs.values()}):
+        mine = [c for c in live.procs.values() if c["class"] == cls]
+        sums = [per.get(cls, 0) / 1024 for per in live.ticks]
+        out[cls] = {"cpu_s": sum(c["cpu1"] - c["cpu0"] for c in mine), "peak": max(sums), "mean": statistics.mean(sums),
+                    "spawns": sum(1 for c in mine if c["tick"] > 0 and not c["root"])}
+    sums = [sum(per.values()) / 1024 for per in live.ticks] or [0.0]
+    out["all"] = {"cpu_s": cpu_s, "peak": max(sums), "mean": statistics.mean(sums), "spawns": sum(c["spawns"] for c in out.values())}
+    return out
+
+
+def kill_group(pid):
+    try:
+        os.killpg(pid, signal.SIGKILL)
+    except OSError:
+        pass
+
+
+def paid_run(clone, arm, phase, env, ticker, i, out):
+    """One paid session in `clone`: its stdout to the file `out`, its process tree followed by `ticker`, killed after
+    PAID_TIMEOUT_S. Its record: `classes` (paid_classes), `wall_s`, `failed` (1 when it exited non-zero, ended with no result
+    event or with an error one), `cost`, `version`, and its tokens (spent, bench_core, counts it)."""
+    t0 = time.perf_counter()
+    with open(out, "w", encoding="utf-8", newline="\n") as f:  # a file, not a pipe: this waits in wait4 and a full pipe would stall the session
+        p = subprocess.Popen(paid_argv(arm), cwd=str(clone), env=env, stdin=subprocess.PIPE, stdout=f, stderr=subprocess.DEVNULL,
+                             start_new_session=True)
+        ticker.add(i, p.pid)
+        timer = threading.Timer(PAID_TIMEOUT_S, kill_group, args=(p.pid,))
+        timer.start()
+        try:
+            p.stdin.write(PAID_PROMPTS[phase].encode("utf-8"))
+            p.stdin.close()
+        except OSError:  # a claude that exits without reading its prompt
+            pass
+        _, status, ru = os.wait4(p.pid, 0)
+        timer.cancel()
+    wall = time.perf_counter() - t0
+    p.returncode = os.waitstatus_to_exitcode(status)
+    ticker.finish(i, p.pid)
+    result, version = read_stream(out)
+    use = (result or {}).get("usage") or {}
+    cost = (result or {}).get("total_cost_usd") or 0.0
+    spent(cost, (use.get("input_tokens") or 0) + (use.get("cache_creation_input_tokens") or 0) + (use.get("cache_read_input_tokens") or 0),
+          use.get("output_tokens") or 0)
+    failed = int(p.returncode != 0 or result is None or bool(result.get("is_error")) or str(result.get("subtype") or "").startswith("error_"))
+    settle(clone)
+    return {"classes": paid_classes(ticker.lives[i], ru.ru_utime + ru.ru_stime), "wall_s": wall, "failed": failed, "cost": cost,
+            "version": version, "rc": p.returncode}
+
+
+def paid_group(b, clones, arm, phase, rep):
+    """N paid sessions at once, one in each of `clones`, each with its own session, query log home and coord store, merged as
+    `together` merges replays: per class the sums of the CPU, memory and starts, the longest `wall_s`, the sum of the failures
+    and of the cost, the mean of the loads at the start. The first session's Claude Code version is `b.cc` when it names one."""
+    ticker = Ticker(clones)
+    ticker.start()
+    outs, errors = [None] * len(clones), []
+    load = os.getloadavg()[0] if hasattr(os, "getloadavg") else 0.0
+
+    def one(i):
+        try:
+            reset(clones[i])
+            arm_settings(clones[i], arm)
+            env = arm_env(plant(b, clones[i], f"paid-{arm}-{phase}-{rep}-s{i}"), arm)
+            outs[i] = paid_run(clones[i], arm, phase, env, ticker, i, b.scratch / "session-load-data" / f"paid-{arm}-{phase}-{rep}-s{i}.jsonl")
+        except Exception as e:
+            errors.append(e)
+    threads = [threading.Thread(target=one, args=(i,)) for i in range(len(clones))]
+    for th in threads:
+        th.start()
+    for th in threads:
+        th.join()
+    ticker.stop.set()
+    ticker.join()
+    if errors:
+        raise errors[0]
+    for o in outs:
+        if o["version"] and b.cc in ("", "?"):
+            b.cc = o["version"]
+    per = {}
+    for o in outs:
+        for cls, cell in o["classes"].items():
+            sums = per.setdefault(cls, dict.fromkeys(("cpu_s", "peak", "mean", "spawns"), 0.0))
+            for k, v in cell.items():
+                sums[k] += v
+    return {"classes": per, "wall_s": max(o["wall_s"] for o in outs), "failed": sum(o["failed"] for o in outs),
+            "cost": sum(o["cost"] for o in outs), "costs": [o["cost"] for o in outs], "load": load}
+
+
+def paid_plan(arms, sessions, reps):
+    """[(rep, arm, phase, n)] of a paid run in the order it starts them: each rep every arm, each arm every phase, each phase
+    every N of `sessions`; a group is N sessions at once, so the runs are the sum of the Ns."""
+    return [(rep, arm, phase, n) for rep in range(reps) for arm in arms for phase in PHASES for n in sessions]
+
+
+def paid_cost(history, phase):
+    """(USD of one paid session of `phase`, its basis): the mean `cost` of the one-session case `<phase> all` of the newest
+    record of the results `history` that holds a paid row, else PAID_TOKENS[phase] at the list price of PAID_MODEL."""
+    mine = [r for r in history if r["scenario"] == "session-load" and r["model"] == PAID_MODEL and r["metric"] == "cost"
+            and r["case"] == f"{phase} all"]
+    if mine:
+        record = max(r["record"] for r in mine)
+        return statistics.mean(float(r["value"]) for r in mine if r["record"] == record), f"the mean cost of the record {record}"
+    p, t = PRICE[PAID_MODEL][0], PAID_TOKENS[phase]
+    return ((t["uncached"] * p[1] + t["cache_write"] * write_rate(p) + t["cache_read"] * p[4] + t["out"] * p[2]) / 1e6,
+            "the default tokens at list price")
+
+
+def paid_note(metric, cls, loads, n):
+    """The note of a paid `cpu_s` row of `all` (what its figure is) or of a `spawns_per_min` row."""
+    if metric == "spawns_per_min":
+        return ("processes first seen after a session's first `ps` listing, per minute of its wall time: a process that lives "
+                f"less than {PAID_TICK_S:g} s is missed, so a lower bound" + (f"; the sum of {n} sessions" if n > 1 else ""))
+    return (f"{os.cpu_count()} cores, load {statistics.mean(loads):.1f} (1 min at the start of each group); the CPU os.wait4 gave "
+            f"the claude process, its waited-for children included; a class's own row is the `ps` time from a process's first "
+            f"listing to its last, every {PAID_TICK_S:g} s" + (f"; the sum of {n} sessions" if n > 1 else ""))
+
+
+def paid_rows(b):
+    """The rows of `run session-load --paid`: per arm, phase, N of `b.sessions` and rep one group of N `claude -p` sessions of
+    PAID_MODEL at once (PAID_RUN_USD each; `paid_plan`'s order), each in a throwaway clone of its own, in arm A's settings
+    (the clone's), C's (`arm_settings`) or D's (NO_HOOKS) with the prompt of PAID_PROMPTS[phase], its process tree sampled
+    (`Ticker`). The rows are those of the replay (cases `<phase> <class>[ xN]`, `cpu_s`, `rss_peak_mb`, `rss_mean_mb`,
+    `spawns_per_min`; `<phase> replay`'s `wall_s` and `run_failures`), the median over the reps, with the model column set, and
+    `<phase> all`'s `cost` (USD, the sum of the N sessions). With `b.max_usd` no group starts once the spend so far and the
+    group, each session at the mean cost of the finished ones of its phase (else of all, and the first group starts), would
+    pass it: a `spend_stopped` row per arm names the sessions not started. With `b.dry` it prints the plan and starts no
+    `claude`."""
+    arms = list(getattr(b, "load_arms", None) or DEFAULT_ARMS)
+    sessions = sorted(set(getattr(b, "sessions", None) or (1,)))
+    plan, cap = paid_plan(arms, sessions, max(1, b.reps)), getattr(b, "max_usd", None)
+    total = sum(n for _, _, _, n in plan)
+    if getattr(b, "dry", False):
+        history = read_rows(RESULTS)
+        usd = 0.0
+        print(f"session-load: {total} runs of {PAID_MODEL} ({len(arms)} arms {','.join(arms)} x {len(PHASES)} phases x sessions "
+              f"{','.join(map(str, sessions))} = {sum(sessions)} runs per arm and phase x {max(1, b.reps)} reps), each `claude -p` "
+              f"under --max-budget-usd {PAID_RUN_USD:g} in a throwaway clone", flush=True)
+        for phase in PHASES:
+            each, basis = paid_cost(history, phase)
+            runs = sum(n for _, _, p, n in plan if p == phase)
+            usd += runs * each
+            print(f"session-load: {phase}: {runs} runs, estimate ${runs * each:.2f} at ${each:.4f} a run ({basis})", flush=True)
+        print(f"session-load: estimate ${usd:.2f} in all, at most ${total * PAID_RUN_USD:.2f} by the budget cap of each run: an estimate, "
+              "not a measurement" + (f"; over --max-usd ${cap:.2f}: a run would stop before the last groups start"
+                                     if cap is not None and usd > cap else ""), flush=True)
+        raise Skip(f"dry run: {total} runs, no claude started; estimated spend ${usd:.2f}")
+    clones = []
+    for i in range(sessions[-1]):  # one throwaway clone for each session beyond the first, as the replay has
+        clones.append(b.clone("session-load" if i == 0 else f"session-load-{i}", "local"))
+        pin_drift(clones[-1])
+    (b.scratch / "session-load-data").mkdir(parents=True, exist_ok=True)
+    got = {(arm, phase, n): [] for arm in arms for phase in PHASES for n in sessions}
+    costs, base, stopped = {phase: [] for phase in PHASES}, spent_usd(), []
+    for k, (rep, arm, phase, n) in enumerate(plan):
+        every = costs[phase] or [c for cs in costs.values() for c in cs]
+        if cap is not None and spent_usd() - base + n * (statistics.mean(every) if every else 0.0) > cap:
+            stopped = plan[k:]
+            break
+        r = paid_group(b, clones[:n], arm, phase, rep)
+        got[(arm, phase, n)].append(r)
+        costs[phase] += r["costs"]
+        if RAW.get("path"):
+            with open(RAW["path"], "a", encoding="utf-8", newline="\n") as f:
+                f.write(json.dumps({"arm": arm, "phase": phase, "sessions": n, "rep": rep, "cost": r["cost"], "failed": r["failed"],
+                                    "wall_s": round(r["wall_s"], 2)}) + "\n")
+    seen = sorted({c for rs in got.values() for r in rs for c in r["classes"] if c != "all"}, key=lambda c: (c not in CLASSES, c))
+    for (arm, phase, n), reps in got.items():
+        if not reps:
+            continue
+        sfx, loads = (f" x{n}" if n > 1 else ""), [r["load"] for r in reps]
+        for cls in [*seen, "all"]:
+            case = f"{phase} {cls}{sfx}"
+            get = lambda r, key: r["classes"].get(cls, {}).get(key, 0.0)  # noqa: E731
+            for metric, key in (("cpu_s", "cpu_s"), ("rss_peak_mb", "peak"), ("rss_mean_mb", "mean")):
+                b.row("session-load", case, arm, metric, statistics.median(get(r, key) for r in reps), len(reps), PAID_MODEL,
+                      paid_note("cpu_s", cls, loads, n) if metric == "cpu_s" and cls == "all" else "")
+            b.row("session-load", case, arm, "spawns_per_min", statistics.median(get(r, "spawns") / (r["wall_s"] / 60) for r in reps),
+                  len(reps), PAID_MODEL, paid_note("spawns_per_min", cls, loads, n) if cls == "all" else "")
+        b.row("session-load", f"{phase} replay{sfx}", arm, "wall_s", statistics.median(r["wall_s"] for r in reps), len(reps), PAID_MODEL,
+              f"the longest of {n} sessions that ran at once" if n > 1 else "")
+        b.row("session-load", f"{phase} replay{sfx}", arm, "run_failures", statistics.median(r["failed"] for r in reps), len(reps),
+              PAID_MODEL, "sessions that exited non-zero, ended with no result event or with an error one (the budget cap included)")
+        b.row("session-load", f"{phase} all{sfx}", arm, "cost", statistics.median(r["cost"] for r in reps), len(reps), PAID_MODEL,
+              "USD the result events state" + (f"; the sum of {n} sessions" if n > 1 else ""))
+    for arm in dict.fromkeys(a for _, a, _, _ in stopped):
+        runs = sum(n for _, a, _, n in stopped if a == arm)
+        b.row("session-load", "not started", arm, "spend_stopped", runs, runs, PAID_MODEL, "sessions the --max-usd cap left unstarted")
+    if stopped:
+        print(f"session-load: stopped at the --max-usd cap of ${cap:.4f} with {sum(n for _, _, _, n in stopped)} of {total} sessions "
+              "not started; the rows `spend_stopped` name them", flush=True)
+
+
 def s_session_load(b):
     """One session's hook cost on the host, no model: the hook events of a session replayed through this clone's own hook
     commands in a throwaway clone (query log in mode `local` under a scratch plugin data directory, a `claude` that fails
@@ -815,7 +1117,8 @@ def s_session_load(b):
     `b.intake_real` (run --intake-real) it only replays the intake hook, in a clone no item is pinned in (intake_real_rows).
     With `b.sessions` (run --sessions N,N) each N is also run as N sessions at once (replay_together), each in a throwaway clone of
     its own with its own session id: for N above 1 the rows are the same, their case ending in ` xN`, each a sum over the
-    sessions (`wall_s` the longest), and a `load_peak` row, the host's 1-minute load at its highest during the run."""
+    sessions (`wall_s` the longest), and a `load_peak` row, the host's 1-minute load at its highest during the run. With `b.paid` (run --paid) it only runs
+    real sessions (paid_rows)."""
     if getattr(b, "capture", None):  # --fs-usage FILE: count a capture, start no replay
         return capture_rows(b)
     if getattr(b, "live", False):  # --live: follow the host's running sessions, start no replay
@@ -825,6 +1128,8 @@ def s_session_load(b):
     need_sh()
     if getattr(b, "intake_real", False):  # --intake-real: the intake hook in an unpinned clone, nothing else
         return intake_real_rows(b)
+    if getattr(b, "paid", False):  # --paid: real Haiku 5.5 sessions per arm, phase and session count, no hook replay
+        return paid_rows(b)
     print(f"session-load: for the file reads of a session, run `{FS_COMMAND}` by hand beside it (macOS, needs root; stop it with "
           "Ctrl-C), then `python3 _tools/benchmarks.py run session-load --fs-usage fs_usage.txt`", flush=True)
     arms =list(getattr(b, "load_arms", None) or DEFAULT_ARMS)

@@ -6,6 +6,7 @@
                     [--shape fresh|session|fresh,session] [--seed N] [--jobs N] [--max-usd X] [--sample N]
                     [--arm-reps ARM=N,...] [--arm-kinds ARM=K+K,...]
                     [--sessions N,N] [--window SECONDS] [--pane-every SECONDS] [--fs-usage FILE] [--intake-real] [--live [--live-pids PID,PID]]
+                    [--paid]
                                             run every scenario, or the named ones, and write their rows to the results
                                             file (kb/_self/reports/benchmarks.csv; rows of the same scenario and date
                                             are replaced), or to FILE; prints each scenario's rows and the spend;
@@ -314,8 +315,8 @@ clone's spool, a plugin data directory of ~/.claude or a real remote. A clone ge
 
 Paid scenarios (each a `claude -p` per case): headless, subagents, models, router, route-by-verdict, howto, partial, files-subagents,
 files-headless, host-lookups, new-model, always-on, kb-lookup-agent, retrieval and doc2query (their blind questions), research,
-ingest, host-roots, navigation (three prompts per arm), querylog-pipeline (one real Haiku batch). The rest run no
-model.
+ingest, host-roots, navigation (three prompts per arm), querylog-pipeline (one real Haiku batch), and session-load with
+--paid (a Haiku 5.5 session per arm, phase, session count and rep). The rest run no model.
 
 Answers: how fast and how costly each kb measurement is, and how to run a benchmark scenario again
 Answers: which benchmark scenarios there are and which report section holds each
@@ -374,7 +375,7 @@ SCENARIOS = {  # name: (report section, function)
     "navigation": ("Finding the code", s_navigation),
     "pool": ("A question pool over the kb, router, hook and web arms", bench_pool.s_pool),
 }
-PLANNED = ("pool", "freshness")  # the scenarios that read `b.dry`: they print a plan and start no model, the others have no plan
+PLANNED = ("pool", "freshness", "session-load")  # the scenarios that read `b.dry`: they print a plan and start no model, the others have no plan; session-load's is of --paid, and without it --dry-run exits 2
 
 
 def main(argv=None):
@@ -409,6 +410,11 @@ def main(argv=None):
                    help="`session-load` alone: replay nothing; for --window seconds (default: " + f"{bench_load.WINDOW_S}" + ") sample the process "
                    "trees of the live Claude Code sessions of this clone (or of the --live-pids roots) and write, arm live, case 'live "
                    "<class>' and 'live all', cpu_s, rss_peak_mb, rss_mean_mb and spawns_per_min, with a snapshot of the samples under _cache/")
+    r.add_argument("--paid", action="store_true",
+                   help="`session-load` alone, arms A, C, D: start, per arm, phase, session and rep, one `claude -p` of " + bench_load.PAID_MODEL
+                   + f" under --max-budget-usd {bench_load.PAID_RUN_USD:g} in a throwaway clone with the arm's settings and sample its process "
+                   "tree into the rows of the replay with the model column set (--sessions N,N runs N at once, --max-usd X starts no group "
+                   "once X would be passed, --dry-run prints the run count and the estimate and starts no claude)")
     r.add_argument("--live-pids", metavar="PID,PID",
                    help="`session-load --live`: follow the trees of these processes instead of the sessions of this clone")
     r.add_argument("--kinds", help="the pool kinds `pool` runs, comma separated (default: every kind; the opus-5-5 arm: its sanity subset, "
@@ -421,7 +427,7 @@ def main(argv=None):
                    "separated (default: fresh)")
     r.add_argument("--seed", type=int, default=bench_pool.SEED, help="the seed that orders the groups of `pool --shape session`")
     r.add_argument("--jobs", type=int, default=1, help="`pool`: runs at once (default: 1)")
-    r.add_argument("--max-usd", type=float, help="`pool`: start no new run once the finished runs, those in flight and the run to start, each at the mean cost of its kind, would pass this many US dollars")
+    r.add_argument("--max-usd", type=float, help="`pool`, `session-load --paid`: start no new run once the finished runs, those in flight and the run to start, each at the mean cost of its kind, would pass this many US dollars")
     r.add_argument("--sample", type=int, help="`pool`, `freshness`: keep this many rows of each kind, drawn with --seed (default: every row)")
     r.add_argument("--arm-reps", action="append", metavar="ARM=N",
                    help="`pool`: the reps of an arm (ARM/session: of the session shape), comma separated or repeated; the arms "
@@ -640,7 +646,7 @@ def main(argv=None):
         # a scenario that never reads b.dry would start its paid runs
         unplanned = ", ".join(n for n in a.scenarios if n not in PLANNED)
         what = f"no plan for {unplanned}" if unplanned else "no scenario named, so every one would run"
-        print(f"--dry-run: {what}; the scenarios that have one: {', '.join(PLANNED)}", file=sys.stderr)
+        print(f"--dry-run: {what}; the scenarios that have one: {', '.join(PLANNED)} (session-load with --paid)", file=sys.stderr)
         return 2
     if a.jobs < 1 or (a.max_usd is not None and a.max_usd <= 0):
         print("--jobs needs 1 or more, --max-usd more than 0", file=sys.stderr)
@@ -700,6 +706,15 @@ def main(argv=None):
             problems.append("--intake-real: name `session-load` alone, as the other scenarios would run")
         elif a.fs_usage or a.window is not None or a.pane_every is not None or set(load_arms or ["A"]) != {"A"}:
             problems.append("--intake-real: replays arm A's intake hook alone; it takes no other --arms, --window, --pane-every or --fs-usage")
+    if a.paid:
+        if names != ["session-load"]:
+            problems.append("--paid: name `session-load` alone, as the other scenarios would run")
+        elif a.fs_usage or a.intake_real or a.live or a.window is not None or a.pane_every is not None:
+            problems.append("--paid: starts Haiku 5.5 sessions; it takes no --fs-usage, --intake-real, --live, --window or --pane-every")
+        elif any(x not in bench_load.PAID_ARMS for x in load_arms or ()):
+            problems.append(f"--paid: arms {', '.join(bench_load.PAID_ARMS)} only (B needs an interactive session, worker is A under another environment)")
+    elif a.dry_run and "session-load" in names:
+        problems.append("--dry-run: session-load has a plan only with --paid")
     capture = None
     if a.fs_usage:
         if names != ["session-load"]:
@@ -716,11 +731,11 @@ def main(argv=None):
     if problems:
         print("\n".join(problems), file=sys.stderr)
         return 2
-    b = Bench(scratch_dir(), a.reps)
+    b = (bench_load.PaidBench if a.paid else Bench)(scratch_dir(), a.reps)
     b.arm = a.arm
     b.arms, b.efforts, b.dry, b.shape, b.seed = arms, efforts, a.dry_run, a.shape, a.seed
     b.load_arms, b.window, b.pane_every, b.capture = load_arms, a.window, a.pane_every, capture
-    b.intake_real, b.sessions, b.live, b.live_pids = a.intake_real, sessions, a.live, live_pids
+    b.intake_real, b.sessions, b.live, b.live_pids, b.paid = a.intake_real, sessions, a.live, live_pids, a.paid
     b.jobs, b.max_usd, b.sample = a.jobs, a.max_usd, a.sample
     b.kinds, b.arm_reps, b.arm_kinds = kinds, arm_reps, arm_kinds
     out = Path(a.out) if a.out else RESULTS
@@ -741,6 +756,8 @@ def main(argv=None):
             if SPEND["runs"]:
                 if n in SLOTTED and n not in ARMED:  # a same-day run of other arms keeps its own spend rows beside these
                     arm = "paid: " + ",".join(sorted({r["arm"] for r in b.rows[start:]}))
+                elif n == "session-load":  # the spend of `--paid`, kept by a same-day replay and replaced by the next paid run
+                    arm = "paid"
                 b.row(n, "all paid runs", arm, "spend_usd", SPEND["usd"], SPEND["runs"])
                 b.row(n, "all paid runs", arm, "spend_input_tokens", SPEND["input"], SPEND["runs"])
                 b.row(n, "all paid runs", arm, "spend_output_tokens", SPEND["out"], SPEND["runs"])
@@ -751,10 +768,11 @@ def main(argv=None):
             old = read_rows(out)
             if n == "session-load":  # a same-day run of some arms keeps the rows of the arms it did not run, and every run the rows of --intake-real
                 ran, records = {r["arm"] for r in mine if r["arm"]}, {r["record"] for r in mine}
-                fresh = {(r["case"], r["arm"], r["metric"]) for r in mine}
+                fresh = {(r["case"], r["arm"], r["metric"], r["model"]) for r in mine}
+                paid = any(r["model"] for r in mine)  # a paid run keeps the replay's rows and the reverse: the model column tells them apart
                 mine = [r for r in old if r["scenario"] == n and r["record"] in records and r["arm"]
-                        and (r["arm"] not in ran or b.intake_real or r["case"] == bench_load.INTAKE_REAL_CASE)
-                        and (r["case"], r["arm"], r["metric"]) not in fresh] + mine
+                        and (r["arm"] not in ran or b.intake_real or r["case"] == bench_load.INTAKE_REAL_CASE or bool(r["model"]) != paid)
+                        and (r["case"], r["arm"], r["metric"], r["model"]) not in fresh] + mine
             merged = merge_rows(old, mine)
             if n == "pool":  # a same-day run of arm labels takes their runs out of an earlier spend row that counted them
                 for record in dict.fromkeys(r["record"] for r in mine):

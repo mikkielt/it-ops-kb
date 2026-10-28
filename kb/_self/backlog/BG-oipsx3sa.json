@@ -1,0 +1,18 @@
+{
+  "id": "BG-oipsx3sa",
+  "kind": "bug",
+  "title": "benchmarks.py run --dry-run starts claude --version: Bench.__init__ probes the Claude Code version before any plan",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "A --dry-run of python3 _tools/benchmarks.py run starts no claude at all, a claude --version included: bench_core.Bench reads the Claude Code version only when a scenario writes a row, so a plan that says no model is started starts no program of claude either",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,subprocess,sys,tempfile; t=tempfile.mkdtemp(); b=os.path.join(t,'bin'); os.mkdir(b); log=os.path.join(t,'log'); open(os.path.join(b,'claude'),'w').write('#!/bin/sh\\necho x >> '+log+'\\n'); os.chmod(os.path.join(b,'claude'),0o755); subprocess.run([sys.executable,'_tools/benchmarks.py','run','pool','--dry-run','--sample','1'],capture_output=True,env=dict(os.environ,PATH=b+os.pathsep+os.environ['PATH'])); sys.exit(1 if os.path.exists(log) else 0)"
+    ]
+  },
+  "filed_in": "clone-0ea70e5c"
+}
