@@ -114,7 +114,11 @@
         "Bench subclass that runs a failing claude for its version probe, the version from the first session's init event, and claude -p with --setting-sources project,local": "ST-i5az334d",
         "Leave the version probe and the user's settings as they are": "ST-i5az334d"
       },
-      "class": "design"
+      "class": "design",
+      "answer": "Bench subclass that runs a failing claude for its version probe, the version from the first session's init event, and claude -p with --setting-sources project,local",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g5",
