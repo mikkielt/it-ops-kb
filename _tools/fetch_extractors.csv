@@ -1,0 +1,4 @@
+extension,argv,out
+.msi,7z x -y -bd -aoa {in} -o{out},_cache/extract
+.cab,7z x -y -bd -aoa {in} -o{out},_cache/extract
+.wim,7z x -y -bd -aoa {in} -o{out},_cache/extract
