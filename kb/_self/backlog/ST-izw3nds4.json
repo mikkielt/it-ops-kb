@@ -214,6 +214,46 @@
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
+    },
+    {
+      "id": "g4",
+      "kind": "blocking",
+      "question": "How is a 7z installed per user on each OS, given PATH and profiles stay untouched and the table names the program 7z?",
+      "options": [
+        "macOS and Linux: copy the tar's 7zz as 7z beside its licence files under a per-user folder; Windows: run the release's own installer silently into a per-user folder; fetch.py text also looks there",
+        "Put a 7z launcher on PATH"
+      ],
+      "recommendation": "macOS and Linux: copy the tar's 7zz as 7z beside its licence files under a per-user folder; Windows: run the release's own installer silently into a per-user folder; fetch.py text also looks there",
+      "do": {
+        "macOS and Linux: copy the tar's 7zz as 7z beside its licence files under a per-user folder; Windows: run the release's own installer silently into a per-user folder; fetch.py text also looks there": "ST-izw3nds4",
+        "Put a 7z launcher on PATH": "ST-izw3nds4"
+      },
+      "class": "agents-rule",
+      "answer": "macOS and Linux: copy the tar's 7zz as 7z beside its licence files under a per-user folder; Windows: run the release's own installer silently into a per-user folder; fetch.py text also looks there",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    },
+    {
+      "id": "g5",
+      "kind": "blocking",
+      "question": "Which columns, limits and shipped rows does the extractor table have?",
+      "options": [
+        "Columns extension,argv,out; 120 seconds, 10000 files, 500000000 bytes, 20 folders deep; shipped rows .msi, .cab and .wim only; a root row never replaces a shipped one",
+        "Other limits or more shipped rows"
+      ],
+      "recommendation": "Columns extension,argv,out; 120 seconds, 10000 files, 500000000 bytes, 20 folders deep; shipped rows .msi, .cab and .wim only; a root row never replaces a shipped one",
+      "do": {
+        "Columns extension,argv,out; 120 seconds, 10000 files, 500000000 bytes, 20 folders deep; shipped rows .msi, .cab and .wim only; a root row never replaces a shipped one": "ST-izw3nds4",
+        "Other limits or more shipped rows": "ST-izw3nds4"
+      },
+      "class": "agents-rule",
+      "answer": "Columns extension,argv,out; 120 seconds, 10000 files, 500000000 bytes, 20 folders deep; shipped rows .msi, .cab and .wim only; a root row never replaces a shipped one",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "notes": "Premise (plan time, synthetic bodies): read_text returns None for a CAB (MSCF) or WIM (MSWIM) body, so text exits 2; an MSI body (OLE header d0cf11e0) is worse: the raw bytes come back as replacement-character text and text exits 0. A zip-based MSIX already reads through the zip route, as should a zip-based .intunewin outer container (from memory): no new rows for them. fetch.py reads zip and tar members in memory only; the new route writes untrusted contents to disk, so it needs caps on bytes, file count and depth, refusal of absolute and parent paths and of links, and removal of the directory in a finally. kbingest.py already has scrub_env, NETWORK_OFF, tool_exe, run_tool and kill_tree; fetch.py has none, so they move to kbsandbox.py (g1).\nOperator: g2 internal roots only; g3 7z, installed like WezTerm. Order: after the kbingest.py story; shares kb/_self/tools.md with S2 and S3.\nChecks 1, 2, 3 and 9 each passes before the work and pin behaviour that must stay unchanged (the existing fetch routes, the sandbox guards, the test ids); every other check fails before it with a one-line reason.\nChecks 7 to 9 serve synthetic bodies from a local HTTP server and run fetch.py text with a PATH holding only the Python directory, so 7z is absent whatever the host has. Check 0 is the guard test the worker writes: table lookup, scrubbed environment and timeout, caps and traversal refusal, directory removal, internal-roots-only rule, the printed program name.",

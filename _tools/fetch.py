@@ -65,10 +65,11 @@ Answers: whether the kb's downloaded artifacts still match their sources and the
 Answers: how fresh each source is, and how to download an artifact again
 Use: python3 _tools/fetch.py --verify|--refresh|--offline|--status
 """
-import argparse, datetime, difflib, hashlib, html.parser, http.client, io, json, lzma, os, re, shutil, subprocess, sys, tarfile, tempfile, time, zlib
+import argparse, csv, datetime, difflib, hashlib, html.parser, http.client, io, json, lzma, os, re, shlex, shutil, stat, subprocess, sys, tarfile, tempfile, time, zlib
 import urllib.error, urllib.parse, urllib.request, zipfile
+from pathlib import Path
 from xml.etree import ElementTree
-import kbcommon, kbid, ql_capture
+import install_7z, kbcommon, kbid, kbsandbox, ql_capture
 
 KB = kbcommon.PUBLIC  # the root being checked (--root; the public root by default); the cache stays in the repository
 STATE = "_fetch_state.csv"
@@ -418,9 +419,171 @@ def _pdf_text(body):
     return _cap_text(p.stdout.decode("utf-8", errors="replace"))
 
 
+EXTRACTORS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fetch_extractors.csv")  # the shipped table
+ROOT_EXTRACTORS = "_extractors.csv"  # an internal root's own rows, beside its _sources.csv
+EXTRACT_TIMEOUT = 120  # seconds one extractor command runs
+EXTRACT_FILES_CAP, EXTRACT_BYTES_CAP, EXTRACT_DEPTH_CAP = 10_000, 500_000_000, 20  # files, bytes and folder depth one extraction may leave
+EXTRACT_OUT_ROOTS = ("_cache", "_private")  # the folders under the clone an `out` column may name
+EXTRACT_MAGIC = {b"MSCF": ".cab", b"MSWIM": ".wim"}  # bodies read by their first bytes whatever the url ends in
+OLE_MAGIC = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"  # an OLE compound file: an MSI, but a legacy Office file too
+INSTALLERS = {"7z": "python3 _tools/install_7z.py --plan"}  # a shipped row's program that has an installer here
+
+
+def _extractor_rows(path, shipped):
+    """{extension: (argv template, out folder, shipped)} read from the extractor table at `path`. Each row: a lower-case
+    extension with its dot, an argv (split like a shell line, `{in}` the downloaded file and `{out}` the folder to extract
+    into, both put in after the split) whose program is a bare name (looked up on a PATH outside every clone), and an
+    `out` folder under _cache/ or _private/ (relative, no `..`). A malformed row of the shipped table is an error; one
+    of a root's table is skipped with a line on stderr."""
+    rows = {}
+    try:
+        with open(path, encoding="utf-8", newline="") as f:
+            table = list(csv.DictReader(f))
+    except FileNotFoundError:
+        return rows
+    for n, row in enumerate(table, 2):
+        ext, line, out = ((row.get(k) or "").strip() for k in ("extension", "argv", "out"))
+        try:
+            argv = shlex.split(line)
+            parts = out.replace("\\", "/").split("/")
+            if not (ext.startswith(".") and len(ext) > 1 and ext == ext.lower() and "/" not in ext):
+                raise ValueError(f"extension {ext!r} is not a lower-case suffix with its dot")
+            if not argv or os.path.dirname(argv[0]) or "\\" in argv[0] or not any("{in}" in t for t in argv[1:]):
+                raise ValueError("argv needs a bare program name and {in}")
+            if out.startswith(("/", "\\")) or ":" in out or ".." in parts or parts[0] not in EXTRACT_OUT_ROOTS:
+                raise ValueError(f"out {out!r} is not a folder under {' or '.join(EXTRACT_OUT_ROOTS)}")
+        except ValueError as e:
+            if shipped:
+                raise ValueError(f"{path} row {n}: {e}")
+            print(f"{path} row {n}: skipped: {e}", file=sys.stderr)
+            continue
+        rows.setdefault(ext, (argv, "/".join(parts), shipped))
+    return rows
+
+
+def extractor_table(roots=None):
+    """{extension: (argv template, out folder, shipped)}: the shipped table, then the rows of each internal root's
+    `_extractors.csv` for an extension the table does not name yet. A public root's file is never read: its content
+    would choose what runs on every machine that serves it."""
+    rows = _extractor_rows(EXTRACTORS, True)
+    for r in kbcommon.roots() if roots is None else roots:
+        if r.visibility == "internal":
+            for ext, row in _extractor_rows(os.path.join(r.path, ROOT_EXTRACTORS), False).items():
+                rows.setdefault(ext, row)
+    return rows
+
+
+def _extractor_exe(program, env, shipped, tops):
+    """The absolute path of `program` on the sandbox PATH, or on a shipped row its per-user install; None when it is
+    not there or lies inside the clone or a root."""
+    exe, _inside = kbsandbox.tool_exe(program, env, tops[0])
+    if exe is None and shipped and program == "7z":
+        exe = install_7z.installed()
+    if exe is None or any(kbsandbox.under_worktree(exe, top) for top in tops):
+        return None
+    return exe
+
+
+def _extracted_members(out):
+    """(name, read) of each file an extractor left under `out`, sorted by name; ValueError for a link, a file that is
+    not regular, a path that leaves `out`, or more than the caps on files, bytes and folder depth."""
+    top = os.path.realpath(out)
+    found, size = [], 0
+    for folder, dirs, files in os.walk(out, followlinks=False):
+        depth = 0 if folder == out else len(Path(folder).relative_to(out).parts)
+        if depth > EXTRACT_DEPTH_CAP:
+            raise ValueError(f"extracted folders are more than {EXTRACT_DEPTH_CAP} deep")
+        for name in dirs + files:
+            full = os.path.join(folder, name)
+            if os.path.islink(full):
+                raise ValueError(f"the extractor left a link: {os.path.relpath(full, out)}")
+            if os.path.commonpath([top, os.path.realpath(full)]) != top:
+                raise ValueError(f"the extractor left a path outside its folder: {name}")
+        for name in files:
+            full = os.path.join(folder, name)
+            st = os.lstat(full)
+            if not stat.S_ISREG(st.st_mode):
+                raise ValueError(f"the extractor left a file that is not regular: {os.path.relpath(full, out)}")
+            size += st.st_size
+            found.append(full)
+            if len(found) > EXTRACT_FILES_CAP or size > EXTRACT_BYTES_CAP:
+                raise ValueError(f"the extractor left more than {EXTRACT_FILES_CAP} files or {EXTRACT_BYTES_CAP} bytes")
+    return [(Path(p).relative_to(out).as_posix(), lambda n, p=p: _read_file(p, n)) for p in sorted(found)]
+
+
+def _read_file(path, n):
+    with open(path, "rb") as f:
+        return f.read(n)
+
+
+def _remove_tree(path):
+    """Delete the folder `path` and everything in it, a read-only folder an archive left included."""
+    for folder, dirs, _files in os.walk(path):
+        for d in [folder, *(os.path.join(folder, x) for x in dirs)]:
+            try:
+                os.chmod(d, 0o700)
+            except OSError:
+                pass
+    shutil.rmtree(path, ignore_errors=True)
+
+
+def _extractor_route(path, head, body):
+    """The extractor table when `body` is one it unpacks: an OLE compound file, a CAB or WIM header, or a binary body
+    whose url ends in an extension a row names; else None (the table is read only then)."""
+    if head.startswith(OLE_MAGIC) or any(head.startswith(k) for k in EXTRACT_MAGIC):
+        return extractor_table()
+    if os.path.splitext(path)[1] and b"\0" in body[:1024]:
+        table = extractor_table()
+        return table if os.path.splitext(path)[1] in table else None
+    return None
+
+
+def _extract_text(path, head, body, table):
+    """The text of `body` unpacked by the extractor the table names for the url `path`'s extension (or, for a body that
+    announces itself, its kind): the program runs in the sandbox `kbingest map` uses (`kbsandbox`), offline, with a
+    timeout, in a folder of its own under _cache/ or _private/ that is removed at the end, and each file it leaves is read
+    as a zip member is (`_members_text`). The program started is named on stderr. ValueError, so exit 2, when no row
+    names the extension, the program is not installed, or the unpacking fails or leaves more than the caps allow."""
+    ext = os.path.splitext(path)[1]
+    magic = next((v for k, v in EXTRACT_MAGIC.items() if head.startswith(k)), None)
+    if ext not in table and magic:
+        ext = magic
+    label = ext or "(no extension)"
+    if ext not in table:
+        what = " (an OLE compound file)" if head.startswith(OLE_MAGIC) else ""
+        raise ValueError(f"cannot read a {label} file{what}: no extractor row names {label}; the shipped table "
+                         f"{os.path.basename(EXTRACTORS)} names {', '.join(sorted(k for k, v in table.items() if v[2]))}, "
+                         f"an internal root may add a row in its {ROOT_EXTRACTORS}")
+    argv, out, shipped = table[ext]
+    tops = [kbcommon.HOME, *(r.path for r in kbcommon.roots())]
+    env = kbsandbox.scrub_env(root=tops[0], repo=tops[0])
+    exe = _extractor_exe(argv[0], env, shipped, tops)
+    if exe is None:
+        hint = f"; install it with {INSTALLERS[argv[0]]}" if shipped and argv[0] in INSTALLERS else ""
+        raise ValueError(f"cannot read a {label} file: {argv[0]} is not installed (not on a PATH outside the clone{hint})")
+    base = Path(kbcommon.HOME, *out.split("/"))
+    base.mkdir(parents=True, exist_ok=True)
+    work = Path(tempfile.mkdtemp(prefix="extract-", dir=base))
+    try:
+        src, dest = work / ("in" + ext), work / "out"
+        src.write_bytes(body)
+        dest.mkdir()
+        cmd = [exe, *(t.replace("{in}", str(src)).replace("{out}", str(dest)) for t in argv[1:])]
+        print(f"extracting a {label} file with {exe}", file=sys.stderr)
+        r = kbsandbox.run_tool(cmd, work, env, EXTRACT_TIMEOUT)
+        if r.timed_out:
+            raise ValueError(f"{argv[0]} ran over {EXTRACT_TIMEOUT} seconds on the {label} file")
+        if r.missing or r.rc:
+            raise ValueError(f"{argv[0]} failed ({r.rc}) on the {label} file: {r.err.decode('utf-8', 'replace').strip()[:200]}")
+        return _members_text(_extracted_members(dest))
+    finally:
+        _remove_tree(work)
+
+
 def read_text(url, body, ctype):
     """Printable text of a fetched body: a PDF through pdftotext, a zip or tar archive's text members, a spreadsheet's
-    shared strings, else `to_text`; None for a body none of these reads."""
+    shared strings, an MSI, CAB or WIM file (or any extension an extractor row names) through its extractor, else
+    `to_text`; None for a body none of these reads."""
     head, path = body[:8], urllib.parse.urlparse(url).path.lower()
     if head.startswith(b"%PDF") or path.endswith(".pdf"):
         return _pdf_text(body)
@@ -432,6 +595,9 @@ def read_text(url, body, ctype):
         return _gz_text(body)
     if body[:3] == b"BZh" or body[:6] == b"\xfd7zXZ\x00" or body[257:262] == b"ustar":
         return _members_text(_tar_members(body))
+    table = _extractor_route(path, head, body)
+    if table:
+        return _extract_text(path, head, body, table)
     return _spread_json(to_text(body, ctype))
 
 
