@@ -1,0 +1,25 @@
+{
+  "id": "BG-afksmtkf",
+  "kind": "bug",
+  "title": "The kb-sprint run step has no route for an item that waits on or overlaps another session's item, so the orchestrator asks the operator instead of settling it through coord",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "skills/sprint/SKILL.md run section says what the orchestrator does when a ready item waits on, or shares files with, an item another live session holds (a depends_on on it, a precheck or coord hook overlap): it follows the coordination settings (strategy.working for an item being worked, strategy.landing for one being landed; ask by default asks that session with kbask.py ask OTHER), records the chosen strategy with kbask.py coordinate ITEM OTHER STRATEGY, then adds or drops the depends_on (backlog.py set ITEM --depends or --add-depends) to match, and puts the choice to the operator only when strategy.decide is operator and neither a setting nor the other session's answer settles it; kb/_self/backlog.md and kb/_self/coordination.md say the same.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; t=open(\"skills/sprint/SKILL.md\", encoding=\"utf-8\").read(); r=t.split(\"## run\")[1].split(\"## review\")[0]; sys.exit(0 if \"kbask.py coordinate\" in r else \"the run section names no coord route for a cross-session dependency or overlap\")"
+    ]
+  },
+  "repro_reason": "The defect is an orchestrator's choice in a live run (an AskUserQuestion instead of kbask.py coordinate or an ask to the other session), which no command can replay; the repro reads the run section of the skill text that drives that choice.",
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/coordination.md"
+  ],
+  "notes": "Found 2026-10-28 running SP-lmpjclxz: ST-xl4w2pmg depended on ST-qqpcgqe7 (session s-0e0c2d, returned with two open gates); the orchestrator put wait-or-drop to the operator with AskUserQuestion, and the operator asked why coord was not used. precheck had printed the route at planning (kbask.py coordinate ST-xl4w2pmg OTHER STRATEGY, from _tools/bl_precheck.py:515), and an ask to s-0e0c2d (A92f312cef4) was sent but never followed by a coordinate event. The run section of skills/sprint/SKILL.md names kbask.py ask only for steering one's own workers.",
+  "filed_in": "clone-0ea70e5c"
+}
