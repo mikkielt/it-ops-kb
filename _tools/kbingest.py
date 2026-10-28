@@ -38,10 +38,10 @@
       Python is mapped with `python -I -B -m ast` and an isolated `python -I -B -c` that reads definitions and names
       with the ast module, in a subprocess per file; another language is a Mapper subclass added to MAPPERS.
       PowerShell (.ps1 .psm1 .psd1) and Lua (.lua) need no toolchain: a PatternMapper reads their files line by line
-      with the regexes of _tools/kbingest_patterns.csv (definitions, imports, entry points; a reference is a whole-word
+      with the regexes of _tools/kbingest_rules.csv (definitions, imports, entry points; a reference is a whole-word
       match of a defined name on another line, case-insensitive for PowerShell) and starts no process; its `tools` entry
-      is `patterns` and the table's revision. The table has two sections (languages: extensions, case, name characters,
-      caps; rules: role, kind, regex). A rules row that could run away (a repeated group that holds a quantifier or an
+      is `patterns` and the revision of its two tables (_tools/kbingest_patterns.csv, the languages: extensions, case,
+      name characters, caps; _tools/kbingest_rules.csv, the rules: role, kind, regex). A rules row that could run away (a repeated group that holds a quantifier or an
       alternation) is skipped when the table loads, with a note in the map naming the row; the rest of the language
       maps. A line over the language's max_line (1000) is skipped and a file stops after its max_matches (2000).
       Go and Cargo run at the root; .NET (`dotnet msbuild -getProperty -getItem`, never `-target` or `-restore`, and
@@ -1922,9 +1922,10 @@ class TypeScriptMapper(Mapper):
         ctx.add_package(cfg, folder, **extra)
 
 
-PATTERN_TABLE = Path(__file__).resolve().parent / "kbingest_patterns.csv"  # changed only in this repository's code lane
-LANGUAGE_COLUMNS = ("language", "extensions", "case", "word", "max_line", "max_matches")  # the table's first section
-RULE_COLUMNS = ("language", "role", "kind", "pattern")  # its second section, after a blank line
+PATTERN_TABLE = Path(__file__).resolve().parent / "kbingest_patterns.csv"  # the languages table; changed only in this
+RULES_TABLE = Path(__file__).resolve().parent / "kbingest_rules.csv"  # and the rules table: this repository's code lane
+LANGUAGE_COLUMNS = ("language", "extensions", "case", "word", "max_line", "max_matches")
+RULE_COLUMNS = ("language", "role", "kind", "pattern")
 PATTERN_GROUPS = {"def": "name", "import": "module", "entry": None}  # the named group a role's regex must capture
 PATTERN_LINE_CEILING = 4000  # a language's max_line (characters of a line its regexes run on) may not exceed this
 PATTERN_MATCH_CEILING = 10000  # likewise its max_matches (matches of a file before the file is left unfinished)
@@ -1959,24 +1960,19 @@ def nested_quantifier(pattern):
     return False
 
 
-def table_sections(text):
-    """({"languages": [(line, row)], "rules": [(line, row)]}, [why]) of the table TEXT: sections separated by a blank
-    line, each opening with its header row. A row is a dict, or None when its cell count is not the header's."""
-    sections, errors, header, kind = {"languages": [], "rules": []}, [], None, None
+def table_rows(text, columns):
+    """([(line, row)], why) of the csv TEXT, which opens with the header COLUMNS: a row is a dict, or None when its
+    cell count is not the header's; WHY is set (and no row returned) when the header or the csv is not as expected."""
+    rows = []
     try:
         for number, cells in enumerate(csv.reader(text.splitlines()), 1):
-            if not cells:
-                header = None
-            elif header is None:
-                header = tuple(c.strip() for c in cells)
-                kind = {LANGUAGE_COLUMNS: "languages", RULE_COLUMNS: "rules"}.get(header)
-                if kind is None:
-                    errors.append(f"row {number}: a header that is neither the languages nor the rules columns")
-            elif kind:
-                sections[kind].append((number, dict(zip(header, cells)) if len(cells) == len(header) else None))
+            if number == 1 and tuple(c.strip() for c in cells) != columns:
+                return [], "header is not " + ",".join(columns)
+            if number > 1 and cells:
+                rows.append((number, dict(zip(columns, cells)) if len(cells) == len(columns) else None))
     except csv.Error as e:
-        errors.append(f"not read as csv ({e})")
-    return sections, errors
+        return [], f"not read as csv ({e})"
+    return rows, None
 
 
 def language_row(row, number):
@@ -2020,17 +2016,25 @@ def rule_row(row, number, case):
     return (role, row["kind"].strip(), regex), None
 
 
-def load_patterns(path=PATTERN_TABLE):
-    """([PatternMapper], {what: why}) of the table at PATH. A refused rules row is skipped alone: its language maps
-    with the rest and the map's notes name the row and the reason. A refused languages row refuses the language (and
-    its rules rows), a missing table every language, under `table`; the refusals are what `map --lang` prints."""
+def load_patterns(path=PATTERN_TABLE, rules_path=RULES_TABLE):
+    """([PatternMapper], {what: why}) of the languages table at PATH and the rules table at RULES_PATH. A refused rules
+    row is skipped alone: its language maps with the rest and the map's notes name the row and the reason. A refused
+    languages row refuses the language (and its rules rows), an unreadable table every language, under `table`; the
+    refusals are what `map --lang` prints."""
     try:
-        data = Path(path).read_bytes()
-        sections, errors = table_sections(data.decode("utf-8-sig"))
+        data = Path(path).read_bytes() + b"\0" + Path(rules_path).read_bytes()
+        texts = [Path(x).read_bytes().decode("utf-8-sig") for x in (path, rules_path)]
     except (OSError, UnicodeDecodeError) as e:
-        return [], {"table": f"{Path(path).name}: not read ({type(e).__name__})"}
+        return [], {"table": f"{Path(path).name} or {Path(rules_path).name}: not read ({type(e).__name__})"}
+    sections, refused = {}, {}
+    for kind, text, columns, name in (("languages", texts[0], LANGUAGE_COLUMNS, Path(path).name),
+                                      ("rules", texts[1], RULE_COLUMNS, Path(rules_path).name)):
+        sections[kind], why = table_rows(text, columns)
+        if why:
+            refused[f"table {name}"] = why
+    if refused:
+        return [], refused
     revision = hashlib.sha256(data).hexdigest()[:12]
-    refused = {f"table {i}": why for i, why in enumerate(errors)}
     specs = {}
     for number, row in sections["languages"]:
         lang = ((row or {}).get("language") or "").strip().lower()
@@ -2049,15 +2053,15 @@ def load_patterns(path=PATTERN_TABLE):
             continue
         rule, why = rule_row(row, number, spec["case"])
         if rule is None:
-            spec["skipped"].append(f"pattern table {why}: skipped")
+            spec["skipped"].append(f"rules table {why}: skipped")
         else:
             spec["rules"].append(rule)
     return [PatternMapper(lang, spec, revision) for lang, spec in specs.items()], refused
 
 
 class PatternMapper(Mapper):
-    """A language read from its source files with the rows of the pattern table (`kbingest_patterns.csv`: a languages
-    section with the extensions, case rule, name characters and caps, a rules section with the regexes), no program
+    """A language read from its source files with the rows of the pattern table (`kbingest_patterns.csv`: the languages
+    with their extensions, case rule, name characters and caps; `kbingest_rules.csv`: the regexes), no program
     started and no toolchain needed. A file is read line by line (a line over the language's max_line characters is
     skipped; max_matches stops a file); a definition is a `def` row's match, an import an `import` row's, an entry
     point an `entry` row's. A reference is a whole-word match of a defined name on another line of a mapped file,
