@@ -52,7 +52,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/codebase-mapping` | P3 | complete | `agents/codebase-mapping.md`, `agents/codebase-mapping.csv` | 114 |
 | `agents/coding-agent-codebase-context` | P3 | complete | `agents/coding-agent-codebase-context.md` | 20 |
 | `agents/coordination-tools` | P3 | partial | `agents/coordination-tools.md` | 11 |
-| `agents/decision-records` | P3 | partial | `agents/decision-records.md`, `agents/decision-records.csv` | 11 |
+| `agents/decision-records` | P3 | partial | `agents/decision-records.md`, `agents/decision-records.csv` | 13 |
 | `agents/doc-change-detection` | P3 | complete | `agents/doc-change-detection.md` | 90 |
 | `agents/gitops-for-agents` | P3 | partial | `agents/gitops-for-agents.md` | 22 |
 | `agents/herdr-agent-state` | P3 | partial | `agents/herdr-agent-state.md` | 5 |

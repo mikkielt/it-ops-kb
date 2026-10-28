@@ -21,6 +21,26 @@
   "touches": [
     "kb/public/**"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where do the sprint's approval-class facts live?",
+      "options": [
+        "Extend claude/settings-and-scopes.md and agents/decision-records.md",
+        "A new agents/ topic on approval classes"
+      ],
+      "recommendation": "Extend claude/settings-and-scopes.md and agents/decision-records.md",
+      "reason": "because the facts number about ten and each belongs to an existing article's subject",
+      "do": {
+        "Extend claude/settings-and-scopes.md and agents/decision-records.md": "ST-e7zcidin",
+        "A new agents/ topic on approval classes": "ST-e7zcidin"
+      },
+      "class": "design",
+      "answer": "Extend claude/settings-and-scopes.md and agents/decision-records.md",
+      "by": "agent"
+    }
+  ],
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-a3c0c63f",
   "operator": "op-f618a13e"

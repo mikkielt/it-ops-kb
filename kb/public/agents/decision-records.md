@@ -2,8 +2,8 @@
 topic: agents/decision-records
 priority: P3
 applies_to: "architecture decision records (ADRs) and decision logs as the vendors and the ADR community describe them: Nygard 2011, MADR 4.0.0, AWS Prescriptive Guidance, Azure Well-Architected Framework, Google Cloud Architecture Center, the UK GDS ADR framework, adr-tools README at commit b3279ba (retrieved 2026-10-01)"
-retrieved_utc: 2026-10-21
-sources: [S-neg7qqfq, S-2u3gjgpw, S-cs7vd6kx, S-jqks66nz, S-ebr4i7g5, S-gb6pcwtm, S-efm54uef, S-l52pzhgp, S-6ek6kqhq, S-lrsbmzgx, S-mzo2wbzm]
+retrieved_utc: 2026-10-28
+sources: [S-neg7qqfq, S-2u3gjgpw, S-cs7vd6kx, S-jqks66nz, S-ebr4i7g5, S-gb6pcwtm, S-efm54uef, S-l52pzhgp, S-6ek6kqhq, S-lrsbmzgx, S-mzo2wbzm, S-t6ibresy, S-zcuxapgb]
 status: partial
 ---
 
@@ -53,6 +53,10 @@ An architecture decision record (ADR) is a short document that records one signi
 - In the pages read, no source defines a status for a record whose context has changed but which nothing has replaced; each leaves that to review: Nygard says the time to change a decision shows in the context, Azure records a confidence level for later reconsideration, MADR's More Information may set a revisit condition, and the UK framework asks for regular review. Nygard's `deprecated` is the nearest listed status. [DER S-neg7qqfq, S-efm54uef, S-cs7vd6kx, S-6ek6kqhq: absence of such a status in these pages, read 2026-10-01]
 - Who decides, by source: AWS has the whole team, the owner included, decide on a Proposed ADR and the owner record the outcome; MADR lists decision-makers, consulted and informed people as separate fields of one record; the UK framework picks the deciding body by scope. [DER S-jqks66nz, S-cs7vd6kx, S-6ek6kqhq: the three descriptions of who decides compared]
 - Reading the sources together for a store of decisions kept as data: the id is never reused (Nygard); a change is a new record that links to the old one and sets the old one's status (AWS, Azure, adr-tools); a record carries who decided, who was consulted and who was informed (MADR) and a date and a version (AWS, UK); the context and rationale are stored with the decision (all). This is a design reading, not a vendor rule. [DER S-neg7qqfq, S-jqks66nz, S-efm54uef, S-cs7vd6kx, S-lrsbmzgx: the practices listed there, combined]
+- Anthropic's study of agent autonomy in Claude Code (published 2026-02-18, page modified 2026-10-23) finds that users who began with step-by-step approval move to monitoring: full auto-approve rose from about 20% of sessions for users under 50 sessions to over 40% by 750 sessions, while the interrupt rate rose from 5% of turns (about 10 sessions) to about 9% for experienced users. [DOC S-t6ibresy]
+- Anthropic states the lesson as "effective oversight doesn't require approving every action but being in a position to intervene when it matters", and advises policy makers that rules requiring a human to approve every action create friction without necessarily producing safety benefits. [DOC S-t6ibresy]
+- In the same study, the share of tool calls from agents with at least one safeguard such as restricted permissions or approval requirements was 80%, from agents with a human in the loop 73%, and of actions that appear irreversible 0.8%; the figures come from Claude's own classification of calls with limited visibility into customers' agents, and the study says some higher-risk actions may be simulated. [DOC S-t6ibresy]
+- Neither this study, the Claude Code permission-modes page nor the UK framework above defines an answer that an agent records provisionally and a person confirms later; they describe approval before an action (the classifier, the decision body by scope), monitoring with intervention, and review after the fact (`acceptEdits` with `git diff`). A held answer confirmed at a review is a design built from those parts, not a documented vendor mechanism. [DER S-t6ibresy, S-zcuxapgb, S-6ek6kqhq: pages read 2026-10-28 for a provisional or deferred-confirmation status, none found]
 
 ## Reference
 | Source | Statuses it names | Who decides |

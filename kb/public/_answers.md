@@ -4659,3 +4659,13 @@ _Agent: kb-research_
 - See gitlab/github-actions-workflow-syntax.md, logs/otel-python-sdk.md, logs/prometheus-retention-exposition.md, gitlab/git-history-queries.md.
 
 _Agent: kb-research_
+
+## QK-actions-need-person-s-approval-before. Which actions need a person's approval before an agent acts, classed by what the action changes, and can a person confirm a choice after the agent went on?
+- Claude Code's auto mode classifier blocks by default by effect: downloading and executing code, sending sensitive data out, production deploys and migrations, mass cloud deletion, granting IAM or repository permissions, shared infrastructure, irreversible destruction and force push; local file work, declared dependencies, read-only HTTP and a push to a branch of the working repository are allowed. [DOC S-zcuxapgb]
+- A person can keep a checkpoint on a push or pull request in auto mode with `permissions.ask` rules, and after 3 blocks in a row or 20 in total auto mode pauses and prompts again. [DOC S-zcuxapgb]
+- `acceptEdits` is documented for reviewing edits with `git diff` after the fact, and Anthropic's autonomy study says effective oversight does not need every action approved but a position to intervene; its figures put 0.8% of observed actions as irreversible. [DOC S-zcuxapgb, S-t6ibresy]
+- Conclusion: the sources class approval by an action's effect (code run on input, data leaving, deploys, permission grants, irreversible loss), which fits a gate class that names an operator-only act or the running of a program; none classes spend or a scope change, and none defines a recorded provisional answer confirmed later, so a held answer is a design built from approval before action, monitoring and review after the fact. [DER S-zcuxapgb, S-t6ibresy: the lists and the oversight findings read together]
+- Open: an official source that asks a person before an agent spends, or that names a scope change as an approval class; a vendor mechanism for a provisional answer confirmed at a review. [UNK]
+- See claude/settings-and-scopes.md, agents/decision-records.md, agents/headless-agent-runtimes.md.
+
+_Agent: kb-research_
