@@ -1,0 +1,51 @@
+id,group,has_name,flagged,correct,batch,model,prompt_commit,run_commit,date,question
+NR-01,names,true,true,true,1,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,How do I enrol Anna Wiśniewska's laptop in Intune before she starts on Monday?
+NR-02,products,false,false,true,1,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,How do I enrol a Windows 11 laptop in Intune before the user starts on Monday?
+NR-03,names,true,true,true,1,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,"Piotr Zieliński from the service desk cannot sign in to the Company Portal, what should I check?"
+NR-04,products,false,false,true,1,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,"The Company Portal will not sign in, what should I check in Entra ID?"
+NR-05,names,true,true,true,1,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,Which GPO did Katarzyna Lewandowska change on the Gdańsk file server last week?
+NR-06,products,false,false,true,1,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,Which Group Policy setting controls the Windows Update active hours?
+NR-07,names,true,true,true,1,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,Can Marek Wójcik's account be excluded from the BitLocker policy in Intune?
+NR-08,products,false,false,true,1,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,Can a device be excluded from the BitLocker policy in Intune?
+NR-09,names,true,true,true,1,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,"Sarah Whitfield reports that Autopilot hangs at the ESP, how do I debug it?"
+NR-10,products,false,false,true,1,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,"Autopilot hangs at the Enrollment Status Page, how do I debug it?"
+NR-11,names,true,true,true,1,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,"David Okafor asked how to deploy PowerShell 7 with ConfigMgr to his team, what is the steps?"
+NR-12,products,false,false,true,1,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,How do I deploy PowerShell 7 with Configuration Manager to a device collection?
+NR-13,names,true,true,true,1,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,How does Jacek Brzozowski get a LAPS password for the Kraków workstations?
+NR-14,products,false,false,true,1,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,How does Windows LAPS back up the local admin password to Entra ID?
+NR-15,names,true,true,true,1,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,Why does the Windows Update ring fail for Magdalena Szymańska's device?
+NR-16,products,false,false,true,1,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,Why does a Windows Update for Business ring fail on one device?
+NR-17,names,true,true,true,1,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,What is the best way to set up co-management for Brzozowski i Wspólnicy sp. z o.o.?
+NR-18,products,false,false,true,1,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,What is the best way to set up co-management between ConfigMgr and Intune?
+NR-19,names,true,true,true,1,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,"Harborview Insurance wants Defender for Endpoint onboarded through Intune, which policy do we use?"
+NR-20,products,false,false,true,1,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,Which Microsoft Defender for Endpoint policy onboards devices through Intune?
+NR-21,names,true,true,true,1,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,"Zielińska Logistyka sp. z o.o. needs a Windows 11 24H2 task sequence, how is it built?"
+NR-22,products,false,false,true,1,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,How is a Windows 11 24H2 task sequence built in MECM?
+NR-23,names,true,true,true,1,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,Our customer Northgate Freight Ltd asks whether Entra ID Conditional Access can require a compliant device.
+NR-24,products,false,false,true,1,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,Can Conditional Access in Entra ID require a compliant device?
+NR-25,names,true,true,true,1,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,"Nowak Consulting S.A. has a WSUS server that stopped syncing, what do I check first?"
+NR-26,products,false,false,true,2,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,"The WSUS server stopped syncing, what do I check first?"
+NR-27,names,true,true,true,2,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,Does Redfern Manufacturing need a separate Autopilot profile for kiosks?
+NR-28,products,false,false,true,2,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,Does a kiosk need a separate Autopilot deployment profile?
+NR-29,names,true,true,true,2,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,The Feniks team asks how to package an MSI for Intune with a detection rule.
+NR-30,products,false,false,true,2,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,How do I package an MSI for Intune with a detection rule?
+NR-31,names,true,true,true,2,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,"Zespół Pegasus needs to push a registry setting to all laptops, GPO or Intune?"
+NR-32,products,false,false,true,2,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,How do I push a registry setting to all laptops with Intune or GPO?
+NR-33,names,true,true,true,2,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,The Lighthouse team in Wrocław wants to know how to collect hardware inventory from ConfigMgr clients.
+NR-34,products,false,false,true,2,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,How do I collect hardware inventory from ConfigMgr clients?
+NR-35,names,true,true,true,2,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,Platform Ravens team: how do we restrict local admin through Intune Endpoint Privilege Management?
+NR-36,products,false,false,true,2,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,How do I restrict local admin through Intune Endpoint Privilege Management?
+NR-37,names,true,true,true,2,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,"Tomasz Kamiński and Emily Carter both lost BitLocker recovery keys, where are they stored in Entra ID?"
+NR-38,products,false,false,true,2,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,Where are BitLocker recovery keys stored in Entra ID?
+NR-39,names,true,true,true,2,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,Ewa Dąbrowska is the owner of the Sigma team; can she approve app deployments in Software Center?
+NR-40,products,false,false,true,2,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,Can Software Center show an approval for an application deployment?
+NR-41,names,true,true,true,2,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,How do I script a Win32 app install for Oakridge Dental Group using PSADT?
+NR-42,products,false,false,true,2,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,How do I script a Win32 app install for Intune with PSADT?
+NR-43,names,true,true,true,2,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,Michał Grabowski asked whether DSC v3 can replace our GPO baseline.
+NR-44,products,false,false,true,2,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,Can DSC v3 replace a GPO security baseline?
+NR-45,names,true,true,true,2,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,"For Whitmore & Lane Solicitors, how do we enforce a screen lock timeout through Intune?"
+NR-46,products,false,false,true,2,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,How do I enforce a screen lock timeout through Intune on Lenovo ThinkPad devices?
+NR-47,names,true,true,true,2,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,"Agnieszka Sadowska says the Presidio redaction misses her surname, how is the analyzer configured?"
+NR-48,products,false,false,true,2,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,How is the Presidio analyzer configured to recognise a custom entity?
+NR-49,names,true,true,true,2,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,What do we tell Brightwater Energy when their Autopilot pre-provisioning fails with 0x80070774?
+NR-50,products,false,false,true,2,claude-haiku-5-5,03c3ef610b,fbadb1958d,2026-10-28,"How do I run an Ansible playbook from GitLab CI against Windows hosts, and does Dell Command Update need a reboot?"

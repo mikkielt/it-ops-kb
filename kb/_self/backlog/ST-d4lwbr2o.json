@@ -68,6 +68,60 @@
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which scope and caps stand for the same-article research pair (probe 2)?",
+      "options": [
+        "the scenario's three frozen pip agents, concurrent then sequential, each run under --timeout 2400 and --max-usd, the pair held under USD 8",
+        "a two-agent pair"
+      ],
+      "recommendation": "the scenario's three frozen pip agents, concurrent then sequential, each run under --timeout 2400 and --max-usd, the pair held under USD 8",
+      "reason": "the scenario has no two-agent form and multi_bench.csv is outside the touches; the pair cost USD 2.69 and USD 3.05",
+      "do": {
+        "the scenario's three frozen pip agents, concurrent then sequential, each run under --timeout 2400 and --max-usd, the pair held under USD 8": "ST-d4lwbr2o",
+        "a two-agent pair": "ST-d4lwbr2o"
+      },
+      "class": "design",
+      "answer": "the scenario's three frozen pip agents, concurrent then sequential, each run under --timeout 2400 and --max-usd, the pair held under USD 8",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "How is the name-recall file laid out and the 50 questions drawn?",
+      "options": [
+        "one row per question with group, has_name, flagged, correct, batch, model, prompt_commit (last commit that changed the distill prompt), run_commit and date; 25 invented-name and 25 product-only questions paired by topic, interleaved in two batches of 25 as the distill batches entries, entry fields prompt, answer and candidates empty",
+        "a summary row only"
+      ],
+      "recommendation": "one row per question with group, has_name, flagged, correct, batch, model, prompt_commit (last commit that changed the distill prompt), run_commit and date; 25 invented-name and 25 product-only questions paired by topic, interleaved in two batches of 25 as the distill batches entries, entry fields prompt, answer and candidates empty",
+      "reason": "the check counts rows and recall is read from them",
+      "do": {
+        "one row per question with group, has_name, flagged, correct, batch, model, prompt_commit (last commit that changed the distill prompt), run_commit and date; 25 invented-name and 25 product-only questions paired by topic, interleaved in two batches of 25 as the distill batches entries, entry fields prompt, answer and candidates empty": "ST-d4lwbr2o",
+        "a summary row only": "ST-d4lwbr2o"
+      },
+      "class": "design",
+      "answer": "one row per question with group, has_name, flagged, correct, batch, model, prompt_commit (last commit that changed the distill prompt), run_commit and date; 25 invented-name and 25 product-only questions paired by topic, interleaved in two batches of 25 as the distill batches entries, entry fields prompt, answer and candidates empty",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "Which arms and how many runs does the code-lookups probe (probe 1) record?",
+      "options": [
+        "Haiku default model, tools kb and tools files, ten runs each, concurrent, the scenario's three agents and twelve questions per run",
+        "kb arm only"
+      ],
+      "recommendation": "Haiku default model, tools kb and tools files, ten runs each, concurrent, the scenario's three agents and twelve questions per run",
+      "reason": "the earlier records of the claim are those arms and the goal names both arms",
+      "do": {
+        "Haiku default model, tools kb and tools files, ten runs each, concurrent, the scenario's three agents and twelve questions per run": "ST-d4lwbr2o",
+        "kb arm only": "ST-d4lwbr2o"
+      },
+      "class": "design",
+      "answer": "Haiku default model, tools kb and tools files, ten runs each, concurrent, the scenario's three agents and twelve questions per run",
+      "by": "agent"
     }
   ],
   "notes": "Planner (SP-jwvaq2hu): check 0 (report --check) passes before the work and pins that benchmarks.md and README stay true to the csv; the worker runs each probe's --dry-run first and records its estimate beside the cap before paying. Planner (SP-jwvaq2hu): after ST-6zg57xiu, the last session-load item of SP-m5m67goe's chain that also writes benchmarks.csv, benchmarks.md and README.md.",
