@@ -2,7 +2,7 @@
   "id": "ST-3lgth3cu",
   "kind": "story",
   "title": "Review sprint: Fewer gates from planning, and a measure of the gates that remain",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-v6crf4rx",
   "review": true,
   "priority": "P1",
@@ -38,5 +38,44 @@
       ]
     }
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "evidence": {
+    "commit": "bc8a7cd33b6bed8599cc4b1d228a8b15b6f01d5d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "54ac9c2592713bbc"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "fcba3f7c0cd6b8d3"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval",
+          "--file",
+          "kb/public/_retrieval/lookup_heldout.csv",
+          "--root",
+          "public",
+          "--min",
+          "86",
+          "--max-false-good",
+          "8"
+        ],
+        "exit": 0,
+        "sha256": "8efece834fb5d39b"
+      }
+    ]
+  }
 }
