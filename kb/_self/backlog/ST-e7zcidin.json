@@ -2,7 +2,7 @@
   "id": "ST-e7zcidin",
   "kind": "story",
   "title": "Research sprint goal: Gates classed by what they change: guarded touches hold a landing, not the work",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-lmpjclxz",
   "goal_research": true,
   "priority": "P1",
@@ -42,6 +42,20 @@
     }
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-a3c0c63f",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "3173b97963f119e851c8c8d4271cf15fb2d34c64",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-e7zcidin"
+        ],
+        "exit": 0,
+        "sha256": "fd898eb12c2bad94"
+      }
+    ]
+  }
 }
