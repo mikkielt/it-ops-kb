@@ -1,0 +1,27 @@
+{
+  "id": "ST-kios45l7",
+  "kind": "story",
+  "title": "The kb-sprint skill names a place for a background landing's log that survives the landing",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "skills/sprint/SKILL.md run step 3 tells the orchestrator to write a background land's log outside the item's scratch directory (the orchestrator's own scratch directory or _cache/land/), since land removes the item's scratch directory when it lands, so the log of a landing that succeeded can still be read.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; t=open(\"skills/sprint/SKILL.md\",encoding=\"utf-8\").read(); sys.exit(\"the skill still logs a landing into the item scratch directory land removes\" if \"<scratch>/land.log\" in t else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-lmpjclxz close"
+  ],
+  "notes": "SP-lmpjclxz close: the log of ST-e7zcidin's landing, redirected into _cache/scratch/ST-e7zcidin/land.log as the skill says, was gone when the landing ended (land: removed .../_cache/scratch/ID).",
+  "filed_in": "clone-0ea70e5c"
+}

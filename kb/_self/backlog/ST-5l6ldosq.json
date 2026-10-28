@@ -1,0 +1,28 @@
+{
+  "id": "ST-5l6ldosq",
+  "kind": "story",
+  "title": "land waits for a code item's merge when its code branch is gone right after the push because the merge request already merged",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "When land pushes a code item's code/ID branch and the fetch right after it finds no such ref, land reads origin/main for the merge of that branch and, finding it, goes on to the second pass (rebase, done --commit, sync --push) in the same run instead of stopping with no tip to wait for; it stops only when neither the branch nor its merge is there.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; t=open(\"_tools/bl_land.py\",encoding=\"utf-8\").read(); sys.exit(\"land still stops with no tip to wait for when the merged branch is gone\" if \"no tip to wait for\" in t else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md",
+    "kb/_self/git.md"
+  ],
+  "links": [
+    "parked: SP-lmpjclxz close"
+  ],
+  "notes": "SP-lmpjclxz close: ST-xl4w2pmg and ST-nloqr64j each stopped right after the push of code/ID with 'could not fetch code/ID from origin after the push (fatal: couldn't find remote ref ...): no tip to wait for', while origin/main already held the Merge branch commit; each needed a second land run. The check reads the stop message's text, which the fix removes or makes conditional; the planner may replace it by a fixture that drives land with a local bare origin.",
+  "filed_in": "clone-0ea70e5c"
+}

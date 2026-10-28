@@ -1,0 +1,27 @@
+{
+  "id": "ST-sok4i252",
+  "kind": "story",
+  "title": "check reports a gate an agent answered before a rule change made it blocking as a warning for the operator, not an error that stops every session's push gate",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py check reports, on an open item, a gate an agent answered while its disposition was not block and that a later rule now derives as block, as a warning naming it for the operator's re-confirmation (as it does for a closed item), not as an error, so a landing of a rule change does not stop the sync gate of every session with such an item; a gate an agent answers after the rule is in force stays an error.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess as s,sys,tempfile as t,os,json; d=t.mkdtemp(); r=lambda *a: s.run([sys.executable,\"_tools/backlog.py\",\"--root\",d,*a],capture_output=True,text=True); i=r(\"new\",\"story\",\"--title\",\"S\",\"--goal\",\"g\",\"--touch\",\"src/a.py\").stdout.split()[2]; r(\"gate\",\"add\",i,\"--kind\",\"provisional\",\"--question\",\"Which wording?\",\"--option\",\"a\",\"--option\",\"b\",\"--recommendation\",\"a\"); r(\"answer\",i,\"g1\",\"--provisional\"); f=[os.path.join(d,\"_backlog\",x) for x in os.listdir(os.path.join(d,\"_backlog\")) if x.startswith(i)][0]; j=json.load(open(f)); j[\"gates\"][0][\"question\"]=\"May the run spend 20 USD?\"; json.dump(j,open(f,\"w\")); p=r(\"check\"); sys.exit(\"an agent answer that a later rule makes blocking is an error: \"+p.stdout[-200:] if p.returncode!=0 else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_check.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-lmpjclxz close"
+  ],
+  "notes": "SP-lmpjclxz close: the first landing of ST-xl4w2pmg stopped at the sync gate's backlog check with errors=2 on ST-57o3hmbo of another session (gate g1, answered by agent, now blocking because its options name paths outside its touches) until that item landed. The check edits a throwaway item file by hand to stand for a rule change, which no command can make.",
+  "filed_in": "clone-0ea70e5c"
+}
