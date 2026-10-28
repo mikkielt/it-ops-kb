@@ -112,6 +112,62 @@
       "operator": "op-f618a13e",
       "role": "interactive",
       "agent_session": true
+    },
+    {
+      "id": "held-set",
+      "kind": "provisional",
+      "question": "Which gates does --confirm-held confirm?",
+      "options": [
+        "Those stored with hold: true and an agent's answer",
+        "Every gate of the sprint's items that an agent answered"
+      ],
+      "recommendation": "Those stored with hold: true and an agent's answer",
+      "do": {
+        "Those stored with hold: true and an agent's answer": "ST-7pogsj4c",
+        "Every gate of the sprint's items that an agent answered": "ST-7pogsj4c"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "Those stored with hold: true and an agent's answer",
+      "by": "agent"
+    },
+    {
+      "id": "done-reason",
+      "kind": "provisional",
+      "question": "Which refusal class does a held answer record in the done.refused row?",
+      "options": [
+        "provisional-answer, the closed class that row already has",
+        "a new class held-answer"
+      ],
+      "recommendation": "provisional-answer, the closed class that row already has",
+      "do": {
+        "provisional-answer, the closed class that row already has": "ST-7pogsj4c",
+        "a new class held-answer": "ST-7pogsj4c"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "provisional-answer, the closed class that row already has",
+      "by": "agent"
+    },
+    {
+      "id": "check1-substring",
+      "kind": "blocking",
+      "question": "Check 1 tests that the word agent is absent from the gate JSON, but a held gate stores class agents-rule, which holds it; how is the check fixed?",
+      "options": [
+        "Test for agent_session and by agent, not the bare word",
+        "Keep the check as written"
+      ],
+      "recommendation": "Test for agent_session and by agent, not the bare word",
+      "do": {
+        "Test for agent_session and by agent, not the bare word": "ST-7pogsj4c",
+        "Keep the check as written": "ST-7pogsj4c"
+      },
+      "class": "agents-rule",
+      "answer": "Test for agent_session and by agent, not the bare word",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "notes": "Design, settled at planning 2026-10-28 (gates hold-timing and reconfirm, answered by the operator): held answers reach the operator at the sprint review, not before landing; the review's done names each as held answer to confirm: ID gate G: ANSWER; --confirm-held takes --except ID:GATE (repeatable) for a gate left for its own answer (a changed answer plus a redo task) and --commit for one commit; a refused --confirm-held exits 2 and writes nothing; an answer to a gate that blocks by its own text or a strict signal keeps the agent_session flag as now; horizon prints the count and the list (item, gate, answer), horizon --hook the count; skills/sprint/SKILL.md review step 3 confirms held answers through this command with the reviewer's report beside each; kb/_self/backlog.md and kb/_self/tools.md describe it. Check 2 passes before the work: it pins the critical test the work extends. Premise run 2026-10-28 on origin/main 80725b09a9: checks 0, 1 and 3 fail (the touch-classed gate is made blocking, an agent's provisional answer is refused, --confirm-held is unknown).",
