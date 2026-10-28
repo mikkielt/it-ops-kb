@@ -2,7 +2,7 @@
   "id": "ST-rodj5ltd",
   "kind": "story",
   "title": "A paid session-load record gives each arm's cost at 1, 4 and 8 Haiku 5.5 sessions",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nxb7hjwd",
   "sprint": "SP-wv3ob5vy",
   "priority": "P3",
@@ -127,5 +127,7 @@
     }
   ],
   "notes": "The lean worker arm adds a fourth arm: 312 runs, about 1.35 to 3.35 USD at the planning estimate, under the 4 USD cap the operator gave on 2026-10-26; the paid mode's --dry-run gives the figure before the start. Operator 2026-10-28: record without file reads; the fs_usage capture and its file_reads rows are left out (the capture gate's answer predates this and no longer applies).",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-557596e3",
+  "operator": "op-f618a13e"
 }
