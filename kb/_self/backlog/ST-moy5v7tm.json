@@ -66,7 +66,9 @@
       },
       "class": "design",
       "answer": "10 default runs, then 5 true and 5 false (20 runs); bytecode-off figures also reported pooled",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "filed_in": "clone-0ea70e5c",
