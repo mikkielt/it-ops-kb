@@ -1,0 +1,27 @@
+{
+  "id": "BG-whmvabqj",
+  "kind": "bug",
+  "title": "run session-load --paid refuses the worker arm, so the paid record cannot hold the lean worker arm's rows",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "run session-load --paid --arms A,C,D,worker --dry-run plans the worker arm's runs (arm_env already gives the worker environment) and exits 0, so ST-rodj5ltd's paid record can hold the worker arm",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/benchmarks.py",
+      "run",
+      "session-load",
+      "--paid",
+      "--arms",
+      "A,C,D,worker",
+      "--sessions",
+      "1",
+      "--reps",
+      "1",
+      "--dry-run"
+    ]
+  },
+  "filed_in": "clone-0ea70e5c"
+}
