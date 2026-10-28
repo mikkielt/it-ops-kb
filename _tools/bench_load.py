@@ -15,14 +15,16 @@ from pathlib import Path
 
 from bench_core import Skip, git, need_sh, no_plugin_env, shim_dir
 
-ARMS = ("A", "B", "C", "D")  # A: every hook; B: A and the kbmon pane's commands; C: coord_hook.py and querylog.py left out; D: none
-DEFAULT_ARMS = ("A", "C", "D")  # B runs only when named: it adds WINDOW_S seconds to each phase
+ARMS = ("A", "B", "C", "D", "worker")  # A: every hook; B: A and the kbmon pane's commands; C: coord_hook.py and querylog.py left out; D: none; worker: A under a dispatched worker's environment
+DEFAULT_ARMS = ("A", "C", "D")  # B and worker run only when named: B adds WINDOW_S seconds to each phase
 PHASES = ("idle", "working")  # idle: SessionStart then SessionEnd; working: a fixed script of events between them
-LEFT_OUT = {"A": (), "B": (), "C": ("coord_hook.py", "querylog.py"), "D": None}  # a hook command naming one of these is not run
+LEFT_OUT = {"A": (), "B": (), "C": ("coord_hook.py", "querylog.py"), "D": None, "worker": ()}  # a hook command naming one of these is not run
 NOMINAL_S = {"idle": 60, "working": 300}  # the seconds of session a replay stands for: the divisor of spawns_per_min
 CLASSES = ("kbmon", "fseventsd", "tests", "kb-tools", "claude", "other", "git", "lsof")  # mon_host's, then two more
 CHILD_CLASSES = ("git", "lsof")  # classes whose processes only hook (or pane) commands start, so wait4 charges them to the parent
 PANE_ARMS = ("B",)  # the arms that run the kbmon pane's commands
+WORKER_ARMS = ("worker",)  # the arms whose hooks run in the environment bl_dispatch.worker_env gives a worker
+WORKER_KEYS = ("KB_OPERATOR", "KB_ROLE", "KB_UNWATCHED")  # what that environment sets on top of the host's own
 PANE_MOD = ".claude/skills/kbmon-pane/hooks/register.tsx"  # the mod whose FIRST_MS and REFRESH_MS the pane commands follow
 PANE_COMMANDS = (("--once",), ("--status", "all"))  # what the mod's refresh runs, in order, as `python3 _tools/kbmon.py ...`
 PANE_COLUMNS = "80"  # the mod's DEFAULT_COLUMNS: COLUMNS of a pane run
@@ -70,7 +72,8 @@ WORKING = [  # the script of a working phase: (prompt, [(tool, tool_input, tool_
     ("kb: default Windows LAPS password length",
      [("mcp__plugin_it-ops-kb_kb__kb_pack", {"question": "LAPS password length"},
        [{"type": "text", "text": "coverage: good\n## public/windows/laps.md"}]),
-      ("Bash", {"command": "python3 _tools/rag.py show public/windows/laps.md:1"}, {"stdout": "line"})],
+      ("Bash", {"command": "python3 _tools/rag.py show public/windows/laps.md:1"}, {"stdout": "line"}),
+      ("Bash", {"command": "python3 _tools/backlog.py release ST-aaaaaaaa"}, {"stdout": ""})],  # a work row, whatever the branch
      "The default is 14 characters."),
     ("How do I rename a branch?",
      [("Edit", {"file_path": "NOTES.md", "old_string": "a", "new_string": "b"}, {"ok": True}),
@@ -122,7 +125,7 @@ def matches(matcher, target):
 
 def label(command):
     """The hook command without its launcher: the script and its arguments."""
-    return re.sub(r'^sh "\$\{CLAUDE_PROJECT_DIR\}/_tools/kbpy"\s*', "", command)
+    return re.sub(r'^sh "\$\{CLAUDE_PROJECT_DIR\}/_tools/kbpy"\s*(?:--person\s+)?', "", command)
 
 
 def maxrss_mb(ru):
@@ -424,12 +427,37 @@ def plant(b, clone, name):
                           "PATH": os.pathsep.join((str(forge), str(fail), os.environ.get("PATH", "")))})
 
 
+def arm_env(env, arm):
+    """ENV for arm `arm`: KB_UNWATCHED is the worker arms' alone, whatever session runs the benchmark, and a worker arm
+    holds the keys of WORKER_KEYS that bl_dispatch.worker_env gives a worker (a placeholder operator id)."""
+    env = {k: v for k, v in env.items() if k != "KB_UNWATCHED"}
+    if arm in WORKER_ARMS:
+        import bl_dispatch
+        env.update({k: v for k, v in bl_dispatch.worker_env("op-00000000").items() if k in WORKER_KEYS})
+    return env
+
+
+def work_rows(data):
+    """The `work` rows the replay's hooks wrote to the spool under the query log home DATA / "querylog"."""
+    n = 0
+    for f in (Path(data) / "querylog").rglob("*.jsonl"):
+        n += sum(1 for ln in f.read_text(encoding="utf-8", errors="replace").splitlines() if re.search(r'"surface":\s*"work"', ln))
+    return n
+
+
+def lease_written(out, sid):
+    """1 when a hook of the replay started `coord.py claim session/SID`, the presence lease of the session, else 0."""
+    return int(any("coord.py" in c and " claim " in c and f"session/{sid}" in c for h in out["hooks"] for c in h["children"]))
+
+
 def replay(b, clone, hooks, arm, phase, name, pane=None):
     reset(clone)
-    env = plant(b, clone, name)
+    env = arm_env(plant(b, clone, name), arm)
     load = os.getloadavg()[0] if hasattr(os, "getloadavg") else 0.0
-    out = Replay(clone, env, arm_hooks(hooks, arm), pane if arm in PANE_ARMS else None).run(phase, str(uuid.uuid4()))
+    sid = str(uuid.uuid4())
+    out = Replay(clone, env, arm_hooks(hooks, arm), pane if arm in PANE_ARMS else None).run(phase, sid)
     out["load"] = load
+    out["lease_written"], out["work_rows"] = lease_written(out, sid), work_rows(env["CLAUDE_PLUGIN_DATA"])
     return out
 
 
@@ -552,11 +580,13 @@ def s_session_load(b):
     """One session's hook cost on the host, no model: the hook events of a session replayed through this clone's own hook
     commands in a throwaway clone (query log in mode `local` under a scratch plugin data directory, a `claude` that fails
     at once), in arm A (every hook), B (A and the commands of the kbmon-pane mod), C (coord_hook.py and the querylog.py
-    hooks left out) and D (no hook), each in an idle phase (SessionStart, SessionEnd) and a working phase (the events of
+    hooks left out), D (no hook) and worker (A in the environment of a dispatched worker, KB_UNWATCHED=1, so the hooks marked
+    `kbpy --person` exit at once), each in an idle phase (SessionStart, SessionEnd) and a working phase (the events of
     WORKING between them). Arm B runs, over a window of `b.window` seconds per phase, the pane's commands the mod's way:
     the first after its FIRST_MS and then one every `b.pane_every` seconds (default its REFRESH_MS). Per phase, arm and
     process class: the CPU seconds, peak and mean resident memory in MiB and the starts per minute of a session of
-    NOMINAL_S (the pane's own starts per minute of the window); per synchronous hook command its median milliseconds (a
+    NOMINAL_S (the pane's own starts per minute of the window), `lease_written` (1 when a hook started the claim of the
+    session's coord presence lease) and `work_rows` (the query log work rows the hooks wrote); per synchronous hook command its median milliseconds (a
     run of an async hook is `async_ms`: Claude Code does not wait for it). Each rep runs every arm and phase once, the
     medians of the reps are the rows. With `b.capture` (run --fs-usage FILE) it only writes the file reads of that capture;
     otherwise it prints the `sudo fs_usage` command the operator runs by hand, which this tool never runs. With
@@ -607,6 +637,9 @@ def s_session_load(b):
         b.row("session-load", f"{phase} replay", arm, "wall_s", statistics.median(r["wall_s"] for r in reps), len(reps))
         b.row("session-load", f"{phase} replay", arm, "hook_failures", statistics.median(len(r["failed"]) for r in reps),
               len(reps), note="hook commands that exited non-zero")
+        for metric, note in (("lease_written", "1 when a hook started coord.py claim session/ID, the presence lease"),
+                             ("work_rows", "work rows in the replay's query log spool")):
+            b.row("session-load", f"{phase} all", arm, metric, statistics.median(r[metric] for r in reps), len(reps), note=note)
         if arm in PANE_ARMS:
             b.row("session-load", f"{phase} replay", arm, "pane_failures", statistics.median(len(r["pane_failed"]) for r in reps),
                   len(reps), note="pane commands that exited with 2 or more")

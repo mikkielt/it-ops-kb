@@ -618,7 +618,8 @@ def worker_traceparent(iid, sprint=None):
 
 def worker_env(oid, iid=None, sprint=None, traceparent=None):
     """The environment of the worker's session: this one's, with `KB_OPERATOR` the dispatching operator's id OID
-    (dropped when none resolved) and `KB_ROLE` the worker's, so a worker never inherits the orchestrator's role. Given
+    (dropped when none resolved) and `KB_ROLE` the worker's, so a worker never inherits the orchestrator's role, and
+    `KB_UNWATCHED=1` (no person reads the session: `_tools/kbpy --person` hooks exit at once). Given
     IID, `OTEL_RESOURCE_ATTRIBUTES` names the item and its SPRINT (`resource_entries`); given TRACEPARENT (the worker span's,
     `worker_traceparent`), `TRACEPARENT` is it and an inherited `TRACESTATE` goes, so Claude Code's own telemetry joins the
     item's trace when the operator's environment turns it on."""
@@ -628,6 +629,7 @@ def worker_env(oid, iid=None, sprint=None, traceparent=None):
     else:
         env.pop("KB_OPERATOR", None)
     env["KB_ROLE"] = WORKER_ROLE
+    env["KB_UNWATCHED"] = "1"
     if iid:
         env["OTEL_RESOURCE_ATTRIBUTES"] = resource_entries(env.get("OTEL_RESOURCE_ATTRIBUTES", ""), iid, sprint)
     if traceparent:

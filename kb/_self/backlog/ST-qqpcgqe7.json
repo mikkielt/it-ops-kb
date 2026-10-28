@@ -93,6 +93,63 @@
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
+    },
+    {
+      "id": "work-row",
+      "kind": "provisional",
+      "question": "How does session-load make sure the worker arm writes query-log work rows on any branch?",
+      "options": [
+        "Add a backlog.py release call of a placeholder item to the first WORKING prompt",
+        "Rely on the replay clone's branch row"
+      ],
+      "recommendation": "Add a backlog.py release call of a placeholder item to the first WORKING prompt",
+      "do": {
+        "Add a backlog.py release call of a placeholder item to the first WORKING prompt": "ST-qqpcgqe7",
+        "Rely on the replay clone's branch row": "ST-qqpcgqe7"
+      },
+      "class": "querylog",
+      "answer": "Add a backlog.py release call of a placeholder item to the first WORKING prompt",
+      "by": "agent"
+    },
+    {
+      "id": "lease-measure",
+      "kind": "blocking",
+      "question": "How does session-load decide that a replay wrote the coord session lease?",
+      "options": [
+        "A hook started coord.py claim of session/ID (read from the processes the replay logged)",
+        "Read the coord store after the replay"
+      ],
+      "recommendation": "A hook started coord.py claim of session/ID (read from the processes the replay logged)",
+      "do": {
+        "A hook started coord.py claim of session/ID (read from the processes the replay logged)": "ST-qqpcgqe7",
+        "Read the coord store after the replay": "ST-qqpcgqe7"
+      },
+      "class": "agents-rule",
+      "answer": "A hook started coord.py claim of session/ID (read from the processes the replay logged)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    },
+    {
+      "id": "runner-line",
+      "kind": "blocking",
+      "question": "Which launch line does the kb-sprint skill give for a headless sprint runner?",
+      "options": [
+        "KB_UNWATCHED=1 claude -p --model sonnet --output-format json with the run command on the prompt, stdin closed",
+        "A wrapper script of the clone"
+      ],
+      "recommendation": "KB_UNWATCHED=1 claude -p --model sonnet --output-format json with the run command on the prompt, stdin closed",
+      "do": {
+        "KB_UNWATCHED=1 claude -p --model sonnet --output-format json with the run command on the prompt, stdin closed": "ST-qqpcgqe7",
+        "A wrapper script of the clone": "ST-qqpcgqe7"
+      },
+      "class": "agents-rule",
+      "answer": "KB_UNWATCHED=1 claude -p --model sonnet --output-format json with the run command on the prompt, stdin closed",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "notes": "Operator, 2026-10-26: lean switch decided now; kb_hook stays on tool calls in unwatched sessions (WebFetch deny, read nudge), only its prompt hook is person-only.",

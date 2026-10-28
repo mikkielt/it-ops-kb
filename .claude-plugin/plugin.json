@@ -24,7 +24,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/_tools/kbpy\" _tools/kb_hook.py"
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/_tools/kbpy\" --person _tools/kb_hook.py"
           },
           {
             "type": "command",
@@ -209,7 +209,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/_tools/kbpy\" --notice",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/_tools/kbpy\" --person --notice",
             "timeout": 10
           },
           {
@@ -219,7 +219,7 @@
           },
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/_tools/kbpy\" _tools/querylog.py digest --hook",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/_tools/kbpy\" --person _tools/querylog.py digest --hook",
             "timeout": 10
           },
           {
@@ -229,13 +229,13 @@
           },
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/_tools/kbpy\" _tools/backlog.py intake --file --hook --opt-in",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/_tools/kbpy\" --person _tools/backlog.py intake --file --hook --opt-in",
             "async": true,
             "timeout": 60
           },
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/_tools/kbpy\" _tools/kbroot.py fetch --hook",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/_tools/kbpy\" --person _tools/kbroot.py fetch --hook",
             "async": true,
             "timeout": 60
           }
@@ -246,7 +246,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/_tools/kbpy\" _tools/backlog.py horizon --hook --opt-in",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/_tools/kbpy\" --person _tools/backlog.py horizon --hook --opt-in",
             "timeout": 10
           }
         ]
