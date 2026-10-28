@@ -155,7 +155,9 @@ def cmd_show(bl, a):
         say(x)
     for x in knowledge_lines(bl, iid, indent=""):
         say(x)
-    if bl.items[iid].get("review") and bl.sprint_of(iid):  # the review story lists what the operator re-confirms
+    if bl.items[iid].get("review") and bl.sprint_of(iid):  # the review story lists what the operator confirms
+        for i, gid, answer in held_answers(bl, bl.sprint_of(iid)):
+            say(f"held answer to confirm: {bl.label(i)} gate {gid}: {answer}")
         for i, gid, answer in agent_session_answers(bl, bl.sprint_of(iid)):
             say(f"re-confirm from a terminal: {bl.label(i)} gate {gid}: {answer} (answered from an agent session)")
     w = waits(bl, iid)
@@ -168,6 +170,13 @@ def agent_session_answers(bl, sid):
     `--by operator` closed from an agent session (`agent_session: true`), which the operator re-confirms from a terminal."""
     return [(i, g["id"], g.get("answer")) for i in [sid, *bl.sprint_items(sid)] for g in bl.items[i].get("gates", [])
             if isinstance(g, dict) and g.get("agent_session") is True]
+
+
+def held_answers(bl, sid):
+    """[(item id, gate id, answer)] of the held gates (`hold: true`, set by the item's touches) of sprint SID and its
+    items that carry an agent's answer, which the operator confirms at the sprint's review (`answer SID --confirm-held`)."""
+    return [(i, g["id"], g.get("answer")) for i in [sid, *bl.sprint_items(sid)] for g in bl.items[i].get("gates", [])
+            if isinstance(g, dict) and g.get("hold") is True and g.get("by") == "agent" and "answer" in g]
 
 
 def cmd_next(bl, a):
@@ -418,10 +427,12 @@ def cmd_horizon(bl, a):
         reach, stuck, path, widths = horizon(bl, sid, a.all)
         starts = len(stuck.get(STARTS + sid, []))  # approved: they wait on backlog.py start, not on the operator
         waiting = sum(map(len, stuck.values())) - starts
+        held = held_answers(bl, sid)
         if a.hook:  # every session reads it: id and title, counts and the next id; horizon without --hook has the rest
             nxt = ready(bl, sid, upstream=a.all)
             lines.append(f"sprint {sid} “{clip(bl.items[sid].get('title', ''), HOOK_TITLE)}”: "
                          f"{done}/{len(items)} done, {len(reach)} reachable"
+                         + (f", {len(held)} held answer(s) to confirm" if held else "")
                          + (f", close with backlog.py close {sid}" if items and done == len(items) else "")
                          + (f", {starts} wait on backlog.py start" if starts else "")
                          + (f", {waiting} wait on the operator or a trigger" if waiting else "")
@@ -433,6 +444,10 @@ def cmd_horizon(bl, a):
         lines.append(f"  {done}/{len(items)} done; {len(reach)} more reachable without the operator; "
                      + (f"{starts} wait on backlog.py start {sid}; " if starts else "")
                      + f"{waiting} wait on the operator or a trigger")
+        if held:
+            lines.append(f"  {len(held)} held answer(s) awaiting the operator, to confirm at the review "
+                         f"(python3 _tools/backlog.py answer {sid} --confirm-held --by operator):")
+            lines += [f"    {bl.label(i)} gate {gid}: {answer}" for i, gid, answer in held]
         sessions = agent_session_answers(bl, sid)
         if sessions:
             lines.append(f"  {len(sessions)} operator-class answer(s) recorded from an agent session, for the operator to "

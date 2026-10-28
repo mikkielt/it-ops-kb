@@ -259,6 +259,16 @@ def an_agent_cannot_confirm_an_operator_gate(tmp_path):
         code, out = bl(tmp_path, "answer", iid, "g", "--confirm", "--by", by)
         assert code in (1, 2), out
         assert path(tmp_path, iid).read_bytes() == before, by
+    sid = bl(tmp_path, "new", "sprint", "--title", "S", "--goal", "g")[1].split()[2]  # a held answer of a sprint's item
+    held = bl(tmp_path, "new", "story", "--sprint", sid, "--title", "T", "--goal", "g", "--touch", "AGENTS.md")[1].split()[2]
+    assert add_gate(tmp_path, held, "Which name?", "--kind", "provisional")[0] == 0
+    edit_gate(tmp_path, held, answer="a", by="agent")
+    before = path(tmp_path, held).read_bytes()
+    for by in ((), ("--by", "agent"), ("--by", "delegate:mgr")):
+        code, out = bl(tmp_path, "answer", sid, "--confirm-held", *by)
+        assert code == 2 and path(tmp_path, held).read_bytes() == before, (by, out)
+    code, out = bl(tmp_path, "answer", sid, "--confirm-held", "--by", "operator", env=dict(os.environ, CLAUDECODE="1"))
+    assert code == 0 and (g := gate(tmp_path, held))["by"] == "operator" and "agent_session" not in g, out
 
 
 def check_reports_an_operator_gate_an_agent_answered_as_an_error(tmp_path):

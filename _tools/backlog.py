@@ -88,6 +88,9 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           --record commits what it wrote, the item file (chore(backlog): answer ID
                                           "title", KB-Work: ID, then each --trailer 'KEY: VALUE') and the decisions
                                           row (no KB-Work), so the tree is clean for the next kbgit.py sync;
+                                          backlog.py answer SP --confirm-held --by operator [--except ID:GATE]... [--commit]
+                                          confirms every held agent answer of the sprint's items in one call (exit 2,
+                                          nothing written, without --by operator), with no agent_session flag;
                                           an answer --by operator also records the answering session's operator id
                                           and role (interactive, orchestrator or worker) on the gate beside by
   backlog.py set ID [ID...] [--notes TEXT] [--link T]... [--touch GLOB]... [--check CMD]... [--depends ID]...

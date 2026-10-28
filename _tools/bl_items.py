@@ -25,7 +25,7 @@ from bl_land import (
     run_check, own_failure, take_claim,
 )  # move_run: bl_land owns the run-state move, since bl_land cannot import bl_items without a cycle
 from bl_view import (
-    is_near, similar,
+    held_answers, is_near, similar,
 )
 from bl_peers import post_plan
 from bl_plan import (
@@ -449,7 +449,60 @@ def commit_answer(bl, a, iid, gate):
         say(f"committed {git(bl.root, 'rev-parse', '--short=10', 'HEAD').strip()} {msg.splitlines()[0]}")
 
 
+def confirm_held(bl, a):
+    """`answer SP --confirm-held --by operator`: make every held agent answer of the sprint's items the operator's in one
+    call, less the `--except ID:GATE` ones (a gate left for its own answer). Refused (exit 2) without --by operator, for
+    anything but a sprint, beside a gate or another way to answer, and for an --except that names no held answer; then
+    nothing is written. A held gate's confirmation carries no `agent_session` flag, whatever session records it."""
+    sid = need(bl, a.id)
+    if bl.items[sid].get("kind") != "sprint":
+        raise Rejected(f"--confirm-held names a sprint ({bl.label(sid)} is not one): it confirms the held answers of its items")
+    if a.by != "operator":
+        raise Rejected("--confirm-held needs --by operator, which an agent passes only after the operator said so")
+    if a.gate or a.answer or a.provisional or a.confirm or a.record or a.free or a.option is not None or a.recommended:
+        raise Rejected("--confirm-held stands alone: no GATE, --answer, --option, --recommended, --free, --provisional, "
+                       "--confirm or --record beside it (--except ID:GATE and --commit only)")
+    held = held_answers(bl, sid)
+    skip = []
+    for x in a.except_held:
+        item, _, gate = x.partition(":")
+        if not gate or (item, gate) not in {(i, g) for i, g, _ in held}:
+            raise Rejected(f"--except {x}: ID:GATE of a held answer of {bl.label(sid)} "
+                           f"({', '.join(f'{i}:{g}' for i, g, _ in held) or 'it has none'})")
+        skip.append((item, gate))
+    todo = [(i, g, ans) for i, g, ans in held if (i, g) not in skip]
+    if not todo:
+        say(f"{bl.label(sid)}: no held answer to confirm")
+        return 0
+    who, role = operator_who()
+
+    def confirm(item_id):
+        def edit(new):
+            for g in new.get("gates", []):
+                if any(g.get("id") == gate for i, gate, _ in todo if i == item_id):
+                    g["by"] = "operator"
+                    for k in ("operator", "role", "agent_session"):
+                        g.pop(k, None)
+                    if who:
+                        g["operator"], g["role"] = who, role
+        return edit
+
+    ids = list(dict.fromkeys(i for i, _, _ in todo))
+    changed_items(bl, {i: confirm(i) for i in ids})
+    for i, gate, ans in todo:
+        say(f"gate {gate} of {bl.label(i)}: {ans} (by operator, held answer confirmed)")
+    commit_written(bl, a, "answer", sid, ids=ids, body="Held answers confirmed: "
+                   + ", ".join(f"{i} gate {g}" for i, g, _ in todo) + ".")
+    return 0
+
+
 def cmd_answer(bl, a):
+    if getattr(a, "except_held", None) and not getattr(a, "confirm_held", False):
+        raise Rejected("--except goes with --confirm-held")
+    if getattr(a, "confirm_held", False):
+        return confirm_held(bl, a)
+    if not a.gate:
+        raise Rejected("answer needs ID GATE, or a sprint with --confirm-held --by operator")
     iid = need(bl, a.id)
     it = bl.items[iid]
     g = next((g for g in it.get("gates", []) if g.get("id") == a.gate), None)
@@ -551,8 +604,10 @@ def cmd_answer(bl, a):
         who, role = operator_who()
         if who:
             g["operator"], g["role"] = who, role
-        if held in bl_authority.OPERATOR_CLASSES and bl_authority.in_agent_session():
-            g["agent_session"] = True  # taken, not refused: the operator re-confirms it from a terminal (horizon, review)
+        if held in bl_authority.OPERATOR_CLASSES and disp != "hold" and bl_authority.in_agent_session():
+            # taken, not refused: the operator re-confirms it from a terminal (horizon, review); a gate its item's
+            # touches alone hold is none of those: its confirmation stands
+            g["agent_session"] = True
     bl.save(it)
     say(f"gate {a.gate} of {bl.label(iid)}: {g['answer']} (by {g['by']})")
     if a.record:
@@ -1441,7 +1496,7 @@ def args_release(p):
 
 def args_answer(p):
     p.add_argument("id")
-    p.add_argument("gate")
+    p.add_argument("gate", nargs="?")
     p.add_argument("--answer")
     p.add_argument("--option", type=int, metavar="N",
                    help="answer with the Nth option of the gate (from 1), as --answer with that option's text; "
@@ -1455,6 +1510,11 @@ def args_answer(p):
                    help="who answers; delegate:NAME only confirms, under the operator's grant on the sprint")
     p.add_argument("--provisional", action="store_true")
     p.add_argument("--confirm", action="store_true")
+    p.add_argument("--confirm-held", action="store_true",
+                   help="on a sprint, with --by operator: confirm every held agent answer of its items in one call "
+                        "(exit 2 without --by operator, and nothing written)")
+    p.add_argument("--except", dest="except_held", action="append", default=[], metavar="ID:GATE",
+                   help="with --confirm-held: leave this held answer for its own answer (repeatable)")
     p.add_argument("--record", action="store_true", help="with --answer TEXT --by operator: keep the answer as an active decision, committed with the item file")
     p.add_argument("--commit", action="store_true",
                    help="commit the item file this answer wrote, alone, with a fixed subject and KB-Work (--record "
