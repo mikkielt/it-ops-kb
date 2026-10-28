@@ -188,7 +188,12 @@
         "Two sections of _tools/kbingest_patterns.csv, separated by a blank line, each with its header row": "ST-zkhku3sg",
         "Two files, the rules table in a new _tools/kbingest_rules.csv, after the operator adds that path to the touches": "ST-zkhku3sg"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Two files, the rules table in a new _tools/kbingest_rules.csv, after the operator adds that path to the touches",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     },
     {
       "id": "g7",
