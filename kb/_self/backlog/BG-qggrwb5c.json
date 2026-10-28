@@ -1,0 +1,22 @@
+{
+  "id": "BG-qggrwb5c",
+  "kind": "bug",
+  "title": "claim calls coord inside the claims-ledger lock, so a slow served coord can hold the lock past its 60 s stale age",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "claim takes the item's run state from coord outside the claims-ledger lock, or bounds that call below LEDGER_LOCK_STALE_S, so a slow coord never lets a waiting claim clear a live lock",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys\nsys.path.insert(0,'_tools')\nimport bl_base, bl_clean\nassert bl_clean.COORD_SECONDS < bl_base.LEDGER_LOCK_STALE_S, ('a coord call inside the ledger lock can outlast its stale age', bl_clean.COORD_SECONDS, bl_base.LEDGER_LOCK_STALE_S)"
+    ]
+  },
+  "links": [
+    "parked: SP-jwvaq2hu review"
+  ],
+  "notes": "Review G3: bl_items.py:376 calls take_claim inside ledger_lock; COORD_SECONDS 60 (bl_clean.py:104) equals LEDGER_LOCK_STALE_S 60 (bl_base.py:693). The repro reads the bound only; moving the call out of the lock also fixes it.",
+  "filed_in": "clone-0ea70e5c"
+}
