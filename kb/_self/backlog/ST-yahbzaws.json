@@ -57,6 +57,40 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which stretch of a gate's text is one clause for the program-and-run signal?",
+      "options": [
+        "a stretch with no full stop, semicolon, colon, question mark, exclamation mark or newline",
+        "a stretch with no comma either"
+      ],
+      "recommendation": "a stretch with no full stop, semicolon, colon, question mark, exclamation mark or newline",
+      "reason": "a wider clause fails closed",
+      "do": {
+        "a stretch with no full stop, semicolon, colon, question mark, exclamation mark or newline": "ST-yahbzaws",
+        "a stretch with no comma either": "ST-yahbzaws"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Does a delegate's confirmation of a provisional answer to a strict gate stay refused, as for the operator classes?",
+      "options": [
+        "refused, as for the operator classes",
+        "a delegate may confirm"
+      ],
+      "recommendation": "refused, as for the operator classes",
+      "reason": "a strict gate is the operator's whoever confirms",
+      "do": {
+        "refused, as for the operator classes": "ST-yahbzaws",
+        "a delegate may confirm": "ST-yahbzaws"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "notes": "Words, settled at planning 2026-10-28: money = USD, US dollars, dollars, paid, spend, billing, Actions minutes, a $ figure; operator act = sudo, only the operator, the operator creates, runs, makes, gives, adds or sets; scope = touches, drop the item, skip experiment, worth building, defer; execution = program and run within one clause, execute and its endings. bl_authority.strict_signals(gate) returns each kind with its word; set --touch re-derivation keeps such a gate blocking; check reports one that is provisional or agent-answered on an open item as an error; the gate's class is unchanged, so kbdecide, bl_plan and horizon read it as before; kb/_self/backlog.md (Gate classes) and kb/_self/tools.md describe it. Evidence: the gate-triage measurement of 2026-10-28 (ST-moy5v7tm g1 and ST-izw3nds4 g2 were class design and reached the operator only because the planner made them blocking). Check 2 passes before the work: it pins the critical test the work extends. Premise run 2026-10-28 on origin/main 80725b09a9: checks 0 and 1 fail (all four strict questions added provisional, class design; an agent answered the USD gate).",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-a3c0c63f",

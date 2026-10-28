@@ -510,6 +510,10 @@ def cmd_answer(bl, a):
             refuse = Rejected if a.provisional or a.confirm else Refused  # --answer by an agent: exit 1, as a blocking gate
             raise refuse(f"gate {a.gate} of {bl.label(iid)} is class {cls}: only the operator answers it "
                          "(--by operator)")
+        strict = bl_authority.strict_text(bl_authority.strict_signals(g))
+        if strict:
+            refuse = Rejected if a.provisional or a.confirm else Refused
+            raise refuse(f"gate {a.gate} of {bl.label(iid)} is {strict}: only the operator answers it (--by operator)")
     if a.confirm:
         if g.get("by") != "agent":
             raise Refused(f"gate {a.gate} of {bl.label(iid)} has no agent answer to confirm")
@@ -655,13 +659,13 @@ def appended(old, values):
 def reclass_gate(item, gate):
     """Store the stricter of the gate's class and the one `item`'s touches and the gate's text derive now, so widened
     touches re-class a gate already written; a class never goes down here. An unanswered provisional gate that
-    becomes one only the operator answers is made blocking, as `gate add` does."""
+    becomes one only the operator answers, or that names a strict signal, is made blocking, as `gate add` does."""
     stored = gate.get("class")
     d = bl_authority.derived_class(item, gate)
     if stored not in bl_authority.CLASSES or bl_authority.rank(d) < bl_authority.rank(stored):
         gate["class"] = d
-    if bl_authority.gate_class(item, gate) in bl_authority.OPERATOR_CLASSES and gate.get("kind") != "blocking" \
-            and "answer" not in gate:
+    if (bl_authority.gate_class(item, gate) in bl_authority.OPERATOR_CLASSES or bl_authority.strict_signals(gate)) \
+            and gate.get("kind") != "blocking" and "answer" not in gate:
         gate["kind"] = "blocking"
 
 
@@ -1123,7 +1127,10 @@ def gate_add(bl, a):
     # classed over the whole gate, `do` and `host_check` words too, as gate_class reads it; the reasons name what set it
     gate["class"], reasons = bl_authority.class_reasons(it, gate)
     why = f"class {gate['class']}" + (f" ({', '.join(reasons)})" if reasons else "")
-    if gate["class"] in bl_authority.OPERATOR_CLASSES and gate["kind"] != "blocking":
+    signals = bl_authority.strict_signals(gate)
+    if signals:
+        why += ", " + bl_authority.strict_text(signals)
+    if (gate["class"] in bl_authority.OPERATOR_CLASSES or signals) and gate["kind"] != "blocking":
         gate["kind"] = "blocking"
         say(f"gate {gid} of {bl.label(iid)} is {why}: made blocking, only the operator answers it")
     same =[g for g in gates if g.get("question") == gate["question"] or g.get("id") == gid]

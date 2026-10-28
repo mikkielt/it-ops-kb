@@ -151,6 +151,40 @@ def gate_add_makes_an_operator_class_gate_blocking_whatever_kind_says(tmp_path):
     assert (g["kind"], g["class"]) == ("blocking", "secrets")
 
 
+def a_gate_that_names_money_an_operator_act_a_scope_change_or_a_program_is_blocking_whatever_its_class(tmp_path):
+    cases = {"money": "May the probe spend 4 USD?", "operator-act": "The capture needs sudo fs_usage; is it made?",
+             "scope": "Keep the touches or drop the item?",
+             "execute": "May a row name a program this machine will run on a downloaded file?"}
+    design = "Which caps does the languages table hold?"
+    assert ba.strict_signals({"question": design, "options": ["a", "b"]}) == []
+    iid = new_item(tmp_path, touch="src/a.py")
+    for n, (kind, question) in enumerate({**cases, "design": design}.items()):
+        code, out = bl(tmp_path, "gate", "add", iid, "--id", f"g{n}", "--kind", "provisional", "--question", question,
+                       "--option", "a", "--option", "b", "--recommendation", "a")
+        assert code == 0 and ("(provisional)" in out) == (kind == "design"), out
+        assert (f"strict {kind} '" in out) == (kind != "design"), out
+    item = json.loads(path(tmp_path, iid).read_text(encoding="utf-8"))
+    assert [(g["kind"], g["class"]) for g in item["gates"]] == [("blocking", "design")] * 4 + [("provisional", "design")]
+    for n in range(5):  # no agent answers a strict gate; the design question is the agent's
+        code, out = bl(tmp_path, "answer", iid, f"g{n}", "--provisional")
+        assert (code == 0) == (n == 4) and (n == 4 or "strict" in out), (n, out)
+    item = json.loads(path(tmp_path, iid).read_text(encoding="utf-8"))
+    for g in item["gates"][:4]:  # a provisional strict gate and an agent's answer to one, written by hand: check reports both
+        g.update(kind="provisional", answer="a", by="agent")
+    path(tmp_path, iid).write_text(json.dumps(item, indent=2) + "\n", encoding="utf-8", newline="\n")
+    code, out = bl(tmp_path, "check")
+    assert code == 1 and all(f"strict {kind} '" in out for kind in cases), out
+    for g in item["gates"][:4]:
+        del g["answer"], g["by"]
+    path(tmp_path, iid).write_text(json.dumps(item, indent=2) + "\n", encoding="utf-8", newline="\n")
+    code, out = bl(tmp_path, "check")
+    assert code == 1 and "and provisional" in out, out
+    assert bl(tmp_path, "set", iid, "--add-touch", "src/b.py")[0] == 0  # the touches re-derive: blocking again
+    assert [g["kind"] for g in json.loads(path(tmp_path, iid).read_text(encoding="utf-8"))["gates"]] == ["blocking"] * 4 + [
+        "provisional"]
+    assert bl(tmp_path, "check")[0] == 0
+
+
 def test_an_agent_cannot_answer_or_provisionally_answer_an_operator_gate_the_operator_can(tmp_path):
     iid = new_item(tmp_path, touch="_tools/kbgit.py")
     assert add_gate(tmp_path, iid, "Which name?")[0] == 0
@@ -322,7 +356,8 @@ def together(tmp_path, *bodies):
 
 def test_operator_class_is_derived_and_gate_add_makes_an_operator_class_gate_blocking(tmp_path):
     operator_class_is_derived_from_touches_and_question_a_lower_stored_class_changes_nothing_and_secrets_fail_closed_inside_token_exceptions()
-    together(tmp_path, gate_add_makes_an_operator_class_gate_blocking_whatever_kind_says)
+    together(tmp_path, gate_add_makes_an_operator_class_gate_blocking_whatever_kind_says,
+             a_gate_that_names_money_an_operator_act_a_scope_change_or_a_program_is_blocking_whatever_its_class)
 
 
 def test_an_agent_cannot_confirm_an_operator_gate_check_reports_an_answer_or_a_lowered_class_and_a_delegate_grant_needs_the_operator(

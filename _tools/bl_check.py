@@ -749,6 +749,12 @@ def validate(bl, pieces=None):
                 if g.get("by") == "agent":
                     e(f"gate {g['id']} is class {bl_authority.derived_class(it, g)}: an answer by agent is not "
                       "the operator's")
+            strict = bl_authority.strict_text(bl_authority.strict_signals(g))
+            if strict and it.get("status") not in CLOSED_STATUSES:  # a closed item's gate cannot be answered again
+                if g["kind"] == "provisional" and g.get("by") != "operator":
+                    e(f"gate {g['id']} is {strict} and provisional: it is blocking, only the operator answers it")
+                if g.get("by") == "agent":
+                    e(f"gate {g['id']} is {strict}: an answer by agent is not the operator's")
             if g["kind"] == "blocking" and g.get("by") == "agent":
                 e(f"gate {g['id']} is blocking: only the operator answers it")
             hc = g.get("host_check")
