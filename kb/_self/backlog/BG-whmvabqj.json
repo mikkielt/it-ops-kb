@@ -2,7 +2,7 @@
   "id": "BG-whmvabqj",
   "kind": "bug",
   "title": "run session-load --paid refuses the worker arm, so the paid record cannot hold the lean worker arm's rows",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-wv3ob5vy",
   "priority": "P2",
   "rank": 0,
@@ -46,6 +46,37 @@
     "kb/_self/tools.md"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-557596e3",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "5c58b243b265858c0f31179cb895f8df53f475ed",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, sys\np = subprocess.run([sys.executable, '_tools/benchmarks.py', 'run', 'session-load', '--paid', '--arms', 'A,C,D,worker', '--sessions', '1', '--reps', '1', '--dry-run'], capture_output=True, text=True, timeout=300)\nout = p.stdout + p.stderr\nassert p.returncode == 0, ('--paid --dry-run with the worker arm exits', p.returncode, out[-300:])\nassert 'arms A, C, D only' not in out, ('the worker arm is still refused', out[-300:])\nassert '8 runs' in out, ('the plan does not count 8 runs for four arms, two phases, one session, one rep', out[-300:])"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "run",
+          "session-load",
+          "--paid",
+          "--arms",
+          "A,C,D,worker",
+          "--sessions",
+          "1",
+          "--reps",
+          "1",
+          "--dry-run"
+        ],
+        "exit": 0,
+        "sha256": "5abf48fad0bf332d"
+      }
+    ]
+  }
 }
