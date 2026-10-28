@@ -2,7 +2,7 @@
   "id": "ST-moy5v7tm",
   "kind": "story",
   "title": "The Linux CI suite's median and p90 time and the bytecode-cache effect are measured on GitHub runners",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-kkov6bbz",
   "priority": "P1",
@@ -70,6 +70,19 @@
     }
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-557596e3",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "d2217460ab2e8279c3c24c63df41dfbbce55de53",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,re;t=open('kb/_self/reports/ci-linux-timing.md').read();n=len(set(re.findall(r'\\b4[0-9]{10}\\b',t)));print(n,'runs');sys.exit(0 if n>=20 and 'p90' in t and 'median' in t else 1)"
+        ],
+        "exit": 0,
+        "sha256": "0929f2d9397d520c"
+      }
+    ]
+  }
 }
