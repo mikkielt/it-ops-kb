@@ -76,7 +76,11 @@
         "Start no group once the spend so far plus the group at the mean cost of the finished sessions of its phase would pass the cap; the first group always starts; later groups are left unstarted, a spend_stopped row names them, exit 0": "ST-i5az334d",
         "As the pool: the same rule but exit 1 when sessions are left unstarted": "ST-i5az334d"
       },
-      "class": "design"
+      "class": "design",
+      "answer": "Start no group once the spend so far plus the group at the mean cost of the finished sessions of its phase would pass the cap; the first group always starts; later groups are left unstarted, a spend_stopped row names them, exit 0",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
