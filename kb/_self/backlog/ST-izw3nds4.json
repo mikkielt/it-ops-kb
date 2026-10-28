@@ -2,7 +2,7 @@
   "id": "ST-izw3nds4",
   "kind": "story",
   "title": "fetch.py text unpacks MSI, CAB, WIM and similar archives through a table of extractor commands run in the map sandbox, an internal root may add rows, and 7z installs like WezTerm",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-7vyrared",
   "sprint": "SP-iir3d2tu",
   "priority": "P3",
@@ -258,6 +258,112 @@
   ],
   "notes": "Premise (plan time, synthetic bodies): read_text returns None for a CAB (MSCF) or WIM (MSWIM) body, so text exits 2; an MSI body (OLE header d0cf11e0) is worse: the raw bytes come back as replacement-character text and text exits 0. A zip-based MSIX already reads through the zip route, as should a zip-based .intunewin outer container (from memory): no new rows for them. fetch.py reads zip and tar members in memory only; the new route writes untrusted contents to disk, so it needs caps on bytes, file count and depth, refusal of absolute and parent paths and of links, and removal of the directory in a finally. kbingest.py already has scrub_env, NETWORK_OFF, tool_exe, run_tool and kill_tree; fetch.py has none, so they move to kbsandbox.py (g1).\nOperator: g2 internal roots only; g3 7z, installed like WezTerm. Order: after the kbingest.py story; shares kb/_self/tools.md with S2 and S3.\nChecks 1, 2, 3 and 9 each passes before the work and pin behaviour that must stay unchanged (the existing fetch routes, the sandbox guards, the test ids); every other check fails before it with a one-line reason.\nChecks 7 to 9 serve synthetic bodies from a local HTTP server and run fetch.py text with a PATH holding only the Python directory, so 7z is absent whatever the host has. Check 0 is the guard test the worker writes: table lookup, scrubbed environment and timeout, caps and traversal refusal, directory removal, internal-roots-only rule, the printed program name.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-557596e3",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "ad10d2b1d33fcf424a45764be0607bd5e67921c0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "_tools/test_fetch_extract.py"
+        ],
+        "exit": 0,
+        "sha256": "185c018bf5a57e9c"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "fetch"
+        ],
+        "exit": 0,
+        "sha256": "2078d4af03ec3c07"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "_tools/test_kbingest_guards.py"
+        ],
+        "exit": 0,
+        "sha256": "720de2b2ff475f86"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/perfcheck.py",
+          "ids",
+          "--base",
+          "origin/main"
+        ],
+        "exit": 0,
+        "sha256": "32d3595b9fb32181"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/install_7z.py",
+          "--plan"
+        ],
+        "exit": 0,
+        "sha256": "f4a123ab1a4cd006"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, sys\nt = '_tools/fetch_extractors.csv'\nos.path.exists(t) or sys.exit('no shipped extractor table ' + t)\nrows = [ln.lower() for ln in open(t, encoding='utf-8')]\nmiss = [e for e in ('.msi', '.cab', '.wim') if not any(e in r and '7z' in r for r in rows)]\nmiss and sys.exit('no 7z row for %s' % miss)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re, subprocess, sys\nr = subprocess.run([sys.executable, '_tools/install_7z.py', '--plan'], capture_output=True, text=True)\nout = r.stdout\nr.returncode == 0 or sys.exit('install_7z.py --plan exited %s: %s' % (r.returncode, (r.stderr or out).strip()[-200:]))\n('https://' in out and re.search(r'\\b[0-9a-f]{64}\\b', out)) or sys.exit('the plan names no pinned https url and sha256: ' + out[:300])"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import http.server, os, subprocess, sys, threading, zipfile, io, gzip\nBODIES = {\n    '/a.cab': (b'MSCF\\0\\0\\0\\0' + bytes(range(1, 200)), 'application/vnd.ms-cab-compressed'),\n    '/a.wim': (b'MSWIM\\0\\0\\0' + bytes(range(1, 200)), 'application/octet-stream'),\n    '/a.msi': (b'\\xd0\\xcf\\x11\\xe0\\xa1\\xb1\\x1a\\xe1' + bytes(range(1, 200)), 'application/x-msi'),\n}\nbuf = io.BytesIO()\nwith zipfile.ZipFile(buf, 'w') as z:\n    z.writestr('note.txt', 'zip member text')\nBODIES['/a.zip'] = (buf.getvalue(), 'application/zip')\nBODIES['/a.txt.gz'] = (gzip.compress(b'gzip body text'), 'application/gzip')\nclass H(http.server.BaseHTTPRequestHandler):\n    def do_GET(self):\n        b = BODIES.get(self.path)\n        if b is None:\n            self.send_response(404); self.end_headers(); return\n        self.send_response(200); self.send_header('Content-Type', b[1]); self.send_header('Content-Length', str(len(b[0]))); self.end_headers(); self.wfile.write(b[0])\n    def log_message(self, *a): pass\ns = http.server.HTTPServer(('127.0.0.1', 0), H)\nthreading.Thread(target=s.serve_forever, daemon=True).start()\ndef text(path):\n    env = {'PATH': os.path.dirname(sys.executable), 'HOME': '/nonexistent'}\n    r = subprocess.run([sys.executable, '_tools/fetch.py', 'text', 'http://127.0.0.1:%d%s' % (s.server_address[1], path)], capture_output=True, text=True, env=env)\n    return r.returncode, r.stdout, r.stderr\n\nbad = []\nfor p in ('/a.cab', '/a.wim'):\n    rc, out, err = text(p)\n    ok = rc == 2 and p[-3:] in err and '7z' in err and 'install_7z' in err\n    ok or bad.append('%s: exit %s, %r' % (p, rc, err[:160]))\nbad and sys.exit('with 7z absent text must exit 2 naming the extension, 7z and the installer: ' + '; '.join(bad))"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import http.server, os, subprocess, sys, threading, zipfile, io, gzip\nBODIES = {\n    '/a.cab': (b'MSCF\\0\\0\\0\\0' + bytes(range(1, 200)), 'application/vnd.ms-cab-compressed'),\n    '/a.wim': (b'MSWIM\\0\\0\\0' + bytes(range(1, 200)), 'application/octet-stream'),\n    '/a.msi': (b'\\xd0\\xcf\\x11\\xe0\\xa1\\xb1\\x1a\\xe1' + bytes(range(1, 200)), 'application/x-msi'),\n}\nbuf = io.BytesIO()\nwith zipfile.ZipFile(buf, 'w') as z:\n    z.writestr('note.txt', 'zip member text')\nBODIES['/a.zip'] = (buf.getvalue(), 'application/zip')\nBODIES['/a.txt.gz'] = (gzip.compress(b'gzip body text'), 'application/gzip')\nclass H(http.server.BaseHTTPRequestHandler):\n    def do_GET(self):\n        b = BODIES.get(self.path)\n        if b is None:\n            self.send_response(404); self.end_headers(); return\n        self.send_response(200); self.send_header('Content-Type', b[1]); self.send_header('Content-Length', str(len(b[0]))); self.end_headers(); self.wfile.write(b[0])\n    def log_message(self, *a): pass\ns = http.server.HTTPServer(('127.0.0.1', 0), H)\nthreading.Thread(target=s.serve_forever, daemon=True).start()\ndef text(path):\n    env = {'PATH': os.path.dirname(sys.executable), 'HOME': '/nonexistent'}\n    r = subprocess.run([sys.executable, '_tools/fetch.py', 'text', 'http://127.0.0.1:%d%s' % (s.server_address[1], path)], capture_output=True, text=True, env=env)\n    return r.returncode, r.stdout, r.stderr\n\nrc, out, err = text('/a.msi')\n(rc == 2 and not out.strip()) or sys.exit('an OLE compound file with no usable row must exit 2 with no text: exit %s, stdout %r' % (rc, out[:60]))"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import http.server, os, subprocess, sys, threading, zipfile, io, gzip\nBODIES = {\n    '/a.cab': (b'MSCF\\0\\0\\0\\0' + bytes(range(1, 200)), 'application/vnd.ms-cab-compressed'),\n    '/a.wim': (b'MSWIM\\0\\0\\0' + bytes(range(1, 200)), 'application/octet-stream'),\n    '/a.msi': (b'\\xd0\\xcf\\x11\\xe0\\xa1\\xb1\\x1a\\xe1' + bytes(range(1, 200)), 'application/x-msi'),\n}\nbuf = io.BytesIO()\nwith zipfile.ZipFile(buf, 'w') as z:\n    z.writestr('note.txt', 'zip member text')\nBODIES['/a.zip'] = (buf.getvalue(), 'application/zip')\nBODIES['/a.txt.gz'] = (gzip.compress(b'gzip body text'), 'application/gzip')\nclass H(http.server.BaseHTTPRequestHandler):\n    def do_GET(self):\n        b = BODIES.get(self.path)\n        if b is None:\n            self.send_response(404); self.end_headers(); return\n        self.send_response(200); self.send_header('Content-Type', b[1]); self.send_header('Content-Length', str(len(b[0]))); self.end_headers(); self.wfile.write(b[0])\n    def log_message(self, *a): pass\ns = http.server.HTTPServer(('127.0.0.1', 0), H)\nthreading.Thread(target=s.serve_forever, daemon=True).start()\ndef text(path):\n    env = {'PATH': os.path.dirname(sys.executable), 'HOME': '/nonexistent'}\n    r = subprocess.run([sys.executable, '_tools/fetch.py', 'text', 'http://127.0.0.1:%d%s' % (s.server_address[1], path)], capture_output=True, text=True, env=env)\n    return r.returncode, r.stdout, r.stderr\n\nbad = []\nfor p, want in (('/a.zip', 'zip member text'), ('/a.txt.gz', 'gzip body text')):\n    rc, out, err = text(p)\n    (rc == 0 and want in out) or bad.append('%s: exit %s %r' % (p, rc, (out or err)[:80]))\nbad and sys.exit('existing routes changed: ' + '; '.join(bad))"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nt = open('.claude/skills/kb-setup/SKILL.md', encoding='utf-8').read()\n('install_7z' in t) or sys.exit('the kb-setup skill does not mention install_7z.py (it must ask before installing 7z)')"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
