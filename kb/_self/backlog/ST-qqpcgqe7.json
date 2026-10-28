@@ -124,7 +124,12 @@
         "A hook started coord.py claim of session/ID (read from the processes the replay logged)": "ST-qqpcgqe7",
         "Read the coord store after the replay": "ST-qqpcgqe7"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "A hook started coord.py claim of session/ID (read from the processes the replay logged)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     },
     {
       "id": "runner-line",
