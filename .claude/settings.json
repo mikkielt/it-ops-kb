@@ -175,12 +175,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" --notice",
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" --person --notice",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" .claude/hooks/session_start.py"
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" --person .claude/hooks/session_start.py"
           },
           {
             "type": "command",
@@ -194,30 +194,30 @@
           },
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" _tools/querylog.py digest --hook",
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" --person _tools/querylog.py digest --hook",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" _tools/backlog.py red-pipeline --hook",
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" --person _tools/backlog.py red-pipeline --hook",
             "async": true,
             "timeout": 60
           },
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" _tools/backlog.py intake --file --hook",
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" --person _tools/backlog.py intake --file --hook",
             "async": true,
             "timeout": 60
           },
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" _tools/kbgit.py publish --hook",
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" --person _tools/kbgit.py publish --hook",
             "async": true,
             "timeout": 60
           },
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" _tools/kbroot.py fetch --hook",
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" --person _tools/kbroot.py fetch --hook",
             "async": true,
             "timeout": 60
           }
@@ -228,7 +228,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" _tools/backlog.py horizon --hook",
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" --person _tools/backlog.py horizon --hook",
             "timeout": 10
           }
         ]
@@ -238,7 +238,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" .claude/hooks/kb_change_router.py --reset",
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" --person .claude/hooks/kb_change_router.py --reset",
             "timeout": 10
           }
         ]
@@ -264,11 +264,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" _tools/kb_hook.py"
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" --person _tools/kb_hook.py"
           },
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" .claude/hooks/kb_change_router.py"
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" --person .claude/hooks/kb_change_router.py"
           },
           {
             "type": "command",
