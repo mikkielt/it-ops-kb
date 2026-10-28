@@ -500,9 +500,7 @@ def cmd_answer(bl, a):
         raise Rejected(f"--by delegate:{delegate} only confirms a provisional answer (--confirm), it answers nothing")
     held = bl_authority.gate_class(scope, g)
     disp, why_disp = bl_authority.disposition(scope, g)
-    # a held gate's provisional answer is the agent's (the operator confirms it at the review), whatever its class
-    if held in bl_authority.TERMINAL_CLASSES and bl_authority.in_agent_session() \
-            and not (a.provisional and disp == "hold"):
+    if held in bl_authority.TERMINAL_CLASSES and bl_authority.in_agent_session():
         raise Rejected(f"gate {a.gate} of {bl.label(iid)} is class {held}: no agent session answers it, so --by "
                        f"{a.by or 'operator'} from this one is not the operator's; the operator answers it in a "
                        f"terminal of their own: python3 _tools/backlog.py answer {iid} {a.gate} --answer TEXT --by "
@@ -510,7 +508,7 @@ def cmd_answer(bl, a):
     if a.by != "operator" and (a.by or a.provisional):
         cls = bl_authority.derived_class(scope, g)
         refuse = Rejected if a.provisional or a.confirm else Refused  # --answer by an agent: exit 1, as a blocking gate
-        if cls in bl_authority.OPERATOR_CLASSES and (disp == "block" or delegate is not None):
+        if cls in bl_authority.BLOCK_CLASSES and (disp == "block" or delegate is not None):
             raise refuse(f"gate {a.gate} of {bl.label(iid)} is class {cls}: only the operator answers it "
                          "(--by operator)")
         strict = bl_authority.strict_text(bl_authority.strict_signals(g))
@@ -1048,7 +1046,7 @@ def gate_remove(bl, a):
         raise Rejected(f"gate remove refuses gate {a.gate} of {bl.label(iid)}: it is answered ({g['answer']!r} by "
                        f"{g.get('by')}), and a gate's answer is not taken back")
     cls = bl_authority.gate_class(it, g)
-    if cls in bl_authority.OPERATOR_CLASSES and bl_authority.disposition(it, g)[0] == "block" and a.by != "operator":
+    if cls in bl_authority.BLOCK_CLASSES and bl_authority.disposition(it, g)[0] == "block" and a.by != "operator":
         raise Rejected(f"gate remove refuses gate {a.gate} of {bl.label(iid)}: it is class {cls}, which only the "
                        "operator answers, so only the operator removes it (--by operator)")
 

@@ -7,8 +7,9 @@ does; `class_reasons` also names the touches and words that set it, which `gate 
 the stricter of the stored and the derived, so an agent that writes a lower class into an item file changes nothing,
 and `lowered` names it for `check`. A gate of a class in OPERATOR_CLASSES (ceiling, secrets, push and agents-rule) takes
 only the operator's answer when it blocks and is confirmed by the operator when it is held: `disposition` says which,
-`block` for a gate whose own words, options or item title give the class or another reason, `hold` for one only its
-item's touches class. The operator answers every class. The class in TERMINAL_CLASSES (ceiling,
+`block` for a gate whose own words (BLOCK_CLASSES: those four and the query log and delete classes), options or item
+title give the class or another reason, or whose touches give `ceiling` or `secrets`, `hold` for one only its item's
+touches class `push` or `agents-rule`. The operator answers every class. The class in TERMINAL_CLASSES (ceiling,
 the test suite's ceiling) is stricter still: `--by operator` from a Claude Code session (`in_agent_session`: the
 environment names one, attended or not, headless or delegated) is no operator's answer, so it is recorded only from a
 terminal of the operator's own, which an IDE's integrated terminal is not (IDE_ROUTE).
@@ -24,6 +25,9 @@ from bl_base import START_GATE
 
 CLASSES = ("ceiling", "secrets", "push", "start", "querylog", "agents-rule", "delete", "design")
 OPERATOR_CLASSES = ("ceiling", "secrets", "push", "agents-rule")  # the classes only the operator answers
+# the classes of a gate's own text that make it blocking: the operator classes, the query log and deleting
+BLOCK_CLASSES = OPERATOR_CLASSES + ("querylog", "delete")
+HOLD_CLASSES = ("push", "agents-rule")  # of those, the classes a touch alone holds; a touch of ceiling or secrets blocks
 TERMINAL_CLASSES = ("ceiling",)  # of those, the classes no agent session answers, whatever `--by` says
 AGENT_SESSION_ENV = "CLAUDECODE"  # set in the environment of every Claude Code session and of each command it runs
 # CLAUDE_CODE_CHILD_SESSION is set only in subprocesses Claude Code starts, so `CLAUDECODE= ...` alone does not clear it
@@ -490,7 +494,7 @@ def names_rule_text(word):
 
 def block_reasons(item, gate):
     """Why the gate blocks, [] when none of the reasons holds: it is the sprint's start gate or is `blocking`, its own
-    words (the item's touches left out) give a class of OPERATOR_CLASSES, they name a strict signal, an option names a
+    words (the item's touches left out) give a class of BLOCK_CLASSES, they name a strict signal, an option names a
     path outside the item's touches or a rule-text path, or the item's title names TITLE_CLASSES."""
     why = []
     if gate.get("id") == START_GATE:
@@ -498,7 +502,7 @@ def block_reasons(item, gate):
     if gate.get("kind") == "blocking":
         why.append("kind blocking")
     cls, reasons = class_reasons(item, gate, touches=False)
-    if cls in OPERATOR_CLASSES:
+    if cls in BLOCK_CLASSES:
         why.append(f"class {cls} ({', '.join(reasons)})")
     signals = strict_signals(gate)
     if signals:
@@ -518,15 +522,18 @@ def block_reasons(item, gate):
 
 def disposition(item, gate):
     """(`block`, `hold` or `agent`, reasons): who settles the gate. `block`: the operator answers it and no agent does
-    (block_reasons). `hold`: the gate is not blocking and only the item's touches give an operator class (a touch of
-    `agents-rule`, `push`, `secrets` or `ceiling`), so the agent goes on with its recommendation (`answer --provisional`)
+    (block_reasons), and so does a gate the item's touches class `ceiling` or `secrets`, which always reaches the
+    operator. `hold`: the gate is not blocking and only the item's touches give the class `agents-rule` or `push` (HOLD_CLASSES), so the agent goes on with its recommendation (`answer --provisional`)
     and the operator confirms it at the review; the reasons name those touches. `agent`: every other gate. The class
     stays what `gate_class` derives."""
     why = block_reasons(item, gate)
     if why:
         return "block", why
     found = touch_found(item)
-    ops = [c for c in found if c in OPERATOR_CLASSES]
+    for cls in ("ceiling", "secrets"):  # a touch of the suite ceiling or of secrets blocks every gate of the item
+        if cls in found:
+            return "block", [f"class {cls} ({', '.join(found[cls])})"]
+    ops = [c for c in found if c in HOLD_CLASSES]
     if ops:
         return "hold", list(dict.fromkeys(found[min(ops, key=rank)]))
     return "agent", []

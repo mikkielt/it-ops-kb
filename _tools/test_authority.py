@@ -362,6 +362,23 @@ def a_gate_only_the_touches_class_is_held_and_one_with_an_option_path_or_a_title
                         (["one table", "two tables"], "Rotate the credentials")):
         got = ba.disposition({**item, "title": title}, {**plain, "options": opts})[0]
         assert got == ("hold" if opts[0] == "edit src/b.py" else "block"), (opts, title, got)
+    # a gate whose own text classes querylog or delete blocks, a design question does not; a touch of the suite ceiling
+    # or of secrets blocks every gate of the item, a touch of push or agents-rule only holds it
+    for question, cls in (("Which redaction rule does the query log keep?", "querylog"), ("May the worker delete the kb page?", "delete")):
+        assert ba.class_reasons({"touches": []}, {**plain, "question": question})[0] == cls, question
+        assert ba.disposition({"touches": ["src/a.py"]}, {**plain, "question": question})[0] == "block", question
+    for touch, want in (("_tools/tests_ceiling.json", "block"), ("src/credentials.json", "block"), ("_tools/kbgit.py", "hold")):
+        assert ba.disposition({"touches": [touch]}, plain)[0] == want, touch
+    for n, question in enumerate(("Which redaction rule does the query log keep?", "May the worker delete the kb page?")):
+        qid = new_item(tmp_path, touch="src/a.py")
+        code, out = add_gate(tmp_path, qid, question, "--kind", "provisional")
+        assert code == 0 and "made blocking" in out and "(blocking)" in out, out
+        assert bl(tmp_path, "answer", qid, "g", "--provisional")[0] == 2
+    cid = new_item(tmp_path, touch="_tools/tests_ceiling.json")
+    code, out = add_gate(tmp_path, cid, "Which columns?", "--kind", "provisional")
+    assert code == 0 and "made blocking" in out and "held" not in out and gate(tmp_path, cid)["kind"] == "blocking", out
+    code, out = bl(tmp_path, "answer", cid, "g", "--provisional")
+    assert code == 2 and "ceiling" in out, out
     iid = new_item(tmp_path, touch="AGENTS.md")
     assert bl(tmp_path, "set", iid, "--add-touch", "src/b.py")[0] == 0
     code, out = add_gate(tmp_path, iid, "Which columns?", "--kind", "provisional")  # held: provisional, the agent answers it

@@ -1044,7 +1044,7 @@ def refused_answer_warnings(bl):
             if not isinstance(g, dict) or g.get("by") != "agent" or "answer" not in g:
                 continue
             cls = bl_authority.derived_class(it, g)
-            if cls in bl_authority.OPERATOR_CLASSES and bl_authority.disposition(it, g)[0] == "block":
+            if cls in bl_authority.BLOCK_CLASSES and bl_authority.disposition(it, g)[0] == "block":
                 out.append(f"{bl.label(iid)}: gate {g.get('id')} class {cls}: answered by {g['by']} in a refused "
                            "class: the operator re-confirms")
     return out
