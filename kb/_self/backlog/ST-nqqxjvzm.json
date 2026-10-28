@@ -2,7 +2,7 @@
   "id": "ST-nqqxjvzm",
   "kind": "story",
   "title": "A root sets which tag kinds answer and which are only leads in _root.md, and the pack enforces and prints that policy",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-7vyrared",
   "sprint": "SP-iir3d2tu",
   "priority": "P3",
@@ -210,6 +210,75 @@
   ],
   "notes": "Premise (plan time): the 'COMMUNITY and UNK are leads' rule is prose in AGENTS.md, kb_mcp.py:153 and kb_ask.py:100; kf_index.py, kf_route.py and kb_hook.py handle no COMMUNITY or UNK kind and a pack prints no evidence line. Reproduces. The public root holds 121 COMMUNITY and 239 UNK facts; no root sets a policy today, so the opt-in rule moves no live verdict; the first step runs the draft rule over rag.py eval --all with public forced strict and records which rows would move. _meta() reads flat lines, so the evidence value needs its own parse and validation in load_root. AGENTS.md (4 KB cap) and the MCP text stay out of the touches.\nOperator 2026-10-27: g3 DECISION may be listed as an ordinary kind; g1 print only when a root sets nothing; g2 any answer-kind part makes a mixed fact an answer. Order: after ST-izw3nds4 (AGENTS.md) and ST-q5o7z2mf (rag.py, AGENTS.md).\nChecks 2 (rag.py eval) and 3 (perfcheck ids) each passes before the work and pin behaviour that must stay unchanged; every other check fails before it with a one-line reason.\nContract: Root.evidence is None or {'answer': [...], 'lead': [...]}; fixtures _tools/fixtures/evidence/{strict (answer DOC CODE DER, lead COMMUNITY UNK; its only facts are COMMUNITY or UNK about widget caching), decision (DECISION in lead), both (COMMUNITY twice), missing (UNK in neither), unknown (BOGUS)}; default line 'evidence: answer DOC, CODE, DER; lead COMMUNITY, UNK'.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-557596e3",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "56683a74d5a4a77f72a6d4bbfa1a1c76c48b9bb5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, subprocess, sys\nsys.path.insert(0, '_tools')\nimport kbcommon\ndef pack(roots, root, q):\n    env = dict(os.environ, KB_ROOTS=os.pathsep.join(roots))\n    return subprocess.run([sys.executable, '_tools/rag.py', 'pack', '--root', root, '--format', 'concise', q], env=env, capture_output=True, text=True).stdout\ndef load(name):\n    try:\n        return kbcommon.load_root('_tools/fixtures/evidence/' + name)\n    except kbcommon.RootError as e:\n        sys.exit('fixture root %s: %s' % (name, str(e)[:200]))\n\no = pack(['_tools/fixtures/evidence/strict'], 'strict', 'What does the community report about widget caching?')\n('evidence:' in o and 'coverage: good' not in o) or sys.exit('a root whose facts are all leads must print an evidence: line and never coverage good: ' + (o.splitlines()[0] if o else '(no output)'))"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, subprocess, sys\nsys.path.insert(0, '_tools')\nimport kbcommon\ndef pack(roots, root, q):\n    env = dict(os.environ, KB_ROOTS=os.pathsep.join(roots))\n    return subprocess.run([sys.executable, '_tools/rag.py', 'pack', '--root', root, '--format', 'concise', q], env=env, capture_output=True, text=True).stdout\ndef load(name):\n    try:\n        return kbcommon.load_root('_tools/fixtures/evidence/' + name)\n    except kbcommon.RootError as e:\n        sys.exit('fixture root %s: %s' % (name, str(e)[:200]))\n\no = pack([], 'public', 'How does Intune turn off a setting?')\n'evidence: answer DOC, CODE, DER; lead COMMUNITY, UNK' in o or sys.exit('the public pack prints no default evidence line: ' + o[:200])"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval"
+        ],
+        "exit": 0,
+        "sha256": "fcf3c66c1dce35c3"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/perfcheck.py",
+          "ids",
+          "--base",
+          "origin/main"
+        ],
+        "exit": 0,
+        "sha256": "32d3595b9fb32181"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, subprocess, sys\nsys.path.insert(0, '_tools')\nimport kbcommon\ndef pack(roots, root, q):\n    env = dict(os.environ, KB_ROOTS=os.pathsep.join(roots))\n    return subprocess.run([sys.executable, '_tools/rag.py', 'pack', '--root', root, '--format', 'concise', q], env=env, capture_output=True, text=True).stdout\ndef load(name):\n    try:\n        return kbcommon.load_root('_tools/fixtures/evidence/' + name)\n    except kbcommon.RootError as e:\n        sys.exit('fixture root %s: %s' % (name, str(e)[:200]))\n\nev = getattr(load('strict'), 'evidence', None)\n(isinstance(ev, dict) and set(ev.get('lead', ())) >= {'COMMUNITY', 'UNK'} and set(ev.get('answer', ())) >= {'DOC', 'CODE', 'DER'}) or sys.exit('Root.evidence is %r, want {answer: [DOC, CODE, DER], lead: [COMMUNITY, UNK]}' % (ev,))"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, subprocess, sys\nsys.path.insert(0, '_tools')\nimport kbcommon\ndef pack(roots, root, q):\n    env = dict(os.environ, KB_ROOTS=os.pathsep.join(roots))\n    return subprocess.run([sys.executable, '_tools/rag.py', 'pack', '--root', root, '--format', 'concise', q], env=env, capture_output=True, text=True).stdout\ndef load(name):\n    try:\n        return kbcommon.load_root('_tools/fixtures/evidence/' + name)\n    except kbcommon.RootError as e:\n        sys.exit('fixture root %s: %s' % (name, str(e)[:200]))\n\nev = getattr(load('decision'), 'evidence', None)\n(isinstance(ev, dict) and 'DECISION' in set(ev.get('lead', ())) | set(ev.get('answer', ()))) or sys.exit('DECISION listed in a policy is not kept: %r' % (ev,))"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, subprocess, sys\nsys.path.insert(0, '_tools')\nimport kbcommon\ndef pack(roots, root, q):\n    env = dict(os.environ, KB_ROOTS=os.pathsep.join(roots))\n    return subprocess.run([sys.executable, '_tools/rag.py', 'pack', '--root', root, '--format', 'concise', q], env=env, capture_output=True, text=True).stdout\ndef load(name):\n    try:\n        return kbcommon.load_root('_tools/fixtures/evidence/' + name)\n    except kbcommon.RootError as e:\n        sys.exit('fixture root %s: %s' % (name, str(e)[:200]))\n\nbad = []\nfor name, kind in (('both', 'COMMUNITY'), ('missing', 'UNK'), ('unknown', 'BOGUS')):\n    try:\n        kbcommon.load_root('_tools/fixtures/evidence/' + name)\n    except kbcommon.RootError as e:\n        kind in str(e) or bad.append('%s: message does not name %s: %s' % (name, kind, str(e)[:120]))\n    else:\n        bad.append('%s: accepted' % name)\nbad and sys.exit('; '.join(bad))"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
