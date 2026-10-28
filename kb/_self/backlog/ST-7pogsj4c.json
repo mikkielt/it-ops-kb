@@ -2,7 +2,7 @@
   "id": "ST-7pogsj4c",
   "kind": "story",
   "title": "One command confirms a sprint's held answers at its review, horizon lists them, and a confirmed held answer needs no terminal re-confirm",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-lmpjclxz",
   "priority": "P1",
   "rank": 0,
@@ -172,6 +172,47 @@
   ],
   "notes": "Design, settled at planning 2026-10-28 (gates hold-timing and reconfirm, answered by the operator): held answers reach the operator at the sprint review, not before landing; the review's done names each as held answer to confirm: ID gate G: ANSWER; --confirm-held takes --except ID:GATE (repeatable) for a gate left for its own answer (a changed answer plus a redo task) and --commit for one commit; a refused --confirm-held exits 2 and writes nothing; an answer to a gate that blocks by its own text or a strict signal keeps the agent_session flag as now; horizon prints the count and the list (item, gate, answer), horizon --hook the count; skills/sprint/SKILL.md review step 3 confirms held answers through this command with the reviewer's report beside each; kb/_self/backlog.md and kb/_self/tools.md describe it. Check 2 passes before the work: it pins the critical test the work extends. Premise run 2026-10-28 on origin/main 80725b09a9: checks 0, 1 and 3 fail (the touch-classed gate is made blocking, an agent's provisional answer is refused, --confirm-held is unknown).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-a3c0c63f",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "1584836bf3c015c636a01f51c6c87df15cf68169",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess as s,sys,tempfile as t; d=t.mkdtemp(); r=lambda *a: s.run([sys.executable,\"_tools/backlog.py\",\"--root\",d,*a],capture_output=True,text=True); n=r(\"new\",\"sprint\",\"--title\",\"S\",\"--goal\",\"g\").stdout.split(); sp,rv=n[2],n[6]; i=r(\"new\",\"story\",\"--sprint\",sp,\"--title\",\"T\",\"--goal\",\"g\",\"--touch\",\"AGENTS.md\").stdout.split()[2]; r(\"gate\",\"add\",i,\"--kind\",\"provisional\",\"--question\",\"Which columns does the table hold?\",\"--option\",\"one table\",\"--option\",\"two tables\",\"--recommendation\",\"one table\"); a=r(\"answer\",i,\"g1\",\"--provisional\"); p=r(\"done\",rv); o=p.stdout+p.stderr; sys.exit(0 if a.returncode==0 and p.returncode!=0 and \"held answer to confirm\" in o and \"Traceback\" not in o else \"the review does not name the unconfirmed held answer: \"+o[-300:])"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess as s,sys,tempfile as t,os; d=t.mkdtemp(); r=lambda *a, env=None: s.run([sys.executable,\"_tools/backlog.py\",\"--root\",d,*a],capture_output=True,text=True,env=env); sp=r(\"new\",\"sprint\",\"--title\",\"S\",\"--goal\",\"g\").stdout.split()[2]; i=r(\"new\",\"story\",\"--sprint\",sp,\"--title\",\"T\",\"--goal\",\"g\",\"--touch\",\"AGENTS.md\").stdout.split()[2]; r(\"gate\",\"add\",i,\"--kind\",\"provisional\",\"--question\",\"Which columns does the table hold?\",\"--option\",\"one table\",\"--option\",\"two tables\",\"--recommendation\",\"one table\"); r(\"answer\",i,\"g1\",\"--provisional\"); h=r(\"horizon\",\"--sprint\",sp); n=r(\"answer\",sp,\"--confirm-held\"); y=r(\"answer\",sp,\"--confirm-held\",\"--by\",\"operator\",env=dict(os.environ,CLAUDECODE=\"1\")); v=r(\"show\",i,\"--field\",\"gates\").stdout; sys.exit(0 if \"held\" in h.stdout and n.returncode!=0 and y.returncode==0 and \"operator\" in v and \"\\\"agent_session\\\"\" not in v and \"\\\"agent\\\"\" not in v else \"confirm-held, its flag or the horizon list is wrong: \"+h.stdout[-200:]+n.stderr[-150:]+y.stdout[-150:]+y.stderr[-150:]+v[-200:])"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "an_agent_cannot_confirm_an_operator_gate"
+        ],
+        "exit": 0,
+        "sha256": "51052b5c2b98b98b"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess as s,sys,tempfile as t,os; d=t.mkdtemp(); g=lambda *a: s.run([\"git\",\"-C\",d,*a],capture_output=True,text=True); g(\"init\",\"-q\"); g(\"config\",\"user.email\",\"x@example.com\"); g(\"config\",\"user.name\",\"x\"); os.makedirs(d+\"/skills\"); open(d+\"/skills/x.md\",\"w\").write(\"x\\n\"); g(\"add\",\".\"); g(\"commit\",\"-qm\",\"init\"); r=lambda *a: s.run([sys.executable,\"_tools/backlog.py\",\"--root\",d,*a],capture_output=True,text=True); i=r(\"new\",\"story\",\"--title\",\"S\",\"--goal\",\"g\",\"--touch\",\"skills/x.md\").stdout.split()[2]; r(\"gate\",\"add\",i,\"--kind\",\"provisional\",\"--question\",\"Which columns does the table hold?\",\"--option\",\"one table\",\"--option\",\"two tables\",\"--recommendation\",\"one table\"); a=r(\"answer\",i,\"g1\",\"--provisional\"); p=r(\"done\",i); o=p.stdout+p.stderr; sys.exit(0 if a.returncode==0 and \"/g1\" not in o and \"held answer\" not in o and \"Traceback\" not in o else \"a held answer stops its own item: \"+(a.stdout+a.stderr)[-150:]+o[-300:])"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
