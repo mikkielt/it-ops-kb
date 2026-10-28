@@ -40,6 +40,42 @@
   "depends_on": [
     "ST-5fakffyb"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does live mode name the process classes of a session's tree, and tell interactive from headless?",
+      "options": [
+        "root classes claude headless and claude interactive (headless roles: worker, sprint runner, reviewer, benchmark agent, bare twin, observer), kbtail for kbtail.py, kbmon also for a bare kbmon.py script name",
+        "one class claude for every root, kbtail and a bare kbmon.py left to process_class"
+      ],
+      "recommendation": "root classes claude headless and claude interactive (headless roles: worker, sprint runner, reviewer, benchmark agent, bare twin, observer), kbtail for kbtail.py, kbmon also for a bare kbmon.py script name",
+      "do": {
+        "root classes claude headless and claude interactive (headless roles: worker, sprint runner, reviewer, benchmark agent, bare twin, observer), kbtail for kbtail.py, kbmon also for a bare kbmon.py script name": "ST-57o3hmbo",
+        "one class claude for every root, kbtail and a bare kbmon.py left to process_class": "ST-57o3hmbo"
+      },
+      "class": "design",
+      "answer": "root classes claude headless and claude interactive (headless roles: worker, sprint runner, reviewer, benchmark agent, bare twin, observer), kbtail for kbtail.py, kbmon also for a bare kbmon.py script name",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How does live mode sample: window, tick and the CPU figure?",
+      "options": [
+        "window default WINDOW_S, one ps listing a second, cpu_s from the ps time field (from the first listing for a process already running, all of it for a later one), roots fixed at the start",
+        "a shorter default window, roots re-read every listing"
+      ],
+      "recommendation": "window default WINDOW_S, one ps listing a second, cpu_s from the ps time field (from the first listing for a process already running, all of it for a later one), roots fixed at the start",
+      "do": {
+        "window default WINDOW_S, one ps listing a second, cpu_s from the ps time field (from the first listing for a process already running, all of it for a later one), roots fixed at the start": "ST-57o3hmbo",
+        "a shorter default window, roots re-read every listing": "ST-57o3hmbo"
+      },
+      "class": "design",
+      "answer": "window default WINDOW_S, one ps listing a second, cpu_s from the ps time field (from the first listing for a process already running, all of it for a later one), roots fixed at the start",
+      "by": "agent"
+    }
+  ],
   "notes": "Reads the live sessions through the in-process reader ST-bngriclp adds to _tools/mon_sessions.py (pid, session id, checkout, role, item), agreed with that epic's session through coord; it adds no second reader. A kbtail follower shows as its own process class. mon_sessions.live_sessions(root) (landed with ST-bngriclp) gives a worker's item as the raw suffix of its work/ branch when that is no backlog item id: keep only item ids or pass the text through redact.redact, as kbtail does since BG-lagjhkzn. Nothing it writes holds a session's prompt or a path outside the clone; the review reads the rows and snapshot it writes for that.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-557596e3",

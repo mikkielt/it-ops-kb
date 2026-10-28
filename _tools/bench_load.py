@@ -13,7 +13,7 @@ This module imports no facade; `mon_host` is imported where a process is given i
 import json, os, re, shutil, statistics, subprocess, sys, threading, time, uuid
 from pathlib import Path
 
-from bench_core import Skip, git, need_sh, no_plugin_env, shim_dir
+from bench_core import HOME, Skip, git, need_sh, no_plugin_env, shim_dir
 
 ARMS = ("A", "B", "C", "D", "worker")  # A: every hook; B: A and the kbmon pane's commands; C: coord_hook.py and querylog.py left out; D: none; worker: A under a dispatched worker's environment
 DEFAULT_ARMS = ("A", "C", "D")  # B and worker run only when named: B adds WINDOW_S seconds to each phase
@@ -39,6 +39,10 @@ INTAKE_REAL_CASE = "idle hook intake real"  # the case of `run session-load --in
 SAMPLE_S = 0.02  # the sampler's pause between two `ps` listings (N sessions at once: N times it, so `ps` runs as often in all)
 GATE_WAIT_S = 600  # seconds the replays of N sessions wait for each other before they start together
 LOAD_SAMPLE_S = 0.5  # the pause between two reads of the host's 1-minute load while sessions run at once
+LIVE_ARM = "live"  # the arm of the rows of `run session-load --live`
+LIVE_TICK_S = 1.0  # the pause between two `ps` listings of a live run
+LIVE_HEADLESS_ROLES = ("worker", "sprint runner", "reviewer", "benchmark agent", "bare twin", "observer")  # the roles of mon_sessions.ROLES that run headless: the others are interactive
+LIVE_ITEM_ID = re.compile(r"[A-Z]{2}-[a-z2-7]{8}")  # a backlog item id, as kbtail keeps one
 SETTLE_S = 30  # seconds a replay waits for the processes it left running in the clone
 SITE = '''# logs each process a Python program starts (the audit events of subprocess.Popen, os.posix_spawn and os.system) to the
 # file BENCH_STARTS_LOG, then runs the sitecustomize this file shadows
@@ -658,6 +662,142 @@ def intake_real_rows(b):
         b.row("session-load", INTAKE_REAL_CASE, "A", metric, statistics.median(vals), len(vals), note=n)
 
 
+def cpu_seconds(text):
+    """The seconds of a `ps` time field (`[DD-][[HH:]MM:]SS[.cc]`)."""
+    days, _, rest = text.rpartition("-")
+    secs = 0.0
+    for part in rest.split(":"):
+        secs = secs * 60 + float(part)
+    return secs + (int(days) * 86400 if days else 0)
+
+
+def cpu_listing():
+    """[(pid, ppid, rss_kb, cpu_s, args)] of one `ps -A` listing: `listing` with the CPU time each process has used."""
+    p = subprocess.run(["ps", "-A", "-o", "pid=,ppid=,rss=,time=,args="], capture_output=True, text=True, encoding="utf-8",
+                       errors="replace")
+    out = []
+    for ln in p.stdout.splitlines():
+        w = ln.split(None, 4)
+        if len(w) >= 4 and all(x.isdigit() for x in w[:3]) and re.fullmatch(r"(?:\d+-)?[\d:]+(?:\.\d+)?", w[3]):
+            out.append((int(w[0]), int(w[1]), int(w[2]), cpu_seconds(w[3]), w[4] if len(w) > 4 else ""))
+    return out
+
+
+def live_class(args, clone):
+    """The class of a live process: `process_class`, with `kbtail` (the follower of `kbtail.py`) and a `kbmon` named by its
+    bare script name (a Python program started in `_tools` as `kbmon.py ...`, which `mon_host.kind_of` cannot place)."""
+    words = [os.path.basename(w) for w in args.split()]
+    python = bool(words) and re.fullmatch(r"python[\d.]*", words[0]) is not None
+    if python and "kbtail.py" in words:
+        return "kbtail"
+    cls = process_class(args, clone)
+    return "kbmon" if python and cls == "other" and "kbmon.py" in words else cls
+
+
+def live_roots(b, rows):
+    """({root pid: class}, [{"class", "role", "item"}]) of the processes whose trees `run session-load --live` follows: the
+    live Claude Code sessions of this clone (`mon_sessions.live_sessions`: the class `claude headless` for a worker, sprint
+    runner, reviewer, benchmark agent, bare twin or observer, `claude interactive` for the other roles), or the processes
+    `--live-pids` names that are running (a class by their own command line, role None). An item is kept only as a backlog
+    item id, else None: the raw suffix of a branch can be any text."""
+    pids = getattr(b, "live_pids", None)
+    if pids:
+        found = [p for p in pids if p in rows]
+        for p in pids:
+            if p not in rows:
+                print(f"session-load: --live-pids: no running process {p}", flush=True)
+        return ({p: live_class(rows[p][4], HOME) for p in found},
+                [{"class": live_class(rows[p][4], HOME), "role": None, "item": None} for p in found])
+    import mon_sessions
+    sessions = [s for s in mon_sessions.live_sessions(HOME) if s["pid"] in rows]
+    cls = lambda s: "claude headless" if s["role"] in LIVE_HEADLESS_ROLES else "claude interactive"  # noqa: E731
+    return ({s["pid"]: cls(s) for s in sessions},
+            [{"class": cls(s), "role": s["role"], "item": s["item"] if LIVE_ITEM_ID.fullmatch(s["item"] or "") else None}
+             for s in sessions])
+
+
+class Live:
+    """The ticks of `run session-load --live`: from each `cpu_listing`, the descendants of the roots (this process and its
+    children left out) with, per tick, the memory of each class, and per process its class (from its command line when first
+    seen, which the listing then drops), the CPU time it had at its first and last tick and its peak memory. A process that
+    lives less than a tick is not seen."""
+
+    def __init__(self, clone, roots):
+        self.clone, self.roots = str(clone), dict(roots)
+        self.ticks, self.times, self.procs = [], [], {}  # per tick {class: rss kb}, its time; pid -> cell
+
+    def tick(self, listed, now):
+        rows = {pid: (ppid, rss, cpu, args) for pid, ppid, rss, cpu, args in listed}
+        kids = {}
+        for pid, (ppid, _, _, _) in rows.items():
+            kids.setdefault(ppid, []).append(pid)
+        here = {p: self.roots[p] for p in self.roots if p in rows and p != os.getpid()}
+        todo = list(here)
+        while todo:
+            for c in kids.get(todo.pop(), []):
+                if c != os.getpid() and c not in here:
+                    here[c] = self.procs[c]["class"] if c in self.procs else live_class(rows[c][3], self.clone)
+                    todo.append(c)
+        per, first = {}, not self.ticks
+        for pid, cls in here.items():
+            _, rss, cpu, _ = rows[pid]
+            cell = self.procs.setdefault(pid, {"class": cls, "tick": len(self.ticks), "cpu0": cpu if first or pid in self.roots else 0.0,
+                                               "cpu1": cpu, "peak": 0, "root": pid in self.roots})
+            cell["cpu1"], cell["peak"] = cpu, max(cell["peak"], rss)
+            per[cls] = per.get(cls, 0) + rss
+        self.ticks.append(per)
+        self.times.append(now)
+
+
+def live_snapshot(live, roots, window):
+    """The path of the JSON file `run session-load --live` keeps its per-tick figures in, under `_cache/` of this clone: per
+    tick the seconds since the first and each class's memory in KiB, per process its class, tick of first sight, CPU
+    seconds and peak memory, and the roots' classes, roles and item ids. No command line, session id or path."""
+    path = HOME / "_cache" / "bench" / f"session-load-live-{time.strftime('%Y%m%dT%H%M%S')}.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    data = {"window_s": window, "tick_s": LIVE_TICK_S, "roots": roots,
+            "ticks": [{"t": round(t - live.times[0], 3), "rss_kb": per} for t, per in zip(live.times, live.ticks)],
+            "processes": [{"class": c["class"], "tick": c["tick"], "root": c["root"], "cpu_s": round(c["cpu1"] - c["cpu0"], 3),
+                           "rss_peak_kb": c["peak"]} for _, c in sorted(live.procs.items())]}
+    path.write_text(json.dumps(data, indent=1) + "\n", encoding="utf-8", newline="\n")
+    return path
+
+
+def live_rows(b):
+    """The rows of `run session-load --live`: for `--window` seconds (default WINDOW_S) every LIVE_TICK_S the process trees of
+    the live sessions (`live_roots`) are listed with `ps`, and per process class and for `all`, arm `live`, case `live
+    <class>`: `cpu_s` (the CPU time the class's processes used over the window: from the first tick for a process that was
+    running at it, all of it for one that began later), `rss_peak_mb` (the highest tick's sum), `rss_mean_mb` (the mean of
+    the ticks' sums, a tick with no process of the class counting 0) and `spawns_per_min` (the processes first seen after
+    the first tick, per minute of the window). The snapshot of the ticks is written under `_cache/` (live_snapshot) and its
+    path printed."""
+    if not shutil.which("ps"):
+        raise Skip("no ps: run it on macOS or Linux")
+    window = getattr(b, "window", None) or WINDOW_S
+    roots, described = live_roots(b, {r[0]: r for r in cpu_listing()})
+    if not roots:
+        raise Skip("no running Claude Code session in this clone and no running --live-pids process to follow")
+    live, load = Live(HOME, roots), os.getloadavg()[0] if hasattr(os, "getloadavg") else 0.0
+    end = time.monotonic() + window
+    while True:
+        live.tick(cpu_listing(), time.monotonic())
+        if time.monotonic() >= end:
+            break
+        time.sleep(min(LIVE_TICK_S, max(0.0, end - time.monotonic())))
+    elapsed = live.times[-1] - live.times[0]
+    note = (f"{os.cpu_count()} cores, load {load:.1f} at the start; {len(live.ticks)} ps listings over {elapsed:.0f} s of the process trees "
+            f"of {len(roots)} roots ({', '.join(sorted({r['class'] for r in described}))}), this process left out; a process that "
+            "lives less than a listing is not seen, and one that began before the window counts only its CPU since the first listing")
+    for cls in [*sorted({c["class"] for c in live.procs.values()}), "all"]:
+        cells = [c for c in live.procs.values() if cls in ("all", c["class"])]
+        sums = [(sum(per.values()) if cls == "all" else per.get(cls, 0)) / 1024 for per in live.ticks]
+        for metric, value in (("cpu_s", sum(c["cpu1"] - c["cpu0"] for c in cells)), ("rss_peak_mb", max(sums)),
+                              ("rss_mean_mb", statistics.mean(sums)),
+                              ("spawns_per_min", sum(1 for c in cells if c["tick"] > 0 and not c["root"]) / (elapsed / 60))):
+            b.row("session-load", f"live {cls}", LIVE_ARM, metric, value, 1, note=note if metric == "cpu_s" and cls == "all" else "")
+    print(f"session-load: live snapshot written to {live_snapshot(live, described, window)}", flush=True)
+
+
 def s_session_load(b):
     """One session's hook cost on the host, no model: the hook events of a session replayed through this clone's own hook
     commands in a throwaway clone (query log in mode `local` under a scratch plugin data directory, a `claude` that fails
@@ -678,6 +818,8 @@ def s_session_load(b):
     sessions (`wall_s` the longest), and a `load_peak` row, the host's 1-minute load at its highest during the run."""
     if getattr(b, "capture", None):  # --fs-usage FILE: count a capture, start no replay
         return capture_rows(b)
+    if getattr(b, "live", False):  # --live: follow the host's running sessions, start no replay
+        return live_rows(b)
     if not hasattr(os, "wait4"):
         raise Skip("no os.wait4 (Windows): run it on macOS or Linux")
     need_sh()
