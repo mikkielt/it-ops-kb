@@ -33,6 +33,68 @@
     "kb/_self/benchmarks.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How are the figures of N sessions that ran at once combined in a row with case xN?",
+      "options": [
+        "sum over sessions, peak as the sum of peaks, wall_s the longest, hook timings pooled",
+        "mean per session",
+        "sum, peak as the largest session's peak"
+      ],
+      "recommendation": "sum over sessions, peak as the sum of peaks, wall_s the longest, hook timings pooled",
+      "reason": "the sum is what the host pays together, and a sum of peaks is the safe bound, noted on the row",
+      "do": {
+        "sum over sessions, peak as the sum of peaks, wall_s the longest, hook timings pooled": "ST-5fakffyb",
+        "mean per session": "ST-5fakffyb",
+        "sum, peak as the largest session's peak": "ST-5fakffyb"
+      },
+      "class": "design",
+      "answer": "sum over sessions, peak as the sum of peaks, wall_s the longest, hook timings pooled",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How is load_peak read and recorded?",
+      "options": [
+        "case '<phase> all xN', polled every 0.5 s from the common start to the end of the sessions, median over the reps",
+        "once at the end of each run",
+        "the maximum over the reps rather than the median"
+      ],
+      "recommendation": "case '<phase> all xN', polled every 0.5 s from the common start to the end of the sessions, median over the reps",
+      "reason": "the goal names the highest load during the run, and every other row is a median over the reps",
+      "do": {
+        "case '<phase> all xN', polled every 0.5 s from the common start to the end of the sessions, median over the reps": "ST-5fakffyb",
+        "once at the end of each run": "ST-5fakffyb",
+        "the maximum over the reps rather than the median": "ST-5fakffyb"
+      },
+      "class": "design",
+      "answer": "case '<phase> all xN', polled every 0.5 s from the common start to the end of the sessions, median over the reps",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "How do N sessions at once get their own clones and samplers?",
+      "options": [
+        "one throwaway clone each (the first shared with the one-session rows), each replay with its own ps sampler paused N times as long, started together at a barrier",
+        "all sessions in one clone with separate session ids",
+        "one shared sampler across all sessions"
+      ],
+      "recommendation": "one throwaway clone each (the first shared with the one-session rows), each replay with its own ps sampler paused N times as long, started together at a barrier",
+      "reason": "the goal asks for a throwaway clone per session, and the longer pause keeps the ps load constant",
+      "do": {
+        "one throwaway clone each (the first shared with the one-session rows), each replay with its own ps sampler paused N times as long, started together at a barrier": "ST-5fakffyb",
+        "all sessions in one clone with separate session ids": "ST-5fakffyb",
+        "one shared sampler across all sessions": "ST-5fakffyb"
+      },
+      "class": "design",
+      "answer": "one throwaway clone each (the first shared with the one-session rows), each replay with its own ps sampler paused N times as long, started together at a barrier",
+      "by": "agent"
+    }
+  ],
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-557596e3",
   "operator": "op-f618a13e"

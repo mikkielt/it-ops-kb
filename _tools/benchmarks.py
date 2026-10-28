@@ -5,6 +5,7 @@
   benchmarks.py run [SCENARIO ...] [--reps N] [--arm ARM] [--out FILE] [--arms A,B] [--kinds K,K] [--effort L,L] [--dry-run]
                     [--shape fresh|session|fresh,session] [--seed N] [--jobs N] [--max-usd X] [--sample N]
                     [--arm-reps ARM=N,...] [--arm-kinds ARM=K+K,...]
+                    [--sessions N,N] [--window SECONDS] [--pane-every SECONDS] [--fs-usage FILE] [--intake-real]
                                             run every scenario, or the named ones, and write their rows to the results
                                             file (kb/_self/reports/benchmarks.csv; rows of the same scenario and date
                                             are replaced), or to FILE; prints each scenario's rows and the spend;
@@ -393,6 +394,10 @@ def main(argv=None):
                    + f"{bench_load.WINDOW_S})")
     r.add_argument("--pane-every", type=float, metavar="SECONDS",
                    help="`session-load` arm B: the seconds between two pane runs (default: the kbmon-pane mod's REFRESH_MS)")
+    r.add_argument("--sessions", metavar="N,N",
+                   help="`session-load`: replay N sessions of each arm at once, each with its own session id and throwaway clone, for each "
+                   "N given (default: 1); an N above 1 writes the same rows with case '<phase> <class> xN', each a sum over the "
+                   "sessions, and a load_peak row")
     r.add_argument("--fs-usage", metavar="FILE",
                    help="`session-load` alone: count the file reads per process class in this capture of `fs_usage -w -f filesys` "
                    "and start no replay and no model (without it the scenario prints the `sudo fs_usage` command to run by hand)")
@@ -659,6 +664,16 @@ def main(argv=None):
         problems.append("--sample needs 1 or more")
     if any(x is not None and x <= 0 for x in (a.window, a.pane_every)):
         problems.append("--window and --pane-every need more than 0 seconds")
+    sessions = None
+    if a.sessions is not None:
+        try:
+            sessions = [int(x) for x in a.sessions.split(",")]
+            if min(sessions) < 1:
+                raise ValueError
+        except ValueError:
+            problems.append(f"--sessions: {a.sessions!r} is not whole numbers of 1 or more, comma separated")
+        if "session-load" not in names or a.fs_usage or a.intake_real:
+            problems.append("--sessions: name `session-load` for it, without --fs-usage or --intake-real, which start no replay")
     if a.intake_real:
         if names != ["session-load"]:
             problems.append("--intake-real: name `session-load` alone, as the other scenarios would run")
@@ -684,7 +699,7 @@ def main(argv=None):
     b.arm = a.arm
     b.arms, b.efforts, b.dry, b.shape, b.seed = arms, efforts, a.dry_run, a.shape, a.seed
     b.load_arms, b.window, b.pane_every, b.capture = load_arms, a.window, a.pane_every, capture
-    b.intake_real = a.intake_real
+    b.intake_real, b.sessions = a.intake_real, sessions
     b.jobs, b.max_usd, b.sample = a.jobs, a.max_usd, a.sample
     b.kinds, b.arm_reps, b.arm_kinds = kinds, arm_reps, arm_kinds
     out = Path(a.out) if a.out else RESULTS

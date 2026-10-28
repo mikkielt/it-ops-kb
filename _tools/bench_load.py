@@ -36,7 +36,9 @@ DESCRIPTOR_CALLS = ("read", "readv", "pread", "preadv")  # the descriptor reads 
 OPEN_CALLS = ("open", "open_extended", "open_dprotected_np", "openat")  # a read when the mode string starts with R
 FS_LINE = re.compile(r"^\s*\d\d:\d\d:\d\d(?:\.\d+)?\s+(\S+)\s*(.*?)\s+\d+\.\d+(?:\s+W)?\s+(\S.*?)\.\d+\s*$")  # call, fields and path, process
 INTAKE_REAL_CASE = "idle hook intake real"  # the case of `run session-load --intake-real`: the intake hook in an unpinned clone
-SAMPLE_S = 0.02  # the sampler's pause between two `ps` listings
+SAMPLE_S = 0.02  # the sampler's pause between two `ps` listings (N sessions at once: N times it, so `ps` runs as often in all)
+GATE_WAIT_S = 600  # seconds the replays of N sessions wait for each other before they start together
+LOAD_SAMPLE_S = 0.5  # the pause between two reads of the host's 1-minute load while sessions run at once
 SETTLE_S = 30  # seconds a replay waits for the processes it left running in the clone
 SITE = '''# logs each process a Python program starts (the audit events of subprocess.Popen, os.posix_spawn and os.system) to the
 # file BENCH_STARTS_LOG, then runs the sitecustomize this file shadows
@@ -168,9 +170,10 @@ class Sampler(threading.Thread):
     that lives less than a listing is not seen, so the starts are not counted from here (the sitecustomize counts them);
     its CPU is in the root's `os.wait4` figure."""
 
-    def __init__(self, clone):
+    def __init__(self, clone, pause=SAMPLE_S):
         super().__init__(daemon=True)
         self.clone, self.roots, self.stop, self.lock = str(clone), {}, threading.Event(), threading.Lock()
+        self.pause = pause
         self.ticks, self.seen = [], {}  # per tick {class: rss kb}; descendant pid -> [class, peak rss kb]
 
     def add(self, pid, cls):
@@ -187,7 +190,7 @@ class Sampler(threading.Thread):
                 roots = dict(self.roots)
             if roots:
                 self.tick(roots)
-            self.stop.wait(SAMPLE_S)
+            self.stop.wait(self.pause)
 
     def tick(self, roots):
         rows = {pid: (ppid, rss, args) for pid, ppid, rss, args in listing()}
@@ -209,10 +212,12 @@ class Sampler(threading.Thread):
 
 
 def settle(clone):
-    """Wait, at most SETTLE_S, until no process names the clone's path in its command line (a detached distill ends)."""
+    """Wait, at most SETTLE_S, until no process names the clone's path in its command line (a detached distill ends); a
+    path that goes on with a name character is another clone's (`session-load` and `session-load-1`)."""
     end = time.monotonic() + SETTLE_S
+    named = re.compile(re.escape(str(clone)) + r"(?![\w.-])")
     while time.monotonic() < end:
-        if not [1 for pid, _, _, args in listing() if pid != os.getpid() and str(clone) in args]:
+        if not [1 for pid, _, _, args in listing() if pid != os.getpid() and named.search(args)]:
             return
         time.sleep(0.2)
 
@@ -247,8 +252,8 @@ def reset(clone):
 class Replay:
     """One replay of a session's events in `clone`: the hook processes it started and the sampler's view of their children."""
 
-    def __init__(self, clone, env, hooks, pane=None):
-        self.clone, self.env, self.hooks = Path(clone), env, hooks
+    def __init__(self, clone, env, hooks, pane=None, pause=SAMPLE_S):
+        self.clone, self.env, self.hooks, self.pause = Path(clone), env, hooks, pause
         self.pane = pane  # None, or (first_s, every_s, window_s): the kbmon pane's schedule
         self.roots, self.threads = [], []  # one dict per hook command run
         self.panes = []  # one dict per pane command run (a pane run is each of PANE_COMMANDS once)
@@ -311,7 +316,7 @@ class Replay:
         sampler.finish(p.pid)
 
     def run(self, phase, sid):
-        sampler = Sampler(self.clone)
+        sampler = Sampler(self.clone, self.pause)
         if self.hooks:
             sampler.start()
         t0 = time.perf_counter()
@@ -450,15 +455,88 @@ def lease_written(out, sid):
     return int(any("coord.py" in c and " claim " in c and f"session/{sid}" in c for h in out["hooks"] for c in h["children"]))
 
 
-def replay(b, clone, hooks, arm, phase, name, pane=None):
+class LoadPeak(threading.Thread):
+    """The highest 1-minute load of the host (os.getloadavg) read every LOAD_SAMPLE_S from `start` to `finish`, the reads at
+    both ends included. The 1-minute load moves slowly, so a run of seconds shows mostly the load it began in."""
+
+    def __init__(self):
+        super().__init__(daemon=True)
+        self.peak, self.done = 0.0, threading.Event()
+
+    def read(self):
+        if hasattr(os, "getloadavg"):
+            self.peak = max(self.peak, os.getloadavg()[0])
+
+    def run(self):
+        self.read()
+        while not self.done.wait(LOAD_SAMPLE_S):
+            self.read()
+
+    def finish(self):
+        self.done.set()
+        self.join()
+        self.read()
+        return self.peak
+
+
+def replay(b, clone, hooks, arm, phase, name, pane=None, gate=None, pause=SAMPLE_S):
+    """One replay of arm `arm`, `phase` in `clone`; with a `gate` (a threading.Barrier) it waits there, its working tree
+    and environment ready, for the replays that run beside it."""
     reset(clone)
     env = arm_env(plant(b, clone, name), arm)
     load = os.getloadavg()[0] if hasattr(os, "getloadavg") else 0.0
     sid = str(uuid.uuid4())
-    out = Replay(clone, env, arm_hooks(hooks, arm), pane if arm in PANE_ARMS else None).run(phase, sid)
+    if gate:
+        gate.wait(GATE_WAIT_S)
+    out = Replay(clone, env, arm_hooks(hooks, arm), pane if arm in PANE_ARMS else None, pause).run(phase, sid)
     out["load"] = load
     out["lease_written"], out["work_rows"] = lease_written(out, sid), work_rows(env["CLAUDE_PLUGIN_DATA"])
     return out
+
+
+def together(outs, peak):
+    """The replays of N sessions that ran at once as the one result of their run together: per class and for `all` the sums
+    of the CPU, the starts and the memory (the sum of the sessions' peaks, which are not at the same moment, so at most
+    the host's peak, and of their means), the longest `wall_s`, the hook commands and failures of all of them, the sums of
+    `pane_runs`, `lease_written` and `work_rows`, the mean of the loads at their start and `load_peak`."""
+    per = {}
+    for o in outs:
+        for cls, cell in o["classes"].items():
+            sums = per.setdefault(cls, {})
+            for k, v in cell.items():
+                sums[k] = sums.get(k, 0.0) + v
+    return {"classes": per, "wall_s": max(o["wall_s"] for o in outs), "hooks": [h for o in outs for h in o["hooks"]],
+            "pane_runs": sum(o["pane_runs"] for o in outs), "failed": [h for o in outs for h in o["failed"]],
+            "pane_failed": [h for o in outs for h in o["pane_failed"]], "load": statistics.mean(o["load"] for o in outs),
+            "lease_written": sum(o["lease_written"] for o in outs), "work_rows": sum(o["work_rows"] for o in outs),
+            "load_peak": peak}
+
+
+def replay_together(b, clones, hooks, arm, phase, name, pane=None):
+    """One replay in each of `clones` at once, each with its own session id, query log home and coord store, started
+    together (a barrier) and merged by `together`; the result also holds `load_peak`."""
+    if len(clones) == 1:
+        return replay(b, clones[0], hooks, arm, phase, name, pane)
+    peak = LoadPeak()
+    gate = threading.Barrier(len(clones), action=peak.start)
+    outs, errors = [None] * len(clones), []
+
+    def one(i):
+        try:
+            outs[i] = replay(b, clones[i], hooks, arm, phase, f"{name}-s{i}", pane, gate, SAMPLE_S * len(clones))
+        except Exception as e:  # a replay that fails before the gate would leave the others waiting for it
+            errors.append(e)
+            gate.abort()
+    threads = [threading.Thread(target=one, args=(i,)) for i in range(len(clones))]
+    for th in threads:
+        th.start()
+    for th in threads:
+        th.join()
+    if peak.is_alive():
+        peak.finish()
+    if errors:
+        raise errors[0]
+    return together(outs, peak.peak)
 
 
 def host_note(loads):
@@ -467,16 +545,20 @@ def host_note(loads):
             "unmeasured replay first; a hook's tree CPU (os.wait4) is charged to the class of its command")
 
 
-def row_note(metric, cls, arm, loads, window):
+def row_note(metric, cls, arm, loads, window, sessions=1):
     """The note of a cpu_s, rss_peak_mb or rss_mean_mb row: cpu_s says the host (host_note) and, for a class that only ever
     runs as a child of a hook command, that its CPU is charged to the parent; a row of an arm with the pane's commands says
-    it is over the pane window, not over a session."""
+    it is over the pane window, not over a session; with `sessions` above 1 the figure is the sum of that many sessions
+    that ran at once, and a peak is the sum of their peaks."""
     note = host_note(loads) if metric == "cpu_s" else ""
     if metric == "cpu_s" and cls in CHILD_CLASSES:
         note += (f"; {cls} runs only as a child of a hook command (arm B: or a pane command), so its CPU is charged to its "
                  "parent's class, not to this one, and this row holds none of it")
     if arm in PANE_ARMS:
         note += f"{'; ' if note else ''}over the pane window: the replay plus the pane's {window:g} s window, not a session"
+    if sessions > 1:
+        note += f"{'; ' if note else ''}the sum of {sessions} sessions that ran at once" + (
+            ", their peaks not at one moment, so at most the host's peak" if metric == "rss_peak_mb" else "")
     return note
 
 
@@ -590,7 +672,10 @@ def s_session_load(b):
     run of an async hook is `async_ms`: Claude Code does not wait for it). Each rep runs every arm and phase once, the
     medians of the reps are the rows. With `b.capture` (run --fs-usage FILE) it only writes the file reads of that capture;
     otherwise it prints the `sudo fs_usage` command the operator runs by hand, which this tool never runs. With
-    `b.intake_real` (run --intake-real) it only replays the intake hook, in a clone no item is pinned in (intake_real_rows)."""
+    `b.intake_real` (run --intake-real) it only replays the intake hook, in a clone no item is pinned in (intake_real_rows).
+    With `b.sessions` (run --sessions N,N) each N is also run as N sessions at once (replay_together), each in a throwaway clone of
+    its own with its own session id: for N above 1 the rows are the same, their case ending in ` xN`, each a sum over the
+    sessions (`wall_s` the longest), and a `load_peak` row, the host's 1-minute load at its highest during the run."""
     if getattr(b, "capture", None):  # --fs-usage FILE: count a capture, start no replay
         return capture_rows(b)
     if not hasattr(os, "wait4"):
@@ -601,62 +686,76 @@ def s_session_load(b):
     print(f"session-load: for the file reads of a session, run `{FS_COMMAND}` by hand beside it (macOS, needs root; stop it with "
           "Ctrl-C), then `python3 _tools/benchmarks.py run session-load --fs-usage fs_usage.txt`", flush=True)
     arms =list(getattr(b, "load_arms", None) or DEFAULT_ARMS)
+    sessions = sorted(set(getattr(b, "sessions", None) or (1,)))
     clone = b.clone("session-load", "local")
     pin_drift(clone)
+    clones = [clone]
+    for i in range(1, sessions[-1]):  # one more throwaway clone for each session beyond the first
+        clones.append(b.clone(f"session-load-{i}", "local"))
+        pin_drift(clones[-1])
     hooks = hook_commands(clone)
     first_s, refresh_s = pane_schedule(clone)
     window = getattr(b, "window", None) or WINDOW_S
     every = getattr(b, "pane_every", None) or refresh_s
     pane = (first_s, every, window)
-    replay(b, clone, hooks, "A", "working", "warm")  # the caches of Python, the pack index and git, not measured
+    for i, c in enumerate(clones):  # the caches of Python, the pack index and git of every clone, not measured
+        replay(b, c, hooks, "A", "working", "warm" if i == 0 else f"warm-{i}")
     if any(arm in PANE_ARMS for arm in arms):
         warm_pane(b, clone)
-    got = {(arm, phase): [] for arm in arms for phase in PHASES}
+    got = {(arm, phase, n): [] for arm in arms for phase in PHASES for n in sessions}
     for rep in range(max(1, b.reps)):
         for arm in arms:
             for phase in PHASES:
-                got[(arm, phase)].append(replay(b, clone, hooks, arm, phase, f"{arm}-{phase}-{rep}", pane))
+                for n in sessions:
+                    got[(arm, phase, n)].append(replay_together(b, clones[:n], hooks, arm, phase, f"{arm}-{phase}-{rep}", pane))
     seen = [c for c in CLASSES if any(r["classes"].get(c, {}).get(k) for rs in got.values() for r in rs
                                       for k in ("spawns", "pane_spawns"))]
-    for (arm, phase), reps in got.items():
+    for (arm, phase, n), reps in got.items():
+        sfx = f" x{n}" if n > 1 else ""  # N sessions at once: the same rows, their case ending in xN, each a sum over the sessions
         loads = [r["load"] for r in reps]
         med =lambda cls, key: statistics.median(r["classes"].get(cls, {}).get(key, 0.0) for r in reps)  # noqa: E731
         for cls in [*seen, "all"]:
-            case = f"{phase} {cls}"
+            case = f"{phase} {cls}{sfx}"
             for metric, key in (("cpu_s", "cpu_s"), ("rss_peak_mb", "peak"), ("rss_mean_mb", "rss_mean_mb")):
-                b.row("session-load", case, arm, metric, med(cls, key), len(reps), note=row_note(metric, cls, arm, loads, window))
+                b.row("session-load", case, arm, metric, med(cls, key), len(reps), note=row_note(metric, cls, arm, loads, window, n))
             rate = statistics.median(r["classes"].get(cls, {}).get("spawns", 0) / (NOMINAL_S[phase] / 60)
                                      + r["classes"].get(cls, {}).get("pane_spawns", 0) / (window / 60) for r in reps)
             b.row("session-load", case, arm, "spawns_per_min", rate, len(reps),
                   note=f"a session of {NOMINAL_S[phase]} s" + (f", the pane's starts per minute of its {window:g} s window"
-                                                               if arm in PANE_ARMS else ""))
+                                                               if arm in PANE_ARMS else "") + (f"; the sum of {n} sessions" if n > 1 else ""))
         if arm in PANE_ARMS:
-            b.row("session-load", f"{phase} all", arm, "pane_runs", statistics.median(r["pane_runs"] for r in reps), len(reps),
+            b.row("session-load", f"{phase} all{sfx}", arm, "pane_runs", statistics.median(r["pane_runs"] for r in reps), len(reps),
                   note=f"{PANE_COMMANDS[0][0]} then {' '.join(PANE_COMMANDS[1])}, the first after {first_s:g} s, then every "
                   f"{every:g} s over a window of {window:g} s; a tick that falls during a run does nothing")
-        b.row("session-load", f"{phase} replay", arm, "wall_s", statistics.median(r["wall_s"] for r in reps), len(reps))
-        b.row("session-load", f"{phase} replay", arm, "hook_failures", statistics.median(len(r["failed"]) for r in reps),
+        b.row("session-load", f"{phase} replay{sfx}", arm, "wall_s", statistics.median(r["wall_s"] for r in reps), len(reps),
+              note=f"the longest of {n} sessions that ran at once" if n > 1 else "")
+        b.row("session-load", f"{phase} replay{sfx}", arm, "hook_failures", statistics.median(len(r["failed"]) for r in reps),
               len(reps), note="hook commands that exited non-zero")
         for metric, note in (("lease_written", "1 when a hook started coord.py claim session/ID, the presence lease"),
                              ("work_rows", "work rows in the replay's query log spool")):
-            b.row("session-load", f"{phase} all", arm, metric, statistics.median(r[metric] for r in reps), len(reps), note=note)
+            b.row("session-load", f"{phase} all{sfx}", arm, metric, statistics.median(r[metric] for r in reps), len(reps),
+                  note=note + (f"; the sum of {n} sessions" if n > 1 else ""))
+        if n > 1:
+            b.row("session-load", f"{phase} all{sfx}", arm, "load_peak", statistics.median(r["load_peak"] for r in reps), len(reps),
+                  note=f"the host's 1-minute load at its highest, read every {LOAD_SAMPLE_S:g} s while {n} sessions ran at once "
+                  "(it moves slowly, so a short run shows mostly the load it began in); the median over the reps")
         if arm in PANE_ARMS:
-            b.row("session-load", f"{phase} replay", arm, "pane_failures", statistics.median(len(r["pane_failed"]) for r in reps),
+            b.row("session-load", f"{phase} replay{sfx}", arm, "pane_failures", statistics.median(len(r["pane_failed"]) for r in reps),
                   len(reps), note="pane commands that exited with 2 or more")
     starts = {}
-    for (arm, phase), reps in got.items():
+    for (arm, phase, n), reps in got.items():
         for i, r in enumerate(reps):
             for h in r["hooks"]:
-                key = (arm, phase, h["label"])
+                key = (arm, phase, h["label"], n)
                 starts.setdefault(key, [0] * len(reps))[i] += 1 + len(h["children"])
-    for (arm, phase, name), per in starts.items():
-        b.row("session-load", f"{phase} hook {name}", arm, "spawns", statistics.median(per), len(per),
-              note="the command and the processes Python programs of its tree started, per replay")
+    for (arm, phase, name, n), per in starts.items():
+        b.row("session-load", f"{phase} hook {name}" + (f" x{n}" if n > 1 else ""), arm, "spawns", statistics.median(per), len(per),
+              note="the command and the processes Python programs of its tree started, per replay" + (f", of all {n} sessions" if n > 1 else ""))
     timings = {}
-    for (arm, phase), reps in got.items():
+    for (arm, phase, n), reps in got.items():
         for r in reps:
             for h in r["hooks"]:
-                key = (arm, f"{h['event']} {h['label']}" + (f" ({h['tool']})" if h["tool"] else ""), h["async"])
+                key = (arm, f"{h['event']} {h['label']}" + (f" ({h['tool']})" if h["tool"] else "") + (f" x{n}" if n > 1 else ""), h["async"])
                 timings.setdefault(key, []).append(h["wall_s"] * 1000)
     for (arm, case, is_async), ms in timings.items():
         b.row("session-load", case, arm, "async_ms" if is_async else "sync_ms", statistics.median(ms), len(ms))
