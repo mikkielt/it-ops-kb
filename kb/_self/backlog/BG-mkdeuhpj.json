@@ -1,0 +1,19 @@
+{
+  "id": "BG-mkdeuhpj",
+  "kind": "bug",
+  "title": "The session-load table joins a replay record's cell and a paid record's cell of one case with an arrow and a percentage change",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "no table cell of the session-load report chains a replay record's value and a paid record's value of the same case and arm as one change: the report's tables split the two measurements (by the model column), so a paid record's percentage is never taken from a replay",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import csv,collections,sys; d=collections.defaultdict(set); [d[(r['case'],r['arm'],r['metric'])].add(bool(r['model'])) for r in csv.DictReader(open('kb/_self/reports/benchmarks.csv',encoding='utf-8')) if r['scenario']=='session-load']; bad=[k for k,v in d.items() if len(v)>1]; print(bad[:3]); sys.exit(1 if bad else 0)"
+    ]
+  },
+  "repro_reason": "the defect shows in the results file itself: a case and arm that hold a replay record and a paid record, which bench_report.table joins; a planted input would only restate that",
+  "filed_in": "clone-0ea70e5c"
+}
