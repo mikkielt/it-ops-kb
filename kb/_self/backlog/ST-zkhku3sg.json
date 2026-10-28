@@ -76,7 +76,8 @@
     ".claude/skills/kb-ingest/SKILL.md",
     "AGENTS.md",
     "kb/_self/maintaining.md",
-    "kb/_self/plugin.md"
+    "kb/_self/plugin.md",
+    "_tools/kbingest_rules.csv"
   ],
   "depends_on": [
     "ST-yxudqftw",
