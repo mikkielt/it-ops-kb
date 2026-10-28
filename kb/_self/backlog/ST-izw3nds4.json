@@ -228,7 +228,12 @@
         "macOS and Linux: copy the tar's 7zz as 7z beside its licence files under a per-user folder; Windows: run the release's own installer silently into a per-user folder; fetch.py text also looks there": "ST-izw3nds4",
         "Put a 7z launcher on PATH": "ST-izw3nds4"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "macOS and Linux: copy the tar's 7zz as 7z beside its licence files under a per-user folder; Windows: run the release's own installer silently into a per-user folder; fetch.py text also looks there",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     },
     {
       "id": "g5",
