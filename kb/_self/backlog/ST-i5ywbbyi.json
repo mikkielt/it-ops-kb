@@ -17,6 +17,12 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "kb/_self/reports/benchmarks.csv holds a 5-rep record of python3 _tools/benchmarks.py run session-load --arms A --intake-real (case 'idle hook intake real', rows cpu_s, wall_s and spawns), run once ST-6zg57xiu's tool commit is on origin/main so its rows name that commit",
+      "check": 0
+    }
+  ],
   "touches": [
     "kb/_self/reports/benchmarks.csv",
     "kb/_self/reports/benchmarks.md",
@@ -25,5 +31,6 @@
   "depends_on": [
     "ST-6zg57xiu"
   ],
+  "notes": "Split from ST-6zg57xiu by the operator's answer to its gate land (2026-10-28): the tool lands without record rows, since the landing rebase rewrites the tool commit's sha; this item records the rows once that sha is final on origin/main. Check 0 is ST-6zg57xiu's former check 1.",
   "filed_in": "clone-0ea70e5c"
 }
