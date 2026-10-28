@@ -3,6 +3,7 @@
 #
 #   sh "<repository>/_tools/kbpy" <script path from the repository root> [arguments...]
 #   sh "<repository>/_tools/kbpy" --notice
+#   sh "<repository>/_tools/kbpy" --person <script path> [arguments...]
 #
 # Every hook in .claude/settings.json, the plugin's plugin.json and .githooks/ calls this file, so no hook names an
 # interpreter itself. Claude Code runs a shell-form hook in `sh -c` on macOS and Linux and in Git Bash on Windows
@@ -23,6 +24,13 @@ case $0 in
   *\\*) here=${0%\\*} ;;  # a Windows path with backslashes only (Git Bash keeps it as given)
   *) here=. ;;
 esac
+# --person (before the script): a hook only a person reads; a session with KB_UNWATCHED=1 (a dispatched worker, a headless
+# sprint runner) exits 0 at once, with no output and no interpreter started
+if [ "$1" = "--person" ]; then
+  [ "${KB_UNWATCHED:-}" = "1" ] && exit 0
+  shift
+  [ $# -ge 1 ] || { echo "usage: sh _tools/kbpy --person <script> [args...]" >&2; exit 2; }
+fi
 name=$1
 script=$here/../$name
 shift
