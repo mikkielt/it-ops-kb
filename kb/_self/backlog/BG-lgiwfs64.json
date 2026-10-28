@@ -1,0 +1,23 @@
+{
+  "id": "BG-lgiwfs64",
+  "kind": "bug",
+  "title": "session-load --intake-real's check compares against a case no row has, and its real row starts fewer processes than the pinned hook",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "ST-6zg57xiu's intake-real comparison reads a case that exists (the pinned row 'idle hook _tools/backlog.py intake --file --hook') and a count that item checks ran, or the docs say the real row is the hook cut at its 50 s cap",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import csv\nr={x['case'] for x in csv.DictReader(open('kb/_self/reports/benchmarks.csv',encoding='utf-8')) if x['scenario']=='session-load'}\nassert 'idle hook intake' in r, 'the case the intake-real check compares with has no row'"
+    ]
+  },
+  "repro_reason": "the defect is a check comparing against a case name no row carries; the record rows are the evidence, and a behaviour run takes about 3 minutes per arm (the reviewer's repro in the notes)",
+  "links": [
+    "parked: SP-m5m67goe review"
+  ],
+  "notes": "Review G1: the check compares with ('idle hook intake','A','spawns'), which no row has, so it reads real > 0. Measured: real 634-644 spawns, wall 50.1 s (= INTAKE_HOOK_BUDGET_S), pinned 936-950; nothing shows an item check ran (bench_load.py:667-682). Behaviour repro: run session-load --arms A --reps 1 with and without --intake-real (a claude that exits 1 first on PATH) and compare spawns.",
+  "filed_in": "clone-0ea70e5c"
+}
