@@ -1,0 +1,29 @@
+{
+  "id": "BG-g4atoeyw",
+  "kind": "bug",
+  "title": "The item and sprint skills and agents/worker.md do not name the strict signals, the querylog and delete text classes or --kind blocking as reasons a gate is made blocking",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "skills/item/SKILL.md, skills/sprint/SKILL.md and agents/worker.md name, beside the path, title and operator-class reasons, the strict signals (money, an act only the operator can do, a scope change, running a program on input), the querylog and delete text classes and --kind blocking as reasons gate add makes a gate blocking, as kb/_self/backlog.md does; review gap G7.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; t=[open(f,encoding=\"utf-8\").read() for f in (\"skills/item/SKILL.md\",\"skills/sprint/SKILL.md\",\"agents/worker.md\")]; bad=[n for n,x in zip((\"item\",\"sprint\",\"worker\"),t) if \"money\" not in x]; sys.exit(\"no strict signals named in: %r\" % bad if bad else 0)"
+    ]
+  },
+  "repro_reason": "The defect is rule text an agent reads; no command can run the reading, so the repro reads the three rule files for the strict signals they must name.",
+  "touches": [
+    "skills/item/SKILL.md",
+    "skills/sprint/SKILL.md",
+    "agents/worker.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "links": [
+    "parked: SP-lmpjclxz review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

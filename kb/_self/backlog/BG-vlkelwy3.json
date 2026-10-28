@@ -1,0 +1,35 @@
+{
+  "id": "BG-vlkelwy3",
+  "kind": "bug",
+  "title": "gate remove lets an agent clear a gate made blocking by a strict signal, an option path or the item's title, since it guards only the operator classes",
+  "status": "todo",
+  "sprint": "SP-lmpjclxz",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "gate remove refuses, without --by operator, every unanswered gate whose bl_authority.disposition is block (a strict signal, a querylog or delete text class, an option naming a path outside the touches or a rule-text path, a guarded title, --kind blocking or an operator class), naming why it blocks, so an agent cannot remove a blocking gate and re-add it reworded as provisional; test_authority's derivation test gains this planted case within the test ceiling and with no new test id.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess as s,sys,tempfile as t; d=t.mkdtemp(); r=lambda *a: s.run([sys.executable,\"_tools/backlog.py\",\"--root\",d,*a],capture_output=True,text=True); i=r(\"new\",\"story\",\"--title\",\"S\",\"--goal\",\"g\",\"--touch\",\"src/a.py\").stdout.split()[2]; a=r(\"gate\",\"add\",i,\"--kind\",\"provisional\",\"--question\",\"May the run spend 20 USD?\",\"--option\",\"yes\",\"--option\",\"no\",\"--recommendation\",\"yes\"); p=r(\"gate\",\"remove\",i,\"g1\"); sys.exit(\"an agent removed a blocking strict gate: \"+p.stdout.strip() if a.returncode==0 and \"(blocking)\" in a.stdout and p.returncode==0 else 0)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "operator_class_is_derived"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/test_authority.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

@@ -38,5 +38,6 @@
       ]
     }
   ],
+  "notes": "Review 2026-10-28 (fresh-context Sonnet reviewer, report in the orchestrator's scratch): S1 gap G1 filed in this sprint as BG-vlkelwy3; parked as drafts: G2 BG-s7smga3g, G4+G5 BG-a65lzrjf, G7 BG-g4atoeyw, G8 BG-g6usmwjt, G10 BG-3mjif4cw (SP-lmpjclxz) and G3 BG-5knikq4t, G6 BG-xfqc7sod (SP-v6crf4rx). Not reproduced by the orchestrator's repro, left as notes: G9 (an answered gate whose touches are widened to a guarded path gets no stored hold; set --add-touch AGENTS.md on it kept or refused the change) and G11 (option_paths reads a slash word with no extension outside kb, skills, agents, docs, src, tests, code, scripts as prose; 'in hooks/pre-push' still blocked).",
   "filed_in": "clone-0ea70e5c"
 }

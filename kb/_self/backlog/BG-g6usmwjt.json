@@ -1,0 +1,26 @@
+{
+  "id": "BG-g6usmwjt",
+  "kind": "bug",
+  "title": "gate remove --by operator in an agent session removes a ceiling-class gate, which answer refuses there whatever --by says",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "gate remove refuses a gate of a TERMINAL_CLASSES class (ceiling) in an agent session (bl_authority.in_agent_session) whatever --by says, as answer does, naming the terminal route; review gap G8.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess as s,sys,tempfile as t,os; d=t.mkdtemp(); r=lambda *a, env=None: s.run([sys.executable,\"_tools/backlog.py\",\"--root\",d,*a],capture_output=True,text=True,env=env); i=r(\"new\",\"story\",\"--title\",\"S\",\"--goal\",\"g\",\"--touch\",\"_tools/tests_ceiling.json\").stdout.split()[2]; r(\"gate\",\"add\",i,\"--kind\",\"provisional\",\"--question\",\"Which wording?\",\"--option\",\"a\",\"--option\",\"b\",\"--recommendation\",\"a\"); env=dict(os.environ,CLAUDECODE=\"1\"); p=r(\"gate\",\"remove\",i,\"g1\",\"--by\",\"operator\",env=env); sys.exit(\"a ceiling gate was removed from an agent session\" if p.returncode==0 else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/test_authority.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-lmpjclxz review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

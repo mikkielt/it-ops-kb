@@ -1,0 +1,26 @@
+{
+  "id": "BG-s7smga3g",
+  "kind": "bug",
+  "title": "An operator answer to a gate that blocks by a strict signal, a querylog or delete text class, an option path or the item's title carries no agent_session flag when an agent session records it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "backlog.py answer --by operator from an agent session stores agent_session: true on every gate whose bl_authority.disposition is block, not only on the operator classes (_tools/bl_items.py, the flag set by class), so horizon and the review list such answers for re-confirmation from a terminal; review gap G2.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess as s,sys,tempfile as t,os; d=t.mkdtemp(); r=lambda *a, env=None: s.run([sys.executable,\"_tools/backlog.py\",\"--root\",d,*a],capture_output=True,text=True,env=env); i=r(\"new\",\"story\",\"--title\",\"S\",\"--goal\",\"g\",\"--touch\",\"src/a.py\").stdout.split()[2]; r(\"gate\",\"add\",i,\"--kind\",\"provisional\",\"--question\",\"May the run spend 20 USD?\",\"--option\",\"yes\",\"--option\",\"no\",\"--recommendation\",\"yes\"); env=dict(os.environ,CLAUDECODE=\"1\"); r(\"answer\",i,\"g1\",\"--answer\",\"yes\",\"--by\",\"operator\",env=env); v=r(\"show\",i,\"--field\",\"gates\").stdout; sys.exit(\"a strict gate answered --by operator from an agent session has no agent_session flag\" if \"agent_session\" not in v else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_items.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-lmpjclxz review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
