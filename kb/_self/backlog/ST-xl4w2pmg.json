@@ -147,8 +147,10 @@
       },
       "class": "agents-rule",
       "hold": true,
-      "answer": "reword the expected words to the new sentence, a gate whose own words give the class",
-      "by": "agent"
+      "answer": "reword the row so its expected words name the operator classes and that a gate's own words give the class (BG-3mjif4cw)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g4",
