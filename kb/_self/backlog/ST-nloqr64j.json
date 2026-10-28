@@ -1,0 +1,36 @@
+{
+  "id": "ST-nloqr64j",
+  "kind": "story",
+  "title": "horizon --gates prints each sprint's gates by disposition, the recommendation share and the hours blocking gates held their items",
+  "status": "draft",
+  "sprint": "SP-v6crf4rx",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py horizon --gates [--sprint SP] prints one line per sprint: gates SP: block N, held N, agent N, recommendation taken K of M, blocked H h over I items",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess as s,sys,tempfile as t,re; d=t.mkdtemp(); r=lambda *a: s.run([sys.executable,\"_tools/backlog.py\",\"--root\",d,*a],capture_output=True,text=True); sp=r(\"new\",\"sprint\",\"--title\",\"S\",\"--goal\",\"g\").stdout.split()[2]; i=r(\"new\",\"story\",\"--sprint\",sp,\"--title\",\"T\",\"--goal\",\"g\",\"--touch\",\"src/a.py\").stdout.split()[2]; ga=lambda q,k: r(\"gate\",\"add\",i,\"--kind\",k,\"--question\",q,\"--option\",\"yes\",\"--option\",\"no\",\"--recommendation\",\"yes\"); ga(\"Is the first choice right?\",\"blocking\"); ga(\"Is the second choice right?\",\"provisional\"); r(\"answer\",i,\"g1\",\"--recommended\",\"--by\",\"operator\"); r(\"answer\",i,\"g2\",\"--provisional\"); p=r(\"horizon\",\"--gates\",\"--sprint\",sp); m=re.search(r\"gates \"+sp+r\": block 1, held 0, agent 1, recommendation taken 2 of 2, blocked \", p.stdout); sys.exit(0 if p.returncode==0 and m else \"horizon --gates line missing or wrong (exit %d): %s\" % (p.returncode,(p.stdout+p.stderr)[-300:]))"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "backlog.py horizon --gates [--sprint SP] prints one line per sprint: gates SP: block N, held N, agent N, recommendation taken K of M, blocked H h over I items",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/bl_view.py",
+    "_tools/backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-7pogsj4c"
+  ],
+  "notes": "Design, settled at planning 2026-10-28: the disposition is bl_authority.disposition of each gate of the sprint's items, the start gate left out; an answer counts as the recommendation when it equals it or begins with it; the hours run from the first coord progress event that names the gate as blocked to the item's next event that no longer names it, summed per item with overlaps counted once; when coord cannot be read the line says blocked ? h and the command still exits 0; it reads only (no item file, coord key or spool row is written); kb/_self/backlog.md (The horizon) and kb/_self/tools.md describe it. Evidence: the 2026-10-28 gate-triage measurement rebuilt these figures by hand from git history and the coord event log (44.7 item-hours over 14 items in the 2026-10-27 drain). Premise run 2026-10-28 on origin/main 80725b09a9: the check fails (horizon has no --gates).",
+  "filed_in": "clone-0ea70e5c"
+}

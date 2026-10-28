@@ -1,0 +1,119 @@
+{
+  "id": "ST-7pogsj4c",
+  "kind": "story",
+  "title": "One command confirms a sprint's held answers at its review, horizon lists them, and a confirmed held answer needs no terminal re-confirm",
+  "status": "draft",
+  "sprint": "SP-lmpjclxz",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "a held answer does not stop its own item's done; the sprint review story's done refuses while a held answer is unconfirmed, naming it held answer to confirm; backlog.py answer SP --confirm-held --by operator confirms every held agent answer of the sprint's items in one call and is refused without --by operator; a confirmation of a held gate from an agent session stores no agent_session flag; horizon lists each sprint's held answers awaiting the operator; test_authority's confirm test gains a planted held gate an agent cannot confirm, within the test ceiling and with no new test id",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess as s,sys,tempfile as t; d=t.mkdtemp(); r=lambda *a: s.run([sys.executable,\"_tools/backlog.py\",\"--root\",d,*a],capture_output=True,text=True); n=r(\"new\",\"sprint\",\"--title\",\"S\",\"--goal\",\"g\").stdout.split(); sp,rv=n[2],n[6]; i=r(\"new\",\"story\",\"--sprint\",sp,\"--title\",\"T\",\"--goal\",\"g\",\"--touch\",\"AGENTS.md\").stdout.split()[2]; r(\"gate\",\"add\",i,\"--kind\",\"provisional\",\"--question\",\"Which columns does the table hold?\",\"--option\",\"one table\",\"--option\",\"two tables\",\"--recommendation\",\"one table\"); a=r(\"answer\",i,\"g1\",\"--provisional\"); p=r(\"done\",rv); o=p.stdout+p.stderr; sys.exit(0 if a.returncode==0 and p.returncode!=0 and \"held answer to confirm\" in o and \"Traceback\" not in o else \"the review does not name the unconfirmed held answer: \"+o[-300:])"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess as s,sys,tempfile as t,os; d=t.mkdtemp(); r=lambda *a, env=None: s.run([sys.executable,\"_tools/backlog.py\",\"--root\",d,*a],capture_output=True,text=True,env=env); sp=r(\"new\",\"sprint\",\"--title\",\"S\",\"--goal\",\"g\").stdout.split()[2]; i=r(\"new\",\"story\",\"--sprint\",sp,\"--title\",\"T\",\"--goal\",\"g\",\"--touch\",\"AGENTS.md\").stdout.split()[2]; r(\"gate\",\"add\",i,\"--kind\",\"provisional\",\"--question\",\"Which columns does the table hold?\",\"--option\",\"one table\",\"--option\",\"two tables\",\"--recommendation\",\"one table\"); r(\"answer\",i,\"g1\",\"--provisional\"); h=r(\"horizon\",\"--sprint\",sp); n=r(\"answer\",sp,\"--confirm-held\"); y=r(\"answer\",sp,\"--confirm-held\",\"--by\",\"operator\",env=dict(os.environ,CLAUDECODE=\"1\")); v=r(\"show\",i,\"--field\",\"gates\").stdout; sys.exit(0 if \"held\" in h.stdout and n.returncode!=0 and y.returncode==0 and \"operator\" in v and \"agent\" not in v else \"confirm-held, its flag or the horizon list is wrong: \"+h.stdout[-200:]+n.stderr[-150:]+y.stdout[-150:]+y.stderr[-150:]+v[-200:])"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "an_agent_cannot_confirm_an_operator_gate"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess as s,sys,tempfile as t,os; d=t.mkdtemp(); g=lambda *a: s.run([\"git\",\"-C\",d,*a],capture_output=True,text=True); g(\"init\",\"-q\"); g(\"config\",\"user.email\",\"x@example.com\"); g(\"config\",\"user.name\",\"x\"); os.makedirs(d+\"/skills\"); open(d+\"/skills/x.md\",\"w\").write(\"x\\n\"); g(\"add\",\".\"); g(\"commit\",\"-qm\",\"init\"); r=lambda *a: s.run([sys.executable,\"_tools/backlog.py\",\"--root\",d,*a],capture_output=True,text=True); i=r(\"new\",\"story\",\"--title\",\"S\",\"--goal\",\"g\",\"--touch\",\"skills/x.md\").stdout.split()[2]; r(\"gate\",\"add\",i,\"--kind\",\"provisional\",\"--question\",\"Which columns does the table hold?\",\"--option\",\"one table\",\"--option\",\"two tables\",\"--recommendation\",\"one table\"); a=r(\"answer\",i,\"g1\",\"--provisional\"); p=r(\"done\",i); o=p.stdout+p.stderr; sys.exit(0 if a.returncode==0 and \"/g1\" not in o and \"held answer\" not in o and \"Traceback\" not in o else \"a held answer stops its own item: \"+(a.stdout+a.stderr)[-150:]+o[-300:])"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "a held answer does not stop its own item's done",
+      "check": 3
+    },
+    {
+      "clause": "the sprint review story's done refuses while a held answer is unconfirmed, naming it held answer to confirm",
+      "check": 0
+    },
+    {
+      "clause": "backlog.py answer SP --confirm-held --by operator confirms every held agent answer of the sprint's items in one call and is refused without --by operator",
+      "check": 1
+    },
+    {
+      "clause": "a confirmation of a held gate from an agent session stores no agent_session flag",
+      "check": 1
+    },
+    {
+      "clause": "horizon lists each sprint's held answers awaiting the operator",
+      "check": 1
+    },
+    {
+      "clause": "test_authority's confirm test gains a planted held gate an agent cannot confirm, within the test ceiling and with no new test id",
+      "check": 2
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/bl_items.py",
+    "_tools/bl_view.py",
+    "_tools/backlog.py",
+    "_tools/test_authority.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "skills/sprint/SKILL.md"
+  ],
+  "depends_on": [
+    "ST-xl4w2pmg"
+  ],
+  "gates": [
+    {
+      "id": "hold-timing",
+      "kind": "blocking",
+      "question": "When does a held answer reach the operator?",
+      "options": [
+        "At the sprint review: the item lands on the recommendation and a changed answer becomes a redo task",
+        "Before its landing: done refuses until the operator confirms",
+        "At the review, but landing waits when the touches hold guard code"
+      ],
+      "recommendation": "At the sprint review: the item lands on the recommendation and a changed answer becomes a redo task",
+      "reason": "because it saves about 17 of 44.7 blocked item-hours of the 2026-10-27 drain and only 6 of 257 such gates since 10-15 departed",
+      "class": "agents-rule",
+      "answer": "At the sprint review: the item lands on the recommendation and a changed answer becomes a redo task",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    },
+    {
+      "id": "reconfirm",
+      "kind": "blocking",
+      "question": "Does an operator's confirmation of a held answer, recorded from an agent session, carry the agent_session flag for re-confirmation from a terminal?",
+      "options": [
+        "No flag, as for a provisional design answer",
+        "Flag it as an operator-class answer"
+      ],
+      "recommendation": "No flag, as for a provisional design answer",
+      "reason": "because the gate's own text names nothing guarded and strict or text-classed gates keep the flag",
+      "class": "agents-rule",
+      "answer": "No flag, as for a provisional design answer",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
+  "notes": "Design, settled at planning 2026-10-28 (gates hold-timing and reconfirm, answered by the operator): held answers reach the operator at the sprint review, not before landing; the review's done names each as held answer to confirm: ID gate G: ANSWER; --confirm-held takes --except ID:GATE (repeatable) for a gate left for its own answer (a changed answer plus a redo task) and --commit for one commit; a refused --confirm-held exits 2 and writes nothing; an answer to a gate that blocks by its own text or a strict signal keeps the agent_session flag as now; horizon prints the count and the list (item, gate, answer), horizon --hook the count; skills/sprint/SKILL.md review step 3 confirms held answers through this command with the reviewer's report beside each; kb/_self/backlog.md and kb/_self/tools.md describe it. Check 2 passes before the work: it pins the critical test the work extends. Premise run 2026-10-28 on origin/main 80725b09a9: checks 0, 1 and 3 fail (the touch-classed gate is made blocking, an agent's provisional answer is refused, --confirm-held is unknown).",
+  "filed_in": "clone-0ea70e5c"
+}

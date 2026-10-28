@@ -1,0 +1,62 @@
+{
+  "id": "ST-yahbzaws",
+  "kind": "story",
+  "title": "A gate that names money, an operator-only act, a scope change or running a program is blocking whatever its class",
+  "status": "draft",
+  "sprint": "SP-lmpjclxz",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "gate add makes a gate blocking whatever its class and prints strict <kind> '<word>' when its question, options, do or host_check words name money, an act only the operator can do, a scope change or running a program on input; answer refuses a provisional answer to such a gate; a design question with none of those words stays provisional; test_authority's derivation test gains a planted case per kind for gate add, answer, set --touch and check, within the test ceiling and with no new test id",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess as s,sys,tempfile as t; d=t.mkdtemp(); r=lambda *a: s.run([sys.executable,\"_tools/backlog.py\",\"--root\",d,*a],capture_output=True,text=True); i=r(\"new\",\"story\",\"--title\",\"S\",\"--goal\",\"g\",\"--touch\",\"src/a.py\").stdout.split()[2]; add=lambda q,*o: (lambda p: (p.returncode,p.stdout+p.stderr))(r(\"gate\",\"add\",i,\"--kind\",\"provisional\",\"--question\",q,*[w for x in o for w in (\"--option\",x)],\"--recommendation\",o[0])); cases=[(\"May the probe spend 4 USD?\",\"money\"),(\"The capture needs sudo fs_usage; is it made?\",\"operator-act\"),(\"Keep the touches or drop the item?\",\"scope\"),(\"May a row name a program this machine will run on a downloaded file?\",\"execute\")]; out=[(q,k)+add(q,\"yes\",\"no\") for q,k in cases]; bad=[(q,c,x[-160:]) for q,k,c,x in out if c!=0 or \"(blocking)\" not in x or \"strict \"+k not in x]; sys.exit(\"not blocking on a strict signal: %r\" % bad if bad else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess as s,sys,tempfile as t; d=t.mkdtemp(); r=lambda *a: s.run([sys.executable,\"_tools/backlog.py\",\"--root\",d,*a],capture_output=True,text=True); i=r(\"new\",\"story\",\"--title\",\"S\",\"--goal\",\"g\",\"--touch\",\"src/a.py\").stdout.split()[2]; add=lambda q,*o: (lambda p: p.stdout+p.stderr)(r(\"gate\",\"add\",i,\"--kind\",\"provisional\",\"--question\",q,*[w for x in o for w in (\"--option\",x)],\"--recommendation\",o[0])); add(\"May the probe spend 4 USD?\",\"yes\",\"no\"); p=r(\"answer\",i,\"g1\",\"--provisional\"); c=add(\"Which caps does the languages table hold?\",\"1000 and 2000\",\"caps in code only\"); sys.exit(\"an agent answered a strict gate: \"+p.stdout if p.returncode==0 else \"the design control is not provisional: \"+c if \"(provisional)\" not in c or \"strict\" in c else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "operator_class_is_derived"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "gate add makes a gate blocking whatever its class and prints strict <kind> '<word>' when its question, options, do or host_check words name money, an act only the operator can do, a scope change or running a program on input",
+      "check": 0
+    },
+    {
+      "clause": "answer refuses a provisional answer to such a gate",
+      "check": 1
+    },
+    {
+      "clause": "a design question with none of those words stays provisional",
+      "check": 1
+    },
+    {
+      "clause": "test_authority's derivation test gains a planted case per kind for gate add, answer, set --touch and check, within the test ceiling and with no new test id",
+      "check": 2
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py",
+    "_tools/bl_items.py",
+    "_tools/bl_check.py",
+    "_tools/test_authority.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "notes": "Words, settled at planning 2026-10-28: money = USD, US dollars, dollars, paid, spend, billing, Actions minutes, a $ figure; operator act = sudo, only the operator, the operator creates, runs, makes, gives, adds or sets; scope = touches, drop the item, skip experiment, worth building, defer; execution = program and run within one clause, execute and its endings. bl_authority.strict_signals(gate) returns each kind with its word; set --touch re-derivation keeps such a gate blocking; check reports one that is provisional or agent-answered on an open item as an error; the gate's class is unchanged, so kbdecide, bl_plan and horizon read it as before; kb/_self/backlog.md (Gate classes) and kb/_self/tools.md describe it. Evidence: the gate-triage measurement of 2026-10-28 (ST-moy5v7tm g1 and ST-izw3nds4 g2 were class design and reached the operator only because the planner made them blocking). Check 2 passes before the work: it pins the critical test the work extends. Premise run 2026-10-28 on origin/main 80725b09a9: checks 0 and 1 fail (all four strict questions added provisional, class design; an agent answered the USD gate).",
+  "filed_in": "clone-0ea70e5c"
+}
