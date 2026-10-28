@@ -152,6 +152,33 @@ def map_redacts_leaks_and_keeps_the_rest():
     assert notes[0] == "fine" and len(notes) == 3 and all("redacted" in n for n in notes[1:])
 
 
+def pattern_mapper_starts_no_process_and_bounds_the_table(tmp_path, monkeypatch):
+    """The pattern table is code run on an untrusted file: a rules row that can run away is skipped when the tables load (the
+    rest of its language maps), a line over the cap is not read, and mapping starts no process."""
+    langs = "language,extensions,case,word,max_line,max_matches\nx,.x,sensitive,\\w,1000,2000\n"
+    rules = "language,role,kind,pattern\n"
+    good = "x,def,function,^def\\s+(?P<name>\\w+)\n"
+    table, rules_table = tmp_path / "languages.csv", tmp_path / "rules.csv"
+    table.write_text(langs, encoding="utf-8")
+    for bad in ("^(a+)+(?P<name>b)", "^(?:a|b)*(?P<name>c)", "^(?P<name>\\w+)(?:\\s+x*)+"):
+        rules_table.write_text(rules + "x,def,function,\"" + bad + "\"\n" + good, encoding="utf-8")
+        found, refused = kbingest.load_patterns(table, rules_table)
+        assert [(m.language, len(m.rules)) for m in found] == [("x", 1)] and not refused, (bad, refused)
+        assert "quantifier" in found[0].skipped[0] and "row 2" in found[0].skipped[0], found[0].skipped
+    rules_table.write_text(rules + good, encoding="utf-8")
+    table.write_text(langs.replace("1000,2000", "999999,2000"), encoding="utf-8")
+    assert not kbingest.load_patterns(table, rules_table)[0]  # a cap over the ceiling refuses the language
+
+    def boom(*a, **k):
+        raise AssertionError("a pattern mapper started a process")
+
+    monkeypatch.setattr(kbingest, "run_tool", boom)
+    r = commit_files(tmp_path / "hostile", {"a.ps1": "function " + "A" * 5000 + " {\n}\nfunction Kept-One {\n}\n"})
+    doc, _ = map_doc(r, tmp_path / "hostile.json", "--lang", "powershell")
+    assert [s["name"] for s in doc["symbols"]] == ["Kept-One"], doc["symbols"]
+    assert any("lines over" in n["note"] for n in doc["notes"]), doc["notes"]
+
+
 def test_survey_leaves_out_and_keeps_and_map_redacts_leaks_and_keeps_the_rest(tmp_path):
     survey_leaves_out_and_keeps(tmp_path)
     map_redacts_leaks_and_keeps_the_rest()
@@ -162,3 +189,4 @@ def test_map_never_runs_a_planted_ast_module_or_a_program_inside_the_worktree_an
     map_never_runs_a_planted_ast_module(tmp_path)
     map_never_runs_a_program_inside_the_worktree(tmp_path)
     map_child_environment_is_scrubbed(tmp_path, monkeypatch)
+    pattern_mapper_starts_no_process_and_bounds_the_table(tmp_path, monkeypatch)

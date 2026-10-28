@@ -1,0 +1,3 @@
+language,extensions,case,word,max_line,max_matches
+powershell,.ps1 .psm1 .psd1,insensitive,[\w-],1000,2000
+lua,.lua,sensitive,\w,1000,2000

@@ -76,7 +76,8 @@
     ".claude/skills/kb-ingest/SKILL.md",
     "AGENTS.md",
     "kb/_self/maintaining.md",
-    "kb/_self/plugin.md"
+    "kb/_self/plugin.md",
+    "_tools/kbingest_rules.csv"
   ],
   "depends_on": [
     "ST-yxudqftw",
@@ -130,6 +131,86 @@
       "reason": "because where and drift need references to say what a change touches, and the language rule matches how each language resolves names",
       "class": "agents-rule",
       "answer": "A whole-word match of the defined name in another line of a mapped file, case-insensitive for PowerShell and case-sensitive for Lua",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    },
+    {
+      "id": "g4",
+      "kind": "blocking",
+      "question": "What are the pattern table's columns and the caps of its bounded match?",
+      "options": [
+        "One row per regex: language, extensions, case, word, role, kind, pattern; lines over 1000 characters skipped, 2000 matches per file, regexes up to 200 characters",
+        "Separate tables per concern (languages, rules) with other caps"
+      ],
+      "recommendation": "One row per regex: language, extensions, case, word, role, kind, pattern; lines over 1000 characters skipped, 2000 matches per file, regexes up to 200 characters",
+      "do": {
+        "One row per regex: language, extensions, case, word, role, kind, pattern; lines over 1000 characters skipped, 2000 matches per file, regexes up to 200 characters": "ST-zkhku3sg",
+        "Separate tables per concern (languages, rules) with other caps": "ST-zkhku3sg"
+      },
+      "class": "agents-rule",
+      "answer": "Separate tables per concern (languages, rules) with other caps",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    },
+    {
+      "id": "g5",
+      "kind": "blocking",
+      "question": "How does a refused table row show, and what does the map record for a pattern language?",
+      "options": [
+        "A language with a refused row is refused whole at load and named by map --lang; tools records tool patterns with the table's sha256 prefix as version",
+        "Skip only the refused row and map the rest of the language"
+      ],
+      "recommendation": "A language with a refused row is refused whole at load and named by map --lang; tools records tool patterns with the table's sha256 prefix as version",
+      "do": {
+        "A language with a refused row is refused whole at load and named by map --lang; tools records tool patterns with the table's sha256 prefix as version": "ST-zkhku3sg",
+        "Skip only the refused row and map the rest of the language": "ST-zkhku3sg"
+      },
+      "class": "agents-rule",
+      "answer": "Skip only the refused row and map the rest of the language",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    },
+    {
+      "id": "g6",
+      "kind": "blocking",
+      "question": "Where do the languages table and the rules table live, given the item's touches name only _tools/kbingest_patterns.csv?",
+      "options": [
+        "Two sections of _tools/kbingest_patterns.csv, separated by a blank line, each with its header row",
+        "Two files, the rules table in a new _tools/kbingest_rules.csv, after the operator adds that path to the touches"
+      ],
+      "recommendation": "Two sections of _tools/kbingest_patterns.csv, separated by a blank line, each with its header row",
+      "do": {
+        "Two sections of _tools/kbingest_patterns.csv, separated by a blank line, each with its header row": "ST-zkhku3sg",
+        "Two files, the rules table in a new _tools/kbingest_rules.csv, after the operator adds that path to the touches": "ST-zkhku3sg"
+      },
+      "class": "agents-rule",
+      "answer": "Two files, the rules table in a new _tools/kbingest_rules.csv, after the operator adds that path to the touches",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    },
+    {
+      "id": "g7",
+      "kind": "blocking",
+      "question": "Which caps does the languages table hold, and what bounds them?",
+      "options": [
+        "Per language max_line and max_matches columns (1000 and 2000 for both languages), bounded in code at 4000 and 10000, plus a 200-character regex limit in code",
+        "Caps fixed in code only, the same for every language"
+      ],
+      "recommendation": "Per language max_line and max_matches columns (1000 and 2000 for both languages), bounded in code at 4000 and 10000, plus a 200-character regex limit in code",
+      "do": {
+        "Per language max_line and max_matches columns (1000 and 2000 for both languages), bounded in code at 4000 and 10000, plus a 200-character regex limit in code": "ST-zkhku3sg",
+        "Caps fixed in code only, the same for every language": "ST-zkhku3sg"
+      },
+      "class": "agents-rule",
+      "answer": "Per language max_line and max_matches columns (1000 and 2000 for both languages), bounded in code at 4000 and 10000, plus a 200-character regex limit in code",
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive",
