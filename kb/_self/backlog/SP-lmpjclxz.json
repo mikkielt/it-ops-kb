@@ -1,0 +1,22 @@
+{
+  "id": "SP-lmpjclxz",
+  "kind": "sprint",
+  "title": "Gates classed by what they change: guarded touches hold a landing, not the work",
+  "status": "planned",
+  "goal": "a gate whose question, options or commands name money, an act only the operator can do, a scope change or running a program on input is blocking whatever its class; a gate whose only operator class comes from its item's touches is held, so the agent takes its recommendation provisionally and keeps working; a gate stays blocking when an option names a path outside the item's touches or a rule-text path, when its item's title names secrets, push, the suite ceiling or the query log, or when it is added with --kind blocking; done refuses an item whose held answer the operator has not confirmed; one command confirms a sprint's held answers while horizon lists them",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e",
+  "filed_in": "clone-0ea70e5c"
+}
