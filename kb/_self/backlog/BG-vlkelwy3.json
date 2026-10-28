@@ -2,7 +2,7 @@
   "id": "BG-vlkelwy3",
   "kind": "bug",
   "title": "gate remove lets an agent clear a gate made blocking by a strict signal, an option path or the item's title, since it guards only the operator classes",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-lmpjclxz",
   "priority": "P1",
   "rank": 0,
@@ -32,6 +32,29 @@
     "kb/_self/tools.md"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-a3c0c63f",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "97aec323e6b1dab2d674d3f837048ad083434e1a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "operator_class_is_derived"
+        ],
+        "exit": 0,
+        "sha256": "2eaa760c4c1d7ba4"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess as s,sys,tempfile as t; d=t.mkdtemp(); r=lambda *a: s.run([sys.executable,\"_tools/backlog.py\",\"--root\",d,*a],capture_output=True,text=True); i=r(\"new\",\"story\",\"--title\",\"S\",\"--goal\",\"g\",\"--touch\",\"src/a.py\").stdout.split()[2]; a=r(\"gate\",\"add\",i,\"--kind\",\"provisional\",\"--question\",\"May the run spend 20 USD?\",\"--option\",\"yes\",\"--option\",\"no\",\"--recommendation\",\"yes\"); p=r(\"gate\",\"remove\",i,\"g1\"); sys.exit(\"an agent removed a blocking strict gate: \"+p.stdout.strip() if a.returncode==0 and \"(blocking)\" in a.stdout and p.returncode==0 else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
