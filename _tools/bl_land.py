@@ -537,8 +537,10 @@ def cmd_done(bl, a):
         for s in bl.sprint_items(sp) + [sp]:
             for g in bl.items[s].get("gates", []):
                 if g.get("by") == "agent":
-                    problems.append(f"provisional answer to confirm: {bl.label(s)} gate {g['id']}: {g['answer']}")
-                    reasons.append("provisional-answer")
+                    held = g.get("hold") is True  # the item's touches held it: confirmed here, in one call
+                    problems.append(f"{'held' if held else 'provisional'} answer to confirm: {bl.label(s)} gate "
+                                    f"{g['id']}: {g['answer']}")
+                    reasons.append("provisional-answer")  # the closed class ql_capture.OPS_REFUSED names
     globs = scope(bl, iid)
     repos = getattr(a, "repositories", None)  # land's {repository: {request, commit}}: the work merged in each
     if not globs and kind != "epic" and not it.get("review"):  # start's rule, for an item filed into a running sprint

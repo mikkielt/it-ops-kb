@@ -19,7 +19,7 @@
       "run": [
         "python3",
         "-c",
-        "import subprocess as s,sys,tempfile as t,os; d=t.mkdtemp(); r=lambda *a, env=None: s.run([sys.executable,\"_tools/backlog.py\",\"--root\",d,*a],capture_output=True,text=True,env=env); sp=r(\"new\",\"sprint\",\"--title\",\"S\",\"--goal\",\"g\").stdout.split()[2]; i=r(\"new\",\"story\",\"--sprint\",sp,\"--title\",\"T\",\"--goal\",\"g\",\"--touch\",\"AGENTS.md\").stdout.split()[2]; r(\"gate\",\"add\",i,\"--kind\",\"provisional\",\"--question\",\"Which columns does the table hold?\",\"--option\",\"one table\",\"--option\",\"two tables\",\"--recommendation\",\"one table\"); r(\"answer\",i,\"g1\",\"--provisional\"); h=r(\"horizon\",\"--sprint\",sp); n=r(\"answer\",sp,\"--confirm-held\"); y=r(\"answer\",sp,\"--confirm-held\",\"--by\",\"operator\",env=dict(os.environ,CLAUDECODE=\"1\")); v=r(\"show\",i,\"--field\",\"gates\").stdout; sys.exit(0 if \"held\" in h.stdout and n.returncode!=0 and y.returncode==0 and \"operator\" in v and \"agent\" not in v else \"confirm-held, its flag or the horizon list is wrong: \"+h.stdout[-200:]+n.stderr[-150:]+y.stdout[-150:]+y.stderr[-150:]+v[-200:])"
+        "import subprocess as s,sys,tempfile as t,os; d=t.mkdtemp(); r=lambda *a, env=None: s.run([sys.executable,\"_tools/backlog.py\",\"--root\",d,*a],capture_output=True,text=True,env=env); sp=r(\"new\",\"sprint\",\"--title\",\"S\",\"--goal\",\"g\").stdout.split()[2]; i=r(\"new\",\"story\",\"--sprint\",sp,\"--title\",\"T\",\"--goal\",\"g\",\"--touch\",\"AGENTS.md\").stdout.split()[2]; r(\"gate\",\"add\",i,\"--kind\",\"provisional\",\"--question\",\"Which columns does the table hold?\",\"--option\",\"one table\",\"--option\",\"two tables\",\"--recommendation\",\"one table\"); r(\"answer\",i,\"g1\",\"--provisional\"); h=r(\"horizon\",\"--sprint\",sp); n=r(\"answer\",sp,\"--confirm-held\"); y=r(\"answer\",sp,\"--confirm-held\",\"--by\",\"operator\",env=dict(os.environ,CLAUDECODE=\"1\")); v=r(\"show\",i,\"--field\",\"gates\").stdout; sys.exit(0 if \"held\" in h.stdout and n.returncode!=0 and y.returncode==0 and \"operator\" in v and \"\\\"agent_session\\\"\" not in v and \"\\\"agent\\\"\" not in v else \"confirm-held, its flag or the horizon list is wrong: \"+h.stdout[-200:]+n.stderr[-150:]+y.stdout[-150:]+y.stderr[-150:]+v[-200:])"
       ]
     },
     {
@@ -108,6 +108,62 @@
       "reason": "because the gate's own text names nothing guarded and strict or text-classed gates keep the flag",
       "class": "agents-rule",
       "answer": "No flag, as for a provisional design answer",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    },
+    {
+      "id": "held-set",
+      "kind": "provisional",
+      "question": "Which gates does --confirm-held confirm?",
+      "options": [
+        "Those stored with hold: true and an agent's answer",
+        "Every gate of the sprint's items that an agent answered"
+      ],
+      "recommendation": "Those stored with hold: true and an agent's answer",
+      "do": {
+        "Those stored with hold: true and an agent's answer": "ST-7pogsj4c",
+        "Every gate of the sprint's items that an agent answered": "ST-7pogsj4c"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "Those stored with hold: true and an agent's answer",
+      "by": "agent"
+    },
+    {
+      "id": "done-reason",
+      "kind": "provisional",
+      "question": "Which refusal class does a held answer record in the done.refused row?",
+      "options": [
+        "provisional-answer, the closed class that row already has",
+        "a new class held-answer"
+      ],
+      "recommendation": "provisional-answer, the closed class that row already has",
+      "do": {
+        "provisional-answer, the closed class that row already has": "ST-7pogsj4c",
+        "a new class held-answer": "ST-7pogsj4c"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "provisional-answer, the closed class that row already has",
+      "by": "agent"
+    },
+    {
+      "id": "check1-substring",
+      "kind": "blocking",
+      "question": "Check 1 tests that the word agent is absent from the gate JSON, but a held gate stores class agents-rule, which holds it; how is the check fixed?",
+      "options": [
+        "Test for agent_session and by agent, not the bare word",
+        "Keep the check as written"
+      ],
+      "recommendation": "Test for agent_session and by agent, not the bare word",
+      "do": {
+        "Test for agent_session and by agent, not the bare word": "ST-7pogsj4c",
+        "Keep the check as written": "ST-7pogsj4c"
+      },
+      "class": "agents-rule",
+      "answer": "Test for agent_session and by agent, not the bare word",
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive",
