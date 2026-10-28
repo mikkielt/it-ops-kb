@@ -1,0 +1,18 @@
+{
+  "id": "BG-is5j6lfl",
+  "kind": "bug",
+  "title": "multi run research --dry-run estimates USD 0.42 for three Haiku pip agents that cost USD 2.69 to 3.05 in the 2026-10-28 records",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "multi run research --dry-run --model research=haiku-5-5 prints an estimate within a factor of two of the recorded Haiku concurrent research records (USD 2.69 to 5.77): its research estimate, the mean cost of the repro area runs scaled by the input price ratio 0.05, prints USD 0.14 an agent, about a tenth of the recorded cost",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys;o=subprocess.run([sys.executable,\"_tools/benchmarks.py\",\"multi\",\"run\",\"research\",\"--dry-run\",\"--model\",\"research=haiku-5-5\"],capture_output=True,text=True).stdout;sys.exit(0 if float(o.split(\"estimate: $\")[-1].split()[0])>=1.3 else 1)"
+    ]
+  },
+  "filed_in": "clone-0ea70e5c"
+}
