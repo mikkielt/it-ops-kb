@@ -21,7 +21,23 @@
         "python3",
         "_tools/tests.py"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval",
+        "--file",
+        "kb/public/_retrieval/lookup_heldout.csv",
+        "--root",
+        "public",
+        "--min",
+        "86",
+        "--max-false-good",
+        "8"
+      ]
     }
   ],
+  "notes": "Review 2026-10-28 (G1): this review story predates review_checks' held-out eval, so the eval is added here; the reviewer ran it: passed=86 of 99, false_good=8 max=8.",
   "filed_in": "clone-0ea70e5c"
 }
