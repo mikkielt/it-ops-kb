@@ -4669,3 +4669,13 @@ _Agent: kb-research_
 - See claude/settings-and-scopes.md, agents/decision-records.md, agents/headless-agent-runtimes.md.
 
 _Agent: kb-research_
+
+## QK-choices-agent-settle-plan-human-decide. Which choices should an agent settle in its plan and which does the human decide, and how is the human's wait measured?
+- Anthropic's autonomy study finds the largest share of Claude Code's own stops (35% of a sample of completed turns) presents the user with a choice between proposed approaches, ahead of diagnostic gathering (21%), clarifying vague requests (13%), missing credentials or access (12%) and approval before an action (11%); on the most complex tasks it asks for clarification more than twice as often as humans interrupt it. [DOC S-t6ibresy]
+- The study cautions that Claude may stop at the wrong moments or ask needless questions, and that Plan Mode may affect the rate. [DOC S-t6ibresy]
+- The study measures turn duration from the start of work to the stop, whatever the reason, so a person's wait is outside it; Claude Code's beta tracing times a permission decision as a `claude_code.tool.blocked_on_user` span and `claude_code.tool_decision` counts accept and reject by source. [DOC S-t6ibresy, S744]
+- Conclusion: the sources show that choosing between approaches is the commonest reason an agent stops, and give no rule that such a choice needs a person; so settling an implementation choice in the plan, where a person reads it once, and leaving the stop for an effect the classifier lists (code run on input, data leaving, deploys, permission grants, irreversible loss) is a design reading, not a vendor rule. Held time can be summed from stop-to-next-event intervals for a gate that has both events, which is the study's turn-duration idea applied to the wait instead of the work. [DER S-t6ibresy, S-zcuxapgb, S744: stop reasons, effect classes and the tracing spans read together]
+- Open: a vendor measure of the wait for an agent's own question, and of how often its recommendation is the answer taken. [UNK]
+- See agents/decision-records.md, claude/settings-and-scopes.md, claude/otel-monitoring.md.
+
+_Agent: kb-research_
