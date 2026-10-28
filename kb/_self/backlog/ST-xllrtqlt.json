@@ -113,7 +113,9 @@
       },
       "class": "design",
       "answer": "Add a test-side matrix of the corpus's long value over its keys, separators and quoting depths",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g4",
