@@ -1,0 +1,23 @@
+{
+  "id": "ST-mr33ob74",
+  "kind": "story",
+  "title": "Three landed checks read text or a stub where the behaviour can be run: tests.py --changed renames, the long-value corpus measure, the no-forge replay",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "tests.py --changed is checked on a real git mv out of _tools in a scratch repository; the redactor's long value after an equals sign is measured on the adversarial corpus (the goal's at most 12 of 360); session-load's no-forge check sees a forge CLI planted ahead of the shim; and name-recall's recall and false-flag rates are stated",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "t=open('kb/_self/reports/benchmarks.md',encoding='utf-8').read().lower()\nassert 'false-flag' in t or 'false flag' in t, 'no name-recall rate stated'"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-jwvaq2hu review"
+  ],
+  "notes": "Review gaps: SP-jwvaq2hu G4 (ST-3j3wlgg4 check reads getsource; test_ceiling.py:55 stubs subprocess.run), SP-jwvaq2hu G5 (ST-xllrtqlt provisional g3 swapped the corpus measure for a 128-row test matrix; ST-d4lwbr2o name-recall.csv has 50 rows and no rate), SP-m5m67goe G2 (replay PATH forge-shim:fail-shim:PATH shadows the check's glab/gh markers, bench_load.py:370-410). The check covers only the name-recall rate; a planner adds one per part.",
+  "filed_in": "clone-0ea70e5c"
+}
