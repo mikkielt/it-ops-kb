@@ -23,5 +23,11 @@
       "--dry-run"
     ]
   },
+  "clauses": [
+    {
+      "clause": "run session-load --paid --arms A,C,D,worker --dry-run plans the worker arm's runs (arm_env already gives the worker environment) and exits 0, so ST-rodj5ltd's paid record can hold the worker arm",
+      "check": 0
+    }
+  ],
   "filed_in": "clone-0ea70e5c"
 }
