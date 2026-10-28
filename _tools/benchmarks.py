@@ -411,7 +411,7 @@ def main(argv=None):
                    "trees of the live Claude Code sessions of this clone (or of the --live-pids roots) and write, arm live, case 'live "
                    "<class>' and 'live all', cpu_s, rss_peak_mb, rss_mean_mb and spawns_per_min, with a snapshot of the samples under _cache/")
     r.add_argument("--paid", action="store_true",
-                   help="`session-load` alone, arms A, C, D: start, per arm, phase, session and rep, one `claude -p` of " + bench_load.PAID_MODEL
+                   help="`session-load` alone, arms A, C, D, worker: start, per arm, phase, session and rep, one `claude -p` of " + bench_load.PAID_MODEL
                    + f" under --max-budget-usd {bench_load.PAID_RUN_USD:g} in a throwaway clone with the arm's settings and sample its process "
                    "tree into the rows of the replay with the model column set (--sessions N,N runs N at once, --max-usd X starts no group "
                    "once X would be passed, --dry-run prints the run count and the estimate and starts no claude)")
@@ -653,7 +653,7 @@ def main(argv=None):
         return 2
     arms, efforts = (x.split(",") if x else None for x in (a.arms, a.effort))
     load_arms, arm_problems = None, []
-    if arms and "session-load" in names:  # its arms (A, C, D) are no pool arms: each scenario takes its own
+    if arms and "session-load" in names:  # its arms (A, B, C, D, worker) are no pool arms: each scenario takes its own
         load_arms = [x for x in arms if x in bench_load.ARMS]
         arms = [x for x in arms if x not in bench_load.ARMS] or None
         if arms and "pool" not in names:
@@ -712,7 +712,7 @@ def main(argv=None):
         elif a.fs_usage or a.intake_real or a.live or a.window is not None or a.pane_every is not None:
             problems.append("--paid: starts Haiku 5.5 sessions; it takes no --fs-usage, --intake-real, --live, --window or --pane-every")
         elif any(x not in bench_load.PAID_ARMS for x in load_arms or ()):
-            problems.append(f"--paid: arms {', '.join(bench_load.PAID_ARMS)} only (B needs an interactive session, worker is A under another environment)")
+            problems.append(f"--paid: arms {', '.join(bench_load.PAID_ARMS)} only (B needs an interactive session)")
     elif a.dry_run and "session-load" in names:
         problems.append("--dry-run: session-load has a plan only with --paid")
     capture = None
