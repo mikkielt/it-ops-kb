@@ -2,7 +2,7 @@
   "id": "ST-d4lwbr2o",
   "kind": "story",
   "title": "Three small paid probes settle the code map's docs-map result, the cost of concurrent same-article research and the distill model's name recall",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-jwvaq2hu",
   "priority": "P2",
@@ -129,6 +129,29 @@
   ],
   "notes": "Planner (SP-jwvaq2hu): check 0 (report --check) passes before the work and pins that benchmarks.md and README stay true to the csv; the worker runs each probe's --dry-run first and records its estimate beside the cap before paying. Planner (SP-jwvaq2hu): after ST-6zg57xiu, the last session-load item of SP-m5m67goe's chain that also writes benchmarks.csv, benchmarks.md and README.md.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-557596e3",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "7f2d5c04ba248d8b0546acbdc349edf0a30359bd",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "report",
+          "--check"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv,sys;r=list(csv.DictReader(open('kb/_self/reports/name-recall.csv')));print(len(r));sys.exit(0 if len(r)>=50 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "7ea9844ae84eccbf"
+      }
+    ]
+  }
 }
