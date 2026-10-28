@@ -539,6 +539,21 @@ def disposition(item, gate):
     return "agent", []
 
 
+# The implementation details a gate's question asks about: columns, caps, fields, units, a format, a layout, defaults, a
+# name, one file or two, where something lives or appears
+DETAIL_RE = re.compile(
+    r"\b(?:columns?|caps?|fields?|units?|formats?|layouts?|defaults?|names?|one file or two|"
+    r"where\b[^?]*\b(?:lives?|appears?|goes|sits?|is (?:kept|written|printed|shown)))\b", re.I)
+DETAIL_LINE = ("detail only: settle it in the goal before the start or answer it provisionally, "
+               "the gate is still added")
+
+
+def detail_only(item, gate):
+    """Whether the gate asks only an implementation detail (DETAIL_RE) and has no reason to block (`disposition` is not
+    `block`), so planning settles it in the item's goal."""
+    return disposition(item, gate)[0] != "block" and bool(DETAIL_RE.search(str(gate.get("question") or "")))
+
+
 def sprint_scope(item, gate, members):
     """The item whose touches classify the gate: for a sprint's start gate the item with the touches of every member
     item (`members`, the sprint's items but a dropped one) added, so the class is the strictest over what the sprint would run; any

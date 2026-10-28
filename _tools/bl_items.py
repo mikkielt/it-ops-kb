@@ -1206,6 +1206,8 @@ def gate_add(bl, a):
         gate["hold"] = True
         say(f"gate {gid} of {bl.label(iid)} is held by {', '.join(reasons_disp)}: provisional, the agent goes on with "
             "its recommendation and the operator confirms it at the review")
+    if bl_authority.detail_only(it, gate):
+        say(f"gate {gid} of {bl.label(iid)}: {bl_authority.DETAIL_LINE}")
     same =[g for g in gates if g.get("question") == gate["question"] or g.get("id") == gid]
     if same:
         known = same[0]

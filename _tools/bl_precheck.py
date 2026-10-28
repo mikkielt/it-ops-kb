@@ -9,6 +9,7 @@ from there. It registers `researched` and `precheck` with `bl_cli` itself when i
 its usage position)."""
 import csv, datetime, importlib, io, json, re, shlex, sys
 
+import bl_authority
 import bl_cli
 import bl_intake
 import bl_peers
@@ -521,6 +522,9 @@ def cmd_precheck(bl, a):
                 "figures, which only a query-log delivery after the merge changes, and land runs a code item's checks "
                 "and repro before it pushes the merge request, so it stops at checks: move that proof to a separate "
                 "item, done after the merge")
+        for gate in bl.items[iid].get("gates", []) or []:
+            if "answer" not in gate and bl_authority.detail_only(bl.items[iid], gate):
+                say(f"warning: gate {gate.get('id')} of {bl.label(iid)}: {bl_authority.DETAIL_LINE}")
         for text in bl_plan.anchors_warnings(bl, [iid]):
             say(text)
         for text in bl_plan.research_rows_warnings(bl, [iid], quoted):
