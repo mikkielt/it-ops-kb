@@ -41,6 +41,96 @@
     "ST-5fakffyb",
     "ST-57o3hmbo"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "What --max-budget-usd does each paid session-load run get?",
+      "options": [
+        "0.10 USD a run",
+        "0.50 USD a run"
+      ],
+      "recommendation": "0.10 USD a run",
+      "reason": "a Haiku 5.5 session of the two prompts cost 0.001 to 0.004 USD on the first real run, so 0.10 never binds a normal run and bounds a runaway one at 23 USD over the 234",
+      "do": {
+        "0.10 USD a run": "ST-i5az334d",
+        "0.50 USD a run": "ST-i5az334d"
+      },
+      "class": "design",
+      "answer": "0.50 USD a run",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How does a paid session-load run stop starting sessions at the --max-usd cap, and what does the run exit with?",
+      "options": [
+        "Start no group once the spend so far plus the group at the mean cost of the finished sessions of its phase would pass the cap; the first group always starts; later groups are left unstarted, a spend_stopped row names them, exit 0",
+        "As the pool: the same rule but exit 1 when sessions are left unstarted"
+      ],
+      "recommendation": "Start no group once the spend so far plus the group at the mean cost of the finished sessions of its phase would pass the cap; the first group always starts; later groups are left unstarted, a spend_stopped row names them, exit 0",
+      "reason": "the item's check requires exit 0 at the cap",
+      "do": {
+        "Start no group once the spend so far plus the group at the mean cost of the finished sessions of its phase would pass the cap; the first group always starts; later groups are left unstarted, a spend_stopped row names them, exit 0": "ST-i5az334d",
+        "As the pool: the same rule but exit 1 when sessions are left unstarted": "ST-i5az334d"
+      },
+      "class": "design"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "What prompt and tools does a session of each phase get?",
+      "options": [
+        "Idle: reply with one word, no tool. Working: git status, one rag.py search, read 20 lines of README.md, one sentence; tools Read, git status and rag.py only",
+        "A longer scripted task with edits and a test run"
+      ],
+      "recommendation": "Idle: reply with one word, no tool. Working: git status, one rag.py search, read 20 lines of README.md, one sentence; tools Read, git status and rag.py only",
+      "reason": "three tool calls fire the PreToolUse, PostToolUse and Stop hooks as the replay's working phase does, and cost a few cents at most",
+      "do": {
+        "Idle: reply with one word, no tool. Working: git status, one rag.py search, read 20 lines of README.md, one sentence; tools Read, git status and rag.py only": "ST-i5az334d",
+        "A longer scripted task with edits and a test run": "ST-i5az334d"
+      },
+      "class": "design",
+      "answer": "Idle: reply with one word, no tool. Working: git status, one rag.py search, read 20 lines of README.md, one sentence; tools Read, git status and rag.py only",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "blocking",
+      "question": "How does a paid run get the Claude Code version and the user's own settings out of its rows?",
+      "options": [
+        "Bench subclass that runs a failing claude for its version probe, the version from the first session's init event, and claude -p with --setting-sources project,local",
+        "Leave the version probe and the user's settings as they are"
+      ],
+      "recommendation": "Bench subclass that runs a failing claude for its version probe, the version from the first session's init event, and claude -p with --setting-sources project,local",
+      "reason": "bench_core is outside the touches and its probe would log a claude call that is no capped session; the user's own hooks and plugins are not the clone's cost",
+      "do": {
+        "Bench subclass that runs a failing claude for its version probe, the version from the first session's init event, and claude -p with --setting-sources project,local": "ST-i5az334d",
+        "Leave the version probe and the user's settings as they are": "ST-i5az334d"
+      },
+      "class": "design"
+    },
+    {
+      "id": "g5",
+      "kind": "provisional",
+      "question": "Which rows does a session-load run with real sessions write, and what does --dry-run without them do?",
+      "options": [
+        "The replay's rows (cpu_s, rss_peak_mb, rss_mean_mb, spawns_per_min per class and all, wall_s) plus run_failures and cost, the all CPU from wait4 and the class CPU from ps times; --dry-run without the flag exits 2",
+        "Only the replay's rows, and --dry-run without the flag runs the replay"
+      ],
+      "recommendation": "The replay's rows (cpu_s, rss_peak_mb, rss_mean_mb, spawns_per_min per class and all, wall_s) plus run_failures and cost, the all CPU from wait4 and the class CPU from ps times; --dry-run without the flag exits 2",
+      "reason": "a dry run that starts the hook replay would break the plan's promise to start nothing",
+      "do": {
+        "The replay's rows (cpu_s, rss_peak_mb, rss_mean_mb, spawns_per_min per class and all, wall_s) plus run_failures and cost, the all CPU from wait4 and the class CPU from ps times; --dry-run without the flag exits 2": "ST-i5az334d",
+        "Only the replay's rows, and --dry-run without the flag runs the replay": "ST-i5az334d"
+      },
+      "class": "design",
+      "answer": "The replay's rows (cpu_s, rss_peak_mb, rss_mean_mb, spawns_per_min per class and all, wall_s) plus run_failures and cost, the all CPU from wait4 and the class CPU from ps times; --dry-run without the flag exits 2",
+      "by": "agent"
+    }
+  ],
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-557596e3",
   "operator": "op-f618a13e"
