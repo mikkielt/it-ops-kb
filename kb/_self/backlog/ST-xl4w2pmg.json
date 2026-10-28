@@ -105,7 +105,12 @@
         "the four operator classes (ceiling, secrets, push, agents-rule), as gate add makes blocking today": "ST-xl4w2pmg",
         "those four plus the query log and delete classes": "ST-xl4w2pmg"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "those four plus the query log and delete classes",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     },
     {
       "id": "g2",
