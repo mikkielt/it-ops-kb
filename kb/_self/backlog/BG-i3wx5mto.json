@@ -1,0 +1,27 @@
+{
+  "id": "BG-i3wx5mto",
+  "kind": "bug",
+  "title": "kbask.py ask takes a session label such as s-0e0c2d as its target and exits 0, but the coord hook delivers only asks to a full session id, an announced item or any, so the other session never sees the question",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kbask.py ask TARGET resolves a session label (s- and six hex, as peers, horizon and kbmon print it) to the live session id it names and sends the ask to that id, printing both; a label that names no live session, or more than one, exits 1 with nothing sent; kb/_self/coordination.md and kb/_self/tools.md say which targets an ask reaches.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess as s,sys,tempfile as t,os,json; d=t.mkdtemp(); p=s.run([sys.executable,\"_tools/kbask.py\",\"ask\",\"--store\",os.path.join(d,\"coord.db\"),\"s-0e0c2d\",\"Is this seen?\"],capture_output=True,text=True); o=json.loads(p.stdout) if p.returncode==0 and p.stdout.strip().startswith(\"{\") else {}; sys.exit(\"an ask to a session label was sent unresolved: \"+p.stdout.strip() if p.returncode==0 and o.get(\"to\")==\"s-0e0c2d\" else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/kbask.py",
+    "kb/_self/coordination.md",
+    "kb/_self/tools.md"
+  ],
+  "relates_to": [
+    "BG-afksmtkf"
+  ],
+  "notes": "Found 2026-10-28 running SP-lmpjclxz: ask A92f312cef4 to s-0e0c2d (the label backlog.py peers printed for the other orchestrator) was never answered. coord_hook.new_asks (.claude/hooks/coord_hook.py:672) shows an ask only when its to is the session's full id, any or one of its announced items, and kbask.refuse_ended checks only full session ids, so a label target passes and is lost. A second ask, Afe61c64057 to the item ST-qqpcgqe7, was not answered either while that item's worker had returned and its orchestrator went on to land it; whether an item ask reaches the orchestrator that dispatched the item, rather than only the worker's session, is not yet known and is for the worker to read in coord_hook and the intents. A session idle in a coord.py wait --kind progress makes no tool call, so the hook shows it no ask until its wait returns.",
+  "filed_in": "clone-0ea70e5c"
+}
