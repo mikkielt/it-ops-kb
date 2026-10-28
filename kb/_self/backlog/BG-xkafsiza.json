@@ -2,7 +2,8 @@
   "id": "BG-xkafsiza",
   "kind": "bug",
   "title": "stage-back runs an item's checks before the staged file is committed, so a check that measures a clone of HEAD sees the old file",
-  "status": "draft",
+  "status": "todo",
+  "sprint": "SP-wpttdu7u",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -45,5 +46,24 @@
     "kb/_self/backlog.md",
     "skills/sprint/SKILL.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does stage-back let an item's own checks read the staged file in a clone of the worktree's HEAD?",
+      "options": [
+        "commit the copies first, run the checks over that commit and undo it when one fails",
+        "run the checks that read a clone of HEAD only at done and name them in stage-back's output"
+      ],
+      "recommendation": "commit the copies first, run the checks over that commit and undo it when one fails",
+      "reason": "stage-back cannot tell which checks read a clone of HEAD, so a deferral has no mechanical test, and a failing check still leaves the branch and the worktree as they were",
+      "do": {
+        "commit the copies first, run the checks over that commit and undo it when one fails": "BG-xkafsiza",
+        "run the checks that read a clone of HEAD only at done and name them in stage-back's output": "BG-xkafsiza"
+      },
+      "class": "agents-rule"
+    }
+  ],
+  "notes": "Premise: cmd_stage_back copies the staging copies into the worktree, runs stage_back_checks over the uncommitted files and commits after, so an item check that clones the worktree's HEAD reads the last commit's file. Repro on the base: exit 1, AssertionError: the check saw 'old', not the staged file (stage-back exit 1); stage-back printed: refused: 1 copy(ies), worktree as it was, nothing committed. Design (goal follows the recommended option of gate g1): copy-in, selfdoc.py check and selfdoc.py stale --since HEAD stay before the commit (the stale list and the Self-Reviewed trailer need the copies uncommitted); then the commit; then the item's checks and repro over it, in the loop stage_back_checks has now; a failing check undoes the commit (restore_originals) and exits 1; an error after the commit must not leave it either; --check stops after the selfdoc part. With the other option the goal, repro and check are reshaped first: the repro asserts a check ran over the staged file, which that option never does. The check runs the repro's driven case and a planted case: a failing item check (clones HEAD, exits 1) leaves work/ID, the worktree file and the staging copy as they were; stage-back --check commits nothing. About 2 s. On a patched copy of bl_dispatch.py that commits first and resets one commit on a failure both cases pass; on the base the driven case fails and the planted case alone passes (it guards a fix that leaves the commit). referrers: bl_dispatch.py is the one kind=ref file of stage_back_checks and cmd_stage_back; backlog.py, bl_land.py, bl_runs.py and kb_mcp.py only name the command. Docs: tools.md (stage-back, dispatch and bl_dispatch.py rows), backlog.md (stage-back paragraph), skills/sprint/SKILL.md (what stage-back checks and commits; kb-sprint links to it). peers: those three docs are also in other live sessions' touches, so edit only the stage-back lines.",
   "filed_in": "clone-0ea70e5c"
 }
