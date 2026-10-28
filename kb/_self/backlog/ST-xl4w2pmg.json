@@ -168,8 +168,10 @@
       },
       "class": "agents-rule",
       "hold": true,
-      "answer": "an agent removes a held gate and answers it provisionally, only a blocking gate needs the operator",
-      "by": "agent"
+      "answer": "an agent removes and answers only a held gate; a blocking gate of any class needs the operator (BG-vlkelwy3), and a ceiling gate is removed only from the operator's terminal (BG-g6usmwjt)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g5",
