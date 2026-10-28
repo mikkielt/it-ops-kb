@@ -308,17 +308,14 @@ def secrets_rx():
     return "|".join(f"(?i:{p[4:]})" if p.startswith("(?i)") else f"(?:{p})" for p in SECRETS)
 
 
-def leak_hits(text, allow=None, kinds=STRUCTURED):
-    """[(kind, value)] of the leak scan's shapes in `text`: secret, home, ip, email, guid, and the private names the
-    registry knows (`private_hits`); `allow` maps a kind to lowercased values that pass (the scan of tracked files
-    reads them from _tools/tests_allowlist.txt). `kinds`: the structured secret shapes read (`structured_secrets`):
-    PROSE_STRUCTURED for a prose file or item text, `()` for a vendor export."""
-    allow = allow or {}
+def _shape_hits(text, allow, kinds, own=()):
+    """leak_hits without the registry's private names: the shapes alone. `own`: lowercased user names that pass as the
+    last part of a home path (a root's `placeholders`)."""
     out = [("secret", m.group(0)) for m in re.finditer(secrets_rx(), text)
            if m.group(0).lower() not in allow.get("secret", ())]
     out += [("secret", v) for v in structured_secrets(text, kinds) if v.lower() not in allow.get("secret", ())]
     out += [("home", m.group(0)) for m in re.finditer(LEAK_HOME, text)
-            if re.split(r"[/\\]+", m.group(0))[-1].lower() not in HOME_GENERIC
+            if re.split(r"[/\\]+", m.group(0))[-1].lower() not in HOME_GENERIC + tuple(own)
             and m.group(0).lower() not in allow.get("home", ())]
     out += [("ip", m.group(0)) for m in re.finditer(LEAK_IPV4, text)
             if m.group(0) not in allow.get("ip", ()) and all(int(x) < 256 for x in m.group(0).split("."))]
@@ -326,6 +323,18 @@ def leak_hits(text, allow=None, kinds=STRUCTURED):
             if not EMAIL_OK.search(m.group(0)) and m.group(0).lower() not in allow.get("email", ())]
     out += [("guid", m.group(0)) for m in re.finditer(LEAK_GUID, text)
             if not GUID_OK.fullmatch(m.group(0).lower()) and m.group(0).lower() not in allow.get("guid", ())]
+    return out
+
+
+def leak_hits(text, allow=None, kinds=STRUCTURED, root=None):
+    """[(kind, value)] of the leak scan's shapes in `text`: secret, home, ip, email, guid, and the private names the
+    registry knows (`private_hits`); `allow` maps a kind to lowercased values that pass (the scan of tracked files
+    reads them from _tools/tests_allowlist.txt). `kinds`: the structured secret shapes read (`structured_secrets`):
+    PROSE_STRUCTURED for a prose file or item text, `()` for a vendor export. `root`: a Root whose `placeholders` pass
+    as the user of a home path, for that root's files only."""
+    allow = allow or {}
+    own = frozenset(p.lower() for p in getattr(root, "placeholders", ()) or ())
+    out = _shape_hits(text, allow, kinds, own)
     out += [h for h in private_hits(text) if h[1].lower() not in allow.get(h[0], ())]
     return out
 
@@ -456,6 +465,7 @@ class Root(NamedTuple):
     team: str = ""  # '' when the root names none
     languages: tuple = DEFAULT_LANGUAGES  # the language codes of its text (`languages` in ROOT_FILE), the first one primary
     evidence: Optional[dict] = None  # {'answer': [...], 'lead': [...]} tag kinds of its `evidence` policy; None: sets none
+    placeholders: tuple = ()  # user names its files and redact take as placeholders (`placeholders` in ROOT_FILE)
 
 
 class RootError(Exception):
@@ -542,6 +552,26 @@ def _evidence(path, raw):
     return out
 
 
+USER_NAME = re.compile(r"[A-Za-z][A-Za-z0-9]*(?:[._-][A-Za-z0-9]+)*")  # a bare user name: no domain, address, path or ip
+
+
+def _placeholders(path, raw):
+    """The user names of a ROOT_FILE's `placeholders` value (`anna.nowak, piotr.zielinski`) as a tuple; RootError naming
+    a name that matches a leak shape on its own or inside a home path (other than as the user of that path), or that is no
+    bare user name. The registry's private names are not read here: loading a root must not load the registry."""
+    names = tuple(dict.fromkeys(n for n in re.split(r"[\s,]+", raw) if n))
+    where = f"{path}/{ROOT_FILE}: `placeholders`"
+    for n in names:
+        kinds = sorted({k for t in (n, "C:\\Users\\" + n, "/home/" + n, "/Users/" + n)
+                        for k, _ in _shape_hits(t, {}, PROSE_STRUCTURED) if t == n or k != "home"})
+        if kinds:
+            shown = "a name" if "secret" in kinds else repr(n)  # a secret-shaped name is never echoed
+            raise RootError(f"{where} names {shown}, which matches the leak shape {', '.join(kinds)}; only a user name no shape takes may be a placeholder")
+        if not USER_NAME.fullmatch(n):
+            raise RootError(f"{where} names {n!r}, which is no bare user name (letters, digits, `.`, `_`, `-`; no domain, address or path)")
+    return names
+
+
 def evidence_line(policy):
     """`answer DOC, CODE, DER; lead COMMUNITY, UNK` for a policy dict (None: the default)."""
     policy = policy or DEFAULT_EVIDENCE
@@ -570,7 +600,7 @@ def load_root(path):
     if team and not TEAM.fullmatch(team):
         raise RootError(f"{path}/{ROOT_FILE}: `team` must be a lowercase name (a-z, 0-9, -), got {team!r}")
     return Root(name, path, prefix, vis, meta.get("description", ""), team, _languages(path, meta.get("languages", "")),
-                _evidence(path, meta.get("evidence", "")))
+                _evidence(path, meta.get("evidence", "")), _placeholders(path, meta.get("placeholders", "")))
 
 
 class Pointer(NamedTuple):
