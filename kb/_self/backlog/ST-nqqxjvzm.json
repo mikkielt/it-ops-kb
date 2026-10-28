@@ -179,7 +179,12 @@
         "One evidence: line per pack: the shared policy alone, or each policy with the roots it holds for, joined by ' | '": "ST-nqqxjvzm",
         "One evidence: line per root searched": "ST-nqqxjvzm"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "One evidence: line per pack: the shared policy alone, or each policy with the roots it holds for, joined by ' | '",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     },
     {
       "id": "g5",
