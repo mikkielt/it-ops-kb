@@ -52,9 +52,6 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "depends_on": [
-    "ST-xl4w2pmg"
-  ],
   "gates": [
     {
       "id": "g1",

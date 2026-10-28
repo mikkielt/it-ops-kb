@@ -28,9 +28,6 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "depends_on": [
-    "ST-7pogsj4c"
-  ],
   "gates": [
     {
       "id": "g1",
