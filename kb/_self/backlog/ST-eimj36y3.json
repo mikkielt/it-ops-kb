@@ -2,7 +2,7 @@
   "id": "ST-eimj36y3",
   "kind": "story",
   "title": "A root may list its own placeholder names in _root.md while the leak shapes stay the same for every root",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-7vyrared",
   "sprint": "SP-iir3d2tu",
   "priority": "P3",
@@ -184,6 +184,57 @@
   ],
   "notes": "Premise (plan time, synthetic names): redact.redact rewrites a logon shape with a fictitious user other than the shipped placeholder, and a profile path with such a user; kbcommon.leak_hits flags the same profile path as a home folder. It does not reproduce for a device name like PL-LT-00999, a bare user name or an email on corp.example.com, so the need is logon and profile-path shapes only. PLACEHOLDERS is one dict in redact.py; the scan of every tracked file must still pass with no root setting anything.\nOperator: g1 build after the redaction stories in flight land (ST-xllrtqlt, after ST-yl6b2ues); g2 user names only. Order: after ST-3j3wlgg4 (test_redact.py).\nChecks 0, 1 and 2 (the redact and leak tests, perfcheck ids) each passes before the work and pin behaviour that must stay unchanged (the leak shapes, the shipped placeholders, the test ids); checks 3 and 4 fail before it with a one-line reason.\nContract: Root.placeholders is a tuple; kbcommon.leak_hits(text, allow=None, root=None) and redact.redact(text, root=None) let a root's own placeholders pass for its files only; fixtures _tools/fixtures/placeholders/{ok (placeholders: anna.nowak), bad (one that matches a leak shape; the refusal names `placeholders` in backticks)}.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-557596e3",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "712d17c377dc84541b96d351a0b0b97e6237717d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "_tools/test_redact.py"
+        ],
+        "exit": 0,
+        "sha256": "14d5b9329b072f4c"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "_tools/test_leaks.py"
+        ],
+        "exit": 0,
+        "sha256": "fa58c2c03cd9c3be"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/perfcheck.py",
+          "ids",
+          "--base",
+          "origin/main"
+        ],
+        "exit": 0,
+        "sha256": "32d3595b9fb32181"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0, '_tools')\nimport kbcommon, redact\ndef load(name):\n    try:\n        return kbcommon.load_root('_tools/fixtures/placeholders/' + name)\n    except kbcommon.RootError as e:\n        sys.exit('fixture root %s: %s' % (name, str(e)[:200]))\n\nr = load('ok')\n'anna.nowak' in tuple(getattr(r, 'placeholders', ()) or ()) or sys.exit('Root.placeholders is %r' % (getattr(r, 'placeholders', None),))\npath = 'C:' + chr(92) + 'Users' + chr(92) + 'anna.nowak' + chr(92) + 'x'\nkbcommon.leak_hits(path) or sys.exit('the global leak scan must still flag a profile path with another user')\ntry:\n    own = kbcommon.leak_hits(path, root=r)\n    red = redact.redact('logon CORP' + chr(92) + 'anna.nowak', root=r)\nexcept TypeError as e:\n    sys.exit('leak_hits and redact take no root= keyword yet: %s' % e)\nown and sys.exit('the root\\'s own placeholder is still flagged in its files: %s' % own)\n'anna.nowak' in red or sys.exit('redact rewrote the root\\'s own placeholder: ' + red)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0, '_tools')\nimport kbcommon, redact\ndef load(name):\n    try:\n        return kbcommon.load_root('_tools/fixtures/placeholders/' + name)\n    except kbcommon.RootError as e:\n        sys.exit('fixture root %s: %s' % (name, str(e)[:200]))\n\ntry:\n    kbcommon.load_root('_tools/fixtures/placeholders/bad')\nexcept kbcommon.RootError as e:\n    '`placeholders`' in str(e) or sys.exit('refusal does not name the `placeholders` key: ' + str(e)[:200])\nelse:\n    sys.exit('a placeholder that matches a leak shape was accepted')"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
