@@ -2,7 +2,7 @@
   "id": "ST-5fakffyb",
   "kind": "story",
   "title": "session-load runs 1, 4 and 8 sessions at once and records what they cost together",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nxb7hjwd",
   "sprint": "SP-wv3ob5vy",
   "priority": "P3",
@@ -33,5 +33,7 @@
     "kb/_self/benchmarks.md",
     "kb/_self/tools.md"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-557596e3",
+  "operator": "op-f618a13e"
 }
