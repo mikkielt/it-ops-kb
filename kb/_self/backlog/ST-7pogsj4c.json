@@ -2,7 +2,7 @@
   "id": "ST-7pogsj4c",
   "kind": "story",
   "title": "One command confirms a sprint's held answers at its review, horizon lists them, and a confirmed held answer needs no terminal re-confirm",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-lmpjclxz",
   "priority": "P1",
   "rank": 0,
@@ -115,5 +115,7 @@
     }
   ],
   "notes": "Design, settled at planning 2026-10-28 (gates hold-timing and reconfirm, answered by the operator): held answers reach the operator at the sprint review, not before landing; the review's done names each as held answer to confirm: ID gate G: ANSWER; --confirm-held takes --except ID:GATE (repeatable) for a gate left for its own answer (a changed answer plus a redo task) and --commit for one commit; a refused --confirm-held exits 2 and writes nothing; an answer to a gate that blocks by its own text or a strict signal keeps the agent_session flag as now; horizon prints the count and the list (item, gate, answer), horizon --hook the count; skills/sprint/SKILL.md review step 3 confirms held answers through this command with the reviewer's report beside each; kb/_self/backlog.md and kb/_self/tools.md describe it. Check 2 passes before the work: it pins the critical test the work extends. Premise run 2026-10-28 on origin/main 80725b09a9: checks 0, 1 and 3 fail (the touch-classed gate is made blocking, an agent's provisional answer is refused, --confirm-held is unknown).",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-a3c0c63f",
+  "operator": "op-f618a13e"
 }
