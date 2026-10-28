@@ -50,7 +50,9 @@
       },
       "class": "design",
       "answer": "One point per role plus role=all (the most of every role, 0 with none); the rule reads role=all",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
