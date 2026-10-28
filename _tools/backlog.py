@@ -222,6 +222,8 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           keeps only the recorded leftovers at those paths, a path no record
                                           names exits 2; exit 1 a removal
                                           failed, 2 a refusal, 3 the coord store stayed locked
+  backlog.py horizon --gates [--sprint ID]   one line per sprint: its gates by disposition (block, held, agent), the share
+                                          answered with the recommendation and the hours blocking gates held items
   backlog.py horizon [--sprint ID] [--hook [--opt-in]]   how far each active sprint can go without the operator: reachable
                                           items, what waits on which gate or trigger, the critical path, the
                                           knowledge state of the next item's asks and refs (--hook runs no pack;
