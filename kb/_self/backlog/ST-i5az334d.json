@@ -98,7 +98,9 @@
       },
       "class": "design",
       "answer": "Idle: reply with one word, no tool. Working: git status, one rag.py search, read 20 lines of README.md, one sentence; tools Read, git status and rag.py only",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g4",
