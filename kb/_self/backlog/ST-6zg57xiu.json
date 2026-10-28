@@ -106,7 +106,11 @@
         "Reopen ST-nejgzptp so its check accepts a row whose commit's tool files match a commit on the branch": "ST-nejgzptp",
         "Keep racing: repoint and land right after a rebase while main is quiet": "ST-6zg57xiu"
       },
-      "class": "design"
+      "class": "design",
+      "answer": "Land the tool and docs first without the record rows, and record the rows in a follow-up item once the tool commit is on origin/main",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Premise from ST-7nuaruwn's first record (before g8's pin): the SessionStart intake hook's drift scan took about 50 s and 50 CPU seconds per session start in a replay clone, against under 15 starts for every other hook; the pinned record leaves it out (gate g8 of ST-7nuaruwn). The hook files nothing in a linked worktree under .claude/worktrees/ (kb/_self/backlog.md), so dispatched workers skip it; sessions in the main checkout, interactive or headless, pay it. Its figure goes into the switch decision of ST-qqpcgqe7. Operator chose on 2026-10-26: keep the pin and measure this apart. The pinned arm comparison (arms A, C, D) stays as it is; the sprint review's done reruns its checks. Orchestrator 2026-10-28: gate land asks the operator how a new session-load record lands, after two refusals at step siblings.",
