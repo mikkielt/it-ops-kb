@@ -129,7 +129,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "Those stored with hold: true and an agent's answer",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "done-reason",
@@ -147,7 +149,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "provisional-answer, the closed class that row already has",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "check1-substring",
