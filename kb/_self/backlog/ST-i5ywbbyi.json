@@ -1,0 +1,29 @@
+{
+  "id": "ST-i5ywbbyi",
+  "kind": "story",
+  "title": "session-load's 5-rep record of the real intake hook, run after its tool landed",
+  "status": "todo",
+  "parent": "EP-nxb7hjwd",
+  "sprint": "SP-m5m67goe",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/_self/reports/benchmarks.csv holds a 5-rep record of python3 _tools/benchmarks.py run session-load --arms A --intake-real (case 'idle hook intake real', rows cpu_s, wall_s and spawns), run once ST-6zg57xiu's tool commit is on origin/main so its rows name that commit",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport csv, subprocess\np = subprocess.run([sys.executable, '_tools/benchmarks.py', 'report', '--check'], capture_output=True, text=True, timeout=600)\nassert p.returncode == 0, ('report --check', p.returncode, p.stdout[-400:])\nrows = [r for r in csv.DictReader(open('kb/_self/reports/benchmarks.csv', encoding='utf-8')) if r['scenario'] == 'session-load']\nfor m in ('cpu_s', 'wall_s', 'spawns'):\n    assert [r for r in rows if r['case'] == 'idle hook intake real' and r['arm'] == 'A' and r['metric'] == m and r['runs'] == '5'], ('no 5-run record row of the unpinned intake hook', m)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/benchmarks.csv",
+    "kb/_self/reports/benchmarks.md",
+    "README.md"
+  ],
+  "depends_on": [
+    "ST-6zg57xiu"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
