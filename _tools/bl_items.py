@@ -1087,8 +1087,9 @@ def gate_host_unchecked(bl, a):
 
 
 def gate_remove(bl, a):
-    """gate remove: an unanswered gate, never the sprint's start gate; one of a class only the operator answers needs
-    --by operator, so an agent cannot clear a gate that is not its to answer."""
+    """gate remove: an unanswered gate, never the sprint's start gate; a gate whose disposition is block (an operator
+    class, a strict signal, an option path, a guarded title, kind blocking) needs --by operator, so an agent cannot
+    clear a gate that is not its to answer and re-add it reworded as provisional."""
     iid = need(bl, a.id)
     it = bl.items[iid]
     g = next((g for g in it.get("gates", []) if g.get("id") == a.gate), None)
@@ -1101,9 +1102,11 @@ def gate_remove(bl, a):
         raise Rejected(f"gate remove refuses gate {a.gate} of {bl.label(iid)}: it is answered ({g['answer']!r} by "
                        f"{g.get('by')}), and a gate's answer is not taken back")
     cls = bl_authority.gate_class(it, g)
-    if cls in bl_authority.BLOCK_CLASSES and bl_authority.disposition(it, g)[0] == "block" and a.by != "operator":
-        raise Rejected(f"gate remove refuses gate {a.gate} of {bl.label(iid)}: it is class {cls}, which only the "
-                       "operator answers, so only the operator removes it (--by operator)")
+    disp, why = bl_authority.disposition(it, g)
+    if disp == "block" and a.by != "operator":
+        raise Rejected(f"gate remove refuses gate {a.gate} of {bl.label(iid)}: it is blocking (class {cls}; "
+                       f"{'; '.join(why)}), which only the operator answers, so only the operator removes it "
+                       "(--by operator)")
 
     def edit(new):
         new["gates"] = [x for x in new.get("gates", []) if x.get("id") != a.gate]
@@ -1600,8 +1603,8 @@ def args_gate(p):
     p.add_argument("id")
     p.add_argument("gate")
     p.add_argument("--by", choices=["operator"],
-                   help="operator: removes a gate of class secrets, push or agents-rule, passed only after the "
-                        "operator said so")
+                   help="operator: removes a blocking gate (an operator class, a strict signal, an option path, a "
+                        "guarded title or kind blocking), passed only after the operator said so")
     p = gsub.add_parser("host-unchecked")
     p.add_argument("id")
     p.add_argument("gate")
