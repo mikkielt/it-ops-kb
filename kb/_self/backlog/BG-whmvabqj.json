@@ -2,7 +2,7 @@
   "id": "BG-whmvabqj",
   "kind": "bug",
   "title": "run session-load --paid refuses the worker arm, so the paid record cannot hold the lean worker arm's rows",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-wv3ob5vy",
   "priority": "P2",
   "rank": 0,
@@ -45,5 +45,7 @@
     "kb/_self/benchmarks.md",
     "kb/_self/tools.md"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-557596e3",
+  "operator": "op-f618a13e"
 }
