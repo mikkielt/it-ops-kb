@@ -2,7 +2,7 @@
   "id": "ST-qqpcgqe7",
   "kind": "story",
   "title": "Sessions no person watches skip the hooks only a person reads, keeping the lease, asks and query-log rows",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-nxb7hjwd",
   "sprint": "SP-wpttdu7u",
   "priority": "P3",
@@ -96,5 +96,7 @@
     }
   ],
   "notes": "Operator, 2026-10-26: lean switch decided now; kb_hook stays on tool calls in unwatched sessions (WebFetch deny, read nudge), only its prompt hook is person-only.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-557596e3",
+  "operator": "op-f618a13e"
 }
