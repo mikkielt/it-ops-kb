@@ -106,7 +106,9 @@
       },
       "class": "design",
       "answer": "one row per question with group, has_name, flagged, correct, batch, model, prompt_commit (last commit that changed the distill prompt), run_commit and date; 25 invented-name and 25 product-only questions paired by topic, interleaved in two batches of 25 as the distill batches entries, entry fields prompt, answer and candidates empty",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g4",
