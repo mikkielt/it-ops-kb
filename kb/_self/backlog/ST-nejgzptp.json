@@ -63,7 +63,9 @@
       },
       "class": "design",
       "answer": "repoint the record's rows to the main commits with the same tool code, and add the new notes to them",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
