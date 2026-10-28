@@ -47,7 +47,8 @@
     "kb/_self/reports/benchmarks.csv",
     "kb/_self/reports/benchmarks.md",
     "kb/_self/reports/name-recall.csv",
-    "README.md"
+    "README.md",
+    "kb/_self/token-efficiency.md"
   ],
   "depends_on": [
     "ST-6zg57xiu"
