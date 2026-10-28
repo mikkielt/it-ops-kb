@@ -883,9 +883,10 @@ def restore_originals(originals):
 
 
 def stage_back_checks(bl, iid, wt, check_only, reviewed):
-    """Run the checks over the worktree as it is, with the staging copies in it: `selfdoc.py check` (where the
-    worktree has it) and, with no CHECK_ONLY, the docs `selfdoc.py stale --since HEAD` lists that REVIEWED does not
-    name and the item's own checks. (ok, the lines said): `ok` False when one fails."""
+    """Run the docs checks over the worktree as it is, with the staging copies in it, uncommitted: `selfdoc.py check`
+    (where the worktree has it) and, with no CHECK_ONLY, the docs `selfdoc.py stale --since HEAD` lists that REVIEWED
+    does not name. (ok, the lines said): `ok` False when one fails. The item's own checks are
+    `stage_back_item_checks`, which run over the commit."""
     ok, lines = True, []
     tool = wt / "_tools" / "selfdoc.py"
     if tool.is_file():
@@ -908,8 +909,13 @@ def stage_back_checks(bl, iid, wt, check_only, reviewed):
                          f"correct, else it needs an edit)")
     else:
         lines.append("no _tools/selfdoc.py in the worktree: the docs check is skipped")
-    if check_only:
-        return ok, lines
+    return ok, lines
+
+
+def stage_back_item_checks(bl, iid, wt):
+    """Run the item's own checks and repro in the worktree, after the copies are committed, so a check that clones the
+    worktree's HEAD reads them. (ok, the lines said): `ok` False when one fails."""
+    ok, lines = True, []
     it = bl.items[iid]
     for c in list(it.get("checks", [])) + ([it["repro"]] if it.get("repro") else []):
         good, code, out = run_check(wt, c)
@@ -956,7 +962,7 @@ def cmd_stage_back(bl, a):
                           f"\n{dirty}")
     heads = {h[2]: h[4] for h in half}
     copies = copies + [h[:4] for h in half]
-    originals = {}
+    originals, undo = {}, {}  # undo: {git root: its HEAD before the commit}
     back = "refused" if bl_land.run_state(iid) == "refused" else "returned"  # a land that stopped at checks stays refused
     recorded = bl_land.note_run_process(iid)  # first: a key at staging with no live record is one a rerun takes over
     try:
@@ -986,6 +992,7 @@ def cmd_stage_back(bl, a):
         for top in dict.fromkeys(c[3] for c in copies):
             paths = [str(c[2].relative_to(top)) for c in copies if c[3] == top]
             git_in(top, "add", "--", *paths)
+            undo.setdefault(top, git_in(top, "rev-parse", "HEAD").stdout.strip())
             msg = commit_message(subject, [iid], trailers, "Copied back from the staging copies:\n"
                                  + "\n".join(f"- {x}" for x in paths))
             p = subprocess.run(["git", "-C", str(top), "commit", "-q", "-F", "-", "--only", "--", *paths],
@@ -995,9 +1002,18 @@ def cmd_stage_back(bl, a):
                 raise Refused(f"stage-back: git commit failed in {top}: {(p.stderr or p.stdout).strip()}")
             say(f"committed {git_in(top, 'rev-parse', '--short=10', 'HEAD').stdout.strip()} {subject} "
                 f"({len(paths)} file(s))")
-            originals = {t: d for t, d in originals.items() if not any(c[2] == t and c[3] == top for c in copies)}
+        ok, lines = stage_back_item_checks(bl, iid, wt)  # over the commit: a check that clones HEAD reads the copies
+        for line in lines:
+            say(line)
+        if not ok:
+            say(f"stage-back {bl.label(iid)}: refused: {len(copies)} copy(ies), the commit undone, worktree as it was")
+            return 1
+        undo = {}
+        originals = {}
         return 0
     finally:
+        for top, before in undo.items():  # a refusal or an error after the commit takes it off the branch again
+            git_in(top, "reset", "-q", "--mixed", before)
         restore_originals(originals)  # a refusal or an error leaves the worktree as it was
         if entered:
             bl_land.move_run(iid, back, "stage-back")
