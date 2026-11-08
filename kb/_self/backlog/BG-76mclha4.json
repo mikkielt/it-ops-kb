@@ -2,7 +2,7 @@
   "id": "BG-76mclha4",
   "kind": "bug",
   "title": "A shipped Lua rule of the kbingest pattern table is quadratic on a hostile line, and the in-process mapper has no timeout",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-n7zxspch",
   "priority": "P2",
   "rank": 0,
@@ -88,5 +88,7 @@
     "parked: SP-iir3d2tu review"
   ],
   "notes": "Order: after BG-r57wg5tg (tools.md lines 55 and 56 are adjacent, so a parallel landing conflicts at the rebase). Planning: the filed repro compiled the row's pattern literally, so it could not pass after a rewrite; it now loads the shipped Lua def rows through load_patterns and times each. Run once on the base: exit 1 at 4.6 ms (seven runs, 4.58 to 4.73 ms) against the 0.5 ms bound; a prototype row, ^\\s*function\\s+(?:[\\w.:]*[.:])?(?P<name>\\w+)\\s*\\(, takes 0.016 ms and names f, f, f and c on check 1's lines (margin 9 times on the base side, 30 times on the fixed side). The table has two Lua def rows (csv lines 10 and 11): the checks read both. The Lua import row, \\brequire\\s*\\(?\\s*['\"]..., is quadratic too (2.9 ms on a 990-space line) and the goal leaves it out: if the widened guard refuses it the worker rewrites it (check 0 needs the shipped table to load whole, 12 rules, none skipped). Check 2 fails on the base at the missing PATTERN_FILE_TIMEOUT_S. Check 1 (the Lua names) passes before the work: it pins the names the rewritten row must keep. Check 3 (the guards test selection, a critical component) passes before the work: it pins the existing guard test. The repro is index 4. Peers (kbask ask Abb4cf3ba67 to ST-7n742jnj, unanswered): kbingest.py is also in ST-7n742jnj of SP-ep7ck2ab, planned and not started, no claim held; this fix lands first and ST-7n742jnj rebases on it. AGENTS.md, maintaining.md and plugin.md are in the touches because the docs map names them for kbingest.py: edit them only when selfdoc.py stale lists them. Peer answer: ST-7n742jnj changes none of PatternMapper, rule_row, nested_quantifier or the rules table and said to land first.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-557596e3",
+  "operator": "op-f618a13e"
 }
