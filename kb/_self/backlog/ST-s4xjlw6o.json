@@ -1,0 +1,42 @@
+{
+  "id": "ST-s4xjlw6o",
+  "kind": "story",
+  "title": "Review sprint: Groups extend it-ops-kb from their own repository through a versioned extension API",
+  "status": "draft",
+  "sprint": "SP-ep7ck2ab",
+  "review": true,
+  "priority": "P1",
+  "rank": 999999,
+  "goal": "Every committed item is done or dropped, provisional answers are confirmed by the operator, and a fresh-context review of the sprint's diff found no unfiled defect.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval",
+        "--file",
+        "kb/public/_retrieval/lookup_heldout.csv",
+        "--root",
+        "public",
+        "--min",
+        "86",
+        "--max-false-good",
+        "8"
+      ]
+    }
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
