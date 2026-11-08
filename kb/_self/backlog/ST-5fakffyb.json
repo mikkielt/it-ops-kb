@@ -96,7 +96,9 @@
       },
       "class": "design",
       "answer": "one throwaway clone each (the first shared with the one-session rows), each replay with its own ps sampler paused N times as long, started together at a barrier",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "filed_in": "clone-0ea70e5c",
