@@ -2,7 +2,7 @@
   "id": "ST-rid77c4m",
   "kind": "story",
   "title": "A group's pack ranker, named as extension point ranker, adds one ranked list that kbfacts.rrf fuses, and with none set every pack is byte for byte as before",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-y7fe7qqx",
   "sprint": "SP-ep7ck2ab",
   "priority": "P2",
@@ -75,5 +75,7 @@
     "ST-y2u3sxta"
   ],
   "notes": "Check 2 (the held-out eval) passes before the work: with no ranker set the pack must rank as it does now.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-a796fc75",
+  "operator": "op-f618a13e"
 }
