@@ -1,0 +1,18 @@
+{
+  "id": "BG-hz5oyxuu",
+  "kind": "bug",
+  "title": "kbjob.py cancel ends the wrong job's process group when the executor runs jobs in parallel",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kj_follow.group_of finds the process group of the job asked for, not the first child of the executor that leads a group of its own: the job record's member pid names the child of that job, so cancel of one of several running jobs ends that job's group only",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,\"_tools\"); import kj_follow, inspect; assert \"serve-PID\" not in inspect.getsource(kj_follow.group_of)"
+    ]
+  },
+  "filed_in": "clone-0ea70e5c"
+}
