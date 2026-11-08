@@ -5,21 +5,75 @@ adds a `register` call in its module, its name in backlog.py's USAGE and no line
 
 Standard library only; imports `bl_base` (for `COMMITS` and the project settings) and never `backlog`."""
 import argparse
+import inspect
 import os
 import re
 import subprocess
 import sys
 from pathlib import Path
 
-from bl_base import COMMITS, kinds
+from bl_base import COMMITS, kinds, withhold
 
 COMMANDS = {}  # subcommand name -> (handler, add_arguments, help), in registration order
+GROUP = {}  # command name -> module of the group that added or replaced it (`load_group_commands`)
+_LOADING = []  # (layer, group name) while the group's modules are imported: their register and extend calls are the group's
+
+
+def _note(text):
+    print(withhold(f"backlog.py: {text}"), file=sys.stderr)
+
+
+def _caller():
+    """The name of the module that called `register` or `extend`: the group module being imported."""
+    return sys._getframe(2).f_globals.get("__name__", "?")
+
+
+def _group_of(name):
+    """The module that holds the command `name` as a group command, or None for a shipped one."""
+    return GROUP.get(name)
+
+
+def _args_form(handler):
+    """A group handler may take `(bl, args)` as a shipped one does or `(args)` alone: the one-parameter form is called
+    with the arguments only."""
+    try:
+        params = list(inspect.signature(handler).parameters.values())
+    except (TypeError, ValueError):
+        return handler
+    plain = [p for p in params if p.kind in (p.POSITIONAL_ONLY, p.POSITIONAL_OR_KEYWORD)]
+    if len(plain) == 1 and not any(p.kind == p.VAR_POSITIONAL for p in params):
+        return lambda bl, args: handler(args)
+    return handler
+
+
+def _noticed(name, handler, module, layer):
+    """The handler that says, on stderr, once each time it runs, that a group module's command stands in for `name`."""
+    def run(bl, args):
+        _note(f"command {name} is the group's: module {module} replaces or extends it (layer {layer})")
+        return handler(bl, args)
+    return run
+
+
+def _marked(help, group):
+    return f"{help} [group {group}]" if help else f"[group {group}]"
 
 
 def register(name, handler, add_arguments=None, help=None, registry=None):
     """Add the subcommand `name`: `handler(bl, args)` runs it, `add_arguments(parser)` gives its parser its
     arguments (a command with none passes nothing), `help` is the line the top-level usage shows for it (none by
-    default). A name registered twice is refused."""
+    default). A name registered twice is refused. Called from a group module (`load_group_commands`), the handler may
+    take `(args)` alone, a name that a shipped command or another module holds is replaced, running the replacement
+    prints one stderr line naming the command, the module and the layer, and `help` is marked with the group's name."""
+    if _LOADING and registry is None:
+        (layer, group), module = _LOADING[-1], _caller()
+        if _group_of(name) == module:
+            raise ValueError(f"subcommand {name!r} is registered twice")
+        handler = _args_form(handler)
+        if name in COMMANDS:
+            handler = _noticed(name, handler, module, layer)
+        COMMANDS[name] = (handler, add_arguments, _marked(help, group))
+        GROUP[name] = module
+        return
     registry = COMMANDS if registry is None else registry
     if name in registry:
         raise ValueError(f"subcommand {name!r} is registered twice")
@@ -29,7 +83,9 @@ def register(name, handler, add_arguments=None, help=None, registry=None):
 def extend(name, wrap, add_arguments, registry=None):
     """Add options to the registered subcommand `name`: `add_arguments(parser)` gives its parser the extra arguments
     after its own, and `wrap(handler)` returns the handler that runs in its place (it calls `handler` for the
-    original behaviour). A command that is not registered is refused."""
+    original behaviour). A command that is not registered is refused. Called from a group module, it replaces a
+    command that is not the module's own as `register` does: one stderr line each time it runs, the help marked."""
+    group_call = bool(_LOADING) and registry is None
     registry = COMMANDS if registry is None else registry
     if name not in registry:
         raise ValueError(f"subcommand {name!r} is not registered")
@@ -40,7 +96,14 @@ def extend(name, wrap, add_arguments, registry=None):
             own(p)
         add_arguments(p)
 
-    registry[name] = (wrap(handler), both, help)
+    new = wrap(handler)
+    if group_call:
+        (layer, group), module = _LOADING[-1], _caller()
+        if _group_of(name) != module:
+            new = _noticed(name, new, module, layer)
+            help = _marked(help, group) if _group_of(name) is None else help
+            GROUP[name] = module
+    registry[name] = (new, both, help)
 
 
 def order(names, registry=None):
@@ -199,3 +262,34 @@ def parse(ap, argv=None):
 def handler_of(name, registry=None):
     registry = COMMANDS if registry is None else registry
     return registry[name][0]
+
+
+def load_group_commands(root):
+    """Import each module `extensions.backlog_commands` lists in the settings layers of ROOT, after the shipped modules,
+    through `kbext.load_all` (kb/_self/extending.md): a module adds or replaces commands through `register` and `extend`
+    as it is imported, the module being the one that calls them. A module that `kbext` refuses (it cannot be imported,
+    declares no API version this one meets, raises) is named on stderr with its layer and file and every command the
+    group's modules registered is taken back, so the shipped commands run as before. Returns the loaded modules."""
+    import kbsettings
+    try:
+        layers = kbsettings.layer_files(root)
+        merged, source = kbsettings.layered(root, "extensions")
+    except kbsettings.SettingsError as e:
+        _note(f"group commands not loaded: {e}")
+        return []
+    if "backlog_commands" not in merged:  # no group: kbext (and its entry point scan) is never imported
+        return []
+    import kbext
+    layer = source["backlog_commands"]
+    group = next((d["group"] for _, _, d in reversed(layers) if isinstance(d.get("group"), str) and d["group"]), "group")
+    before = (dict(COMMANDS), dict(GROUP))
+    _LOADING.append((layer, group))
+    try:
+        return kbext.load_all("backlog_commands", root)
+    except kbext.ExtensionError as e:
+        COMMANDS.clear(), GROUP.clear()
+        COMMANDS.update(before[0]), GROUP.update(before[1])
+        _note(f"group commands not loaded: {e}")
+        return []
+    finally:
+        _LOADING.pop()

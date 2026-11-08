@@ -78,12 +78,61 @@
         "bl_cli.load_group_commands reads the list through the public kbsettings.layered and kbsettings.layer_files, puts extension_paths on sys.path and checks KBEXT_REQUIRES against kbext.API_VERSION and kbext.BOUND_RE itself, until kbext.py has a public loader of a list": "ST-agm3xuwi",
         "Wait for kbext.py to gain a public loader of a list (kbext.py is outside this item's touches), and call it": "ST-agm3xuwi"
       },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "With what arguments does backlog.py call the handler a group module registers, given the shipped handlers take (bl, args) and the goal's check handlers take (args) alone?",
+      "options": [
+        "A handler that takes one parameter is called with the arguments alone and any other with (bl, args), which an extend wrap keeps",
+        "Every group handler is called with (bl, args)"
+      ],
+      "recommendation": "A handler that takes one parameter is called with the arguments alone and any other with (bl, args), which an extend wrap keeps",
+      "do": {
+        "A handler that takes one parameter is called with the arguments alone and any other with (bl, args), which an extend wrap keeps": "ST-agm3xuwi",
+        "Every group handler is called with (bl, args)": "ST-agm3xuwi"
+      },
       "class": "agents-rule",
-      "answer": "call the public kbext.load_all(point, root), which ST-k2jjwnew (landing now) adds: it loads a point whose setting is one module:attr or a list, with the same sys.path, KBEXT_REQUIRES and refusal handling as load; do not copy that logic into bl_cli. Code against kbext.load_all now; the orchestrator rebases this branch onto origin/main once ST-k2jjwnew lands, before landing",
-      "by": "operator",
-      "operator": "op-f618a13e",
-      "role": "interactive",
-      "agent_session": true
+      "hold": true,
+      "answer": "A handler that takes one parameter is called with the arguments alone and any other with (bl, args), which an extend wrap keeps",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "When one module of extensions.backlog_commands fails to load, what happens to the commands it registered and to the modules after it?",
+      "options": [
+        "What it registered before failing is taken back, it is named on stderr with its layer, and the modules after it still load",
+        "The first failing module ends the loading and the modules after it are not tried"
+      ],
+      "recommendation": "What it registered before failing is taken back, it is named on stderr with its layer, and the modules after it still load",
+      "do": {
+        "What it registered before failing is taken back, it is named on stderr with its layer, and the modules after it still load": "ST-agm3xuwi",
+        "The first failing module ends the loading and the modules after it are not tried": "ST-agm3xuwi"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "What it registered before failing is taken back, it is named on stderr with its layer, and the modules after it still load",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "Given kbext.load_all stops at the first module it refuses, what happens to the commands that the group's modules registered when one module fails to load (this settles g3 anew)?",
+      "options": [
+        "Every command the group's modules registered is taken back, the failing module is named on stderr and the shipped commands run as before",
+        "Keep the commands of the modules that loaded before the failing one"
+      ],
+      "recommendation": "Every command the group's modules registered is taken back, the failing module is named on stderr and the shipped commands run as before",
+      "do": {
+        "Every command the group's modules registered is taken back, the failing module is named on stderr and the shipped commands run as before": "ST-agm3xuwi",
+        "Keep the commands of the modules that loaded before the failing one": "ST-agm3xuwi"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "Every command the group's modules registered is taken back, the failing module is named on stderr and the shipped commands run as before",
+      "by": "agent"
     }
   ],
   "filed_in": "clone-0ea70e5c",
