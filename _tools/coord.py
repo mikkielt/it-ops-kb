@@ -203,11 +203,12 @@ EVENTS_SCHEMA = (
     "CREATE TABLE IF NOT EXISTS events ("
     "seq INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT NOT NULL, fields TEXT NOT NULL, at REAL NOT NULL)"
 )
-KINDS = ("claim", "release", "dedup", "fact_added", "code_added", "gap_opened", "dup_of", "lesson", "heartbeat", "intent", "progress", "ask", "answer", "coordinate", "blocked")
+KINDS = ("claim", "release", "dedup", "fact_added", "code_added", "gap_opened", "dup_of", "lesson", "heartbeat", "intent", "progress", "ask", "answer", "coordinate", "blocked", "job")
 KIND_FIELDS = {"intent": ("session", "item", "topic", "touch", "operator"), "progress": ("item", "state", "exit", "gates", "step"),
                "ask": ("id", "to", "ref"), "answer": ("id", "state", "ref"), "code_added": ("target", "ref"),
                "coordinate": ("item", "other", "strategy", "touch", "session", "operator"),
-               "blocked": ("session", "state", "on", "item", "operator")}
+               "blocked": ("session", "state", "on", "item", "operator"),
+               "job": ("job", "state", "op", "item", "exit", "step", "by", "attempt")}
 STRATEGIES = ("wait", "ask", "after", "join", "proceed")  # what a coordinate event says its session will do about the other item
 BLOCKED_STATES = ("waiting", "cleared")  # what a `blocked` event says of its session: it waits on the person, or no longer does
 BLOCKED_ON = ("permission", "question")  # what a session waits on: a permission prompt, or a question put to the person
@@ -216,6 +217,13 @@ TRANSITIONS = {"none": ("claimed",), "claimed": ("working", "released", "landed"
                "blocked": ("working", "returned", "failed"), "returned": ("staging", "landing", "working", "released"),
                "failed": ("working", "released"), "staging": ("returned", "refused"), "landing": ("landed", "refused"),
                "refused": ("working", "staging", "landing", "released"), "landed": (), "released": ("claimed",)}  # none: a run key no move has written
+JOB_STATES = ("queued", "running", "waiting-lock", "waiting-merge", "succeeded", "failed", "refused", "cancelled", "lost")
+JOB_TRANSITIONS = {"none": ("queued",), "queued": ("running", "cancelled"),
+                   "running": ("waiting-lock", "waiting-merge", "succeeded", "failed", "refused", "cancelled", "lost"),
+                   "waiting-lock": ("running", "cancelled"), "waiting-merge": ("running", "cancelled"), "lost": ("queued", "failed"),
+                   "succeeded": (), "failed": (), "refused": (), "cancelled": ()}  # none: a job key no move has written
+JOB_KEYS = "job/"  # an operation's job: key job/<job id>, its value one JSON object (the job record and its state, exit and step)
+JOB_FIELDS = ("op", "item", "exit", "step", "by", "attempt")  # the fields of a job event besides job and state
 STATES = RUN_STATES + ("done",)  # what a progress event may carry; `done` is the item file's own, no run state moves to it
 FINISHED = ("done", "landed", "released")  # the states after which a digest no longer shows an intent
 RUN_KEYS = "run/"  # an item's run state: key run/<item id>, its value the state's name
@@ -560,6 +568,9 @@ def check_kind(kind, fields):
         if "item" not in fields or fields.get("state") not in STATES:
             raise Refused({"ok": False, "error": f"progress takes item and state (one of {', '.join(STATES)}) and optionally "
                                                  f"{', '.join(STEP_FIELDS)}"}, 2)
+    if kind == "job" and ("job" not in fields or fields.get("state") not in JOB_STATES):
+        raise Refused({"ok": False, "error": f"a job takes job and state (one of {', '.join(JOB_STATES)}) and optionally "
+                                             f"{', '.join(JOB_FIELDS)}"}, 2)
     if kind == "coordinate" and (not {"item", "other"} <= set(fields) or fields.get("strategy") not in STRATEGIES):
         raise Refused({"ok": False, "error": "a coordinate takes item (the item of the session that chose), other (the item it coordinates "
                                              "with) and strategy (one of " + ", ".join(STRATEGIES) + "), and optionally touch, session "
@@ -601,9 +612,12 @@ def transition(args, clock):
     """Move the run state of the item KEY (run/<item id>) to --to, when TRANSITIONS allows it from the state the key holds
     (an absent key holds `none`): the value, the revision and one progress event are written in one transaction. A move the
     table does not allow exits 1 naming the state and the states it may move to, and writes nothing."""
+    if args.key.startswith(JOB_KEYS):
+        return job_transition(args, clock)
     item = args.key[len(RUN_KEYS):] if args.key.startswith(RUN_KEYS) else ""
     if not FIELD_VALUE.fullmatch(item) or "/" in item:
-        raise Refused({"ok": False, "error": f"a run key is {RUN_KEYS}<item id>, the id of 1 to 120 characters of letters, digits and _ . : # @ -, not {args.key[:40]!r}"}, 2)
+        raise Refused({"ok": False, "error": f"a run key is {RUN_KEYS}<item id>, the id of 1 to 120 characters of letters, digits and _ . : # @ -, "
+                                             f"(or {JOB_KEYS}<job id> for a job), not {args.key[:40]!r}"}, 2)
     if args.to not in RUN_STATES:
         raise Refused({"ok": False, "error": f"--to is one of {', '.join(RUN_STATES)}, not {args.to[:40]!r}"}, 2)
     fields = parse_fields(args.field, "progress")
@@ -629,6 +643,70 @@ def transition(args, clock):
             revision = row["revision"] + 1
         event = {"item": item, "state": args.to, **fields}
         seq = add_event(con, args, "progress", event, now)
+    return {"ok": True, "key": args.key, "previous": have, "state": args.to, "revision": revision, "seq": seq, "fields": event}
+
+
+def job_record(raw):
+    """The job record a key's value holds: its JSON object, `{}` for an absent value; None for a value that is no object."""
+    if raw is None:
+        return {}
+    try:
+        record = json.loads(raw)
+    except ValueError:
+        return None
+    return record if isinstance(record, dict) else None
+
+
+def job_transition(args, clock):
+    """Move the state of the operation job KEY (job/<job id>) to --to, when JOB_TRANSITIONS allows it from the state the key
+    holds (an absent key holds `none`). The value is one JSON object: the move rewrites its state, exit and step members (the
+    two a move gives, else none) and keeps every other, and the same transaction raises the revision and posts one `job` event
+    of job, state and the move's fields; op, item, by and attempt not given by --field come from the record. A move the table
+    does not allow exits 1 naming the state the key holds and the states it may move to, and writes nothing."""
+    job = args.key[len(JOB_KEYS):]
+    if not FIELD_VALUE.fullmatch(job) or "/" in job:
+        raise Refused({"ok": False, "error": f"a job key is {JOB_KEYS}<job id>, the id of 1 to 120 characters of letters, digits and _ . : # @ -, not {args.key[:40]!r}"}, 2)
+    if args.to not in JOB_STATES:
+        raise Refused({"ok": False, "error": f"--to of a job is one of {', '.join(JOB_STATES)}, not {args.to[:40]!r}"}, 2)
+    fields = parse_fields(args.field, "job")
+    extra = sorted(set(fields) - set(JOB_FIELDS))
+    if extra:
+        raise Refused({"ok": False, "error": f"a job transition takes only the fields {', '.join(JOB_FIELDS)}, not {', '.join(extra)}"}, 2)
+    team_refusal(args)
+    with Tx(args.store) as con:
+        now = clock()
+        row = live_row(con, args.key, now)
+        record = job_record(row["value"] if row is not None else None)
+        if record is None:
+            raise Refused({"ok": False, "key": args.key, "revision": row["revision"],
+                           "error": f"{args.key} holds a value that is no job record (a JSON object), which no move rewrites"})
+        have = record.get("state", "none") if record else "none"
+        allowed = JOB_TRANSITIONS.get(have, ())
+        if args.to not in allowed:
+            raise Refused({"ok": False, "key": args.key, "state": have, "allowed": list(allowed),
+                           "revision": row["revision"] if row is not None else 0,
+                           "error": f"{args.key} is {have}, which does not move to {args.to}: it may move to "
+                                    f"{', '.join(allowed) or 'no state'}"})
+        record.pop("exit", None)
+        record.pop("step", None)
+        record["state"] = args.to
+        if "exit" in fields:
+            record["exit"] = int(fields["exit"]) if fields["exit"].isdigit() else fields["exit"]
+        if "step" in fields:
+            record["step"] = fields["step"]
+        event = {"job": job, "state": args.to}
+        for name in JOB_FIELDS:
+            value = fields.get(name, record.get(name))
+            if value is not None and FIELD_VALUE.fullmatch(str(value)):
+                event[name] = str(value)
+        value = json.dumps(record, sort_keys=True, ensure_ascii=False)
+        if row is None:
+            con.execute("INSERT INTO entries (key, value, revision) VALUES (?, ?, 1)", (args.key, value))
+            revision = 1
+        else:
+            con.execute("UPDATE entries SET value = ?, revision = revision + 1 WHERE key = ?", (value, args.key))
+            revision = row["revision"] + 1
+        seq = add_event(con, args, "job", event, now)
     return {"ok": True, "key": args.key, "previous": have, "state": args.to, "revision": revision, "seq": seq, "fields": event}
 
 
@@ -687,6 +765,11 @@ def process_runs(pid):
     return alive
 
 
+def event_ids(fields):
+    """The ids `wait --item` matches an event on: the ids of its item field, and its job id (a job event's own)."""
+    return set(fields.get("item", "").split(",")) | {fields["job"]} if "job" in fields else set(fields.get("item", "").split(","))
+
+
 def wait(args, _clock):
     """Events after --since, held until one arrives or --timeout passes. Behind `serve`, args.recheck says whether the
     caller's token still names its operator: asked about once a second and before any reply, and a revoked caller
@@ -709,7 +792,7 @@ def wait(args, _clock):
                 if kind is not None:
                     rows = [r for r in rows if r["kind"] == kind]
                 if items is not None:
-                    rows = [r for r in rows if items & set(json.loads(r["fields"]).get("item", "").split(","))]
+                    rows = [r for r in rows if items & event_ids(json.loads(r["fields"]))]
             ended = [p for p in pids if not process_runs(p)]
             if rows or ended or time.monotonic() >= deadline:
                 break
@@ -1166,9 +1249,11 @@ def build_parser(parser_class=argparse.ArgumentParser, remote=False):
     p.add_argument("--kind", required=True, help="one of " + ", ".join(KINDS))
     p.add_argument("--field", action="append", default=[], metavar="NAME=VALUE", help="an id field, repeatable")
     p = sub.add_parser("transition", parents=parents)
-    p.add_argument("key", help=f"{RUN_KEYS}<item id>")
-    p.add_argument("--to", required=True, metavar="STATE", help="the state to move to, one of " + ", ".join(RUN_STATES))
-    p.add_argument("--field", action="append", default=[], metavar="NAME=VALUE", help="one of " + ", ".join(STEP_FIELDS) + ", repeatable")
+    p.add_argument("key", help=f"{RUN_KEYS}<item id>, or {JOB_KEYS}<job id> for an operation job")
+    p.add_argument("--to", required=True, metavar="STATE", help="the state to move to, one of " + ", ".join(RUN_STATES)
+                   + "; of a job, one of " + ", ".join(JOB_STATES))
+    p.add_argument("--field", action="append", default=[], metavar="NAME=VALUE", help="one of " + ", ".join(STEP_FIELDS)
+                   + "; of a job, one of " + ", ".join(JOB_FIELDS) + ", repeatable")
     p = sub.add_parser("digest", parents=parents)
     p.add_argument("--key", action="append", required=True, metavar="K", help="an item id, topic key or path; repeatable")
     p.add_argument("--lines", type=not_negative, required=True, help="at most this many lines")
