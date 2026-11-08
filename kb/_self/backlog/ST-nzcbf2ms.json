@@ -2,7 +2,7 @@
   "id": "ST-nzcbf2ms",
   "kind": "story",
   "title": "coord's key directory nests groups as deep as GitLab's, and a group's keys are written by its own operators and those of the groups above it",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-p4guu2ip",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",
@@ -54,5 +54,7 @@
     "EP-fxrzbuza"
   ],
   "notes": "Research 2026-11-08 (kb public/gitlab/codeowners.md, Groups and subgroups): GitLab nests groups up to 20 levels on every tier and advises five or fewer; members inherit into subgroups. A coord group path deeper than 20 levels matches no GitLab group, so refusing it is consistent with the forge.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-61c966d6",
+  "operator": "op-f618a13e"
 }
