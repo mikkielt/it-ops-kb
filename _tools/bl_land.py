@@ -657,6 +657,11 @@ def cmd_done(bl, a):
                 + (f", output matching {c['match']!r}" if c.get("match") else "") + f"):\n{tail}")
         refuse_done(iid, t0, ["check-failed"], f"{bl.label(iid)} is not done: {len(failed)} check(s) failed",
                     [c["run"] for c, _, _ in failed], record=not a.dry_run)
+    import kg_sync  # the settings layers' gate_checks, the same group gate sync --push runs after its shipped checks
+    group = kg_sync.group_gate(bl.root)
+    if group:
+        refuse_done(iid, t0, ["check-failed"], f"{bl.label(iid)} is not done: {len(group)} group gate check(s) failed:\n  "
+                    + "\n  ".join(group), record=not a.dry_run)
     try:
         noop_proof(bl, iid, passed)
     except Refused as e:
