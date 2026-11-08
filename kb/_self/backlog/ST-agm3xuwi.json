@@ -2,7 +2,7 @@
   "id": "ST-agm3xuwi",
   "kind": "story",
   "title": "A group module named in extensions.backlog_commands adds a backlog.py command or replaces a shipped one through bl_cli.register, and backlog.py -h marks it as the group's",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-y7fe7qqx",
   "sprint": "SP-ep7ck2ab",
   "priority": "P3",
@@ -64,5 +64,7 @@
     "ST-xx5yzpky",
     "ST-y2u3sxta"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-a796fc75",
+  "operator": "op-f618a13e"
 }
