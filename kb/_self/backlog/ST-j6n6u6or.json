@@ -2,7 +2,7 @@
   "id": "ST-j6n6u6or",
   "kind": "story",
   "title": "A group's placement overrides are coord keys its own operators write, refused when they break the decision schema",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-p4guu2ip",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",
@@ -92,6 +92,28 @@
   ],
   "notes": "Check 2 passes before the work by design: it pins that a local put and get of group/<path>/policy/placement round-trips the override unchanged, which the schema refusal of check 1 must not break.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-61c966d6",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "fd386e6474db3d251c0feafe4bf88b976b2263db",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,json,time,tempfile,subprocess\nd=tempfile.mkdtemp()\nkd=os.path.join(d,\"keys\")\ndef key(p,t):\n    f=os.path.join(kd,*p.split(\"/\")); os.makedirs(os.path.dirname(f),exist_ok=True); open(f,\"w\").write(t); os.chmod(f,0o600); return f\na=key(\"corp/ops/jan.kowalski\",\"ka-placeholder\"); b=key(\"corp/dev/anna.nowak\",\"kb-placeholder\")\nEXTRA=[]\nimport atexit\nsv=subprocess.Popen([sys.executable,\"_tools/coord.py\",\"--store\",os.path.join(d,\"c.sqlite\"),\"serve\",\"--bind\",\"127.0.0.1:0\",\"--keys\",kd]+EXTRA,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,text=True); atexit.register(sv.kill)\nurl=sv.stdout.readline().split(\"serving\")[1].strip()\nput=lambda k,v: subprocess.run([sys.executable,\"_tools/coord.py\",\"--url\",url,\"--key-file\",k,\"put\",\"group/corp/ops/policy/placement\",\"--value\",json.dumps(v),\"--revision\",\"0\"],capture_output=True,text=True,timeout=60).returncode\nok={\"check\":{\"executor\":\"server\",\"identity\":\"none\",\"fallback\":None,\"fallback_after_s\":0,\"budget_cap_usd\":None}}\nr=[put(a,{\"check\":{\"executor\":\"moon\"}}),put(a,{\"nosuchop\":{\"executor\":\"server\"}}),put(b,ok),put(a,ok)]\nsv.terminate(); assert r==[2,2,1,0], r\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,json,tempfile,subprocess\ns=os.path.join(tempfile.mkdtemp(),\"c.sqlite\"); co=lambda *x: subprocess.run([sys.executable,\"_tools/coord.py\",\"--store\",s,*x],capture_output=True,text=True)\nv=json.dumps({\"check\":{\"executor\":\"server\",\"identity\":\"none\",\"fallback\":None,\"fallback_after_s\":0,\"budget_cap_usd\":5}})\nassert co(\"put\",\"group/corp/ops/policy/placement\",\"--value\",v,\"--revision\",\"0\").returncode==0\nassert json.loads(json.loads(co(\"get\",\"group/corp/ops/policy/placement\").stdout)[\"value\"])==json.loads(v)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
