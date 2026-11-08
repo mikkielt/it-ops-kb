@@ -2,7 +2,7 @@
   "id": "ST-axz2he4d",
   "kind": "story",
   "title": "kbext.py rehearse takes a planted fork and a group overlay from one upstream ext tag to the next and reports no conflict, no shipped file edited and every extender verified",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-y7fe7qqx",
   "sprint": "SP-ep7ck2ab",
   "priority": "P2",
@@ -69,5 +69,7 @@
   "relates_to": [
     "BG-vywbweiu"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-a796fc75",
+  "operator": "op-f618a13e"
 }
