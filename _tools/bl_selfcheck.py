@@ -199,7 +199,7 @@ def own_checkout(root):
 def host_commands(root):
     """The commands a host project at ROOT needs allowed: the sprint loop's, those its backlog.json names in
     `LAND_SETTINGS` (a first element ending in `.py` runs under python3; the `land_stale` step takes the integration
-    main as its last argument) and its forge's, only when the file sets `forge`."""
+    main as its last argument) and its forge's, only when the file or a settings layer sets `forge`."""
     import bl_base
     values, sources, _, _ = bl_base.read_settings(root)
     commands = list(LOOP_COMMANDS)
@@ -211,7 +211,7 @@ def host_commands(root):
             if key == "land_stale":
                 argv.append("origin/main")
             commands.append(" ".join(argv))
-    if sources["forge"] == "file":
+    if sources["forge"] != "default":
         commands += FORGE_COMMANDS.get(values["forge"], ())
     return list(dict.fromkeys(commands))
 
