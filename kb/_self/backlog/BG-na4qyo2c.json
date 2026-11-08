@@ -2,7 +2,7 @@
   "id": "BG-na4qyo2c",
   "kind": "bug",
   "title": "A kbmon run whose budget ends mid-scan never saves redact.known's cache, so after any kb/public edit every short-budget coord read times out again",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-uh5h46fm",
   "priority": "P2",
@@ -46,6 +46,19 @@
     }
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-7064b8a6",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "fb59daf712d71abd1ee3ec563dd5e4e08750323f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess,sys,tempfile,time;h=tempfile.mkdtemp();e=dict(os.environ,CLAUDE_PLUGIN_DATA=h);s=os.path.join(h,'c.db');c=lambda *a:subprocess.run([sys.executable,'_tools/coord.py','--store',s,*a],env=e,capture_output=True,text=True,check=True);c('put','ask/A1','--value','May I widen the touches of item A1?','--revision','0');c('post','--kind','ask','--field','id=A1','--field','to=operator','--field','ref=ask/A1');r=lambda:json.loads(subprocess.run([sys.executable,'_tools/kbmon.py','--json','--store',s,'--panel','coord','--timeout','3'],env=e,capture_output=True,text=True).stdout)['panels']['coord']['state'];r();time.sleep(25);sys.exit(r()!='ok')"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
