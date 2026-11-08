@@ -62,7 +62,8 @@
     "kb/_self/tools.md",
     "kb/_self/extending.md",
     "kb/_self/querylog.md",
-    "_tools/kbsettings.py"
+    "_tools/kbsettings.py",
+    "_tools/bl_selfcheck.py"
   ],
   "depends_on": [
     "ST-ed7utpmg"
