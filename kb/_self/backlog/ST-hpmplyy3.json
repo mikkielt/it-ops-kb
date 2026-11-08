@@ -2,7 +2,7 @@
   "id": "ST-hpmplyy3",
   "kind": "story",
   "title": "Review sprint: Many sessions at once and the paid session-load record",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-wv3ob5vy",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,27 @@
       ]
     }
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "evidence": {
+    "commit": "9b0223c9e5fefbee2bbf57a84bf776f4fac86c86",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "87055855f1d88a4d"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "8069b4dc5d2abd14"
+      }
+    ]
+  }
 }
