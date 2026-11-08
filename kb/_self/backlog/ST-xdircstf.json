@@ -74,7 +74,8 @@
     "kb/_self/extending.md",
     "kb/_self/tools.md",
     "kb/_self/code.md",
-    "kb/_self/map.csv"
+    "kb/_self/map.csv",
+    "kb/_self/README.md"
   ],
   "depends_on": [
     "ST-ed7utpmg"
