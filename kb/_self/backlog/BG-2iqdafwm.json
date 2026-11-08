@@ -7,7 +7,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "kbpublic.range_leaks reads the files of an internal root and of a pointer for secrets only, as tree_hits does, so a team clone's sync leak gate passes the internal-root facts the tracked-file scan passes; a secret in a file of an internal root or of a pointer is still refused by the sync leak gate, as is any hit in a file outside them; kbpublic.SCAN_FORM is above 6, so no range verdict cached under the old rule is read",
+  "goal": "kbpublic.range_leaks reads the files of an internal root and of a pointer for secrets only, as tree_hits does, so a team clone's sync leak gate passes the internal-root facts the tracked-file scan passes; a secret in a file of an internal root or of a pointer is still refused by the sync leak gate, as is any hit in a file outside them; kbpublic.SCAN_FORM is above 6, so no range verdict cached under the old rule is read; a root or pointer whose visibility is anything but public (no visibility line, or another value) is refused by the tree refusal of publish and the sync gate, with the refusal naming the value it found or saying there is no visibility line",
   "repro": {
     "run": [
       "python3",
@@ -29,6 +29,20 @@
         "-c",
         "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport sys\nsys.path.insert(0, '_tools')\nimport kbpublic\nassert kbpublic.SCAN_FORM > 6, ('kbpublic.SCAN_FORM is still the old rule', kbpublic.SCAN_FORM)"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, shutil, subprocess, sys, tempfile\ndef sh(*a, cwd=None, env=None):\n    return subprocess.run(a, cwd=cwd, env=env, capture_output=True, text=True)\nenv = dict(os.environ, GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t\")\nguid = \"-\".join([\"3f2b8c1e\", \"9d4a\", \"4e7b\", \"8a61\", \"5c0d2e9f7b13\"])\nmail = \"jan\" + chr(64) + \"realcorp.io\"\nt = tempfile.mkdtemp(); c = t + \"/c\"; os.mkdir(c)\nsubprocess.run([\"tar\", \"-x\", \"-C\", c], input=subprocess.run([\"git\", \"archive\", \"HEAD\", \"_tools\"], capture_output=True, check=True).stdout, check=True)\ndef put(p, s):\n    os.makedirs(os.path.dirname(c + \"/\" + p), exist_ok=True); open(c + \"/\" + p, \"w\").write(s)\ndef commit(m):\n    sh(\"git\", \"add\", \"-A\", cwd=c, env=env); sh(\"git\", \"commit\", \"-q\", \"-m\", m, \"--no-verify\", cwd=c, env=env)\nsh(\"git\", \"init\", \"-q\", \"-b\", \"main\", cwd=c, env=env); commit(\"base\")\nup = sh(\"git\", \"rev-parse\", \"HEAD\", cwd=c, env=env).stdout.strip()\nput(\"kb/team-c/_root.md\", \"---\\nroot: team-c\\nid_prefix: TC\\ndescription: team c\\n---\\n\\n# team-c\\n\")\nput(\"kb/team-d/_root.md\", \"---\\nroot: team-d\\nid_prefix: TD\\nvisibility: public\\ndescription: team d\\n---\\n\\n# team-d\\n\")\nfacts = \"The production tenant is %s, contact %s.\\n\" % (guid, mail)\nput(\"kb/team-c/note.md\", \"# Note\\n\\n\" + facts); put(\"kb/team-d/note.md\", \"# Note\\n\\n\" + facts); commit(\"probe\")\ncode = (\"import sys; sys.path.insert(0,'_tools'); import kbpublic as k\\n\"\n        \"tree = k.history_refusals('HEAD', sys.argv[1], k.tree_files('HEAD', '.'), '.', projected=False)[0]\\n\"\n        \"print('\\\\n'.join('TREE ' + x for x in tree))\\n\"\n        \"print('\\\\n'.join('RANGE ' + x for x in k.range_leaks(sys.argv[1], '.')))\")\nr = sh(sys.executable, \"-I\", \"-c\", code, up, cwd=c, env=env)\nshutil.rmtree(t, ignore_errors=True)\nassert r.returncode == 0, (\"planted run failed\", r.stderr[-300:])\nlines = r.stdout.splitlines()\ntree = [x for x in lines if x.startswith(\"TREE\")]\nrng = [x for x in lines if x.startswith(\"RANGE\")]\nassert any(\"kb/team-c\" in x and \"internal root\" in x for x in tree), (\"the tree refusal does not name the root with no visibility line\", tree[:3])\nassert not any(\"says visibility: internal\" in x and \"team-c\" in x for x in tree), (\"the message claims a visibility line the root lacks\", tree[:3])\nassert not any(\"kb/team-d\" in x for x in tree), (\"the tree refusal names a public root\", tree[:3])\nassert not any(\"kb/team-c/note.md\" in x for x in rng), (\"the range gate reads the facts of a root with no visibility line for more than secrets\", rng[:3])\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, shutil, subprocess, sys, tempfile\ndef sh(*a, cwd=None, env=None):\n    return subprocess.run(a, cwd=cwd, env=env, capture_output=True, text=True)\nenv = dict(os.environ, GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t\")\nguid = \"-\".join([\"3f2b8c1e\", \"9d4a\", \"4e7b\", \"8a61\", \"5c0d2e9f7b13\"])\nmail = \"jan\" + chr(64) + \"realcorp.io\"\nt = tempfile.mkdtemp(); c = t + \"/c\"; os.mkdir(c)\nsubprocess.run([\"tar\", \"-x\", \"-C\", c], input=subprocess.run([\"git\", \"archive\", \"HEAD\", \"_tools\"], capture_output=True, check=True).stdout, check=True)\ndef put(p, s):\n    os.makedirs(os.path.dirname(c + \"/\" + p), exist_ok=True); open(c + \"/\" + p, \"w\").write(s)\ndef commit(m):\n    sh(\"git\", \"add\", \"-A\", cwd=c, env=env); sh(\"git\", \"commit\", \"-q\", \"-m\", m, \"--no-verify\", cwd=c, env=env)\nsh(\"git\", \"init\", \"-q\", \"-b\", \"main\", cwd=c, env=env); commit(\"base\")\nup = sh(\"git\", \"rev-parse\", \"HEAD\", cwd=c, env=env).stdout.strip()\nput(\"kb/team-c/_root.md\", \"---\\nroot: team-c\\nid_prefix: TC\\ndescription: team c\\n---\\n\\n# team-c\\n\")\nput(\"kb/team-d/_root.md\", \"---\\nroot: team-d\\nid_prefix: TD\\nvisibility: public\\ndescription: team d\\n---\\n\\n# team-d\\n\")\nput(\"kb/team-e/_root.md\", \"---\\nroot: team-e\\nid_prefix: TE\\nvisibility: team\\ndescription: team e\\n---\\n\\n# team-e\\n\")\nput(\"kb/_roots/team-f.md\", \"---\\nroot: team-f\\nid_prefix: TF\\nvisibility: team\\nurl: x\\nref: main\\naccess: fetch\\n---\\n\")\nfacts = \"The production tenant is %s, contact %s.\\n\" % (guid, mail)\nput(\"kb/team-c/note.md\", \"# Note\\n\\n\" + facts); put(\"kb/team-d/note.md\", \"# Note\\n\\n\" + facts); put(\"kb/team-e/note.md\", \"# Note\\n\\n\" + facts); put(\"kb/team-f/note.md\", \"# Note\\n\\n\" + facts); commit(\"probe\")\ncode = (\"import sys; sys.path.insert(0,'_tools'); import kbpublic as k\\n\"\n        \"tree = k.history_refusals('HEAD', sys.argv[1], k.tree_files('HEAD', '.'), '.', projected=False)[0]\\n\"\n        \"print('\\\\n'.join('TREE ' + x for x in tree))\\n\"\n        \"print('\\\\n'.join('RANGE ' + x for x in k.range_leaks(sys.argv[1], '.')))\")\nr = sh(sys.executable, \"-I\", \"-c\", code, up, cwd=c, env=env)\nshutil.rmtree(t, ignore_errors=True)\nassert r.returncode == 0, (\"planted run failed\", r.stderr[-300:])\nlines = r.stdout.splitlines()\ntree = [x for x in lines if x.startswith(\"TREE\")]\nrng = [x for x in lines if x.startswith(\"RANGE\")]\nassert any(\"kb/team-c\" in x and \"has no visibility line\" in x for x in tree), (\"the tree refusal does not name the root with no visibility line\", tree[:3])\nassert not any(\"says visibility: internal\" in x and \"team-c\" in x for x in tree), (\"the message claims a visibility line the root lacks\", tree[:3])\nassert any(\"kb/team-e\" in x and \"says visibility: team\" in x for x in tree), (\"the tree refusal does not name the root whose visibility is team with its value\", tree[:4])\nassert any(\"kb/_roots/team-f.md\" in x and \"says visibility: team\" in x for x in tree), (\"the tree refusal does not name the pointer whose visibility is team with its value\", tree[:4])\nassert not any(\"kb/team-d\" in x for x in tree), (\"the tree refusal names a public root\", tree[:3])\nassert not any(f in x for x in rng for f in (\"kb/team-c/note.md\", \"kb/team-e/note.md\", \"kb/team-f/note.md\")), (\"the range gate reads the facts of a root with no visibility line for more than secrets\", rng[:3])\n"
+      ]
     }
   ],
   "clauses": [
@@ -47,6 +61,10 @@
     {
       "clause": "kbpublic.SCAN_FORM is above 6, so no range verdict cached under the old rule is read",
       "check": 1
+    },
+    {
+      "clause": "a root or pointer whose visibility is anything but public (no visibility line, or another value) is refused by the tree refusal of publish and the sync gate, with the refusal naming the value it found or saying there is no visibility line",
+      "check": 3
     }
   ],
   "touches": [
@@ -73,6 +91,48 @@
       },
       "class": "secrets",
       "answer": "Apply tree_hits' secret-only rule to them, as test_leaks does, so a team clone's sync passes the internal-root facts AGENTS.md allows",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Which roots and pointers does the sync range gate read for secrets only?",
+      "options": [
+        "Those tree_hits reads so: every root or pointer that does not say visibility: public (none counts as internal)",
+        "Only roots whose _root.md says visibility: internal, as the tree refusal names them"
+      ],
+      "recommendation": "Those tree_hits reads so: every root or pointer that does not say visibility: public (none counts as internal)",
+      "reason": "because the goal says the gate reads them as tree_hits does",
+      "do": {
+        "Those tree_hits reads so: every root or pointer that does not say visibility: public (none counts as internal)": "BG-2iqdafwm",
+        "Only roots whose _root.md says visibility: internal, as the tree refusal names them": "BG-2iqdafwm"
+      },
+      "class": "secrets",
+      "answer": "Those tree_hits reads so: every root or pointer that does not say visibility: public (none counts as internal)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "How do the tree causes word a root or pointer whose visibility is not public?",
+      "options": [
+        "Keep the words 'internal root' and add the value found or 'has no visibility line' in the parenthesis",
+        "Reword the cause to 'non-public root' (the publish end-to-end test reads the old words and would need an edit outside the touches)"
+      ],
+      "recommendation": "Keep the words 'internal root' and add the value found or 'has no visibility line' in the parenthesis",
+      "reason": "because the publish end-to-end test reads those words and lies outside the touches",
+      "do": {
+        "Keep the words 'internal root' and add the value found or 'has no visibility line' in the parenthesis": "BG-2iqdafwm",
+        "Reword the cause to 'non-public root' (the publish end-to-end test reads the old words and would need an edit outside the touches)": "BG-2iqdafwm"
+      },
+      "class": "push",
+      "answer": "Keep the words 'internal root' and add the value found or 'has no visibility line' in the parenthesis",
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive",

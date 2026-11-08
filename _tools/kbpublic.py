@@ -29,8 +29,8 @@ the same `main`, so the public home gets a projection of it:
               cause is reported, exit 1, in this order. The checks cover every commit to be pushed (tip..projection,
               the whole projected history when there is no tip), each by what it adds or changes against its first
               parent, so a later commit that deletes a path or a value does not hide it: a commit writes a path under
-              a `_private` or `_cache` directory (any depth), or under a root whose `_root.md` says `visibility:
-              internal` in any commit of the range, at the tip or in the projection (the projection's tree is checked
+              a `_private` or `_cache` directory (any depth), or under a root whose `_root.md` gives `visibility`
+              any value but `public` or none in any commit of the range, at the tip or in the projection (the projection's tree is checked
               too, for what the tip already holds); a file a commit writes has a leak-scan hit (kbcommon.leak_hits,
               allowing _tools/tests_allowlist.txt of the commit and of the projection, read as the tracked-file scan
               reads it: a vendor export, snapshot or pinned artifact for secrets only) that neither the parent's nor
@@ -91,7 +91,7 @@ ITEM_TEXT = "item.json"  # the path the backlog check gives one text of an item 
 URL_RX = re.compile(r"(?:https?|ssh|git)://\S+|(?<![\w.%+-])git@[\w.-]+:[\w./~-]+|\bssh(?:\s+-\w+)*\s+git@[\w.-]+")
 CACHE_DIR = ("_cache", "publish")  # the per-clone scan cache under the repository, never committed (its own .gitignore)
 PROJECTION_FORM = 1  # the projection's form: a change to how commits are projected bumps it, so no older cache is read
-SCAN_FORM = 6 # the leak scan's form (file_hits): a change to what it flags bumps it, so no verdict cached under an older rule is read
+SCAN_FORM = 7 # the leak scan's form (file_hits): a change to what it flags bumps it, so no verdict cached under an older rule is read
 HOOK_BOUND = 150  # uncached commits publish --hook checks at most; a longer range is left to a publish by hand (git.md)
 CI_RUN = None  # a command runner (argv -> (code, stdout, stderr)) for the CI check; None: ql_base.run_cmd. Tests stub it.
 
@@ -481,9 +481,26 @@ def allowlist(proj, cwd):
     return parse_allowlist(blobs(proj, [ALLOWLIST_PATH], cwd).get(ALLOWLIST_PATH, ""))
 
 
+def not_public(text):
+    """Whether the front matter of TEXT (a `_root.md` or a pointer file) leaves a root out of the public home: its
+    `visibility` is anything but `public`, a missing line and a value other than `internal` included (the rule
+    `tree_hits` reads a root for secrets only by)."""
+    import kbcommon
+    return kbcommon._meta(text).get("visibility", "internal") != "public"
+
+
+def says_visibility(path, text):
+    """What the file PATH (with TEXT) holds for `visibility`, for a cause: `PATH says visibility: VALUE`, or
+    `PATH has no visibility line` (which counts as internal, as kbcommon reads it)."""
+    import kbcommon
+    value = kbcommon._meta(text).get("visibility")
+    return f"{path} says visibility: {value}" if value is not None else f"{path} has no visibility line"
+
+
 def tree_refusals(proj, files, cwd):
-    """Causes: an internal root (a `_root.md` saying `visibility: internal`), the pointer file `kb/_roots/<name>.md` of
-    an internal remote root (no `visibility` line counts as internal, as kbcommon reads it) and a `.gitmodules` section
+    """Causes: an internal root (a `_root.md` whose `visibility` is anything but `public`: `internal`, another value or
+    no line, which counts as internal as kbcommon reads it), the pointer file `kb/_roots/<name>.md` of
+    an internal remote root (likewise) and a `.gitmodules` section
     whose path is such a pointer's `kb/<name>`, or a _private or _cache path in the tree."""
     import kbcommon
     res = []
@@ -491,19 +508,19 @@ def tree_refusals(proj, files, cwd):
         if FORBIDDEN_RE.search(x):
             res.append(f"the projection's tree holds {x}, a path under _private or _cache")
     for x, text in sorted(blobs(proj, [f for f in files if f.rsplit("/", 1)[-1] == kbcommon.ROOT_FILE], cwd).items()):
-        if kbcommon._meta(text).get("visibility") == "internal":
-            res.append(f"the projection's tree holds the internal root {x.rsplit('/', 1)[0] or '.'} ({x} says visibility: internal)")
+        if not_public(text):
+            res.append(f"the projection's tree holds the internal root {x.rsplit('/', 1)[0] or '.'} ({says_visibility(x, text)})")
     pdir = f"kb/{kbcommon.POINTERS_DIR}/"
     internal = {}  # internal pointer name -> its file
     for x, text in sorted(blobs(proj, [f for f in files if f.startswith(pdir) and f.endswith(".md") and "/" not in f[len(pdir):]], cwd).items()):
-        if kbcommon._meta(text).get("visibility", "internal") == "internal":
-            internal[x[len(pdir):-len(".md")]] = x
-            res.append(f"the projection's tree holds the pointer {x} of an internal root ({x} says visibility: internal)")
+        if not_public(text):
+            internal[x[len(pdir):-len(".md")]] = (x, text)
+            res.append(f"the projection's tree holds the pointer {x} of an internal root ({says_visibility(x, text)})")
     if internal and ".gitmodules" in files:
         for sec, path in gitmodules_paths(blobs(proj, [".gitmodules"], cwd).get(".gitmodules", "")):
             if path.startswith("kb/") and path[3:].rstrip("/") in internal:
                 res.append(f"the projection's tree holds the .gitmodules section {sec} for {path}, the internal root "
-                           f"{path[3:].rstrip('/')} ({internal[path[3:].rstrip('/')]} says visibility: internal)")
+                           f"{path[3:].rstrip('/')} ({says_visibility(*internal[path[3:].rstrip('/')])})")
     return res
 
 
@@ -703,14 +720,18 @@ class LongRange(Exception):
         self.n = n
 
 
-def leak_verdicts(written, proj, tip, final, cwd, pinned=frozenset(), projected=True):
+def leak_verdicts(written, proj, tip, final, cwd, pinned=frozenset(), projected=True, secret_only=()):
     """{commit: [(path, kinds)]} of the leak check of WRITTEN [(commit, old blob, new blob, path)], the files the
     commits write: a hit in the lines a commit adds that the public tip holds in no file the projection keeps (public_values; with PROJECTED False the tip's files it removes hold nothing), and neither
-    the parent's nor TIP's version of the file holds, allowing FINAL (PROJ's allowlist) and the commit's own, and reading PINNED (pinned_paths) for secrets only. A commit
-    with no hit is left out."""
+    the parent's nor TIP's version of the file holds, allowing FINAL (PROJ's allowlist) and the commit's own, and reading PINNED (pinned_paths) and the files under a prefix of SECRET_ONLY (the
+    directory of an internal root or pointer, as tree_hits reads them) for secrets only. A commit with no hit is left out."""
     # scan only the lines a commit adds (the new version's lines its parent's version lacks), a chunk of writes at a
     # time; the whole versions are read only for the files whose added lines hit
     memo = []
+
+    def hits_in(x, text, allow):  # the files of an internal root or pointer are read for secrets only, as tree_hits does
+        got = file_hits(x, text, allow, pinned)
+        return [h for h in got if h[0] == "secret"] if x.startswith(secret_only) else got
 
     def public():  # scanned on first use: a range with no hit never reads the tip's whole tree
         if not memo:
@@ -725,7 +746,7 @@ def leak_verdicts(written, proj, tip, final, cwd, pinned=frozenset(), projected=
             if new in got:
                 seen = set(got.get(old, "").splitlines())
                 text = "\n".join(ln for ln in got[new].splitlines() if ln not in seen)
-                hits = file_hits(x, text, {}, pinned)
+                hits = hits_in(x, text, {})
                 if hits and any(hit_key(h) not in public() for h in hits):
                     added[old, new, x] = text
     rows = [(c, old, new, x) for c, old, new, x in written if (old, new, x) in added]
@@ -739,11 +760,11 @@ def leak_verdicts(written, proj, tip, final, cwd, pinned=frozenset(), projected=
         known = set()
         for text in (olds.get(old), at_tip.get(x)):
             if text is not None:
-                known |= set(file_hits(x, text, {}, pinned))
+                known |= set(hits_in(x, text, {}))
         allow = {k: set(vals) for k, vals in final.items()}
         for k, vals in parse_allowlist(commit_allow.get(f"{c}:{ALLOWLIST_PATH}", "")).items():
             allow.setdefault(k, set()).update(vals)
-        kinds = sorted({k for k, val in file_hits(x, added[old, new, x], allow, pinned)
+        kinds = sorted({k for k, val in hits_in(x, added[old, new, x], allow)
                         if (k, val) not in known and hit_key((k, val)) not in public()})
         if kinds:
             res.setdefault(c, []).append((x, kinds))
@@ -767,8 +788,9 @@ def history_refusals(proj, tip, files, cwd, sources=None, bound=None, projected=
     sha}, from project()) and the projected one when they differ. Each commit is checked by what it adds or changes
     against its (first) parent, so a later commit that deletes a path or a value does not hide it:
       tree  a path under a `_private` or `_cache` directory, or a path under a root that is internal (its `_root.md`
-            says `visibility: internal`) in any commit of the range, at TIP or at PROJ; the pointer file
-            `kb/_roots/<name>.md` of an internal remote root (no `visibility` line counts as internal) that a commit
+            gives `visibility` any value but `public`, or no line, which counts as internal) in any commit of the range,
+            at TIP or at PROJ; the pointer file
+            `kb/_roots/<name>.md` of an internal remote root (likewise) that a commit
             adds or changes, and the gitlink `kb/<name>` of such a root that a commit adds or moves;
       leak  a leak-scan hit that neither the parent's version nor TIP's version of the file holds, and whose value no
             file of TIP holds (public_values: already public), allowing the _tools/tests_allowlist.txt of the commit
@@ -804,8 +826,15 @@ def history_refusals(proj, tip, files, cwd, sources=None, bound=None, projected=
         for x in paths or []:
             if is_root(x):
                 roots.setdefault(f"{rev}:{x}", set()).add(x)
-    internal = sorted({root_dir(x) for spec, text in texts(list(roots), cwd).items()
-                       if kbcommon._meta(text).get("visibility") == "internal" for x in roots[spec]})
+    rtext = texts(list(roots), cwd)
+    says = {}  # internal root directory -> what its `_root.md` holds for `visibility`
+    for spec, text in rtext.items():
+        if not_public(text):
+            for x in sorted(roots[spec]):
+                says.setdefault(root_dir(x), says_visibility(x, text))
+    internal = sorted(says)
+    # the prefixes tree_hits reads for secrets only (internal_prefixes): the roots and pointers the tree check refuses
+    secret_only = {r + "/" for r in internal if r}
     pdir = f"kb/{kbcommon.POINTERS_DIR}/"
     is_pointer = lambda x: x.startswith(pdir) and x.endswith(".md") and "/" not in x[len(pdir):]  # noqa: E731
     pointers = {}  # object name -> the pointer paths it is
@@ -818,17 +847,18 @@ def history_refusals(proj, tip, files, cwd, sources=None, bound=None, projected=
                 pointers.setdefault(f"{rev}:{x}", set()).add(x)
     ptext = texts(list(pointers), cwd)
     # no `visibility` line counts as internal, as kbcommon reads it
-    internal_pointers = {x[len(pdir):-len(".md")]: x for spec, text in ptext.items()
-                         if kbcommon._meta(text).get("visibility", "internal") == "internal" for x in pointers[spec]}
+    internal_pointers = {x[len(pdir):-len(".md")]: says_visibility(x, text) for spec, text in ptext.items()
+                         if not_public(text) for x in sorted(pointers[spec])}
+    secret_only |= {f"kb/{stem}/" for stem in internal_pointers}
     tree, named, under = [], set(), {}
     for c, old, new, x in written:
-        if is_pointer(x) and new in ptext and kbcommon._meta(ptext[new]).get("visibility", "internal") == "internal":
-            tree.append(f"commit {name(c)} adds or changes the pointer {x} of an internal root ({x} says visibility: internal)")
+        if is_pointer(x) and new in ptext and not_public(ptext[new]):
+            tree.append(f"commit {name(c)} adds or changes the pointer {x} of an internal root ({says_visibility(x, ptext[new])})")
             named.add(x)
     for c, x in links:
         if x.startswith("kb/") and x[3:] in internal_pointers:
             tree.append(f"commit {name(c)} adds or moves the gitlink {x} of the internal root {x[3:]} "
-                        f"(the pointer of {x[3:]} says visibility: internal)")
+                        f"({internal_pointers[x[3:]]})")
             named.add(x)
     for c, old, new, x in written:
         if FORBIDDEN_RE.search(x):
@@ -841,10 +871,10 @@ def history_refusals(proj, tip, files, cwd, sources=None, bound=None, projected=
                 break
     for (c, r), xs in under.items():
         tree.append(f"commit {name(c)} writes {len(xs)} path(s) under the internal root {r or '.'} "
-                    f"({r + '/' if r else ''}{kbcommon.ROOT_FILE} says visibility: internal), e.g. {xs[0]}")
+                    f"({says[r]}), e.g. {xs[0]}")
     if todo:
         found = leak_verdicts([w for w in written if w[0] in todo and (projected or not kept_off(w[3]))],
-                              proj, tip, parse_allowlist(final), cwd, pinned, projected)
+                              proj, tip, parse_allowlist(final), cwd, pinned, projected, tuple(sorted(secret_only)))
         verdicts.update({c: found.get(c, []) for c in todo})
         cache_save(cwd, vname, verdicts, "verdicts-")
     leak = [f"commit {name(c)}: {x} has a leak-scan hit ({', '.join(kinds)})" for c, _ in changes for x, kinds in verdicts[c]]
@@ -854,8 +884,8 @@ def history_refusals(proj, tip, files, cwd, sources=None, bound=None, projected=
 def range_leaks(up, cwd, rev="HEAD"):
     """[cause] of the commits UP..REV that add a leak-scan hit, the verdict publish gives each commit
     (history_refusals' leak causes, REV's allowlist and each commit's own), for the sync gate: a hit a later commit of
-    the range removes still counts, as publish refuses the commit that added it for good. Each cause names the commit
-    and the file, never the value. Raises RuntimeError on a git error."""
+    the range removes still counts, as publish refuses the commit that added it for good. The files of an internal
+    root or pointer count for secrets only, as in tree_hits. Each cause names the commit and the file, never the value. Raises RuntimeError on a git error."""
     files = tree_files(rev, cwd)
     if files is None:
         raise RuntimeError(f"git ls-tree {rev} failed")
