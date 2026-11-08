@@ -2,7 +2,7 @@
   "id": "ST-j6n6u6or",
   "kind": "story",
   "title": "A group's placement overrides are coord keys its own operators write, refused when they break the decision schema",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-p4guu2ip",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",
@@ -52,5 +52,7 @@
     "ST-nzcbf2ms"
   ],
   "notes": "Check 2 passes before the work by design: it pins that a local put and get of group/<path>/policy/placement round-trips the override unchanged, which the schema refusal of check 1 must not break.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-61c966d6",
+  "operator": "op-f618a13e"
 }
