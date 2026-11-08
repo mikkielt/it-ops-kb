@@ -8,7 +8,7 @@ nothing at load, `mon_sessions` (its age text) and `mon_status` (`short_name`) w
                   `ST-… blocked on gates g1, g2, 5m`, `ST-… run failed at step X, 5m`, `ST-… landing refused at step rebase,
                   5m`; a gate it names is left out of the `gate` entries), `ask` (each ask addressed to `operator` that no closing
                   answer has ended and whose gate, if its question names one, the backlog has not answered, from the coord
-                  panel: `ask ID since DATE TIME: the first words of the question`, redacted;
+                  panel: `ask ID since YYYY-MM-DD HH:MM UTC: the first words of the question`, redacted;
                   an Alertmanager alert, a cleanup verdict or a session's question posted as an ask shows here), `prompt` (each
                   session of the sessions panel that carries `blocked`, the coord hook's record of a permission request or a
                   question that waits on the person, longest first: `s-… worker ST-… blocked on a permission prompt, 2m`; a
@@ -108,8 +108,8 @@ def ask_entries(data):
     for a in data.get("asks") or []:
         if not isinstance(a, dict) or not a.get("id"):
             continue
-        since = str(a.get("since") or "")[:16].replace("T", " ")
-        out.append({"kind": "ask", "text": f"ask {a['id']}" + (f" since {since}" if since else "")
+        since = str(a.get("since") or "")[:16].replace("T", " ")  # the coord panel's time is UTC (`2026-10-24T14:02:36Z`)
+        out.append({"kind": "ask", "text": f"ask {a['id']}" + (f" since {since} UTC" if since else "")
                     + (f": {' '.join(str(a['text']).split())}" if a.get("text") else ""), "ask": a["id"]})
     return out
 
