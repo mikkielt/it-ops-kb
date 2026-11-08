@@ -47,6 +47,25 @@
   "depends_on": [
     "BG-2n4csy5p"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which kind nouns do the cut lines of the Sessions and Load topics in --status all use?",
+      "options": [
+        "sessions: orphans, sessions, waits, overlaps, stalled, summary, workers, operator, intents; load: locks, processes, disk, cpu; a line with no kind counts as other",
+        "one generic noun, lines, for both topics"
+      ],
+      "recommendation": "sessions: orphans, sessions, waits, overlaps, stalled, summary, workers, operator, intents; load: locks, processes, disk, cpu; a line with no kind counts as other",
+      "do": {
+        "sessions: orphans, sessions, waits, overlaps, stalled, summary, workers, operator, intents; load: locks, processes, disk, cpu; a line with no kind counts as other": "BG-tybempcu",
+        "one generic noun, lines, for both topics": "BG-tybempcu"
+      },
+      "class": "design",
+      "answer": "sessions: orphans, sessions, waits, overlaps, stalled, summary, workers, operator, intents; load: locks, processes, disk, cpu; a line with no kind counts as other",
+      "by": "agent"
+    }
+  ],
   "notes": "Evidence 2026-11-08: 'Coord: 4 live claims:' showed two claims and '+5 more', where the five hidden lines were two claims, the drift line, the asks line and the settings line (mon_status.trimmed counts lines, not items). Relates to BG-p4xl2hea (sprints cut to four lines). The nouns the planted check asserts for coord are `2 claims`, `1 drift`, `1 asks`, `1 settings`; the kinds of the Sessions and Load cut lines are the work's to name, the check asserts only the form and that the counts sum to N. Premise run 2026-11-08: the repro fails (exit 1), because the live answer still prints '+N more: python3 _tools/kbmon.py --status coord'. Planted check 0 (mon_status.answer of a planted snapshot: four claims, a drift, two asks, one settings file, two orphans, host groups) fails on the base: all three cut lines read '+N more: ...' with no kinds.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-7064b8a6",

@@ -193,6 +193,21 @@ def more(count, noun):
     return [f"+{count} more {noun}"] if count > 0 else []
 
 
+class Line(str):
+    """A line that knows what it is (`kind`), so the `all` answer names what a cut hides."""
+    kind = "other"
+
+
+def tag(kind, lines):
+    """LINES, each marked as a line of KIND."""
+    out = []
+    for x in lines:
+        t = Line(x)
+        t.kind = kind
+        out.append(t)
+    return out
+
+
 def drift_lines(r):
     """([lines], facts) of the run states against git, from the sessions panel's `drift`: one line, the item named by its title
     with its id; nothing where the panel has no `drift` (an unreadable panel, a url store)."""
@@ -234,41 +249,41 @@ def sessions(r):
     else:
         lines = [f"Sessions: no orphan; {len(headless)} headless and {len(claude) - len(headless)} interactive Claude "
                  f"session{'' if len(claude) == 1 else 's'}, {len(procs)} process{'' if len(procs) == 1 else 'es'} in the clone."]
-    lines += [f"  orphan pid {p.get('pid')}, running {mon_sessions.age_text(number(p.get('age_s')))}, in {p.get('checkout') or '?'}"
-              for p in orphans[:ROWS]] + [("  " + x) for x in more(len(orphans) - ROWS, "orphans")]
+    lines += tag("orphans", [f"  orphan pid {p.get('pid')}, running {mon_sessions.age_text(number(p.get('age_s')))}, in {p.get('checkout') or '?'}"
+                             for p in orphans[:ROWS]] + [("  " + x) for x in more(len(orphans) - ROWS, "orphans")])
     rows = [s for s in data.get("sessions") or [] if isinstance(s, dict)]
-    lines += [("  " + mon_sessions.session_line(s, r.now)) for s in rows[:ROWS]] \
-        + [("  " + x) for x in more(len(rows) - ROWS, "sessions")]
+    lines += tag("sessions", [("  " + mon_sessions.session_line(s, r.now)) for s in rows[:ROWS]]
+                 + [("  " + x) for x in more(len(rows) - ROWS, "sessions")])
     waits = [w for w in data.get("waits") or [] if isinstance(w, dict) and w.get("items")]
     facts["waits"] = len(waits)
     for w in waits[:ROWS]:
         r.learn(w["items"])
-        lines.append(f"  {w.get('session') or 'A session'} waits on {'; '.join(short_name(r.item(i.get('id'))) for i in w['items'] if isinstance(i, dict))}.")
-    lines += [("  " + x) for x in more(len(waits) - ROWS, "waits")]
+        lines += tag("waits", [f"  {w.get('session') or 'A session'} waits on {'; '.join(short_name(r.item(i.get('id'))) for i in w['items'] if isinstance(i, dict))}."])
+    lines += tag("waits", [("  " + x) for x in more(len(waits) - ROWS, "waits")])
     overlaps = [o for o in data.get("overlaps") or [] if isinstance(o, dict)]
     facts["overlaps"] = len(overlaps)
     if overlaps:
-        lines.append(f"  {len(overlaps)} overlap{'' if len(overlaps) == 1 else 's'} between live sessions:")
-        lines += [("  " + mon_sessions.overlap_text(o)) for o in overlaps[:ROWS]] \
-            + [("  " + x) for x in more(len(overlaps) - ROWS, "overlaps")]
+        lines += tag("overlaps", [f"  {len(overlaps)} overlap{'' if len(overlaps) == 1 else 's'} between live sessions:"]
+                     + [("  " + mon_sessions.overlap_text(o)) for o in overlaps[:ROWS]]
+                     + [("  " + x) for x in more(len(overlaps) - ROWS, "overlaps")])
     if stalled:
-        lines.append(f"  {len(stalled)} stalled item{'' if len(stalled) == 1 else 's'}:")
-        lines += [f"  {r.item(s.get('item'), True)}: {', '.join(str(x) for x in s.get('signals') or []) or 'no signal named'}"
-                  for s in stalled[:ROWS]] + [("  " + x) for x in more(len(stalled) - ROWS, "stalled items")]
+        lines += tag("stalled", [f"  {len(stalled)} stalled item{'' if len(stalled) == 1 else 's'}:"]
+                     + [f"  {r.item(s.get('item'), True)}: {', '.join(str(x) for x in s.get('signals') or []) or 'no signal named'}"
+                        for s in stalled[:ROWS]] + [("  " + x) for x in more(len(stalled) - ROWS, "stalled items")])
     else:
-        lines.append("  no stalled item.")
+        lines += tag("stalled", ["  no stalled item."])
     if orphans or stalled or rows:
-        lines.append("  A model summary, only when you ask: python3 _tools/kbask.py summary \"what are the sessions doing, "
-                     "or why is it stuck\" (read-only, capped by its budget and turns).")
+        lines += tag("summary", ["  A model summary, only when you ask: python3 _tools/kbask.py summary \"what are the sessions doing, "
+                                 "or why is it stuck\" (read-only, capped by its budget and turns)."])
     if headless and not rows:
-        lines.append("  Workers running: " + "; ".join(r.item(p.get("item")) for p in headless[:ROWS]) + ".")
+        lines += tag("workers", ["  Workers running: " + "; ".join(r.item(p.get("item")) for p in headless[:ROWS]) + "."])
     me = data.get("operator") if isinstance(data.get("operator"), dict) else {}
-    lines.append(f"  This clone's operator: {me.get('id') or 'none'} ({me.get('role') or '-'}).")
+    lines += tag("operator", [f"  This clone's operator: {me.get('id') or 'none'} ({me.get('role') or '-'})."])
     intents = [i for i in data.get("intents") or [] if isinstance(i, dict)]
     if intents:  # a session is named by its line above, only: the intents say which items they announce
         named = list(dict.fromkeys(short_name(r.item(i.get("item"))) for i in intents if i.get("item")))
-        lines.append(f"  {len(intents)} live session intent{'' if len(intents) == 1 else 's'} in coord"
-                     + (": " + "; ".join(named[:ROWS]) + (f"; +{len(named) - ROWS} more" if len(named) > ROWS else "") if named else "") + ".")
+        lines += tag("intents", [f"  {len(intents)} live session intent{'' if len(intents) == 1 else 's'} in coord"
+                                 + (": " + "; ".join(named[:ROWS]) + (f"; +{len(named) - ROWS} more" if len(named) > ROWS else "") if named else "") + "."])
     return lines, facts
 
 
@@ -348,14 +363,16 @@ def coord(r):
              "asks_to_operator": number(data.get("asks_open"), len(asks)), "settings": changed, "drift": drift_facts}
     ask_line = [f"  {facts['asks_to_operator']} open ask{'' if facts['asks_to_operator'] == 1 else 's'} to the operator: "
                 + "; ".join(f"{a.get('id')}" for a in asks[:ROWS]) + "."] if facts["asks_to_operator"] else []
+    tail = tag("drift", drift) + tag("asks", ask_line) + tag("settings", setting_lines)
     if not claims:
-        return ["Coord: no live claim."] + drift + ask_line + setting_lines, facts
+        return ["Coord: no live claim."] + tail, facts
     lines = [f"Coord: {len(claims)} live claim{'' if len(claims) == 1 else 's'}" + (f", {len(over)} over budget:" if over else ":")]
-    lines += [f"  {c.get('key')}: {mon_sessions.age_text(number(c.get('left_s')))} left, "
-              + ("no budget" if c.get("budget_usd") is None else f"budget {usd(c.get('budget_usd'))}")
-              + (f", spent {usd(c.get('spend_usd'))}" if c.get("spend_usd") is not None else "")
-              + (" (over budget)" if c.get("over_budget") else "") for c in claims[:ROWS]]
-    return lines + ["  " + x for x in more(len(claims) - ROWS, "claims")] + drift + ask_line + setting_lines, facts
+    lines += tag("claims", [f"  {c.get('key')}: {mon_sessions.age_text(number(c.get('left_s')))} left, "
+                            + ("no budget" if c.get("budget_usd") is None else f"budget {usd(c.get('budget_usd'))}")
+                            + (f", spent {usd(c.get('spend_usd'))}" if c.get("spend_usd") is not None else "")
+                            + (" (over budget)" if c.get("over_budget") else "") for c in claims[:ROWS]]
+                 + ["  " + x for x in more(len(claims) - ROWS, "claims")])
+    return lines + tail, facts
 
 
 def minutes(n):
@@ -546,18 +563,18 @@ def load(r):
         word = load_word(ld[0], cores)
         facts = {"load1": ld[0], "load5": ld[1], "load15": ld[2], "cores": cores, "per_core": ratio}
         lines = [f"Load: {ld[0]:.2f} / {ld[1]:.2f} / {ld[2]:.2f} over 1, 5 and 15 minutes on {cores or '?'} cores{word}."]
-    lines.append("  " + holder_text("suite", data.get("suite_lock")) + "; " + holder_text("main", data.get("main_lock")) + ".")
+    lines += tag("locks", ["  " + holder_text("suite", data.get("suite_lock")) + "; " + holder_text("main", data.get("main_lock")) + "."])
     s, _ = r.data("sessions")
     if s is not None and not s.get("procs_unreadable"):
         procs = [p for p in s.get("procs") or [] if isinstance(p, dict)]
         n = sum(1 for p in procs if p.get("class") == "orphan")
         facts.update(processes=len(procs), orphans=n)
-        lines.append(f"  {len(procs)} process{'' if len(procs) == 1 else 'es'} work in the clone, {n} of them orphan.")
+        lines += tag("processes", [f"  {len(procs)} process{'' if len(procs) == 1 else 'es'} work in the clone, {n} of them orphan."])
     disk = data.get("disk") if isinstance(data.get("disk"), dict) else {}
     if "free_pct" in disk:
         facts["disk_free_pct"] = disk["free_pct"]
-        lines.append(f"  Disk {number(disk['free_pct']):g}% free.")
-    lines += consumer_lines(data, facts)
+        lines += tag("disk", [f"  Disk {number(disk['free_pct']):g}% free."])
+    lines += tag("cpu", consumer_lines(data, facts))
     return lines, facts
 
 
@@ -586,10 +603,16 @@ ANSWERS = {"sessions": sessions, "cost": cost, "querylog": querylog, "coord": co
 
 
 def trimmed(lines, n, topic):
-    """LINES cut to N, the last of them a pointer to the topic's own answer when anything was dropped."""
+    """LINES cut to N, the last of them a pointer to the topic's own answer when anything was dropped: `+N more (A KIND,
+    B KIND)`, N the lines cut and each KIND the `tag` of the lines of that kind among them, in the order they stood."""
     if len(lines) <= n:
         return lines
-    return lines[:n - 1] + [f"  +{len(lines) - n + 1} more: python3 _tools/kbmon.py --status {topic}"]
+    hidden = {}
+    for x in lines[n - 1:]:
+        kind = getattr(x, "kind", "other")
+        hidden[kind] = hidden.get(kind, 0) + 1
+    kinds = ", ".join(f"{c} {k}" for k, c in hidden.items())
+    return lines[:n - 1] + [f"  +{len(lines) - n + 1} more ({kinds}): python3 _tools/kbmon.py --status {topic}"]
 
 
 def clean(lines, facts):
