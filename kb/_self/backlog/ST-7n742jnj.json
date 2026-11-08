@@ -56,11 +56,49 @@
     ".claude/skills/kb-ingest/SKILL.md",
     "AGENTS.md",
     "kb/_self/maintaining.md",
-    "kb/_self/plugin.md"
+    "kb/_self/plugin.md",
+    "_tools/kbext.py"
   ],
   "depends_on": [
     "ST-xdircstf",
     "ST-y2u3sxta"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does kbingest.py load a group mapper named in extensions.ingest_mappers (an object, language to module:attr), since kbext.load takes one string setting per point?",
+      "options": [
+        "own loader in kbingest.py",
+        "new public loader in kbext.py"
+      ],
+      "recommendation": "own loader in kbingest.py",
+      "reason": "it uses public names only (kbsettings.layered and layer_files, kbext.API_VERSION and BOUND_RE) with the KBEXT_REQUIRES rule of kbext, because kbext.py is outside the touches and another item changes it",
+      "do": {
+        "own loader in kbingest.py": "ST-7n742jnj",
+        "new public loader in kbext.py": "ST-7n742jnj"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which kept files does a group mapper receive: every file whose suffix its SUFFIXES lists, or only those no earlier language of the run maps?",
+      "options": [
+        "files no earlier language maps",
+        "every file with a listed suffix"
+      ],
+      "recommendation": "files no earlier language maps",
+      "reason": "a new language such as foo then never takes the shipped Python mapper's .py files, which the item's own check requires, while a group mapper that replaces a language still gets all of that language's files",
+      "do": {
+        "files no earlier language maps": "ST-7n742jnj",
+        "every file with a listed suffix": "ST-7n742jnj"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "files no earlier language maps",
+      "by": "agent"
+    }
   ],
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-a796fc75",
