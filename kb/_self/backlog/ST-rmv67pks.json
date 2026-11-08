@@ -2,7 +2,7 @@
   "id": "ST-rmv67pks",
   "kind": "story",
   "title": "kbjob.py serve runs the queued jobs of its host one after another, each as a process group of its own with its output kept",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-tmw3tokk",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",
@@ -136,6 +136,46 @@
   ],
   "notes": "Choices: the executor is a plain loop in the clone's own python, not a new daemon framework; it reads the same store as every session (coord.project_store, coord.py:1561), so a clone's sessions and its executor meet in one file with no network (coordination.md:8). The child is started as dispatch starts a detached worker (bl_dispatch.py:1051 spawn_detached: start_new_session, stdin DEVNULL, log file) and killed as kg_lock.end_group does (TERM, then KILL of the group). One job at a time here; ordering across classes and the parallel slots are ST-serialisation. Exit rule reuses bl_land.land_refused_step (bl_land.py:2372). An output log is kept per job under kb-jobs/ in the git common directory (outside the tree, never committed). Evidence: backlog.py landings over the query log, 2026-11-08: kbgit.py sync --push step median 29.8 s p95 176 s (n=2977, real items); checks step p95 38 s; so a single job runs from seconds to minutes. No test added (ceiling). Order agreed 2026-11-08 with SP-ep7ck2ab's manager (ask A1e21b0d155): shared kb/_self/map.csv rows land by first claim, the later item rebases; no hard dependency.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-61c966d6",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "be19b144f48abde00431b3287a2ac4d5570799a0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,tempfile,json,subprocess; sys.path.insert(0,\"_tools\"); import kj_store; s=os.path.join(tempfile.mkdtemp(),\"c.sqlite\"); a=kj_store.submit(\".\",\"check\",\"\",\"claude-0123abcd\",{\"name\":\"backlog-check\"},store=s); r=subprocess.run([sys.executable,\"_tools/kbjob.py\",\"--store\",s,\"serve\",\"--once\"],capture_output=True,text=True,timeout=300); st=kj_store.status(\".\",a[\"job\"],store=s); assert r.returncode in (0,1) and st[\"state\"] in (\"succeeded\",\"failed\") and st[\"log\"] and os.path.exists(st[\"log\"]) and \"errors=\" in open(st[\"log\"]).read(), (r, st); assert [e[\"fields\"][\"state\"] for e in st[\"events\"]][:2]==[\"queued\",\"running\"]"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,\"_tools\"); import kj_exec; c=kj_exec.classify; assert c(0,\"\")==(\"succeeded\",None); assert c(1,\"land stopped at step rebase: conflict\")==(\"refused\",\"rebase\"); assert c(1,\"boom\")==(\"failed\",None); assert c(2,\"usage\")==(\"failed\",None)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,tempfile,subprocess,time; d=tempfile.mkdtemp(); env=dict(os.environ,KB_HOST_LOCK_DIR=d); s=os.path.join(d,\"c.sqlite\"); cmd=[sys.executable,\"_tools/kbjob.py\",\"--store\",s,\"serve\"]; p=subprocess.Popen(cmd,env=env,stdout=subprocess.PIPE,text=True); time.sleep(3); r=subprocess.run(cmd,env=env,capture_output=True,text=True,timeout=30); p.terminate(); assert r.returncode==0 and str(p.pid) in (r.stdout+r.stderr), (r, p.pid)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,tempfile,json,subprocess; sys.path.insert(0,\"_tools\"); import kj_store\ns=os.path.join(tempfile.mkdtemp(),\"c.sqlite\"); co=lambda *x: subprocess.run([sys.executable,\"_tools/coord.py\",\"--store\",s,*x],capture_output=True,text=True)\na=kj_store.submit(\".\",\"check\",\"\",\"claude-0123abcd\",{\"name\":\"backlog-check\"},store=s); g=json.loads(co(\"get\",\"job/\"+a[\"job\"]).stdout); rec=json.loads(g[\"value\"]); rec[\"operator\"]=\"op-00000000\"\nassert co(\"put\",\"job/\"+a[\"job\"],\"--value\",json.dumps(rec),\"--revision\",str(g[\"revision\"])).returncode==0\nsubprocess.run([sys.executable,\"_tools/kbjob.py\",\"--store\",s,\"serve\",\"--once\"],capture_output=True,text=True,timeout=300)\nassert kj_store.status(\".\",a[\"job\"],store=s)[\"state\"]==\"queued\"\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
