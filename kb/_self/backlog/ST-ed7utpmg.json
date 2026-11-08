@@ -2,7 +2,7 @@
   "id": "ST-ed7utpmg",
   "kind": "story",
   "title": "kbsettings reads five layers, defaults, group, clone, kb root and user, lets a group lock a key, and explain names the layer and file that decided each one",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-y7fe7qqx",
   "sprint": "SP-ep7ck2ab",
   "priority": "P2",
@@ -139,6 +139,37 @@
   ],
   "notes": "Check 2 (kbsettings.py check) passes before the work: it keeps the settings table and coordination.md in step, which must stay. Shared files with SP-lwkdljxg (kbcommon.py, kbpublic.py, bl_land.py, map.csv): agreed with its manager on 2026-11-08 that the first claim lands first and the other rebases; its items reach these files late. SP-uh5h46fm (mon_coord.py, mon_status.py) was asked the same and has not answered: the same rule applies.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-a796fc75",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "4a27c50f00eb9835821a72db95e5d1303167e4f7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess,sys,tempfile,pathlib,inspect\nT=pathlib.Path(tempfile.mkdtemp())\ndef W(p,v):\n    p=pathlib.Path(p); p.parent.mkdir(parents=True,exist_ok=True); p.write_text(v if isinstance(v,str) else json.dumps(v),encoding=\"utf-8\"); return p\ndef R(*a,env=None,cwd=None,inp=None):\n    return subprocess.run([sys.executable,*a],capture_output=True,text=True,env=dict(os.environ,**(env or {})),cwd=cwd,input=inp,timeout=900)\ndef need(c,m):\n    if not c: sys.exit(\"not yet: \"+str(m)[:1500])\ndef git(d,*a):\n    return subprocess.run([\"git\",\"-C\",str(d),*a],capture_output=True,text=True,check=True)\ndef repo(d):\n    d=pathlib.Path(d); d.mkdir(parents=True,exist_ok=True); git(d,\"init\",\"-q\",\"-b\",\"main\"); git(d,\"config\",\"user.name\",\"t\"); git(d,\"config\",\"user.email\",\"t@corp.example.com\"); return d\ndef mod(name):\n    sys.path.insert(0,\"_tools\")\n    try: return __import__(name)\n    except ImportError as x: sys.exit(\"not yet: \"+str(x))\ndef EXT(body):\n    return 'KBEXT_REQUIRES = \">=0.1\"\\n'+body\ndef PY(code,*a,env=None,flags=()):\n    w=\"import sys\\ntry:\\n\"+\"\".join(\"    \"+l+\"\\n\" for l in code.splitlines())+\"except Exception as x:\\n    print('failed: '+type(x).__name__+': '+str(x),file=sys.stderr); sys.exit(3)\\n\"\n    return R(*flags,\"-c\",w,*a,env=env)\n\ng=W(T/\"grp\"/\"group.json\",{\"coordination\":{\"announce\":{\"needs_you_after_min\":5}},\"locked\":[\"coordination.announce.needs_you_after_min\"]})\nW(T/\"settings.json\",{\"group_settings\":str(g),\"coordination\":{\"strategy\":{\"working\":\"wait\"}}})\nW(T/\"_private\"/\"settings.json\",{\"coordination\":{\"strategy\":{\"working\":\"proceed\"}}})\nx=lambda k: R(\"_tools/kbsettings.py\",\"explain\",k,\"--root\",str(T))\nr=x(\"strategy.working\"); need(r.returncode==0 and \"proceed\" in r.stdout and \"user\" in r.stdout and \"_private\" in r.stdout, (r.stdout,r.stderr))\nr=x(\"announce.needs_you_after_min\"); need(r.returncode==0 and \"= 5\" in r.stdout and \"group\" in r.stdout and \"group.json\" in r.stdout, (r.stdout,r.stderr))\nr=x(\"strategy.landing\"); need(r.returncode==0 and \"default\" in r.stdout, (r.stdout,r.stderr))\nW(T/\"settings.json\",{\"group_settings\":str(g),\"coordination\":{\"announce\":{\"needs_you_after_min\":20}}})\nr=x(\"announce.needs_you_after_min\"); need(r.returncode==2 and \"locked\" in r.stderr and \"needs_you_after_min\" in r.stderr and \"group.json\" in r.stderr, (r.returncode,r.stderr))\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess,sys,tempfile,pathlib,inspect\nT=pathlib.Path(tempfile.mkdtemp())\ndef W(p,v):\n    p=pathlib.Path(p); p.parent.mkdir(parents=True,exist_ok=True); p.write_text(v if isinstance(v,str) else json.dumps(v),encoding=\"utf-8\"); return p\ndef R(*a,env=None,cwd=None,inp=None):\n    return subprocess.run([sys.executable,*a],capture_output=True,text=True,env=dict(os.environ,**(env or {})),cwd=cwd,input=inp,timeout=900)\ndef need(c,m):\n    if not c: sys.exit(\"not yet: \"+str(m)[:1500])\ndef git(d,*a):\n    return subprocess.run([\"git\",\"-C\",str(d),*a],capture_output=True,text=True,check=True)\ndef repo(d):\n    d=pathlib.Path(d); d.mkdir(parents=True,exist_ok=True); git(d,\"init\",\"-q\",\"-b\",\"main\"); git(d,\"config\",\"user.name\",\"t\"); git(d,\"config\",\"user.email\",\"t@corp.example.com\"); return d\ndef mod(name):\n    sys.path.insert(0,\"_tools\")\n    try: return __import__(name)\n    except ImportError as x: sys.exit(\"not yet: \"+str(x))\ndef EXT(body):\n    return 'KBEXT_REQUIRES = \">=0.1\"\\n'+body\ndef PY(code,*a,env=None,flags=()):\n    w=\"import sys\\ntry:\\n\"+\"\".join(\"    \"+l+\"\\n\" for l in code.splitlines())+\"except Exception as x:\\n    print('failed: '+type(x).__name__+': '+str(x),file=sys.stderr); sys.exit(3)\\n\"\n    return R(*flags,\"-c\",w,*a,env=env)\n\ng=W(T/\"g.json\",{\"extensions\":{\"ranker\":\"grp:rank\"},\"coordination\":{\"strategy\":{\"blocked\":\"wait\"}}})\nW(T/\".it-ops-kb\"/\"settings.json\",{\"extensions\":{\"ranker\":\"clone:rank\"},\"coordination\":{\"strategy\":{\"returned\":\"ask\"}}})\nW(T/\"kb\"/\"team\"/\"settings.json\",{\"coordination\":{\"strategy\":{\"returned\":\"after\"}}})\nenv={\"KB_GROUP_SETTINGS\":str(g)}\nx=lambda k,*a: R(\"_tools/kbsettings.py\",\"explain\",k,\"--root\",str(T),*a,env=env)\nr=x(\"strategy.blocked\"); need(r.returncode==0 and \"wait\" in r.stdout and \"group\" in r.stdout, (r.stdout,r.stderr))\nr=x(\"strategy.returned\"); need(r.returncode==0 and \"ask\" in r.stdout and \"clone\" in r.stdout and \".it-ops-kb\" in r.stdout, (r.stdout,r.stderr))\nr=x(\"strategy.returned\",\"--kb-root\",\"team\"); need(r.returncode==0 and \"after\" in r.stdout and \"root\" in r.stdout, (r.stdout,r.stderr))\ncode=\"import sys,json; sys.path.insert(0,'_tools'); import kbsettings; v,src=kbsettings.layered(sys.argv[1],'extensions'); print(json.dumps([v,src]))\"\nr=PY(code,str(T),env=env); need(r.returncode==0, r.stderr)\nv,src=json.loads(r.stdout); need(v.get(\"ranker\")==\"clone:rank\" and \"clone\" in json.dumps(src), (v,src))\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/kbsettings.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "2efc8669677c2ff9"
+      }
+    ]
+  }
 }
