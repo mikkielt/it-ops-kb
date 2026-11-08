@@ -45,8 +45,9 @@ Spend of the runs of each scenario, per record (paid `claude -p` runs, the Haiku
 | retrieval | 2026-10-12 | 1 | 10,989 | 3,605 | $0.08 |
 | route-by-verdict | 2026-09-29 | 36 | 2,723,008 | 57,099 | $3.73 |
 | router | 2026-09-28 | 22 | 358,198 | 8,244 | $0.30 |
+| session-load | 2026-10-28 | 312 | 14,324,758 | 107,499 | $0.56 |
 | subagents | 2026-09-28 | 24 | 724,378 | 23,213 | $3.30 |
-| all | | 6198 | 623,629,229 | 7,377,539 | $370.80 |
+| all | | 6510 | 637,953,987 | 7,485,038 | $371.37 |
 <!-- /bench -->
 
 ## Lookups against the web
@@ -1413,29 +1414,58 @@ What it shows: `sh _tools/kbpy` adds 3.5 ms at the median to a Python start of 9
 | record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
 |---|---|---|---|---|---|---|
 | 2026-10-26 | 2026-10-26 | 4b064dd | 2.1.310 | 434 | 5 | - |
-| 2026-10-28 | 2026-10-28 | 553d9e5 | 2.1.311 | 442 | 5 | - |
+| 2026-10-28 | 2026-10-28 | 553d9e5 | 2.1.311 | 442 | 3 | $0.56 |
 <!-- /bench -->
 
 The record of 2026-10-26 mixes two commits, both on `main`: its rows of arms `A`, `C` and `D` are at `4b064dd`, those of arm `B` at `786dd41`, the commit that added arm `B`'s pane commands to the tool (the table shows the commit of the first row).
 
+**The paid record of 2026-10-28** (`run session-load --paid --arms A,C,D,worker --sessions 1,4,8 --reps 3`) replaces the replay with real sessions: per arm, phase, session count and rep, one `claude -p` of `claude-haiku-5-5` under `--max-budget-usd 0.5` per session, in a throwaway clone of its own with the arm's hooks, and the same sampler of `ps` follows each session's process tree. The phase `idle` is a prompt that calls no tool, `working` one that calls three (the PreToolUse, PostToolUse and Stop hooks run). The arm `worker` is arm `A` under the environment of a dispatched worker (`KB_UNWATCHED=1`). The cases `idle all` and `working all` are one session, `idle all x4` and `x8` (and `working`) the sum of 4 and 8 sessions started together; each cell is the mean of 3 reps and no run failed. The record has no file reads (no `fs_usage` capture was made). The 312 runs cost $0.56 by the sessions' own result events (the `cost` rows, the sum of the sessions of a case). The host was not idle: the notes of the `cpu_s` rows give its load at the start of each group (7 to 19 on 14 cores), so the figures at 8 sessions include contention. In the first table below the cells of the record of 2026-10-28 for arms `A`, `C` and `D` are these paid sessions and the cell before them the replay of 2026-10-26: the `->` there joins two different measurements and its percentage is not a change of one.
+
 <!-- bench:table session-load metrics=cpu_s,rss_peak_mb,rss_mean_mb,spawns_per_min cases=idle all,working all -->
 | case | arm | cpu_s | rss_peak_mb | rss_mean_mb | spawns_per_min |
 |---|---|---|---|---|---|
-| idle all | A | 17.70 s | 307.922 | 137.012 | 989 |
-| working all | A | 17.97 s | 309.328 | 139.221 | 207.6 |
-| idle all | C | 12.92 s | 267.484 | 146.006 | 972 |
-| working all | C | 15.67 s | 315.141 | 148.574 | 196.6 |
-| idle all | D | 0.00 s | 0 | 0 | 0 |
-| working all | D | 0.00 s | 0 | 0 | 0 |
+| idle all | A | 17.70 s -> 7.37 s (-58%) | 307.922 -> 533.234 (+73%) | 137.012 -> 390.484 (+185%) | 989 -> 302.336 (-69%) |
+| working all | A | 17.97 s -> 14.12 s (-21%) | 309.328 -> 530.016 (+71%) | 139.221 -> 411.061 (+195%) | 207.6 -> 346.821 (+67%) |
+| idle all | C | 12.92 s -> 6.43 s (-50%) | 267.484 -> 454.828 (+70%) | 146.006 -> 380.079 (+160%) | 972 -> 276.816 (-72%) |
+| working all | C | 15.67 s -> 11.60 s (-26%) | 315.141 -> 479.172 (+52%) | 148.574 -> 411.498 (+177%) | 196.6 -> 287.723 (+46%) |
+| idle all | D | 0.00 s -> 1.18 s | 0 -> 279.625 | 0 -> 265.539 | 0 -> 0 |
+| working all | D | 0.00 s -> 2.12 s | 0 -> 354.859 | 0 -> 278.251 | 0 -> 59.4445 |
 | idle all | B | 38.34 s | 834.828 | 307.981 | 1071.8 |
 | working all | B | 44.13 s | 883.641 | 328.78 | 290.8 |
+| idle all | worker | 1.92 s | 311.766 | 269.655 | 56.8155 |
+| working all | worker | 3.38 s | 329.391 | 279.298 | 108.876 |
 <!-- /bench -->
+
+Four and eight sessions at once, each cell the sum over the sessions of the paid record (`cost` in USD):
+
+<!-- bench:table session-load metrics=cpu_s,rss_peak_mb,spawns_per_min,cost cases=idle all x4,idle all x8,working all x4,working all x8 arms=A,C,D,worker -->
+| case | arm | cpu_s | rss_peak_mb | spawns_per_min | cost |
+|---|---|---|---|---|---|
+| idle all x4 | A | 34.02 s | 2091.8 | 1247.45 | $0.008 |
+| idle all x8 | A | 99.45 s | 3922.89 | 2018.51 | $0.015 |
+| working all x4 | A | 72.93 s | 2069.94 | 1199.36 | $0.012 |
+| working all x8 | A | 148.44 s | 4078.25 | 2245.93 | $0.025 |
+| idle all x4 | C | 28.31 s | 1862.08 | 934.772 | $0.001 |
+| idle all x8 | C | 55.80 s | 3564.45 | 1667.41 | $0.003 |
+| working all x4 | C | 61.18 s | 1953.91 | 1030.8 | $0.006 |
+| working all x8 | C | 109.81 s | 3871.64 | 1969.98 | $0.013 |
+| idle all x4 | D | 4.97 s | 1,113 | 285.978 | $0.001 |
+| idle all x8 | D | 9.17 s | 2206.06 | 402.032 | $0.002 |
+| working all x4 | D | 9.03 s | 1355.66 | 349.894 | $0.004 |
+| working all x8 | D | 18.21 s | 2632.75 | 429.457 | $0.011 |
+| idle all x4 | worker | 8.65 s | 1219.33 | 533.725 | $0.007 |
+| idle all x8 | worker | 18.65 s | 2357.61 | 959.747 | $0.013 |
+| working all x4 | worker | 14.70 s | 1335.06 | 390.386 | $0.012 |
+| working all x8 | worker | 37.18 s | 2568.09 | 669.075 | $0.024 |
+<!-- /bench -->
+
+What it shows: at 8 working sessions arm `A` takes 148 s of CPU and 4.1 GB at peak, arm `C` 110 s and 3.9 GB, the lean worker arm 37 s and 2.6 GB, arm `D` (no hook) 18 s and 2.6 GB; the worker arm's CPU is a quarter of arm `A`'s and about twice that of no hook at all. Idle, the same order holds (99 s, 56 s, 19 s, 9 s at 8 sessions). Per session, arm `A` takes 7.4 s idle at one session and 12.4 s at eight (99 s over 8), so the cost per session does not stay flat as sessions are added; the host's load rose during the record, which this record does not separate from the hooks. The `cost` rows differ by arm and session count in a way the record does not explain.
 
 <!-- bench:table session-load metrics=pane_runs,cpu_s,rss_peak_mb,rss_mean_mb,spawns_per_min cases=idle kbmon,working kbmon,idle all,working all arms=A,B -->
 | case | arm | pane_runs | cpu_s | rss_peak_mb | rss_mean_mb | spawns_per_min |
 |---|---|---|---|---|---|---|
-| idle all | A | - | 17.70 s | 307.922 | 137.012 | 989 |
-| working all | A | - | 17.97 s | 309.328 | 139.221 | 207.6 |
+| idle all | A | - | 17.70 s -> 7.37 s (-58%) | 307.922 -> 533.234 (+73%) | 137.012 -> 390.484 (+185%) | 989 -> 302.336 (-69%) |
+| working all | A | - | 17.97 s -> 14.12 s (-21%) | 309.328 -> 530.016 (+71%) | 139.221 -> 411.061 (+195%) | 207.6 -> 346.821 (+67%) |
 | idle kbmon | B | - | 22.88 s | 689.281 | 346.626 | 2.4 |
 | idle all | B | 3 | 38.34 s | 834.828 | 307.981 | 1071.8 |
 | working kbmon | B | - | 24.87 s | 731.484 | 364.547 | 2.4 |

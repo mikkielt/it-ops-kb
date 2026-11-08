@@ -38,7 +38,8 @@
     "BG-gu2kjifh",
     "ST-nejgzptp",
     "ST-66v7jwkw",
-    "ST-qqpcgqe7"
+    "ST-qqpcgqe7",
+    "BG-whmvabqj"
   ],
   "gates": [
     {
@@ -124,9 +125,29 @@
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the report show the paid record, whose cases are the replay's cases?",
+      "options": [
+        "Prose and a 4/8-session table; the shared tables stay as generated",
+        "Rename the paid rows' record so the shared tables split"
+      ],
+      "recommendation": "Prose and a 4/8-session table; the shared tables stay as generated",
+      "reason": "since the generated tables and a re-run both use the date as the record and the split is BG-mkdeuhpj",
+      "do": {
+        "Prose and a 4/8-session table; the shared tables stay as generated": "ST-rodj5ltd",
+        "Rename the paid rows' record so the shared tables split": "ST-rodj5ltd"
+      },
+      "class": "design",
+      "answer": "Prose and a 4/8-session table; the shared tables stay as generated",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
-  "notes": "The lean worker arm adds a fourth arm: 312 runs, about 1.35 to 3.35 USD at the planning estimate, under the 4 USD cap the operator gave on 2026-10-26; the paid mode's --dry-run gives the figure before the start. Operator 2026-10-28: record without file reads; the fs_usage capture and its file_reads rows are left out (the capture gate's answer predates this and no longer applies).",
+  "notes": "The lean worker arm adds a fourth arm: 312 runs, about 1.35 to 3.35 USD at the planning estimate, under the 4 USD cap the operator gave on 2026-10-26; the paid mode's --dry-run gives the figure before the start. Operator 2026-10-28: record without file reads; the fs_usage capture and its file_reads rows are left out (the capture gate's answer predates this and no longer applies). 2026-10-28 worker: no paid run started (no spend). run session-load --paid accepts arms A, C, D only (bench_load.PAID_ARMS, benchmarks.py:714); the lean worker arm cannot be run, so the check's worker rows cannot exist. Dry run A,C,D at 1,4,8 sessions x 3 reps: 234 runs, estimate 1.70 USD. paid_group already calls arm_env, which gives the worker environment, so the fix is BG-whmvabqj; then run the full A,C,D,worker matrix (312 runs) under the 4 USD cap.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-557596e3",
   "operator": "op-f618a13e"
