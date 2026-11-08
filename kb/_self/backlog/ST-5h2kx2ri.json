@@ -1,0 +1,29 @@
+{
+  "id": "ST-5h2kx2ri",
+  "kind": "story",
+  "title": "kbjob.py follow prints one line per move of a job and exits with its result, so a Monitor or a background shell reports the end",
+  "status": "draft",
+  "parent": "EP-tmw3tokk",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "python3 _tools/kbjob.py [--store PATH] follow JOB [--since SEQ] [--timeout S] prints one line per job event of JOB from SEQ, flushed at once (JOB STATE OP SUBJECT [step=NAME] [exit=N]; never a line of the command's own output, which stays in the log), ends on a terminal state with the line JOB STATE exit=N log=PATH and exits 0 for succeeded, 1 for failed or refused, 3 for cancelled; with the default --timeout 1500 s (under the Monitor tool's effective deadline of 1800 s) it prints a last line follow: still running, continue with --since N and exits 4, so one more Monitor call or background shell resumes it without a missed move; status [JOB|--active] prints the job's JSON as kj_store.status gives it (or every job not terminal), log JOB [--tail N] prints the end of its output log, and cancel JOB moves a queued job to cancelled and a running one's process group to TERM then KILL and cancelled, for the submitting operator only (exit 1 for another's)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,tempfile,subprocess; sys.path.insert(0,\"_tools\"); import kj_store; s=os.path.join(tempfile.mkdtemp(),\"c.sqlite\"); a=kj_store.submit(\".\",\"check\",\"\",\"claude-0123abcd\",{\"name\":\"backlog-check\"},store=s); j=a[\"job\"]; co=lambda *x: subprocess.run([sys.executable,\"_tools/coord.py\",\"--store\",s,*x],capture_output=True,text=True); fo=lambda *x: subprocess.run([sys.executable,\"_tools/kbjob.py\",\"--store\",s,\"follow\",j,*x],capture_output=True,text=True,timeout=60); co(\"transition\",\"job/\"+j,\"--to\",\"running\"); r=fo(\"--timeout\",\"2\"); assert r.returncode==4 and \"--since\" in r.stdout.splitlines()[-1], r; co(\"transition\",\"job/\"+j,\"--to\",\"refused\",\"--field\",\"exit=1\",\"--field\",\"step=rebase\"); r=fo(\"--timeout\",\"5\"); lines=r.stdout.splitlines(); assert r.returncode==1 and lines[-1].startswith(j+\" refused\") and \"step=rebase\" in lines[-1], r"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbjob.py",
+    "_tools/kj_follow.py",
+    "kb/_self/tools.md",
+    "kb/_self/coordination.md"
+  ],
+  "depends_on": [
+    "ST-nwwcf3kk"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
