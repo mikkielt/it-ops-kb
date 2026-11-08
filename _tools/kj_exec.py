@@ -21,8 +21,8 @@ Placement is `next_runnable`: land jobs of one clone run one at a time (the clon
 at a time (the host main lock), a check tests-full one at a time (the host test lock), done and stage-back jobs one at a time per
 item, every other pair in parallel up to SLOTS (`serve --parallel N`), and inside a class in submit order. The executor takes no lock:
 the CLI a job runs does, so a hand-run land or sync in a session serialises with it. A job whose class has a lock holder outside
-the executor (`lock_holders` less its own children) is moved to waiting-lock, its event step naming the lock and the holder's pid,
-clone and step, and starts when the lock is free, so no child burns the main lock's wait.
+the executor (`lock_holders` less its own children) is moved to waiting-lock, its event step naming the lock only (`lock:host-main`, `lock:landing`, `lock:tests`) and the
+record's member `holder` the holder's pid, clone and step (dropped at the next move), and starts when the lock is free, so no child burns the main lock's wait.
 
 A job is taken with the lease `jobrun/<job id>` (JOB_LEASE_TTL_S, renewed every JOB_LEASE_RENEW_S while the child runs), moved
 queued to running, and run as `python <argv of kj_ops.OPS>` in the job's clone: the leader of a process group of its own, stdin
@@ -121,7 +121,10 @@ def pending(store, clone, host, operator, states=("queued",)):
 def move(store, job, state, **fields):
     """Move JOB to STATE by coord's job table, with the fields given (exit, step); coord.Refused when the table says no."""
     given = [f"{name}={value}" for name, value in fields.items() if value is not None]
-    return coord.job_transition(Namespace(key=coord.JOB_KEYS + job, to=state, field=given, store=store), time.time)
+    done = coord.job_transition(Namespace(key=coord.JOB_KEYS + job, to=state, field=given, store=store), time.time)
+    if state != "waiting-lock":
+        drop_holder(store, job)
+    return done
 
 
 def own_store(root, store):
@@ -244,6 +247,15 @@ def take_job(store, job):
     except coord.Refused:
         return None
     return got["token"]
+
+
+def drop_holder(store, job):
+    """Drop the member `holder` (the lock holder a waiting-lock job names) from JOB's record, if it has one: every move out of
+    waiting-lock, to running or to a terminal state, leaves none."""
+    with contextlib.suppress(sqlite3.Error):
+        record = kj_store.read_record(store, job)
+        if record and "holder" in record:
+            amend(store, job, holder=None)
 
 
 def amend(store, job, **members):
@@ -503,18 +515,19 @@ def outside(holders, pids):
     return {lock: held for lock, held in holders.items() if not inside(held["pid"], pids)}
 
 
-def wait_step(lock, held):
-    """The step member of a job's waiting-lock event: the lock and the holder's pid, clone (its directory name) and step, as one
-    token of the characters a job field holds."""
-    clone = Path(str(held.get("clone") or "?")).name or "?"
-    text = f"{lock}:pid.{held['pid']}:{clone}:{held.get('step') or '?'}"
-    return re.sub(r"[^A-Za-z0-9_.:/#@-]+", "-", text)[:120]
+LOCK_STEPS = {"host-main": "lock:host-main", "landing": "lock:landing", "host-test": "lock:tests"}
+
+
+def wait_step(lock):
+    """The step member of a job's waiting-lock event: `lock:` and the lock's name (`host-main`, `landing` or `tests`) only. The
+    holder's pid, clone and step are in the job record (the member `holder`), never in an event, which monitors and digests read."""
+    return LOCK_STEPS[lock]
 
 
 def drain(store, clone, host, operator, out, slots=SLOTS):
     """Run the queued jobs of this host, clone and operator to the end, at most SLOTS at a time and as `next_runnable` places them
     (submit order inside a class); the ids of the jobs that failed or were lost. A job whose lock a process outside the executor
-    holds is moved to waiting-lock (step: lock, holder pid, clone and step) and started once the lock is free. A job another
+    holds is moved to waiting-lock (event step: the lock; record member `holder`: its pid, clone and step) and started once the lock is free. A job another
     executor leased, or that left queued before this one moved it, is passed over."""
     failed, passed, active, waiting = [], set(), {}, {}  # active: job -> child state; waiting: job -> {record, token, renewed}
     slots = max(1, int(slots))
@@ -561,6 +574,7 @@ def drain(store, clone, host, operator, out, slots=SLOTS):
             for job, one in list(waiting.items()):  # a waiting job cancelled meanwhile leaves the table
                 now = kj_store.read_record(store, job) or {}
                 if now.get("state") != "waiting-lock":
+                    drop_holder(store, job)
                     del waiting[job]
                     release(job, one["token"])
                 else:
@@ -581,7 +595,8 @@ def drain(store, clone, host, operator, out, slots=SLOTS):
                     continue
                 try:
                     move(store, job, "running")
-                    move(store, job, "waiting-lock", step=wait_step(lock, held))
+                    move(store, job, "waiting-lock", step=wait_step(lock))
+                    amend(store, job, holder={"pid": held["pid"], "clone": held["clone"], "step": held["step"]})
                 except coord.Refused:
                     release(job, token)
                     continue

@@ -17,7 +17,7 @@
                                         (--parallel, default 3; `kj_exec.next_runnable`): lands of the clone, sync-pushes of the host,
                                         a tests-full check and the done and stage-back of one item each run one at a time, in submit order,
                                         and a job whose lock a process outside the executor holds (a session's own land or sync) waits as
-                                        waiting-lock, naming the holder's pid, clone and step in its step, until the lock is free. Each is leased as jobrun/JOB, moved queued to running, run as the leader of a
+                                        waiting-lock, (its event step `lock:host-main`, `lock:landing` or `lock:tests`, the holder's pid, clone and step in the record's `holder`), until the lock is free. Each is leased as jobrun/JOB, moved queued to running, run as the leader of a
                                         process group of its own in the clone with its output appended to the job's output.log,
                                         and moved to succeeded (exit 0), refused (exit 1 and a line `... stopped at step NAME:`)
                                         or failed. --once drains the queue and exits 0 (1 when a job failed); without it serve
@@ -37,7 +37,8 @@
                                         and exits 4: the next follow from N misses no move. It only reads.
 
   kbjob.py [--store PATH] status [JOB | --active]
-                                        print the JSON of kj_store.status for JOB, or the JSON list of the records of every job
+                                        print the JSON of kj_store.status for JOB (with `holder`, {pid, clone, step}, while the job waits
+                                        in waiting-lock for a lock a process outside the executor holds), or the JSON list of the records of every job
                                         not in a terminal state, oldest first
   kbjob.py [--store PATH] log JOB [--tail N]
                                         print the last N lines (default 40) of the job's output log; exit 1 before it has one
@@ -160,6 +161,12 @@ def ensure_command(store):
     return 0
 
 
+def with_holder(body, store):
+    """BODY (kj_store.status's JSON) with the member `holder` ({pid, clone, step}) of a job in waiting-lock: the lock holder it waits for."""
+    held = (kj_store.read_record(store, body["job"]) or {}).get("holder")
+    return {**body, "holder": held} if held else body
+
+
 def run(args, parser):
     if args.command == "serve":
         return kj_exec.serve(str(ROOT), kj_store.resolve_store(ROOT, args.store), once=args.once, idle_exit=args.idle_exit,
@@ -195,7 +202,7 @@ def run(args, parser):
     if args.command == "status":
         if (args.job is None) == (not args.active):
             parser.error("status takes a JOB or --active, one of them")
-        body = kj_follow.active(store) if args.active else kj_store.status(str(ROOT), args.job, store=store)
+        body = kj_follow.active(store) if args.active else with_holder(kj_store.status(str(ROOT), args.job, store=store), store)
         print(json.dumps(body, sort_keys=True, ensure_ascii=False))
         return 0
     if args.command == "log":
