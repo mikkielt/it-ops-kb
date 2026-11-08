@@ -105,7 +105,12 @@
         "KB_GROUP_SETTINGS names the team's settings file, and a shipped file is one tracked at the first tag that the group's setup modified or deleted": "ST-axz2he4d",
         "A settings.json is written into the clone naming the team's file, and every changed path counts": "ST-axz2he4d"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "KB_GROUP_SETTINGS names the team's settings file, and a shipped file is one tracked at the first tag that the group's setup modified or deleted",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     },
     {
       "id": "g3",
