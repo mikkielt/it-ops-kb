@@ -1,0 +1,23 @@
+{
+  "id": "BG-bpy4x4os",
+  "kind": "bug",
+  "title": "kbmon's shared snapshot is one per checkout, not one per clone as its goal says, and the pane's receipt and needs-you runs stay unshared",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "Either kbmon's shared snapshot lives once per clone (the main checkout's _cache) or the docs and goal say one per checkout; and the pane's --receipt and --status all runs on an alert change take the shared snapshot or are named as per-pane",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys\nsys.path.insert(0, '_tools')\nimport inspect, kbmon\nsrc = inspect.getsource(kbmon)\nassert 'git-common-dir' in src or 'common_dir' in src, 'the shared snapshot path is the checkout root, not the clone'"
+    ]
+  },
+  "repro_reason": "the gap is where one path points (checkout root against the clone's common directory); the path expression in the code is what decides it",
+  "links": [
+    "parked: SP-wpttdu7u review"
+  ],
+  "notes": "Review gap 4 of SP-wpttdu7u: kbmon.py:93 and shared() use a.root.resolve()/_cache/kbmon/shared.json; register.tsx lines 111 and 166 run --receipt and notifyNeeds runs --status all per pane.",
+  "filed_in": "clone-0ea70e5c"
+}
