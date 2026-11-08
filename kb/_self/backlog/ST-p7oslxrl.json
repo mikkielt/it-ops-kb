@@ -17,11 +17,31 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "kg_trailers.job_trailers(environ) reads KB_JOB and KB_JOB_OPERATOR, which the executor sets for a job's process",
+      "check": 0
+    },
+    {
+      "clause": "apply_trailers(message, computed, operator=..., job=...) sets KB-Operator to the submitter and adds KB-Job: JB-..., whatever git author the job's identity gives",
+      "check": 0
+    },
+    {
+      "clause": "an operator value that is an email address or a session GUID, or a job value that is no job id, is dropped with a line on stderr",
+      "check": 0
+    },
+    {
+      "clause": "commits made outside a job are unchanged",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kg_trailers.py",
     "_tools/kbwho.py",
     ".githooks/**",
-    "kb/_self/git.md"
+    "kb/_self/git.md",
+    "kb/_self/design.md",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "ST-pea36fje"

@@ -13,13 +13,32 @@
       "run": [
         "python3",
         "-c",
-        "import sys,os,json,time,tempfile,subprocess\nd=tempfile.mkdtemp()\nkd=os.path.join(d,\"keys\")\ndef key(p,t):\n    f=os.path.join(kd,*p.split(\"/\")); os.makedirs(os.path.dirname(f),exist_ok=True); open(f,\"w\").write(t); os.chmod(f,0o600); return f\nimport urllib.request,urllib.error,tarfile,io\na=key(\"corp/ops/jan.kowalski\",\"ka-placeholder\"); pd=os.path.join(d,\"pol\"); os.makedirs(pd); open(os.path.join(pd,\"placement.rego\"),\"w\").write(\"package kbjobs.placement\\n\")\nEXTRA=[\"--policy-dir\",pd]\nsv=subprocess.Popen([sys.executable,\"_tools/coord.py\",\"--store\",os.path.join(d,\"c.sqlite\"),\"serve\",\"--bind\",\"127.0.0.1:0\",\"--keys\",kd]+EXTRA,stdout=subprocess.PIPE,text=True)\nurl=sv.stdout.readline().split(\"serving\")[1].strip()\nsubprocess.run([sys.executable,\"_tools/coord.py\",\"--url\",url,\"--key-file\",a,\"put\",\"group/corp/ops/policy/placement\",\"--value\",json.dumps({\"check\":{\"executor\":\"server\"}}),\"--revision\",\"0\"],check=True,capture_output=True,timeout=60)\ndef get(p,h={}):\n    try:\n        r=urllib.request.urlopen(urllib.request.Request(url+p,headers=h),timeout=30); return r.status,r.headers.get(\"ETag\"),r.read()\n    except urllib.error.HTTPError as e: return e.code,None,b\"\"\nau={\"Authorization\":\" \".join([\"Bearer\",open(a).read()])}\ns0,_,_=get(\"/v1/bundles/kbjobs-overrides.tar.gz\")\ns1,e1,b1=get(\"/v1/bundles/kbjobs-overrides.tar.gz\",au); s2,_,_=get(\"/v1/bundles/kbjobs-overrides.tar.gz\",dict(au,**{\"If-None-Match\":e1}))\ns3,_,b3=get(\"/v1/bundles/kbjobs.tar.gz\",au); sv.terminate()\nt=tarfile.open(fileobj=io.BytesIO(b1)); names=t.getnames(); data=json.loads(t.extractfile([n for n in names if n.endswith(\"kbjobs/overrides/data.json\")][0]).read())\nassert (s0,s1,s2,s3)==(401,200,304,200), (s0,s1,s2,s3)\nassert data[\"corp/ops\"][\"check\"][\"executor\"]==\"server\", data\nassert any(n.endswith(\"placement.rego\") for n in tarfile.open(fileobj=io.BytesIO(b3)).getnames())\n"
+        "import sys,os,json,time,tempfile,subprocess\nd=tempfile.mkdtemp()\nkd=os.path.join(d,\"keys\")\ndef key(p,t):\n    f=os.path.join(kd,*p.split(\"/\")); os.makedirs(os.path.dirname(f),exist_ok=True); open(f,\"w\").write(t); os.chmod(f,0o600); return f\nimport urllib.request,urllib.error,tarfile,io\na=key(\"corp/ops/jan.kowalski\",\"ka-placeholder\"); pd=os.path.join(d,\"pol\"); os.makedirs(pd); open(os.path.join(pd,\"placement.rego\"),\"w\").write(\"package kbjobs.placement\\n\")\nEXTRA=[\"--policy-dir\",pd]\nimport atexit\nsv=subprocess.Popen([sys.executable,\"_tools/coord.py\",\"--store\",os.path.join(d,\"c.sqlite\"),\"serve\",\"--bind\",\"127.0.0.1:0\",\"--keys\",kd]+EXTRA,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,text=True); atexit.register(sv.kill)\nurl=sv.stdout.readline().split(\"serving\")[1].strip()\nsubprocess.run([sys.executable,\"_tools/coord.py\",\"--url\",url,\"--key-file\",a,\"put\",\"group/corp/ops/policy/placement\",\"--value\",json.dumps({\"check\":{\"executor\":\"server\"}}),\"--revision\",\"0\"],check=True,capture_output=True,timeout=60)\ndef get(p,h={}):\n    try:\n        r=urllib.request.urlopen(urllib.request.Request(url+p,headers=h),timeout=30); return r.status,r.headers.get(\"ETag\"),r.read()\n    except urllib.error.HTTPError as e: return e.code,None,b\"\"\nau={\"Authorization\":\" \".join([\"Bearer\",open(a).read()])}\ns0,_,_=get(\"/v1/bundles/kbjobs-overrides.tar.gz\")\ns1,e1,b1=get(\"/v1/bundles/kbjobs-overrides.tar.gz\",au); s2,_,_=get(\"/v1/bundles/kbjobs-overrides.tar.gz\",dict(au,**{\"If-None-Match\":e1}))\ns3,_,b3=get(\"/v1/bundles/kbjobs.tar.gz\",au); sv.terminate()\nt=tarfile.open(fileobj=io.BytesIO(b1)); names=t.getnames(); data=json.loads(t.extractfile([n for n in names if n.endswith(\"kbjobs/overrides/data.json\")][0]).read())\nassert (s0,s1,s2,s3)==(401,200,304,200), (s0,s1,s2,s3)\nassert data[\"corp/ops\"][\"check\"][\"executor\"]==\"server\", data\nassert any(n.endswith(\"placement.rego\") for n in tarfile.open(fileobj=io.BytesIO(b3)).getnames())\n"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,json,tempfile,subprocess,urllib.request,urllib.error\nd=tempfile.mkdtemp()\nimport atexit\nkd=os.path.join(d,\"keys\")\ndef key(p,t):\n    f=os.path.join(kd,*p.split(\"/\")); os.makedirs(os.path.dirname(f),exist_ok=True); open(f,\"w\").write(t); os.chmod(f,0o600); return f\ndef serve(*extra):\n    sv=subprocess.Popen([sys.executable,\"_tools/coord.py\",\"--store\",os.path.join(d,\"c.sqlite\"),\"serve\",\"--bind\",\"127.0.0.1:0\",\"--keys\",kd,*extra],stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,text=True); atexit.register(sv.kill)\n    return sv, sv.stdout.readline().split(\"serving\")[1].strip()\na=key(\"corp/ops/jan.kowalski\",\"ka-placeholder\"); sv,url=serve()\ndef st(p):\n    try: return urllib.request.urlopen(urllib.request.Request(url+p,headers={\"Authorization\":\" \".join([\"Bearer\",open(a).read()])}),timeout=30).status\n    except urllib.error.HTTPError as e: return e.code\nr=(st(\"/v1/bundles/kbjobs.tar.gz\"),st(\"/v1/bundles/kbjobs-overrides.tar.gz\")); sv.terminate(); assert r==(404,200), r\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "coord.py serve --policy-dir DIR answers GET /v1/bundles/kbjobs.tar.gz (DIR's .rego and data files, manifest roots kbjobs/placement and kbjobs/groups) and GET /v1/bundles/kbjobs-overrides.tar.gz (data.json under kbjobs/overrides, mapping each group path to its override, manifest root kbjobs/overrides), both behind the same bearer check as POST /v1/run, each with an ETag that changes only with its content and 304 for a matching If-None-Match",
+      "check": 0
+    },
+    {
+      "clause": "a missing --policy-dir answers 404 for the first bundle only",
+      "check": 1
     }
   ],
   "touches": [
     "_tools/coord.py",
-    "kb/_self/coordination.md"
+    "kb/_self/coordination.md",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "ST-j6n6u6or"

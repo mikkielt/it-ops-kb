@@ -24,6 +24,28 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "kj_exec.next_runnable(jobs, running, holders, slots) returns (run, wait) for the queued jobs: land jobs of one clone run one at a time (the clone's landing lock), sync-push jobs of a host one at a time (the host main lock kb-main.lock), a check tests-full job one at a time per host (the test lock), done and stage-back jobs one at a time per item, every other pair in parallel up to slots (default 3, serve --parallel N)",
+      "check": 0
+    },
+    {
+      "clause": "a job whose class has a lock holder outside the executor (a session's own land or sync run by hand: pid, clone and step read from the lock file as bl_procs.lock_holders does) is not started but moved to waiting-lock with the holder's pid, clone and step in its event",
+      "check": 0
+    },
+    {
+      "clause": "starts when the lock is free, so no child burns the 1800 s main-lock wait",
+      "check": 0
+    },
+    {
+      "clause": "kj_exec.lock_holders() reads the host's lock files",
+      "check": 1
+    },
+    {
+      "clause": "submit order is the order inside one class",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kj_exec.py",
     "_tools/kbjob.py",
@@ -32,7 +54,8 @@
     "kb/_self/tools.md"
   ],
   "depends_on": [
-    "ST-rmv67pks"
+    "ST-rmv67pks",
+    "ST-a73x2hvh"
   ],
   "notes": "Rules read from the code and docs: landings of one clone run one at a time under kb-landing.lock in the git common directory (bl_close.landing_lock, bl_close.py:376, git.md:64); every step that moves the integration main holds kb-main.lock in the host lock directory (kg_lock.main_lock, kg_lock.py:141; sync --push for its whole run, land's fetch and rebase; git.md:62), wait bound 1800 s then MainLockTimeout; the whole-suite tests.py takes the host test lock (kb-tests.lock, coordination.md:207); order main lock first, test lock second (LockOrderError). The executor never takes these locks itself: the CLI it runs does, so the rules stay in one place and a hand-run land in a session still serialises with the executor's. The queue's job is order and visibility: without it N submitted lands would start N processes that all wait on the landing lock and burn its bound (ST-igkt3vsr already notes land --wait-merge does not count that wait). Parallel-safe by the table: done or stage-back of different items (the run-state table refuses same-item overlap, coordination.md:56), check selections (no lock), a land of another clone. slots default 3 is the one tunable; a host under load keeps the 29 s test ceiling by the lock, not by the slots. Check is pure on planted lists plus one real lock plant in a temporary KB_HOST_LOCK_DIR; the check never submits sync-push or land, so no check can push.",
   "filed_in": "clone-0ea70e5c"

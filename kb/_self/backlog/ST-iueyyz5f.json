@@ -17,6 +17,28 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "The closed operation table gains bench (subject a scenario, paid)",
+      "check": 0
+    },
+    {
+      "clause": "submit of a paid operation (bench, dispatch, begin) without --budget USD exits 2 naming --budget",
+      "check": 0
+    },
+    {
+      "clause": "with a decision whose budget_cap_usd is set, the group's spend of the UTC day (bl_cost.spend_usd of its finished jobs) plus the budgets of its live jobs plus this budget above the cap exits 1 naming the three figures and the cap",
+      "check": 0
+    },
+    {
+      "clause": "a job under the cap is queued with its budget",
+      "check": 0
+    },
+    {
+      "clause": "nothing is stopped mid-run",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kj_store.py",
     "_tools/kj_ops.py",
@@ -29,5 +51,6 @@
   "relates_to": [
     "ST-sw2xihoe"
   ],
+  "notes": "Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: queues nothing",
   "filed_in": "clone-0ea70e5c"
 }

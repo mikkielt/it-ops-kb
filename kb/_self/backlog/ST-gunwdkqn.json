@@ -23,13 +23,51 @@
         "-c",
         "import sys; t=[open(p).read() for p in (\".claude/skills/kb-sprint/SKILL.md\",\"skills/sprint/SKILL.md\")]; assert all(\"kbjob.py submit\" in x and \"kbjob.py follow\" in x and \"Monitor\" in x and \"kbjob.py ping\" in x for x in t), \"skill text lacks the job step\"; assert all(\"land ID > <scratch>/land.log\" not in x for x in t), \"the background land log recipe is still the way\""
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json\na=\" \".join(json.load(open(\".claude/settings.json\"))[\"permissions\"][\"allow\"])\nassert all(\"kbjob.py \"+v in a for v in (\"submit\",\"follow\",\"status\",\"log\",\"cancel\",\"ping\",\"ensure\")) and \"kbjob.py serve\" not in a, a\nassert \"kbjob.py\" in open(\"kb/_self/backlog.md\").read()\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "the kb-sprint skill (in the clone and in the plugin's copy) tells the orchestrator, when python3 _tools/kbjob.py ping exits 0, to submit each landing, stage-back and sync --push with kbjob.py submit OP ID --by claude-<8 hex>, to follow it with one Monitor call on kbjob.py follow JOB (a line per move",
+      "check": 1
+    },
+    {
+      "clause": "a waiting-merge line is the cue to run backlog.py merge ID or tell the operator) or a background shell on the same command",
+      "check": 1
+    },
+    {
+      "clause": "to go on at once with dispatching and claiming the next ready items and answering gates, instead of one background land ID > log per landing and a coord.py wait",
+      "check": 1
+    },
+    {
+      "clause": "a follow that ends with exit 4 is run again with its --since",
+      "check": 1
+    },
+    {
+      "clause": "the existing path stays for a host where ping exits 1 and for a headless worker",
+      "check": 1
+    },
+    {
+      "clause": "claude/settings.json allows python3 _tools/kbjob.py submit, follow, status, log, cancel, ping and ensure and never serve or login-item",
+      "check": 2
+    },
+    {
+      "clause": "kb/_self/backlog.md describes the job step beside the run states",
+      "check": 2
     }
   ],
   "touches": [
     "skills/sprint/SKILL.md",
     ".claude/settings.json",
     "kb/_self/backlog.md",
-    "kb/_self/plugin.md"
+    "kb/_self/plugin.md",
+    "kb/_self/maintaining.md"
   ],
   "depends_on": [
     "ST-oif6o3o6",

@@ -17,6 +17,20 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "A workstation executor holds the lease jobexec/<host>/<operator> while it serves",
+      "check": 0
+    },
+    {
+      "clause": "a queued job placed on a workstation whose lease has been missing for the decision's fallback_after_s is taken by an executor of the decision's fallback kind, which records a job event with the reason executor offline since T and the new placement",
+      "check": 0
+    },
+    {
+      "clause": "a decision with no fallback leaves the job queued with that reason",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kj_exec.py",
     "_tools/kj_store.py",
@@ -24,7 +38,9 @@
   ],
   "depends_on": [
     "ST-nmrcazp2",
-    "ST-gf2rlzcc"
+    "ST-gf2rlzcc",
+    "ST-iueyyz5f"
   ],
+  "notes": "Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: a live lease keeps the job on its workstation",
   "filed_in": "clone-0ea70e5c"
 }

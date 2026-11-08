@@ -17,6 +17,28 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "kj_cred.resolve(identity, group, operator, cred_dir, environ) gives the environment of the job's git: none disables every push (an invalid pushurl)",
+      "check": 0
+    },
+    {
+      "clause": "group-bot reads cred_dir/group/<group path> or the CI variable KB_GROUP_TOKEN_<GROUP_PATH upper, / as _>",
+      "check": 0
+    },
+    {
+      "clause": "operator reads cred_dir/operator/<operator path>",
+      "check": 0
+    },
+    {
+      "clause": "the token reaches git only through a GIT_ASKPASS helper that reads the file, never argv or an environment value",
+      "check": 0
+    },
+    {
+      "clause": "a file with a group or other bit, or no credential, raises kj_cred.Refused naming the identity and the path or variable",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kj_cred.py",
     "_tools/kj_exec.py",
@@ -26,5 +48,6 @@
   "depends_on": [
     "ST-vst4vom3"
   ],
+  "notes": "Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: the job ends refused with that reason Order agreed 2026-11-08 with SP-ep7ck2ab's manager (ask A1e21b0d155): shared kb/_self/map.csv rows land by first claim, the later item rebases; no hard dependency.",
   "filed_in": "clone-0ea70e5c"
 }

@@ -17,6 +17,12 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "kbjob.py serve --kind server --data DIR takes the queued jobs placed on server, keeps one clone per integration remote url under DIR (cloned at the first job, fetched before each), runs the job's argv there as the CLI would on a workstation and lands an item from the remote work/<id> in a worktree of that clone",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kj_exec.py",
     "_tools/kj_land.py",
@@ -27,5 +33,6 @@
     "ST-gf2rlzcc",
     "ST-ugkw5mt3"
   ],
+  "notes": "Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: a test-ceiling refusal ends the job failed with the reason host condition and the central host's platform, never retried with another ceiling",
   "filed_in": "clone-0ea70e5c"
 }

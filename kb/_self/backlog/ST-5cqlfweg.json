@@ -15,6 +15,31 @@
         "-c",
         "import sys,os,tempfile,subprocess; sys.path.insert(0,\"_tools\"); import kj_store, kj_exec; s=os.path.join(tempfile.mkdtemp(),\"c.sqlite\"); a=kj_store.submit(\".\",\"check\",\"\",\"claude-0123abcd\",{\"name\":\"backlog-check\"},store=s); j=a[\"job\"]; co=lambda *x: subprocess.run([sys.executable,\"_tools/coord.py\",\"--store\",s,*x],capture_output=True,text=True); co(\"transition\",\"job/\"+j,\"--to\",\"running\"); kj_exec.recover(\".\",store=s,alive=lambda p: False,leased=lambda k: False); assert kj_store.status(\".\",j,store=s)[\"state\"]==\"queued\"; co(\"transition\",\"job/\"+j,\"--to\",\"running\"); kj_exec.recover(\".\",store=s,alive=lambda p: False,leased=lambda k: False); st=kj_store.status(\".\",j,store=s); assert st[\"state\"]==\"failed\", st; assert [e[\"fields\"][\"state\"] for e in st[\"events\"]]==[\"queued\",\"running\",\"lost\",\"queued\",\"running\",\"lost\",\"failed\"], st[\"events\"]"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,tempfile,subprocess; sys.path.insert(0,\"_tools\"); import kj_store, kj_exec\ns=os.path.join(tempfile.mkdtemp(),\"c.sqlite\"); a=kj_store.submit(\".\",\"check\",\"\",\"claude-0123abcd\",{\"name\":\"backlog-check\"},store=s); j=a[\"job\"]\nsubprocess.run([sys.executable,\"_tools/coord.py\",\"--store\",s,\"transition\",\"job/\"+j,\"--to\",\"running\"],check=True,capture_output=True)\nkj_exec.recover(\".\",store=s,alive=lambda p: True,leased=lambda k: False); st=kj_store.status(\".\",j,store=s)\nassert st[\"state\"]==\"running\" and \"lost\" not in [e[\"fields\"][\"state\"] for e in st[\"events\"]], st\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbjob.py serve, at its start and every 30 s, finds each job in running, waiting-lock or waiting-merge whose lease jobrun/ID has expired and whose recorded pid no longer runs, moves it to lost (step lost), then to queued with attempt raised by one the first time and to failed the second time",
+      "check": 0
+    },
+    {
+      "clause": "a child whose pid still runs and whose command line names the job's operation is adopted: serve takes the lease again and follows that pid instead of starting a second process",
+      "check": 1
+    },
+    {
+      "clause": "kj_exec.recover(root, store=None, alive=..., leased=...) is that pass and returns the moves it made",
+      "check": 0
+    },
+    {
+      "clause": "a sync-push or check job simply runs again",
+      "check": 0
     }
   ],
   "touches": [
@@ -24,8 +49,9 @@
     "kb/_self/tools.md"
   ],
   "depends_on": [
-    "ST-rmv67pks"
+    "ST-rmv67pks",
+    "ST-5h2kx2ri"
   ],
-  "notes": "Premise (the failure this closes) and what already exists: backlog.py runs lists a run-state drift for a land killed at landing (no process record names a live pid) and runs --reconcile writes refused (kb/_self/coordination.md:57, bl_runs.py), and enter_run takes over a state left by a dead land (bl_land.py:2357), so land and stage-back are safe to run again; sync --push and tests are idempotent. What no tool does today: a landing started in a session's background shell dies with the session (https://code.claude.com/docs/en/interactive-mode#how-backgrounding-works, read 2026-11-08: background tasks are cleaned up when Claude Code exits), and the log the skill sends to the scratch directory is removed by land itself (ST-vbwxcncr, ST-kios45l7). A job run twice at most (attempt 2) bounds a crash loop; a third failure is a result for the operator, not a retry. Lease semantics are coord's claim/renew (coord.py:321 take, ttl in seconds), recorded pid is the record member the executor writes at start; adoption keeps a child from running twice after a serve restart. Related: bl_runs.reconcile is the item-level counterpart; the job layer does not write run/ITEM states itself, the CLI it runs does.",
+  "notes": "Premise (the failure this closes) and what already exists: backlog.py runs lists a run-state drift for a land killed at landing (no process record names a live pid) and runs --reconcile writes refused (kb/_self/coordination.md:57, bl_runs.py), and enter_run takes over a state left by a dead land (bl_land.py:2357), so land and stage-back are safe to run again; sync --push and tests are idempotent. What no tool does today: a landing started in a session's background shell dies with the session (https://code.claude.com/docs/en/interactive-mode#how-backgrounding-works, read 2026-11-08: background tasks are cleaned up when Claude Code exits), and the log the skill sends to the scratch directory is removed by land itself (ST-vbwxcncr, ST-kios45l7). A job run twice at most (attempt 2) bounds a crash loop; a third failure is a result for the operator, not a retry. Lease semantics are coord's claim/renew (coord.py:321 take, ttl in seconds), recorded pid is the record member the executor writes at start; adoption keeps a child from running twice after a serve restart. Related: bl_runs.reconcile is the item-level counterpart; the job layer does not write run/ITEM states itself, the CLI it runs does. Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: land and stage-back rely on their own resume rules (a land state left at landing by a dead land is taken over, bl_land.enter_run)",
   "filed_in": "clone-0ea70e5c"
 }

@@ -17,6 +17,20 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "A server executor writes one ops row per finished job, carrying the job id and origin server, to its own query-log spool and delivers it to the integration remote as a clone does (never the publish remote)",
+      "check": 0
+    },
+    {
+      "clause": "kbjob.py follow writes the same row with origin follower in the submitter's clone",
+      "check": 0
+    },
+    {
+      "clause": "kbjob.py stats and the digest count each job id once, preferring the executor's row",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kj_store.py",
     "_tools/kj_exec.py",
@@ -26,7 +40,9 @@
   ],
   "depends_on": [
     "ST-liirkdss",
-    "ST-vst4vom3"
+    "ST-vst4vom3",
+    "ST-nfsozwhe"
   ],
+  "notes": "Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: a CI job writes none",
   "filed_in": "clone-0ea70e5c"
 }

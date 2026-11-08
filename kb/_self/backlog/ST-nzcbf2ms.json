@@ -13,14 +13,41 @@
       "run": [
         "python3",
         "-c",
-        "import sys,os,json,time,tempfile,subprocess\nd=tempfile.mkdtemp()\nkd=os.path.join(d,\"keys\")\ndef key(p,t):\n    f=os.path.join(kd,*p.split(\"/\")); os.makedirs(os.path.dirname(f),exist_ok=True); open(f,\"w\").write(t); os.chmod(f,0o600); return f\na=key(\"corp/ops/jan.kowalski\",\"ka-placeholder\"); b=key(\"corp/dev/anna.nowak\",\"kb-placeholder\"); c=key(\"corp/ops/edge/piotr.nowak\",\"kc-placeholder\"); t=key(\"ops/ewa.nowak\",\"kd-placeholder\")\nEXTRA=[]\nsv=subprocess.Popen([sys.executable,\"_tools/coord.py\",\"--store\",os.path.join(d,\"c.sqlite\"),\"serve\",\"--bind\",\"127.0.0.1:0\",\"--keys\",kd]+EXTRA,stdout=subprocess.PIPE,text=True)\nurl=sv.stdout.readline().split(\"serving\")[1].strip()\nput=lambda k,kk: subprocess.run([sys.executable,\"_tools/coord.py\",\"--url\",url,\"--key-file\",k,\"put\",kk,\"--value\",\"{}\",\"--revision\",\"0\"],capture_output=True,text=True,timeout=60).returncode\nr=[put(a,\"group/corp/ops/x\"),put(a,\"group/corp/ops/edge/y\"),put(c,\"group/corp/ops/z\"),put(b,\"group/corp/ops/w\"),put(t,\"team/ops/v\"),put(b,\"team/ops/u\")]\nsv.terminate(); assert r==[0,0,1,1,0,1], r\n"
+        "import sys,os,json,tempfile,subprocess\nd=tempfile.mkdtemp()\nimport atexit\nkd=os.path.join(d,\"keys\")\ndef key(p,t):\n    f=os.path.join(kd,*p.split(\"/\")); os.makedirs(os.path.dirname(f),exist_ok=True); open(f,\"w\").write(t); os.chmod(f,0o600); return f\ndef serve(*extra):\n    sv=subprocess.Popen([sys.executable,\"_tools/coord.py\",\"--store\",os.path.join(d,\"c.sqlite\"),\"serve\",\"--bind\",\"127.0.0.1:0\",\"--keys\",kd,*extra],stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,text=True); atexit.register(sv.kill)\n    return sv, sv.stdout.readline().split(\"serving\")[1].strip()\na=key(\"corp/ops/jan.kowalski\",\"ka-placeholder\"); b=key(\"corp/dev/anna.nowak\",\"kb-placeholder\"); cc=key(\"corp/ops/edge/piotr.nowak\",\"kc-placeholder\"); t=key(\"ops/ewa.nowak\",\"kd-placeholder\"); f=key(\"flat.op\",\"kf-placeholder\")\nsv,url=serve()\nco=lambda k,*x: subprocess.run([sys.executable,\"_tools/coord.py\",\"--url\",url,\"--key-file\",k,*x],capture_output=True,text=True,timeout=60)\nput=lambda k,kk: co(k,\"put\",kk,\"--value\",\"{}\",\"--revision\",\"0\").returncode\nr=[put(a,\"group/corp/ops/x\"),put(a,\"group/corp/ops/edge/y\"),put(cc,\"group/corp/ops/z\"),put(b,\"group/corp/ops/w\"),put(t,\"team/ops/v\"),put(b,\"team/ops/u\"),put(f,\"free/x\"),put(a,\"free/y\"),put(f,\"group/corp/ops/q\")]\nassert co(a,\"claim\",\"group/corp/ops/c\",\"--ttl\",\"60\",\"--holder\",\"h\").returncode==0\nev=json.loads(co(a,\"wait\",\"--since\",\"0\",\"--timeout\",\"0\").stdout)[\"events\"]; sv.terminate()\nassert r==[0,0,1,1,0,1,0,0,1], r\nassert any(e[\"fields\"].get(\"operator\")==\"corp/ops/jan.kowalski\" for e in ev), ev\n"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "coord.py serve reads a key file at any depth of --keys: DIR/G1/.../OPERATOR is the operator G1/.../OPERATOR, whose groups are G1, G1/G2 and so on",
+      "check": 0
+    },
+    {
+      "clause": "a claim or put of a key under group/G1/.../GN/ is accepted from an operator whose group path is that path or one of its ancestors and exits 1 for any other caller",
+      "check": 0
+    },
+    {
+      "clause": "a key under team/NAME/ keeps its rule, NAME read as a group one level deep",
+      "check": 0
+    },
+    {
+      "clause": "flat operators and keys outside group/ and team/ behave as before",
+      "check": 0
+    },
+    {
+      "clause": "every event a served caller leaves names the full operator path",
+      "check": 0
     }
   ],
   "touches": [
     "_tools/coord.py",
     "kb/_self/coordination.md",
-    "kb/_self/design.md"
+    "kb/_self/design.md",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-hojylkmb"
   ],
   "relates_to": [
     "ST-mbnpveyw",

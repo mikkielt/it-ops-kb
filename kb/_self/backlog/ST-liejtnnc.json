@@ -17,13 +17,28 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "kbjob.py opa-config --print --url URL --token-file PATH --key-env NAME prints an OPA configuration (one service at URL with bearer token_path PATH, the bundles kbjobs and kbjobs-overrides with polling and persist: true, signing keyid kbjobs, the key read from ${NAME} by OPA's environment substitution) and a systemd unit running opa run --server with it",
+      "check": 0
+    },
+    {
+      "clause": "no file is written",
+      "check": 0
+    },
+    {
+      "clause": "the token's and the key's text never appear in the output",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kbjob.py",
     "_tools/kj_place.py",
     "kb/_self/coordination.md"
   ],
   "depends_on": [
-    "ST-vxwngvv7"
+    "ST-vxwngvv7",
+    "ST-zom563hs"
   ],
   "notes": "Research 2026-11-08: OPA bundle manifest roots, resource default bundles/<name>, Etag/304, bearer token_path, ${NAME} substitution only under opa run and only for defined variables, persistence_directory default $PWD/.opa, and test discovery by the test_ prefix are in kb public/agents/policy-as-code.md (QK-operations-placement-stories-need-opa-bundles).",
   "filed_in": "clone-0ea70e5c"

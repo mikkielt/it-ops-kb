@@ -17,15 +17,35 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "kbroot.py add-remote takes --group G1/.../GN (letters, digits, `_ . -` per level) beside --team, writes `group:` into the pointer",
+      "check": 0
+    },
+    {
+      "clause": "kbroot.py list and kb_status show group=PATH for a root that names one",
+      "check": 0
+    },
+    {
+      "clause": "a pointer with only `team: NAME` is read as group NAME",
+      "check": 0
+    },
+    {
+      "clause": "a group that is no path of ids is refused, exit 2, naming the pointer",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kbroot.py",
     "_tools/kbcommon.py",
     "kb/_self/design.md",
     "kb/_self/plugin.md",
-    "kb/_self/content-rules.md"
+    "kb/_self/content-rules.md",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "ST-nzcbf2ms"
   ],
+  "notes": "Order agreed 2026-11-08 with SP-ep7ck2ab's manager (ask A1e21b0d155): shared files (_tools/kbpublic.py, _tools/kbcommon.py, _tools/bl_land.py, kb/_self/map.csv) land by first claim; the later item rebases. No hard dependency. Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: KB-Teams trailers are unchanged",
   "filed_in": "clone-0ea70e5c"
 }

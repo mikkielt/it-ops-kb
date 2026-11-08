@@ -22,6 +22,39 @@
         "-c",
         "import sys,os,tempfile,json,subprocess; s=os.path.join(tempfile.mkdtemp(),\"c.sqlite\"); cmd=[sys.executable,\"_tools/kbjob.py\",\"--store\",s,\"submit\",\"check\",\"--name\",\"backlog-check\"]; ps=[subprocess.Popen(cmd,stdout=subprocess.PIPE,text=True) for _ in range(4)]; ids={json.loads(p.communicate()[0])[\"job\"] for p in ps}; assert len(ids)==1, ids"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,tempfile,subprocess,json; sys.path.insert(0,\"_tools\"); import kj_store\ns=os.path.join(tempfile.mkdtemp(),\"c.sqlite\"); co=lambda *x: subprocess.run([sys.executable,\"_tools/coord.py\",\"--store\",s,*x],capture_output=True,text=True,check=True)\na=kj_store.submit(\".\",\"check\",\"\",\"claude-0123abcd\",{\"name\":\"backlog-check\"},store=s); co(\"transition\",\"job/\"+a[\"job\"],\"--to\",\"running\"); co(\"transition\",\"job/\"+a[\"job\"],\"--to\",\"succeeded\",\"--field\",\"exit=0\")\nb=kj_store.submit(\".\",\"check\",\"\",\"claude-0123abcd\",{\"name\":\"backlog-check\"},store=s)\nrec=json.loads(json.loads(co(\"get\",\"job/\"+b[\"job\"]).stdout)[\"value\"])\nassert b[\"job\"]!=a[\"job\"] and b[\"deduped\"] is False and rec[\"attempt\"]==2, (b,rec)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "python3 _tools/kbjob.py [--store PATH] submit OP [SUBJECT] [--by claude-<8 hex>] [--option KEY=VALUE]... queues a job and prints one JSON object {job, state, deduped, seq, follow}: the key job/JB-<8 chars> holds {job, op, subject, host, clone, operator, by, options, state, attempt, submitted_ts}, moved none to queued by ST-hojylkmb's table",
+      "check": 1
+    },
+    {
+      "clause": "OP is one of the closed table kj_ops.OPS (land with the options wait_merge and trailer, done with commit and trailer, stage-back with check, self_reviewed and trailer, sync-push, check with --name one of backlog-check, tests-full, tests-changed), a backlog id is the SUBJECT of the first three and sync-push and check take none",
+      "check": 0
+    },
+    {
+      "clause": "an unknown operation (publish, answer), a subject that is no item of the clone, an option outside the operation's list or a --by that is no claude-<8 hex> exits 2 naming what is allowed",
+      "check": 0
+    },
+    {
+      "clause": "a second submit of the same clone, operation and subject (options aside) while the job is queued, running, waiting-lock, waiting-merge or lost returns the same job with deduped true, also when four submits race (one job)",
+      "check": 0
+    },
+    {
+      "clause": "after a terminal state a submit makes a new job with attempt raised by one",
+      "check": 2
+    },
+    {
+      "clause": "kj_store.submit(root, op, subject, by, options=None, store=None) returns that object and kj_store.status(root, job, since=0, store=None) returns {job, state, exit, step, log, events, last}, the one interface the MCP server calls",
+      "check": 0
     }
   ],
   "touches": [
@@ -36,6 +69,6 @@
   "depends_on": [
     "ST-hojylkmb"
   ],
-  "notes": "Interface the paired MCP planner (plan/mcp-write) names: kj_store.submit(root, op, subject, by, options=None, store=None) -> {job, state, deduped, seq, follow} and kj_store.status(root, job, since=0, store=None) -> {job, state, exit, step, log, events, last}; job states queued, running, waiting-lock, waiting-merge, succeeded, failed, refused, cancelled, lost (terminal: succeeded, failed, refused, cancelled). Choices: module names kbjob.py with kj_* behind it, not ops*, so the query log's ops rows and backlog.py ops stay one meaning; the job id is random (kbid style) and idempotence is a coord key jobkey/<sha256 of clone path, op, subject> holding the live job id, written with put at the revision read, so racing submits meet one winner (coord.py:455 put, BEGIN IMMEDIATE at coord.py:274); a closed operation table is the authority rule: publish, answer and any operator-only command are no operation, and the executor runs only argv the table builds (the CLI's own gates and refusals then apply unchanged). by is claude-<8 hex>, never a full session id (memory claim-by-no-session-guid). No test is added: code.md allows tests only for critical parts and the suite sits at its ceiling; the planted checks above run the tool. Evidence measured 2026-11-08 from kb/_querylog/ops, real items 2026-10-02..2026-11-08: land.end ok median 103 s for content (p90 628 s, n=1701) and 430 s for code (n=133); orchestrator sessions held 285 foreground coord waits of 30 s or more, median 212 s, 20.8 h of 104.7 h file wall (20%).",
+  "notes": "Interface the paired MCP planner (plan/mcp-write) names: kj_store.submit(root, op, subject, by, options=None, store=None) -> {job, state, deduped, seq, follow} and kj_store.status(root, job, since=0, store=None) -> {job, state, exit, step, log, events, last}; job states queued, running, waiting-lock, waiting-merge, succeeded, failed, refused, cancelled, lost (terminal: succeeded, failed, refused, cancelled). Choices: module names kbjob.py with kj_* behind it, not ops*, so the query log's ops rows and backlog.py ops stay one meaning; the job id is random (kbid style) and idempotence is a coord key jobkey/<sha256 of clone path, op, subject> holding the live job id, written with put at the revision read, so racing submits meet one winner (coord.py:455 put, BEGIN IMMEDIATE at coord.py:274); a closed operation table is the authority rule: publish, answer and any operator-only command are no operation, and the executor runs only argv the table builds (the CLI's own gates and refusals then apply unchanged). by is claude-<8 hex>, never a full session id (memory claim-by-no-session-guid). No test is added: code.md allows tests only for critical parts and the suite sits at its ceiling; the planted checks above run the tool. Evidence measured 2026-11-08 from kb/_querylog/ops, real items 2026-10-02..2026-11-08: land.end ok median 103 s for content (p90 628 s, n=1701) and 430 s for code (n=133); orchestrator sessions held 285 foreground coord waits of 30 s or more, median 212 s, 20.8 h of 104.7 h file wall (20%). Order agreed 2026-11-08 with SP-ep7ck2ab's manager (ask A1e21b0d155): shared kb/_self/map.csv rows land by first claim, the later item rebases; no hard dependency.",
   "filed_in": "clone-0ea70e5c"
 }

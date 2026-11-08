@@ -17,16 +17,28 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "the executor records one ops row job.run per finished job in the query log's ops store (closed keys: op, exit class, attempt, queued_ms, wait_ms of waiting-lock and waiting-merge, run_ms), through ql_capture as land.step rows are",
+      "check": 0
+    },
+    {
+      "clause": "kbjob.py stats prints for each operation one line op n=N queued_ms=MEDIAN wait_ms=MEDIAN run_ms=MEDIAN (nearest-rank p95 beside it), so the wait the service removes from a session is measured the same way backlog.py landings measures a landing",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kj_exec.py",
     "_tools/kbjob.py",
     "_tools/ql_capture.py",
     "kb/_self/querylog.md",
     "kb/_self/tools.md",
-    "_tools/test_redact.py"
+    "_tools/test_redact.py",
+    "kb/_self/usage.md"
   ],
   "depends_on": [
-    "ST-rmv67pks"
+    "ST-rmv67pks",
+    "ST-oif6o3o6"
   ],
   "relates_to": [
     "EP-ajw3oywi",

@@ -15,11 +15,58 @@
         "-c",
         "import json,subprocess,sys,tempfile,os; s=os.path.join(tempfile.mkdtemp(),\"c.sqlite\"); co=lambda *a: subprocess.run([sys.executable,\"_tools/coord.py\",\"--store\",s,*a],capture_output=True,text=True); t=lambda k,to,*f: co(\"transition\",k,\"--to\",to,*f).returncode; k=\"job/JB-aaaaaaaa\"; assert t(k,\"queued\")==0 and t(k,\"running\")==0; assert t(k,\"queued\")==1; assert t(k,\"succeeded\",\"--field\",\"exit=0\")==0; assert t(k,\"running\")==1; assert t(k,\"bogus\")==2; assert t(\"run/ST-aaaaaaaa\",\"queued\")==2; ev=json.loads(co(\"wait\",\"--since\",\"0\",\"--timeout\",\"0\",\"--kind\",\"job\").stdout)[\"events\"]; assert [e[\"fields\"][\"state\"] for e in ev]==[\"queued\",\"running\",\"succeeded\"], ev"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,subprocess,sys,tempfile,os\ns=os.path.join(tempfile.mkdtemp(),\"c.sqlite\"); co=lambda *a: subprocess.run([sys.executable,\"_tools/coord.py\",\"--store\",s,*a],capture_output=True,text=True)\nt=lambda k,to: co(\"transition\",k,\"--to\",to).returncode\na=\"job/JB-bbbbbbbb\"; assert [t(a,x) for x in (\"queued\",\"running\",\"waiting-lock\",\"running\",\"waiting-merge\",\"running\",\"lost\",\"queued\",\"running\",\"lost\",\"failed\",\"queued\")]==[0]*11+[1]\nb=\"job/JB-cccccccc\"; assert [t(b,x) for x in (\"queued\",\"cancelled\",\"running\")]==[0,0,1]\ne=\"job/JB-dddddddd\"; assert [t(e,x) for x in (\"queued\",\"running\",\"waiting-lock\",\"cancelled\")]==[0,0,0,0]\nev=json.loads(co(\"wait\",\"--since\",\"0\",\"--timeout\",\"0\",\"--kind\",\"job\").stdout)[\"events\"]; assert ev and all(f in x[\"fields\"] for x in ev for f in (\"job\",\"state\")), ev\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "coord.py transition accepts a key job/ID with a table of its own (none to queued",
+      "check": 0
+    },
+    {
+      "clause": "queued to running or cancelled",
+      "check": 1
+    },
+    {
+      "clause": "running to waiting-lock, waiting-merge, succeeded, failed, refused, cancelled or lost",
+      "check": 1
+    },
+    {
+      "clause": "waiting-lock and waiting-merge back to running or on to cancelled",
+      "check": 1
+    },
+    {
+      "clause": "lost to queued or failed",
+      "check": 1
+    },
+    {
+      "clause": "succeeded, failed, refused and cancelled move nowhere), posts a job event of job, state, op, item, exit, step, by and attempt on every move",
+      "check": 0
+    },
+    {
+      "clause": "a move the table refuses exits 1 naming the state the key holds, while an unknown state exits 2",
+      "check": 0
+    },
+    {
+      "clause": "coord.py wait --kind job returns on such an event",
+      "check": 0
+    },
+    {
+      "clause": "the table of run/ITEM keys is unchanged (queued is no run state, exit 2)",
+      "check": 0
     }
   ],
   "touches": [
     "_tools/coord.py",
-    "kb/_self/coordination.md"
+    "kb/_self/coordination.md",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
   ],
   "relates_to": [
     "EP-nij36lt7"

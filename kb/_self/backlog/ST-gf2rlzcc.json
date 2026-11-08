@@ -13,8 +13,22 @@
       "run": [
         "python3",
         "-c",
-        "import sys,os,tempfile,subprocess,json\nd=tempfile.mkdtemp(); kd=os.path.join(d,\"keys\"); os.makedirs(os.path.join(kd,\"corp\"))\nk1=os.path.join(kd,\"corp\",\"jan.kowalski\"); k2=os.path.join(kd,\"corp\",\"anna.nowak\")\nfor k,t in ((k1,\"k1key-placeholder\"),(k2,\"k2key-placeholder\")): open(k,\"w\").write(t); os.chmod(k,0o600)\nsv=subprocess.Popen([sys.executable,\"_tools/coord.py\",\"--store\",os.path.join(d,\"c.sqlite\"),\"serve\",\"--bind\",\"127.0.0.1:0\",\"--keys\",kd],stdout=subprocess.PIPE,text=True)\nurl=sv.stdout.readline().split(\"serving\")[1].strip()\nkb=lambda key,*x: subprocess.run([sys.executable,\"_tools/kbjob.py\",\"--url\",url,\"--key-file\",key,*x],capture_output=True,text=True,timeout=300)\nst=lambda j: json.loads(kb(k1,\"status\",j).stdout)\nr=kb(k1,\"submit\",\"check\",\"--name\",\"backlog-check\",\"--no-ensure\"); assert r.returncode==0, r; j=json.loads(r.stdout)[\"job\"]\nassert st(j)[\"placement\"][\"executor\"]==\"workstation\"\nkb(k2,\"serve\",\"--kind\",\"workstation\",\"--once\"); s1=st(j)[\"state\"]\nkb(k1,\"serve\",\"--kind\",\"server\",\"--data\",os.path.join(d,\"srv\"),\"--once\"); s2=st(j)[\"state\"]\nkb(k1,\"serve\",\"--kind\",\"workstation\",\"--once\"); s3=st(j)[\"state\"]\nsv.terminate(); assert s1==\"queued\" and s2==\"queued\" and s3 in (\"succeeded\",\"failed\"), (s1,s2,s3)\n"
+        "import sys,os,tempfile,subprocess,json\nd=tempfile.mkdtemp(); kd=os.path.join(d,\"keys\"); os.makedirs(os.path.join(kd,\"corp\"))\nk1=os.path.join(kd,\"corp\",\"jan.kowalski\"); k2=os.path.join(kd,\"corp\",\"anna.nowak\")\nfor k,t in ((k1,\"k1key-placeholder\"),(k2,\"k2key-placeholder\")): open(k,\"w\").write(t); os.chmod(k,0o600)\nsv=subprocess.Popen([sys.executable,\"_tools/coord.py\",\"--store\",os.path.join(d,\"c.sqlite\"),\"serve\",\"--bind\",\"127.0.0.1:0\",\"--keys\",kd],stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,text=True); import atexit; atexit.register(sv.kill)\nurl=sv.stdout.readline().split(\"serving\")[1].strip()\nkb=lambda key,*x: subprocess.run([sys.executable,\"_tools/kbjob.py\",\"--url\",url,\"--key-file\",key,*x],capture_output=True,text=True,timeout=300)\nst=lambda j: json.loads(kb(k1,\"status\",j).stdout)\nr=kb(k1,\"submit\",\"check\",\"--name\",\"backlog-check\",\"--no-ensure\"); assert r.returncode==0, r; j=json.loads(r.stdout)[\"job\"]\nassert st(j)[\"placement\"][\"executor\"]==\"workstation\"\nkb(k2,\"serve\",\"--kind\",\"workstation\",\"--once\"); s1=st(j)[\"state\"]\nkb(k1,\"serve\",\"--kind\",\"server\",\"--data\",os.path.join(d,\"srv\"),\"--once\"); s2=st(j)[\"state\"]\nkb(k1,\"serve\",\"--kind\",\"workstation\",\"--once\"); s3=st(j)[\"state\"]\nsv.terminate(); assert s1==\"queued\" and s2==\"queued\" and s3 in (\"succeeded\",\"failed\"), (s1,s2,s3)\n"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbjob.py takes the global --url URL --key-file PATH of coord.py, with the same plain-http refusal and key file mode rule, for submit, follow, status, log and cancel, which reach the job table of a central coord serve through POST /v1/run",
+      "check": 0
+    },
+    {
+      "clause": "kbjob.py serve --kind workstation|server|ci --url URL --key-file PATH takes from the central queue only the queued jobs whose placement executor is its kind, a workstation executor only those whose host id is its own and whose operator is the operator of its key file",
+      "check": 0
+    },
+    {
+      "clause": "a job with no placement is placed on the workstation",
+      "check": 0
     }
   ],
   "touches": [
@@ -26,7 +40,8 @@
   ],
   "depends_on": [
     "ST-5h2kx2ri",
-    "ST-rmv67pks"
+    "ST-rmv67pks",
+    "ST-liirkdss"
   ],
   "relates_to": [
     "EP-fxrzbuza",
@@ -51,6 +66,6 @@
       "agent_session": true
     }
   ],
-  "notes": "Design: the central service is a coord serve (POST /v1/run with {argv}, bearer token per operator, one key file each, group scopes, plain-http refusal beyond loopback: kb/_self/coordination.md), so a thin client needs no new network surface: submit, follow and status are coord operations on job/ID keys. Scope set by the operator's answer to gate g1 (2026-11-08): central executors, a server kbjob.py serve and GitLab CI jobs, may run every operation, landings and worker sessions included, wherever the job's placement puts it. This story is the queue and the executor kinds only; the placement decision (OPA policy, overrides, CODEOWNERS), identities, worker branches on the integration remote, the server's clones, CI triggering, cost caps and records are the stories of EP-p4guu2ip, so a job record here carries a placement that defaults to the workstation. Authority: a workstation executor runs a job only when the job's operator equals the operator of its own key file and its host is its own; the operation table stays closed (ST-nwwcf3kk); no job answers a gate. Complement stance: no Agent Mail or Beads piece does this (kb public/agents/coordination-tools.md:54), so nothing is rebuilt; coord serve is what is extended. Related: EP-fxrzbuza only where it also extends coord serve.",
+  "notes": "Design: the central service is a coord serve (POST /v1/run with {argv}, bearer token per operator, one key file each, group scopes, plain-http refusal beyond loopback: kb/_self/coordination.md), so a thin client needs no new network surface: submit, follow and status are coord operations on job/ID keys. Scope set by the operator's answer to gate g1 (2026-11-08): central executors, a server kbjob.py serve and GitLab CI jobs, may run every operation, landings and worker sessions included, wherever the job's placement puts it. This story is the queue and the executor kinds only; the placement decision (OPA policy, overrides, CODEOWNERS), identities, worker branches on the integration remote, the server's clones, CI triggering, cost caps and records are the stories of EP-p4guu2ip, so a job record here carries a placement that defaults to the workstation. Authority: a workstation executor runs a job only when the job's operator equals the operator of its own key file and its host is its own; the operation table stays closed (ST-nwwcf3kk); no job answers a gate. Complement stance: no Agent Mail or Beads piece does this (kb public/agents/coordination-tools.md:54), so nothing is rebuilt; coord serve is what is extended. Related: EP-fxrzbuza only where it also extends coord serve. Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: each job runs in the clone whose integration remote url equals the one the job names (no such clone leaves the job queued with the reason) and every move is posted back to the central store, so a job placed on another kind, host or operator stays queued | the central store keeps states and events only, the output log stays with the executor and log JOB names the host that has it",
   "filed_in": "clone-0ea70e5c"
 }
