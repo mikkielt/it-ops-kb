@@ -2,7 +2,7 @@
   "id": "BG-cmevtnpk",
   "kind": "bug",
   "title": "kbmon shows a landed item as still landing at step verify, because a verify row in the same millisecond as land.end re-adds the landing",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-uh5h46fm",
   "priority": "P2",
@@ -41,5 +41,7 @@
     "kb/_self/tools.md"
   ],
   "notes": "Evidence 2026-11-08: --status sprints printed 'landing A paid session-load record..., at step verify, last step 29 min ago' and 'landing Sessions no person watches..., at step verify, last step 11.2 days ago' while ops showed land.end exit=0 at 16:48:46.898Z and backlog.py runs said landed; mon_sprint's landing reader (landings) removes the landing on land.end and the trailing verify row adds it back. Relates to BG-v53lnj6a and BG-i6vjrbng (row order of land.end and land.step). Premise run 2026-11-08: the repro PASSES (exit 0), because no live landing is at step verify now: the two it was filed on are gone from the panel, so it proves nothing and is kept only as the filed command. Planted check 0 (bl_stall.ops_rows replaced by planted rows, mon_sprint.landings on a planted backlog object, in an isolated query-log home) fails on the base: ST-aaaaaaaa shows at step verify after its land.end of the same millisecond. The reading of a later-timestamp land.step as a new landing is settled in the goal, so a failed landing's retry still shows.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-7064b8a6",
+  "operator": "op-f618a13e"
 }
