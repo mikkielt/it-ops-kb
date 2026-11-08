@@ -2,7 +2,7 @@
 topic: python/process-orphans-and-cwd
 priority: P3
 applies_to: "POSIX.1-2024 process model (orphaned process group, parent id after exit, setsid, ps ppid and pgid); Linux man-pages 6.19 (getppid, setsid, subreaper, /proc/PID/cwd); macOS reading of a process's working directory through lsof 4.99.5's manual and the xnu-12377.1.9 libproc headers"
-retrieved_utc: 2026-10-24
+retrieved_utc: 2026-11-08
 sources: [S-w6stdctp, S-xp4b2g5v, S-tldzr3mf, S-dwwfdbtg, S-fcdwaly4, S-6xelj6je, S-vvqjpqvl, S-ppkjvumt, S-ifgjakdt, S-4qybivhq, S-dabwnzz5, S-ew7mucsg, S-k33hyj3s]
 status: partial
 ---
@@ -91,10 +91,18 @@ a ptrace check), a `cwd` file descriptor line of `lsof`, or a `proc_pidinfo` fla
   so "no working directory read" has to be a state of its own, not "outside every checkout". [DER S-vvqjpqvl,
   S-ppkjvumt, S-4qybivhq: the ptrace access check and the read paths above]
 
+### macOS: where an orphan went in one run
+- On a macOS 26 (Darwin 25.5.0) host on 2026-11-08, a `sleep 30` that a `sh -c` started in the background and that
+  then exited left the `sleep` with `ps -o ppid` 1, so there a leftover's parent id is 1, as a tool that classes a
+  process with parent id 1 as detached assumes. The run shows one host and one release, not a documented
+  guarantee. [DER S-tldzr3mf, S-xp4b2g5v: the `ps` `ppid` column and the system-process reparenting rule; the value
+  observed in one run]
+
 ### Not confirmed
-- Which process becomes the parent of an orphan on macOS (a launchd pid, with or without a subreaper notion) is
-  not stated on the POSIX page, which leaves it implementation-defined, and Apple's documentation was not read
-  for it. [UNK: no Apple page read; Linux man-pages and POSIX only]
+- Whether macOS documents which process becomes the parent of an orphan, and whether a macOS process can declare
+  itself a subreaper, is not stated on the POSIX page, which leaves it implementation-defined, and Apple's
+  documentation was not read for it; one local run saw parent id 1. [UNK: no Apple page read; Linux man-pages,
+  POSIX and one run only]
 - Whether the `lsof` that ships with macOS accepts `-a -d cwd -p PID` as the 4.99.5 manual describes, and whether
   it reports the working directory of another user's process without elevation, was not read or run. [UNK: only the
   upstream 4.99.5 manual was read]
