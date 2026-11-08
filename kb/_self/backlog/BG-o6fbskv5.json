@@ -2,7 +2,7 @@
   "id": "BG-o6fbskv5",
   "kind": "bug",
   "title": "The sync range leak gate exempts any value the private query-log store already holds, so a store GUID copied into a public file passes sync and then blocks publish",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-n7zxspch",
   "priority": "P2",
   "rank": 0,
@@ -47,5 +47,7 @@
     "parked: SP-kkov6bbz review"
   ],
   "notes": "Planning, repro run once on the base (a clone of the whole tree, 53 s: do not loop it): exit 1, range_leaks printed []. Check 0 (about 5 s, a clone of _tools only) fails on the base at probe/n1.txt: it plants three holders in the base commit (the private store, a team _logs.csv, a kb/public file), commits a probe file per GUID and runs range_leaks on a fresh cache and again after public_values(up) filled its cache as publish's scan does; after the fix the store and _logs.csv values are refused, the public-file value passes (no blanket refusal) and the primed cache changes nothing. Keep SCAN_FORM at 6: the cache name of public_values names the projection mode instead, and BG-2iqdafwm's check 1 reads SCAN_FORM. test_sync_e2e.py is in the touches because it seeds the cache file public-<scan_form>-<tip>.json by name: when the name changes, keep its shortcut. Peers: ST-qtypcthx and ST-3brmklge (SP-ep7ck2ab) change none of these functions and said to land first; ST-ugkw5mt3 (SP-lwkdljxg) has not answered (asks A01832227f4, Af273c07a21, A2fbdd76f91); the range-gate paragraph of git.md is a doc overlap. BG-2iqdafwm and then BG-r57wg5tg follow on the same kbpublic functions.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-557596e3",
+  "operator": "op-f618a13e"
 }
