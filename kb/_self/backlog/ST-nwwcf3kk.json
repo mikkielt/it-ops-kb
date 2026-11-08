@@ -14,6 +14,13 @@
         "-c",
         "import sys,os,tempfile,subprocess; sys.path.insert(0,\"_tools\"); import kj_store; s=os.path.join(tempfile.mkdtemp(),\"c.sqlite\"); a=kj_store.submit(\".\",\"land\",\"ST-hojylkmb\",\"claude-0123abcd\",{\"wait_merge\":60},store=s); b=kj_store.submit(\".\",\"land\",\"ST-hojylkmb\",\"claude-0123abcd\",None,store=s); assert a[\"state\"]==\"queued\" and a[\"deduped\"] is False and b[\"job\"]==a[\"job\"] and b[\"deduped\"] is True, (a,b); run=lambda *x: subprocess.run([sys.executable,\"_tools/kbjob.py\",\"--store\",s,\"submit\",*x],capture_output=True,text=True); assert run(\"publish\",\"ST-hojylkmb\").returncode==2; assert run(\"land\",\"ST-nosuchit\").returncode==2; assert run(\"land\",\"ST-hojylkmb\",\"--by\",\"0123456789abcdef0123456789abcdef\").returncode==2; assert run(\"land\",\"ST-hojylkmb\",\"--option\",\"force=1\").returncode==2"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,tempfile,json,subprocess; s=os.path.join(tempfile.mkdtemp(),\"c.sqlite\"); cmd=[sys.executable,\"_tools/kbjob.py\",\"--store\",s,\"submit\",\"check\",\"--name\",\"backlog-check\"]; ps=[subprocess.Popen(cmd,stdout=subprocess.PIPE,text=True) for _ in range(4)]; ids={json.loads(p.communicate()[0])[\"job\"] for p in ps}; assert len(ids)==1, ids"
+      ]
     }
   ],
   "touches": [
@@ -28,5 +35,6 @@
   "depends_on": [
     "ST-hojylkmb"
   ],
+  "notes": "Interface the paired MCP planner (plan/mcp-write) names: kj_store.submit(root, op, subject, by, options=None, store=None) -> {job, state, deduped, seq, follow} and kj_store.status(root, job, since=0, store=None) -> {job, state, exit, step, log, events, last}; job states queued, running, waiting-lock, waiting-merge, succeeded, failed, refused, cancelled, lost (terminal: succeeded, failed, refused, cancelled). Choices: module names kbjob.py with kj_* behind it, not ops*, so the query log's ops rows and backlog.py ops stay one meaning; the job id is random (kbid style) and idempotence is a coord key jobkey/<sha256 of clone path, op, subject> holding the live job id, written with put at the revision read, so racing submits meet one winner (coord.py:455 put, BEGIN IMMEDIATE at coord.py:274); a closed operation table is the authority rule: publish, answer and any operator-only command are no operation, and the executor runs only argv the table builds (the CLI's own gates and refusals then apply unchanged). by is claude-<8 hex>, never a full session id (memory claim-by-no-session-guid). No test is added: code.md allows tests only for critical parts and the suite sits at its ceiling; the planted checks above run the tool. Evidence measured 2026-11-08 from kb/_querylog/ops, real items 2026-10-02..2026-11-08: land.end ok median 103 s for content (p90 628 s, n=1701) and 430 s for code (n=133); orchestrator sessions held 285 foreground coord waits of 30 s or more, median 212 s, 20.8 h of 104.7 h file wall (20%).",
   "filed_in": "clone-0ea70e5c"
 }
