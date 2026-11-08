@@ -178,9 +178,8 @@ def orphan_entries(data):
     import mon_sessions
     if data.get("procs_unreadable"):
         return []
-    found = sorted((p for p in data.get("procs") or [] if isinstance(p, dict) and p.get("class") == "orphan"),
-                   key=lambda p: -number(p.get("age_s")))
-    return [{"kind": "orphan", "text": f"orphan pid {p.get('pid')} ({mon_sessions.age_text(number(p.get('age_s')))}"
+    found = mon_sessions.named_orphans(data.get("procs"))
+    return [{"kind": "orphan", "text": f"orphan pid {p.get('pid')}{mon_sessions.child_note(p)} ({mon_sessions.age_text(number(p.get('age_s')))}"
                                         + (f", in {p['checkout']}" if p.get("checkout") else "") + ")",
              "pid": p.get("pid")} for p in found]
 

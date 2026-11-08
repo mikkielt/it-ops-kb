@@ -67,6 +67,7 @@ CLAUDE = "claude"  # the command name of a Claude Code process
 REFRESH_S = 30  # seconds the live view serves the last result: the stalled signals read git for each claimed item
 WORK_BRANCH = re.compile(r"work/([^/\s]+)")
 PROCS_SHOWN = 12  # processes in the text view, orphans first
+ORPHAN_NAMED_S = 60  # seconds an orphan must have run before the status text and the needs-you line name it
 TREES_SHOWN = 12  # worktrees in the text view, those on a work/ branch first
 LABEL = 10  # columns of a body row's label
 MIN_CHECKOUT = 8
@@ -981,6 +982,7 @@ def collect(ctx):
     entries = session_entries(ctx, procs or [], placed, by_path, found, bl, names, states=states)
     fresh = {e["pid"] for e in entries if e["quiet"] is not None and e["quiet"] < bl_procs.FRESH_S}  # a session at work
     out = []
+    parents = {q.get("ppid") for q in procs or []}
     for p in procs or []:
         base = placed.get(p["pid"])
         kind = bl_procs.DETACHED if p["kind"] == bl_procs.ORPHAN and p["pid"] in fresh else p["kind"]
@@ -989,6 +991,8 @@ def collect(ctx):
         shown = names.get(base, p["where"].split("/", 1)[0])
         out.append({"pid": p["pid"], "age_s": max(0, int(now - p["start"])), "class": kind,
                     "checkout": shown + ("/" + rest if rest else ""), "session": session, "item": item})
+        if p["pid"] in parents:
+            out[-1]["live_child"] = True
     me = kbwho.operator()
     data = {"procs": out, "worktrees": rows, "operator": {"id": me.get("id"), "role": me.get("role")}}
     if procs is None:
@@ -1070,6 +1074,20 @@ def waits_text(w):
 def age_text(seconds):
     import bl_procs
     return bl_procs.age_text(seconds)
+
+
+def named_orphans(procs):
+    """The processes of PROCS (the panel's `procs` entries) of class `orphan` that have run at least ORPHAN_NAMED_S seconds,
+    oldest first: the ones the status text and the needs-you line name. A younger one is a launcher still starting or a
+    hook's run not yet ended."""
+    found = [p for p in procs or [] if isinstance(p, dict) and p.get("class") == "orphan"
+             and isinstance(p.get("age_s"), (int, float)) and not isinstance(p.get("age_s"), bool) and p["age_s"] >= ORPHAN_NAMED_S]
+    return sorted(found, key=lambda p: -p["age_s"])
+
+
+def child_note(p):
+    """` with a live child` where the process entry P has a child that still runs, else an empty string."""
+    return " with a live child" if p.get("live_child") else ""
 
 
 def cut_left(text, n):
