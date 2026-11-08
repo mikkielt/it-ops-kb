@@ -1038,16 +1038,17 @@ def silent_all(entries):
 
 
 def alerts(data):
-    """The alerts of the panel's data: one `orphan` alert (id `sessions.orphan`) while a process of class `orphan` is listed,
-    its message counting them and naming the oldest one's pid, and one `drift` alert (id `runs.drift`) while the `drift` data
-    counts a run state that differs from git, its message counting them and naming the oldest item."""
+    """The alerts of the panel's data: one `orphan` alert (id `sessions.orphan`) while a process of class `orphan` has run at
+    least ORPHAN_NAMED_S seconds (`named_orphans`, the processes the panel line names), its message counting them and naming
+    the oldest one's pid, age and, where it has one, its live child, and one `drift` alert (id `runs.drift`) while the `drift`
+    data counts a run state that differs from git, its message counting them and naming the oldest item."""
     out = []
-    orphans = [p for p in data.get("procs") or [] if isinstance(p, dict) and p.get("class") == "orphan"]
+    orphans = named_orphans(data.get("procs"))
     if orphans:
-        oldest = max(orphans, key=lambda p: p.get("age_s") or 0)
+        oldest = orphans[0]
         out.append({"kind": "orphan", "id": "sessions.orphan", "panel": "sessions", "since": "",
                     "message": f"{len(orphans)} orphan process{'' if len(orphans) == 1 else 'es'}, the oldest pid "
-                               f"{oldest.get('pid')} for {age_text(oldest.get('age_s') or 0)}"})
+                               f"{oldest.get('pid')} for {age_text(oldest.get('age_s'))}{child_note(oldest)}"})
     drift = data.get("drift")
     items = [i for i in (drift.get("items") if isinstance(drift, dict) else None) or [] if isinstance(i, dict)]
     count = drift.get("count") if isinstance(drift, dict) else None
