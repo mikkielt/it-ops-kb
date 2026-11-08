@@ -330,7 +330,8 @@ def querylog(r):
     lines.append(f"  {waiting} entr{'y' if waiting == 1 else 'ies'} undelivered"
                  + (f" in {runs} run{'' if runs == 1 else 's'}" if waiting else "") + since + ".")
     spool = data.get("spool") if isinstance(data.get("spool"), dict) else {}
-    lines.append(f"  {number(spool.get('rows'))} rows wait in the spool; mode {data.get('mode', '?')}"
+    lines.append(f"  Spool: {number(spool.get('waiting'))} rows wait for delivery, {number(spool.get('ops'))} ops rows, "
+                 f"{number(spool.get('ended_old'))} rows of sessions ended over a day ago; mode {data.get('mode', '?')}"
                  + ("; DISABLED." if data.get("disabled") else "."))
     return lines, facts
 
