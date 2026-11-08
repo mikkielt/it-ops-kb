@@ -13,6 +13,7 @@
   kbext.py verify --root WS [--kb-root NAME] [--timeout S]          call each extender the settings layers name with its
                                                                     point's samples in a child process and check the shape
                                                                     of the answer: one line each, exit 1 when one fails
+  kbext.py init-team DIR --group NAME --upstream URL [--ref TAG]    write a group's overlay repository into DIR (below)
 
 `API_VERSION` is the version of the extension API (MAJOR.MINOR.PATCH). `SURFACE` is the one registry of the public API (a
 literal: dicts with `name`, `signature`, `added`, and `deprecated` / `removed` for a deprecated one); anything not in it
@@ -46,6 +47,13 @@ entry) it loads the extender and calls it with the point's `samples`, each in a 
 `KBEXT_REQUIRES` the API does not meet, a call that raises or times out, an answer of another shape, a key of
 `extensions` that is no point of `SURFACE`), else 0, also when none is configured; a bad argument exits 2.
 
+`init-team` writes a group's overlay repository: `.claude-plugin/marketplace.json` lists `it-ops-kb` with a `url` source at
+URL and the tag TAG (default `ext-v` and `API_VERSION`) beside the group's own plugin, whose source is the marketplace
+root; `.claude-plugin/plugin.json` names that plugin, with `skills/`, `agents/` and `hooks/` directories for the group's
+own; `settings/group.json` names the group, `extension_paths` `../ext` and `extensions.ranker`, a sample ranker in
+`ext/` that `verify` passes. A file that is there with the same text is left alone, so a second run changes nothing; one
+that holds other text exits 2 naming it on stderr, and nothing is written.
+
 `lint` is the gate on the API's compatibility. A repository with no tag `ext-vMAJOR.MINOR.PATCH` prints one line and exits 0.
 Otherwise it reads `API_VERSION` and `SURFACE` of `_tools/kbext.py` at the newest such tag (`git show`) and of the working
 tree with `ast`, never importing either file, and exits 1 with one line per problem: an entry removed or with a changed
@@ -57,7 +65,8 @@ Answers: how a group's extender for an extension point is found, loaded and chec
 Answers: which extension points and settings keys are the public extension API, and its version
 Answers: whether a change removes or changes a public extension entry without a major API version, a deprecation and a changelog entry
 Answers: whether each extender a group configured still loads and answers its point's sample inputs in the shape the API promises
-Use: python3 _tools/kbext.py resolve|call POINT --root WS | surface [--json] | lint [--root REPO] | verify --root WS
+Answers: how to start a group's overlay repository that pins it-ops-kb by an ext tag and holds the group's plugin and extenders
+Use: python3 _tools/kbext.py resolve|call POINT --root WS | surface [--json] | lint [--root REPO] | verify --root WS | init-team DIR --group NAME --upstream URL
 """
 import argparse, ast, collections, importlib, json, re, subprocess, sys, tempfile
 from importlib import metadata
@@ -642,7 +651,7 @@ def verify(root, kb_root=None, timeout=30.0):
                               "kb_root": kb_root})
             try:
                 p = subprocess.run(run, input=job, capture_output=True, text=True, encoding="utf-8", errors="replace",
-                                   cwd=root, timeout=timeout)
+                                   cwd=root if Path(root).is_dir() else None, timeout=timeout)
                 answers = [json.loads(l[len(MARK):]) for l in p.stdout.splitlines() if l.startswith(MARK)]
                 if answers:
                     ok, line = answers[-1]
@@ -658,6 +667,71 @@ def verify(root, kb_root=None, timeout=30.0):
     return (1 if failed else 0), lines
 
 
+SAMPLE_RANKER = '''"""The group's sample ranker: puts the candidates whose path holds most words of the question first."""
+KBEXT_REQUIRES = ">=0.1"
+
+
+def rank(question, candidates):
+    words = [w for w in question.lower().split() if len(w) > 2]
+    return sorted(candidates, key=lambda path: -sum(w in path.lower() for w in words))
+'''
+GROUP_NAME_RE = re.compile(r"[a-z][a-z0-9]*(-[a-z0-9]+)*")
+
+
+def _json_text(value):
+    return json.dumps(value, indent=2, ensure_ascii=False) + "\n"
+
+
+def _team_files(group, upstream, ref):
+    """{relative path: text} of the files `init-team` writes for the group GROUP."""
+    plugins = [{"name": "it-ops-kb", "source": {"source": "url", "url": upstream, "ref": ref},
+                "description": f"it-ops-kb at {ref}, the extension API tag the group has verified"},
+               {"name": group, "source": ".", "description": f"{group}'s own skills, agents and hooks"}]
+    return {".claude-plugin/marketplace.json": _json_text({"name": f"{group}-kb", "owner": {"name": group},
+                                                           "plugins": plugins}),
+            ".claude-plugin/plugin.json": _json_text({"name": group, "description": f"{group}'s own skills, agents and "
+                                                      f"hooks beside it-ops-kb"}),
+            "skills/.gitkeep": "", "agents/.gitkeep": "", "hooks/hooks.json": _json_text({"hooks": {}}),
+            "settings/group.json": _json_text({"group": group, "extension_paths": ["../ext"],
+                                               "extensions": {"ranker": "group_ranker:rank"}}),
+            "ext/group_ranker.py": SAMPLE_RANKER}
+
+
+def init_team(dest, group, upstream, ref):
+    """(exit code, lines) of writing a group's overlay repository into the directory DEST: a marketplace that pins it-ops-kb
+    at the tag REF of UPSTREAM beside the plugin of GROUP, that plugin's manifest and its `skills`, `agents` and `hooks`
+    directories, `settings/group.json` and a sample ranker in `ext/`. A file that is there with the same text is left
+    alone; one that holds other text, or a directory in its place, exits 2 naming each such file and nothing is written."""
+    if not GROUP_NAME_RE.fullmatch(group) or group == "it-ops-kb":
+        return 2, [f"init-team: --group {group!r}: a name of lower-case letters, digits and single hyphens, not it-ops-kb"]
+    if not upstream.strip() or any(c.isspace() for c in upstream) or not ref.strip() or any(c.isspace() for c in ref):
+        return 2, ["init-team: --upstream and --ref must be non-empty and hold no white space"]
+    dest, files = Path(dest), _team_files(group, upstream, ref)
+    held = []
+    for rel, text in files.items():
+        path = dest / rel
+        try:
+            if path.exists() and (not path.is_file() or path.read_text(encoding="utf-8") != text):
+                held.append(rel)
+        except (OSError, UnicodeDecodeError):
+            held.append(rel)
+    if held:
+        return 2, [f"init-team: {rel} holds other content and is not overwritten" for rel in held]
+    lines = []
+    for rel, text in files.items():
+        path = dest / rel
+        if path.exists():
+            lines.append(f"unchanged  {rel}")
+            continue
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(text, encoding="utf-8", newline="\n")
+        except OSError as e:
+            return 2, lines + [f"init-team: cannot write {rel}: {e.strerror or type(e).__name__}"]
+        lines.append(f"wrote      {rel}")
+    return 0, lines
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description="A group's extenders for the kb's extension points.")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -665,6 +739,12 @@ def main(argv=None):
     sp.add_argument("--json", action="store_true", dest="as_json", help="print one JSON object")
     sp = sub.add_parser("lint", help="refuse a break of the public extension API since the newest ext-v tag")
     sp.add_argument("--root", default=".", help="the repository (default: the working directory)")
+    sp = sub.add_parser("init-team", help="write a group's overlay repository: a marketplace pinning it-ops-kb by ext tag, "
+                                          "the group's plugin, its settings file and a sample ranker")
+    sp.add_argument("dir", help="the overlay repository's directory (made when missing)")
+    sp.add_argument("--group", required=True, help="the group's name: lower-case letters, digits and hyphens")
+    sp.add_argument("--upstream", required=True, help="the git url of it-ops-kb the marketplace pins")
+    sp.add_argument("--ref", default=f"ext-v{API_VERSION}", help="the ext tag to pin (default: ext-v%s)" % API_VERSION)
     sp = sub.add_parser("verify", help="call each configured extender with its point's samples and check the answers")
     sp.add_argument("--root", required=True, help="the workspace directory (holds settings.json)")
     sp.add_argument("--kb-root", help="a kb root's name: kb/NAME/settings.json is a layer too")
@@ -686,8 +766,12 @@ def main(argv=None):
         code, lines = lint(args.root)
         print("\n".join(lines))
         return code
+    if args.cmd == "init-team":
+        code, lines = init_team(args.dir, args.group, args.upstream, args.ref)
+        print("\n".join(lines), file=sys.stderr if code else sys.stdout)
+        return code
     if args.cmd == "verify":
-        if not Path(args.root).is_dir():
+        if Path(args.root).exists() and not Path(args.root).is_dir():
             ap.error(f"--root {args.root}: not a directory")
         if not args.timeout > 0:
             ap.error("--timeout must be above 0")
