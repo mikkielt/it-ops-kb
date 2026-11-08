@@ -2,7 +2,7 @@
   "id": "BG-2n4csy5p",
   "kind": "bug",
   "title": "kbmon's coord panel takes about 8 s to collect on this clone, so the sessions and sprint panels time out in --status all and the session-start receipt",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-uh5h46fm",
   "priority": "P2",

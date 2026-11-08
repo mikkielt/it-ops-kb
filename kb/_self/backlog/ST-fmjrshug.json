@@ -2,7 +2,7 @@
   "id": "ST-fmjrshug",
   "kind": "story",
   "title": "kbmon's query-log line says how many spool rows wait for delivery, apart from ops rows and rows of ended sessions",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-uh5h46fm",
   "priority": "P3",

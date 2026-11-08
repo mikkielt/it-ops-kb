@@ -2,7 +2,7 @@
   "id": "ST-crmdmgb4",
   "kind": "story",
   "title": "kbmon names an orphan process only after a minute and says when it has a live child, never that nothing waits for it",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-uh5h46fm",
   "priority": "P3",

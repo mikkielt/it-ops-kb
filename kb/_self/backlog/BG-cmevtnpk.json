@@ -2,7 +2,7 @@
   "id": "BG-cmevtnpk",
   "kind": "bug",
   "title": "kbmon shows a landed item as still landing at step verify, because a verify row in the same millisecond as land.end re-adds the landing",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-uh5h46fm",
   "priority": "P2",

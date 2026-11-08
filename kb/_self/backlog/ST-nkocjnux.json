@@ -2,7 +2,7 @@
   "id": "ST-nkocjnux",
   "kind": "story",
   "title": "kbmon's cost line says it counts only kb-logged usage rows, not the day's total spend",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-uh5h46fm",
   "priority": "P2",

@@ -2,7 +2,7 @@
   "id": "SP-uh5h46fm",
   "kind": "sprint",
   "title": "kbmon shows true state",
-  "status": "planned",
+  "status": "active",
   "goal": "kbmon stops listing an ask once its gate is answered or its item done; the receipt says needs-you is unknown for panels it did not read; the coord panel collects within 3 s, so every panel reads within the default budget; a landed item never shows as landing; --status all's cut line names what it hides by kind; a detached headless session counts as headless; an orphan is named only after a minute and never as one nothing waits for; the cost line says it counts logged usage; printed times say UTC; and the query-log line splits its spool count",
   "gates": [
     {
@@ -14,7 +14,11 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "creator": "op-f618a13e",
