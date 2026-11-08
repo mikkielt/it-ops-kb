@@ -1012,14 +1012,25 @@ def sync_once(a, r, host):
         r["pushed"] = "no (without --push)"
         return 0
     now_ahead = int((git("rev-list", "--count", f"{up}..HEAD" if up else "HEAD") or "0").strip())
+    on_main = a.branch == "main"  # the ext-v tags go only with a push to the integration main
     if not now_ahead:
-        r["pushed"] = "nothing to push"
+        tags = missing_ext_tags(KB, a.remote, a.branch) if on_main else []
+        if not tags:
+            r["pushed"] = "nothing to push"
+            return 0
+        code, out = gitx_net("push", a.remote, *(f"refs/tags/{t}" for t in tags), env={"KB_GATE_DONE": "1"})  # gated above
+        if code:
+            print("git push of the tags failed:\n" + out.rstrip())
+            r["pushed"] = "no (tag push failed)"
+            return 1
+        r["pushed"] = f"yes: tag(s) {', '.join(tags)} to {a.remote}; no commits to push"
         return 0
     lane, branch = kg_lane.lane_plan(KB, up, "HEAD", a.branch)
     if branch:
         print(f"lane: code; pushing branch {branch}, {a.branch} does not move")
         return push_branch(a, r, branch, target)
-    tags = tags_to_push(KB, up, "HEAD")  # the ext-v tags of the commits this push sends go with them
+    # the ext-v tags of the commits this push sends go with them, and those of commits the remote already holds
+    tags = sorted(set(tags_to_push(KB, up, "HEAD")) | set(missing_ext_tags(KB, a.remote, a.branch))) if on_main else []
     code, out = gitx_net("push", a.remote, f"HEAD:refs/heads/{a.branch}", *(f"refs/tags/{t}" for t in tags),
                          env={"KB_GATE_DONE": "1"})  # gated above
     if code == 124 and landed_after_timeout(a, target):
@@ -1050,6 +1061,27 @@ def tags_to_push(root, base, head):
     commit a rebase rewrote points outside the range and is not listed."""
     args = ["tag", "--list", "ext-v*", "--merged", head] + (["--no-merged", base] if base else [])
     return sorted(t for t in (git(*args, kb=root) or "").split() if EXT_TAG.fullmatch(t))
+
+
+def missing_ext_tags(root, remote, branch="main"):
+    """The local `ext-vMAJOR.MINOR.PATCH` tags of the repository ROOT that REMOTE lacks and whose commit REMOTE's BRANCH
+    holds (an ancestor of its tip, read with one `git ls-remote`), sorted: the tags of commits already pushed, which
+    tags_to_push's range no longer lists. A remote that cannot be read (or whose tip is not in ROOT) gives []; a tag
+    REMOTE has under the same name, even at another commit, is not listed, and no tag of another name is."""
+    try:
+        p = kg_lock.run_git_bounded(["ls-remote", "--tags", "--heads", remote, "refs/tags/ext-v*", f"refs/heads/{branch}"],
+                                    root, "kbgit.py sync: git ls-remote")
+    except (kg_lock.GitNetworkTimeout, OSError):
+        return []
+    if p.returncode:
+        return []
+    refs = dict(reversed(ln.split("\t", 1)) for ln in p.stdout.splitlines() if "\t" in ln)
+    tip = refs.get(f"refs/heads/{branch}")
+    if not tip:
+        return []
+    have = {r[len("refs/tags/"):].replace("^{}", "") for r in refs if r.startswith("refs/tags/")}
+    local = (git("tag", "--list", "ext-v*", "--merged", tip, kb=root) or "").split()  # the tip's ancestry, as the remote holds it
+    return sorted(t for t in local if EXT_TAG.fullmatch(t) and t not in have)
 
 
 def changelog_entry(version, text):
