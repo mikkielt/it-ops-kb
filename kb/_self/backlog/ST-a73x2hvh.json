@@ -56,6 +56,80 @@
     "ST-rmv67pks",
     "ST-5cqlfweg"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "What label and unit name does login-item --print give the LaunchAgent and the systemd user unit?",
+      "options": [
+        "dev.it-ops-kb.jobs",
+        "com.it-ops-kb.jobs"
+      ],
+      "recommendation": "dev.it-ops-kb.jobs",
+      "reason": "no company domain is owned, the reverse-DNS form only has to be unique",
+      "do": {
+        "dev.it-ops-kb.jobs": "ST-a73x2hvh",
+        "com.it-ops-kb.jobs": "ST-a73x2hvh"
+      },
+      "class": "design",
+      "answer": "dev.it-ops-kb.jobs",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "When ensure cannot get an executor up, does submit still queue the job?",
+      "options": [
+        "queue nothing and exit 1",
+        "queue the job and warn"
+      ],
+      "recommendation": "queue nothing and exit 1",
+      "reason": "the goal says submit never queues for nobody",
+      "do": {
+        "queue nothing and exit 1": "ST-a73x2hvh",
+        "queue the job and warn": "ST-a73x2hvh"
+      },
+      "class": "design",
+      "answer": "queue nothing and exit 1",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Which kbjob.py does the printed login item run, and is --print required?",
+      "options": [
+        "the clone's own checkout when it holds one, and --print required",
+        "the script that printed it, and --print optional"
+      ],
+      "recommendation": "the clone's own checkout when it holds one, and --print required",
+      "reason": "a worktree vanishes after landing and nothing is ever installed by the command",
+      "do": {
+        "the clone's own checkout when it holds one, and --print required": "ST-a73x2hvh",
+        "the script that printed it, and --print optional": "ST-a73x2hvh"
+      },
+      "class": "design",
+      "answer": "the clone's own checkout when it holds one, and --print required",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "Does submit validate the job before ensure starts an executor?",
+      "options": [
+        "validate first, so a refused job starts no executor",
+        "ensure first, with no validation before it"
+      ],
+      "recommendation": "validate first, so a refused job starts no executor",
+      "reason": "an exit 2 submit leaves the host as it was",
+      "do": {
+        "validate first, so a refused job starts no executor": "ST-a73x2hvh",
+        "ensure first, with no validation before it": "ST-a73x2hvh"
+      },
+      "class": "design",
+      "answer": "validate first, so a refused job starts no executor",
+      "by": "agent"
+    }
+  ],
   "notes": "Choice: a session starts the executor (ensure, called by submit) and a login item is only printed, because writing a LaunchAgent or a systemd unit changes the operator's host outside the clone (the operator names 'started by a session or a login item'; the print leaves the install to them, so no host-setup gate). The executor then outlives the session that started it, as dispatch --detach does for a worker (bl_dispatch.py:1051 spawn_detached, start_new_session): a background shell would die with Claude Code (https://code.claude.com/docs/en/interactive-mode#how-backgrounding-works, read 2026-11-08), so ensure starts it with its own session and never as a Bash background task. One executor per host holds an exclusive file in the host lock directory (KB_HOST_LOCK_DIR, kg_lock's mechanism, git.md:62) so two sessions' ensure never start two. Claude Code's own supervisor (claude daemon, background sessions restarted when their process exits: kb public/claude/parallel-sessions.md:84, DOC https://code.claude.com/docs/en/agent-view, kb retrieved 2026-10-26) hosts model sessions, not shell commands; it does not replace this executor and is not rebuilt here.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-61c966d6",

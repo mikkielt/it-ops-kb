@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """kbjob: queue an operation as a job in coord's store (stdlib only). Docs: kb/_self/coordination.md, section "Operation jobs".
 
-  kbjob.py [--store PATH] submit OP [SUBJECT] [--by claude-<8 hex>] [--option KEY=VALUE]... [--name CHECK]
-                                        queue the operation OP on SUBJECT for this clone and print one JSON object,
+  kbjob.py [--store PATH] submit OP [SUBJECT] [--by claude-<8 hex>] [--option KEY=VALUE]... [--name CHECK] [--no-ensure]
+                                        after `ensure` (a job is never queued for nobody: when it had to start the executor it prints
+                                        `kbjob: no executor, started pid N` on stderr, and when none comes up it queues nothing and
+                                        exits 1; --no-ensure skips it), queue the operation OP on SUBJECT for this clone and print one JSON object,
                                         {job, state, deduped, seq, follow}: the job is the key job/JB-<8 characters>, its
                                         state queued, `follow` the command line `python3 _tools/kbjob.py follow JOB`.
                                         A second submit of the same clone, operation and subject (options aside) while the
@@ -34,6 +36,16 @@
                                         not in a terminal state, oldest first
   kbjob.py [--store PATH] log JOB [--tail N]
                                         print the last N lines (default 40) of the job's output log; exit 1 before it has one
+  kbjob.py [--store PATH] ping          print the pid of this host's executor (the pid its host file `kb-jobs-serve.lock` names, while that
+                                        process runs) and exit 0; print `kbjob: no executor on this host` and exit 1 when none runs
+  kbjob.py [--store PATH] ensure        ping; when none runs, start `serve` detached (a session of its own, stdin closed, output appended
+                                        to kb-jobs/serve.log in the git common directory, so it outlives the session that started it),
+                                        wait up to 10 s for the host file to name a live pid and print `kbjob: serving pid N` (exit 0);
+                                        exit 1 printing the log's last line when none came up
+  kbjob.py [--store PATH] login-item --print
+                                        print a macOS LaunchAgent plist (Label, ProgramArguments serve, RunAtLoad, KeepAlive,
+                                        StandardErrorPath) and a systemd user unit that run serve at login; it writes nothing and
+                                        touches no file under the home directory: the operator saves and loads what they choose
   kbjob.py [--store PATH] cancel JOB    move a queued job to cancelled; move a running one to cancelled and end its process group
                                         with TERM, then KILL (a POSIX host, the job's own); for the submitting operator only,
                                         exit 1 for another's
@@ -78,7 +90,12 @@ def build_parser():
     p.add_argument("--by", default=None, help="claude- and 8 lowercase hex digits")
     p.add_argument("--option", action="append", default=[], metavar="KEY=VALUE", help="an option of the operation, repeatable")
     p.add_argument("--name", default=None, help="the check of the operation check")
-    s = sub.add_parser("serve", help="run the queued jobs of this host, clone and operator, one at a time")
+    p.add_argument("--no-ensure", action="store_true", help="queue the job without starting an executor when none runs")
+    sub.add_parser("ping", help="print the pid of this host's executor and exit 0, or exit 1 when none runs")
+    sub.add_parser("ensure", help="start the executor detached when none runs, wait for it, print `kbjob: serving pid N`")
+    li = sub.add_parser("login-item", help="print a macOS LaunchAgent plist and a systemd user unit that run serve at login")
+    li.add_argument("--print", dest="show", action="store_true", help="print them (the only mode: nothing is installed)")
+    s =sub.add_parser("serve", help="run the queued jobs of this host, clone and operator, one at a time")
     s.add_argument("--once", action="store_true", help="drain the queue and exit (1 when a job failed)")
     f = sub.add_parser("follow", help="print one line per move of a job and exit with its result (0, 1, 3; 4 past --timeout)")
     f.add_argument("job")
@@ -124,10 +141,37 @@ def main(argv=None):
         return 2
 
 
+def ensure_command(store):
+    """`kbjob.py ensure`: 0 printing `kbjob: serving pid N`, 1 printing the last line of the serve log."""
+    pid, _, error = kj_exec.ensure(str(ROOT), store)
+    if error is not None:
+        print(f"kbjob: no executor: {error}", file=sys.stderr)
+        return 1
+    print(f"kbjob: serving pid {pid}")
+    return 0
+
+
 def run(args, parser):
     if args.command == "serve":
         return kj_exec.serve(str(ROOT), kj_store.resolve_store(ROOT, args.store), once=args.once)
+    if args.command == "login-item":
+        if not args.show:
+            parser.error("login-item only prints: pass --print")
+        return kj_exec.login_item(str(ROOT), args.store)
+    if args.command == "ping":
+        return kj_exec.ping()
+    if args.command == "ensure":
+        return ensure_command(kj_store.resolve_store(ROOT, args.store))
     if args.command == "submit":
+        if not args.no_ensure:
+            given = options_of(args)
+            kj_ops.check_job(args.op, args.subject, args.by or None, given)  # a refused job starts no executor
+            pid, started, error = kj_exec.ensure(str(ROOT), kj_store.resolve_store(ROOT, args.store))
+            if error is not None:
+                print(f"kbjob: no executor and none started, job not queued: {error}", file=sys.stderr)
+                return 1
+            if started:
+                print(f"kbjob: no executor, started pid {pid}", file=sys.stderr, flush=True)
         body = kj_store.submit(str(ROOT), args.op, args.subject, args.by, options_of(args), store=args.store)
         print(json.dumps(body, sort_keys=True, ensure_ascii=False))
         return 0

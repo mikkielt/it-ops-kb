@@ -5,7 +5,11 @@ kb/_self/coordination.md, section "Operation jobs").
                                           line `NAME stopped at step STEP: ...` (`land stopped at step rebase: ...`, as
                                           bl_land.land_refused_step reads it) refused, naming that step; any other end failed
   serve(root, store, once, poll, out)  -> exit code of `kbjob.py serve`
-  recover(root, store, alive, leased)  -> the moves made on the jobs an executor that died left: a job in running,
+  running_pid()                         -> the pid the host file names while it runs, else None
+  ping(out)                             -> exit code of `kbjob.py ping` (0 printing the pid, 1 none)
+  ensure(root, store, wait)             -> (pid, started, error): starts a detached serve when none runs and waits for the host file
+  login_item(root, store, out)          -> prints a LaunchAgent plist and a systemd user unit; writes nothing
+  recover(root, store, alive, leased)  ->the moves made on the jobs an executor that died left: a job in running,
                                           waiting-lock or waiting-merge whose lease `jobrun/<job id>` has expired and whose
                                           recorded pid no longer runs moves to lost (step lost), then to queued with its attempt
                                           raised by one the first time and to failed the second time; a job whose child still
@@ -50,7 +54,10 @@ RECOVER_S = 30  # the wait between two recovery passes of a serve
 MAX_LOST = 2  # a job lost this many times is failed, not run again: a crash loop ends at attempt 2
 RECOVERABLE = ("running", "waiting-lock", "waiting-merge", "lost")  # the states a dead executor leaves a job in
 POLL_S = 5.0  # the wait between two looks at the queue of a serve that does not stop when it is empty (KB_JOB_POLL)
-STOP_LINE = re.compile(r"^[a-z][a-z-]* stopped at step ([^:\n]+):", re.MULTILINE)
+ENSURE_WAIT_S = 10.0  # how long `ensure` waits for the host file to name the executor it started
+LOGIN_LABEL = "dev.it-ops-kb.jobs"  # the LaunchAgent label and the systemd unit's name that `login-item --print` gives
+LOG_FALLBACK = "serve.log"
+STOP_LINE =re.compile(r"^[a-z][a-z-]* stopped at step ([^:\n]+):", re.MULTILINE)
 
 
 def classify(code, text):
@@ -407,6 +414,130 @@ def drain(store, clone, host, operator, out):
         finally:
             with contextlib.suppress(coord.Refused):
                 coord.release(Namespace(key=lease_key(job), token=token, store=store, operator=None), time.time)
+
+
+def lock_path():
+    import tests as tests_py
+    return os.path.join(tests_py.host_lock_dir(), LOCK_NAME)
+
+
+def running_pid():
+    """The pid of the executor of this host (the pid its host file `kb-jobs-serve.lock` names, when that process runs), else None.
+    Only reads: a stale file is left for the next serve to clear."""
+    import tests as tests_py
+    holder = tests_py.read_holder(lock_path())
+    return holder["pid"] if holder is not None and tests_py.pid_alive(holder["pid"]) else None
+
+
+def ping(out=None):
+    """`kbjob.py ping`: 0 printing the pid when an executor of this host runs, 1 printing that none does."""
+    out = out or sys.stdout
+    pid = running_pid()
+    print(pid if pid is not None else "kbjob: no executor on this host", file=out, flush=True)
+    return 0 if pid is not None else 1
+
+
+def serve_log_path(root):
+    """The log of a serve that `ensure` started, kb-jobs/serve.log under the clone's common git directory (None outside a clone)."""
+    path = kj_store.log_path(root, "x")
+    return None if path is None else path.parent.parent / "serve.log"
+
+
+def ensure(root, store, wait=ENSURE_WAIT_S):
+    """Start the executor when none runs: (pid, started, error). `serve` runs detached (a session of its own, stdin closed, its
+    output appended to serve.log), so it outlives the session that started it; the wait ends when the host file names a live
+    process (the new one, or one a racing ensure started) or at WAIT seconds. error is None when pid is set, else the last line
+    of the log (or why serve could not start)."""
+    pid = running_pid()
+    if pid is not None:
+        return pid, False, None
+    log = serve_log_path(root)
+    if log is None:
+        return None, False, "serve needs a git clone for its job logs"
+    log.parent.mkdir(parents=True, exist_ok=True)
+    start = log.stat().st_size if log.exists() else 0
+    group = {"start_new_session": True} if os.name == "posix" else {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP | getattr(subprocess, "DETACHED_PROCESS", 0)}
+    argv = [sys.executable, str(Path(__file__).resolve().parent / "kbjob.py"), "--store", str(store), "serve"]
+    try:
+        with open(log, "ab") as sink:
+            proc = subprocess.Popen(argv, cwd=kj_store.clone_path(root), stdin=subprocess.DEVNULL, stdout=sink, stderr=subprocess.STDOUT, **group)
+    except OSError as error:
+        return None, False, f"serve did not start: {str(error)[:200]}"
+    until = time.monotonic() + wait
+    while time.monotonic() < until:
+        pid = running_pid()
+        if pid is not None:
+            return pid, pid == proc.pid, None
+        if proc.poll() is not None and running_pid() is None:
+            break
+        time.sleep(0.1)
+    if proc.poll() is None:
+        kg_lock.end_group(proc)
+    return None, False, last_line(finish_text(log, start)) or f"no executor named its pid within {wait:g} s"
+
+
+def plist_text(program, clone, log):
+    """The macOS LaunchAgent plist that runs `kbjob.py serve` at login and again when it ends."""
+    from xml.sax.saxutils import escape
+    args = "".join(f"\n    <string>{escape(a)}</string>" for a in program)
+    return f"""<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- macOS: save as ~/Library/LaunchAgents/{LOGIN_LABEL}.plist, then run: launchctl bootstrap gui/$(id -u) that file -->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>{LOGIN_LABEL}</string>
+  <key>ProgramArguments</key>
+  <array>{args}
+  </array>
+  <key>WorkingDirectory</key>
+  <string>{escape(clone)}</string>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>ThrottleInterval</key>
+  <integer>30</integer>
+  <key>StandardErrorPath</key>
+  <string>{escape(log)}</string>
+  <key>StandardOutPath</key>
+  <string>{escape(log)}</string>
+</dict>
+</plist>
+"""
+
+
+def unit_text(program, clone, log):
+    """The systemd user unit that runs `kbjob.py serve` at login and again when it ends."""
+    quoted = " ".join('"' + a.replace("\\", "\\\\").replace('"', '\\"') + '"' for a in program)
+    return f"""# Linux: save as ~/.config/systemd/user/{LOGIN_LABEL}.service, then run: systemctl --user enable --now {LOGIN_LABEL}.service
+[Unit]
+Description=it-ops-kb job executor
+
+[Service]
+ExecStart={quoted}
+WorkingDirectory={clone}
+Restart=always
+RestartSec=30
+StandardOutput=append:{log}
+StandardError=append:{log}
+
+[Install]
+WantedBy=default.target
+"""
+
+
+def login_item(root, store=None, out=None):
+    """`kbjob.py login-item --print`: the LaunchAgent plist and the systemd user unit of the executor, printed with where each goes
+    and how it is loaded. Writes nothing and reads nothing under the home directory: the operator installs what they choose."""
+    out = out or sys.stdout
+    clone = kj_store.clone_path(root)
+    log = serve_log_path(root) or Path(clone) / LOG_FALLBACK
+    script = Path(clone) / "_tools" / "kbjob.py"  # the clone's own checkout outlasts a worktree this runs from
+    script = script if script.is_file() else Path(__file__).resolve().parent / "kbjob.py"
+    program = [sys.executable, str(script)] + (["--store", str(store)] if store else []) + ["serve"]
+    out.write(plist_text(program, clone, str(log)) + "\n" + unit_text(program, clone, str(log)))
+    return 0
 
 
 def serve(root, store, once=False, out=None):
