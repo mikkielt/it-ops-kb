@@ -4,6 +4,7 @@
   "title": "kbext.py verify calls each extender a group configured with its point's sample inputs and checks the answer's shape, so a group's CI catches a break at pull time",
   "status": "draft",
   "parent": "EP-y7fe7qqx",
+  "sprint": "SP-ep7ck2ab",
   "priority": "P2",
   "rank": 0,
   "goal": "Each point in kbext.SURFACE carries sample inputs and a shape check of its answer. kbext.py verify --root WS loads every extender the settings layers name (a load failure or KBEXT_REQUIRES mismatch counts as a failure), calls it with its point's samples in a child process with a timeout, and prints one line per extender, ok or what failed with the point, the module and the layer; exit 0 all ok or none configured, 1 a failure, 2 bad arguments. extending.md gives the command a group's CI runs after each upstream pull.",

@@ -4,6 +4,7 @@
   "title": "kbext.py init-team writes a group overlay repository: a marketplace pinning it-ops-kb by ext tag beside the group's plugin, its settings file and a verified sample extender",
   "status": "draft",
   "parent": "EP-y7fe7qqx",
+  "sprint": "SP-ep7ck2ab",
   "priority": "P2",
   "rank": 0,
   "goal": "kbext.py init-team DIR --group NAME --upstream URL [--ref ext-vX.Y.Z] writes, keeping any file that already holds the same content and refusing (exit 2) to overwrite a different one: DIR/.claude-plugin/marketplace.json listing it-ops-kb with a url source at URL and the ref (the pin rule of this story's gate) and the group's own plugin with source \".\"; DIR/.claude-plugin/plugin.json with skills/, agents/ and hooks/ directories for the group's own; DIR/settings/group.json naming group, extension_paths [\"../ext\"] and a sample lane extender in DIR/ext/. A second run changes nothing. kbext.py verify passes on it, and plugin.md gets a section on adopting by fork or by overlay, with design.md's Teams and organizations pointing at it.",

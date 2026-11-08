@@ -4,6 +4,7 @@
   "title": "kbingest.py map takes a group's mapper for a language, named as extension point ingest_mappers, and writes its symbols into the map as the shipped mappers do",
   "status": "draft",
   "parent": "EP-y7fe7qqx",
+  "sprint": "SP-ep7ck2ab",
   "priority": "P3",
   "rank": 0,
   "goal": "kbingest.py map reads extensions.ingest_mappers (a language name to a module:attr) and for each such language calls mapper(repo_dir, rev, files) for the files whose suffixes the mapper's SUFFIXES names; it adds the packages, imports, entry points and symbols it returns to the map under that language, in the same record shapes, and a group mapper wins over a shipped one for its language. A mapper that raises or returns another shape adds a note naming the language and the point and maps nothing for it. kbingest.py where then finds a symbol the group mapper gave.",

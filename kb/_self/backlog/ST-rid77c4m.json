@@ -4,6 +4,7 @@
   "title": "A group's pack ranker, named as extension point ranker, adds one ranked list that kbfacts.rrf fuses, and with none set every pack is byte for byte as before",
   "status": "draft",
   "parent": "EP-y7fe7qqx",
+  "sprint": "SP-ep7ck2ab",
   "priority": "P2",
   "rank": 0,
   "goal": "When the settings layers name extensions.ranker, kbfacts.pack calls it as rank(question, candidates) with the candidate articles' qualified paths and fuses the list it returns as one more expert through kbfacts.rrf; a path it returns that is no candidate is dropped, and an exception or a non-list answer leaves the pack as without it and prints one stderr line naming the point. With no ranker set the pack's bytes and rag.py eval's results do not change. extending.md gives the ranker point's signature and the fusion rule.",

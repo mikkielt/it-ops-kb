@@ -4,6 +4,7 @@
   "title": "kbext.py surface prints the versioned extension API from code, and selfdoc check fails when extending.md's table and the code disagree",
   "status": "draft",
   "parent": "EP-y7fe7qqx",
+  "sprint": "SP-ep7ck2ab",
   "priority": "P2",
   "rank": 0,
   "goal": "kbext.SURFACE is the one registry of the public extension API: each extension point with its call signature, the settings keys a group may set, the file formats and the exit codes a group's tooling may rely on, each with the API version that added it and, for a deprecated entry, the version that removes it; everything not in it is internal. kbext.py surface prints API_VERSION and the registry (--json for tools), exit 0. kb/_self/extending.md holds the same table, and selfdoc.py check fails, naming the entry, when a row is missing from either side or differs. Each extension point story adds its row here.",

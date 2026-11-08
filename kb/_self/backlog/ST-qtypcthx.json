@@ -4,6 +4,7 @@
   "title": "A group adds leak shapes as data and may replace the leak scan as extension point leak_scan, and every replaced guard is named by kbext.py guards and kbmon --status",
   "status": "draft",
   "parent": "EP-y7fe7qqx",
+  "sprint": "SP-ep7ck2ab",
   "priority": "P2",
   "rank": 0,
   "goal": "The settings layers' leak.shapes (each a kind and a regular expression, refused at load when it does not compile or matches the empty string) are added to the shapes kbcommon.leak_hits and kbpublic.file_hits refuse, so a group's own ticket or host shape stops a commit, a publish and a contribute. extensions.leak_scan names a function with file_hits' signature that replaces kbpublic.file_hits in this clone. kbext.py guards --root WS prints each replaced guard with its module and layer (none: one line saying the shipped guards run), kbmon.py --status all names a replaced guard on its first lines, and git.md and extending.md say which paths still run the shipped guards (the gate on this story).",

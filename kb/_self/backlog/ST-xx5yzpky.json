@@ -4,6 +4,7 @@
   "title": "The backlog section of the settings layers overrides backlog.json key by key, and backlog.py config names the layer and file of each value",
   "status": "draft",
   "parent": "EP-y7fe7qqx",
+  "sprint": "SP-ep7ck2ab",
   "priority": "P2",
   "rank": 0,
   "goal": "bl_base.load_settings reads backlog.json (or KB_BACKLOG_CONFIG's file), then merges the backlog object of kbsettings.effective over it key by key (group, clone, kb root, user), with the same type checks and refusals as backlog.json; a group-locked key is refused as kbsettings refuses it. backlog.py config prints each value's source as file, group, clone, root, user or default with the file's path, so a group changes forge, review_checks or trackers with no edit of the shipped backlog.json.",

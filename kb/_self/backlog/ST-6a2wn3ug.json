@@ -4,6 +4,7 @@
   "title": "The lane classifier is extension point lane: extensions.lane wins over lane_module, which stays a supported key for the kb's own kblane",
   "status": "draft",
   "parent": "EP-y7fe7qqx",
+  "sprint": "SP-ep7ck2ab",
   "priority": "P2",
   "rank": 0,
   "goal": "bl_land and bl_precheck take the lane classifier through kbext.load(lane): extensions.lane from the settings layers wins, else backlog.json's lane_module names the module and its path_lane function, else no code lane as now; lane_module stays a supported key of API 1, so backlog.json, the skills and the worker role keep their wording. kbext.py resolve lane prints which one decided, and a group lane extender's answer is the lane land and precheck read.",

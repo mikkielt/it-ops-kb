@@ -4,6 +4,7 @@
   "title": "A group module named in extensions.backlog_commands adds a backlog.py command or replaces a shipped one through bl_cli.register, and backlog.py -h marks it as the group's",
   "status": "draft",
   "parent": "EP-y7fe7qqx",
+  "sprint": "SP-ep7ck2ab",
   "priority": "P3",
   "rank": 0,
   "goal": "backlog.py imports each module that the settings layers' extensions.backlog_commands lists (resolved with kbext, KBEXT_REQUIRES checked) after the shipped ones; its bl_cli.register or bl_cli.extend calls add a command or replace a shipped one of the same name, which prints one stderr line naming the command, the module and the layer each time it runs. backlog.py -h lists a group command with the group name in its help. A module that fails to load is named on stderr and the shipped commands run as before, exit codes unchanged. extending.md names bl_cli.register, bl_cli.extend and the handler's signature as the point's contract.",

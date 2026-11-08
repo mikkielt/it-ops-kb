@@ -4,6 +4,7 @@
   "title": "kbext.py loads a group's extender for an extension point from the settings layers or an it_ops_kb entry point, and refuses a missing or version-mismatched one by name",
   "status": "draft",
   "parent": "EP-y7fe7qqx",
+  "sprint": "SP-ep7ck2ab",
   "priority": "P2",
   "rank": 0,
   "goal": "_tools/kbext.py (standard library only) holds API_VERSION and load(point, root): it reads extensions.<point> as module:attr from kbsettings.effective, puts each extension_paths directory (relative to the file that named it) on sys.path, and else takes the one entry point of group it_ops_kb.<point> from importlib.metadata.entry_points(group=...); a module's KBEXT_REQUIRES (a comma list of >=, <, == bounds on MAJOR.MINOR) must hold API_VERSION. kbext.py resolve POINT --root WS prints the point, module:attr, the layer and file that named it, exit 0; a missing module or attribute, two entry points for one point, or a version outside KBEXT_REQUIRES exits 2 with one line naming the point, the module and the layer. kbext.py call POINT --root WS --json ARGS calls the extender and prints its result as JSON.",

@@ -4,6 +4,7 @@
   "title": "kbgit.py ext-release tags the main branch as ext-vX.Y.Z from API_VERSION and its changelog entry, and sync carries the tag to the integration remote",
   "status": "draft",
   "parent": "EP-y7fe7qqx",
+  "sprint": "SP-ep7ck2ab",
   "priority": "P2",
   "rank": 0,
   "goal": "kbgit.py ext-release [--dry-run] reads kbext.API_VERSION, refuses (exit 2, naming what is missing) when kb/_self/extension-changelog.md has no entry for it, when the tag exists, when the checkout is not the main branch or has uncommitted tracked changes, or when kbext.py lint finds a break; else it makes the annotated tag ext-vX.Y.Z with the changelog entry as its message, and --dry-run prints the tag and the message and writes nothing. kbgit.py sync --push sends ext-v tags with the commits they point at; kbgit.py publish sends them to the public home. plugin.md section 4 names ext-v tags beside census tags as the channel a group pins (the first version is this story's gate).",

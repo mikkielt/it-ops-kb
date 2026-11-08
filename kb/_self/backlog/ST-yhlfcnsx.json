@@ -4,6 +4,7 @@
   "title": "A group's forge adapter, named as extension point forge, answers every merge request and pipeline read that land, stalled and red-pipeline make",
   "status": "draft",
   "parent": "EP-y7fe7qqx",
+  "sprint": "SP-ep7ck2ab",
   "priority": "P2",
   "rank": 0,
   "goal": "bl_forge.arm(root) returns the adapter of extensions.forge when the settings layers name one (a class built as Adapter(target, run, cwd) with the methods request, pipelines, pipeline, jobs, trace, set_description and merge that the shipped glab and gh arms have), else the glab or gh arm the forge setting picks as now; extending.md lists those methods and their return shapes as the forge point's contract, and land, stalled and red-pipeline reach the forge only through arm.",

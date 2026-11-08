@@ -4,6 +4,7 @@
   "title": "The gate refuses a change that removes or changes a public extension entry since the last ext tag without a major API version, a deprecation and a changelog entry",
   "status": "draft",
   "parent": "EP-y7fe7qqx",
+  "sprint": "SP-ep7ck2ab",
   "priority": "P2",
   "rank": 0,
   "goal": "kbext.surface_breaks(old, new) lists each public entry removed, renamed or with a changed signature between two surfaces; a break passes only when new's API_VERSION has a higher major than old's and the entry was marked deprecated in a minor release the old surface came from (the deprecation window of this story's gate), and every API_VERSION change has a kb/_self/extension-changelog.md entry. kbext.py lint reads the surface at the newest ext-v* tag (none: one line, exit 0) and at the working tree, prints each break, exit 1; kbgit.py sync --push runs it when a changed path is under _tools/. kbext.deprecated(name, since, removed_in) warns once per process, on stderr, when a deprecated entry is used.",

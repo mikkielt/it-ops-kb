@@ -4,6 +4,7 @@
   "title": "kbext.py rehearse takes a planted fork and a group overlay from one upstream ext tag to the next and reports no conflict, no shipped file edited and every extender verified",
   "status": "draft",
   "parent": "EP-y7fe7qqx",
+  "sprint": "SP-ep7ck2ab",
   "priority": "P2",
   "rank": 0,
   "goal": "kbext.py rehearse --upstream URL --from TAG --to TAG --team DIR [--fork] runs in temporary directories it removes: a clone at TAG (with --fork, a planted fork commit adding a group root by kbroot.py add) with DIR's group settings, then kbgit.py upstream to TAG; it prints the conflicting paths, the shipped files the group's setup changed and kbext.py verify's lines, exit 0 only when all three are empty or ok, 1 otherwise. --plant builds the upstream itself from the running checkout's tracked tools as two commits tagged ext-v<API_VERSION> and a next minor, and --plant --break makes the second a planted removal of the lane point without a major version, which rehearse reports by name. This is the epic's proof.",

@@ -4,6 +4,7 @@
   "title": "The settings layers' gate_checks run in kbgit.py sync --push and in backlog.py done after the shipped checks, and a failing one refuses naming its command",
   "status": "draft",
   "parent": "EP-y7fe7qqx",
+  "sprint": "SP-ep7ck2ab",
   "priority": "P2",
   "rank": 0,
   "goal": "kg_sync.group_gate(root) runs each argv of gate_checks from the settings layers (group, clone, kb root, user; no shell, from the repository root, a timeout each) after the shipped gate and returns the failures, each naming its argv, its layer and exit code; sync --push refuses the push and done refuses the item on any failure, exit 1, and with no gate_checks set both run as before. git.md (the gate) and backlog.md (Definition of done) say where a group's checks run.",

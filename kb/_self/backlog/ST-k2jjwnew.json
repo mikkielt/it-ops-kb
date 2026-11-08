@@ -4,6 +4,7 @@
   "title": "The kb MCP server serves a group's own tools, named as extension point mcp_tools, under the group's prefix and refuses one whose name clashes with a shipped tool",
   "status": "draft",
   "parent": "EP-y7fe7qqx",
+  "sprint": "SP-ep7ck2ab",
   "priority": "P2",
   "rank": 0,
   "goal": "kb_mcp.py reads extensions.mcp_tools (a list of module:attr, each a dict with name, description, inputSchema and a call(arguments) function) and the settings' group name, and serves each as <group>_<name> beside the shipped tools, its description starting with the group name; a tools/call runs call and returns its text, and an exception becomes an isError result. A name that equals a shipped tool's after the prefix, a missing group name or a load failure leaves that tool out with one stderr line naming it, and the shipped tools are served as before. plugin.md section 8 and extending.md describe the point.",
