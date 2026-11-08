@@ -2,7 +2,7 @@
   "id": "ST-k2jjwnew",
   "kind": "story",
   "title": "The kb MCP server serves a group's own tools, named as extension point mcp_tools, under the group's prefix and refuses one whose name clashes with a shipped tool",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-y7fe7qqx",
   "sprint": "SP-ep7ck2ab",
   "priority": "P2",
@@ -104,6 +104,28 @@
     }
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-a796fc75",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "4cf0e23d4bcf868b9f45e435b319df472d6df4b9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess,sys,tempfile,pathlib,inspect\nT=pathlib.Path(tempfile.mkdtemp())\ndef W(p,v):\n    p=pathlib.Path(p); p.parent.mkdir(parents=True,exist_ok=True); p.write_text(v if isinstance(v,str) else json.dumps(v),encoding=\"utf-8\"); return p\ndef R(*a,env=None,cwd=None,inp=None):\n    return subprocess.run([sys.executable,*a],capture_output=True,text=True,env=dict(os.environ,**(env or {})),cwd=cwd,input=inp,timeout=900)\ndef need(c,m):\n    if not c: sys.exit(\"not yet: \"+str(m)[:1500])\ndef git(d,*a):\n    return subprocess.run([\"git\",\"-C\",str(d),*a],capture_output=True,text=True,check=True)\ndef repo(d):\n    d=pathlib.Path(d); d.mkdir(parents=True,exist_ok=True); git(d,\"init\",\"-q\",\"-b\",\"main\"); git(d,\"config\",\"user.name\",\"t\"); git(d,\"config\",\"user.email\",\"t@corp.example.com\"); return d\ndef mod(name):\n    sys.path.insert(0,\"_tools\")\n    try: return __import__(name)\n    except ImportError as x: sys.exit(\"not yet: \"+str(x))\ndef EXT(body):\n    return 'KBEXT_REQUIRES = \">=0.1\"\\n'+body\ndef PY(code,*a,env=None,flags=()):\n    w=\"import sys\\ntry:\\n\"+\"\".join(\"    \"+l+\"\\n\" for l in code.splitlines())+\"except Exception as x:\\n    print('failed: '+type(x).__name__+': '+str(x),file=sys.stderr); sys.exit(3)\\n\"\n    return R(*flags,\"-c\",w,*a,env=env)\n\ne=T/\"ext\"\nW(e/\"grp_tools.py\",EXT(\"ECHO = {'name': 'echo', 'description': 'kb group echo', 'inputSchema': {'type': 'object', 'properties': {'text': {'type': 'string'}}}, 'call': lambda a: a['text']}\\nCLASH = dict(ECHO, name='pack')\\ndef _boom(a):\\n    raise RuntimeError('planted')\\nBOOM = dict(ECHO, name='boom', call=_boom)\\n\"))\n\ndef mcp(env):\n    msgs=[{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-06-18\",\"capabilities\":{},\"clientInfo\":{\"name\":\"check\",\"version\":\"0\"}}},{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"},{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"},{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"tools/call\",\"params\":{\"name\":\"kb_echo\",\"arguments\":{\"text\":\"planted\"}}},{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"tools/call\",\"params\":{\"name\":\"kb_boom\",\"arguments\":{}}}]\n    r=R(\"_tools/kb_mcp.py\",env=env,inp=\"\".join(json.dumps(m)+\"\\n\" for m in msgs))\n    need(r.returncode==0, r.stderr)\n    return r,{o.get(\"id\"):o for o in map(json.loads,filter(None,r.stdout.splitlines()))}\n\ng=W(T/\"g.json\",{\"group\":\"kb\",\"extensions\":{\"mcp_tools\":[\"grp_tools:ECHO\",\"grp_tools:CLASH\",\"grp_tools:BOOM\"]},\"extension_paths\":[str(e)]})\nr,out=mcp({\"KB_GROUP_SETTINGS\":str(g)})\ntools={t[\"name\"]:t for t in out[2][\"result\"][\"tools\"]}\nneed(\"kb_echo\" in tools and tools[\"kb_echo\"][\"description\"].startswith(\"kb\"), list(tools))\nneed(tools[\"kb_pack\"][\"description\"].startswith(\"Documentation facts\") and \"kb_status\" in tools, \"shipped tools changed\")\nneed(\"pack\" in r.stderr and \"planted\" in json.dumps(out[3].get(\"result\")), (r.stderr,out.get(3)))\nneed(out[4].get(\"result\",{}).get(\"isError\") is True, out.get(4))\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess,sys,tempfile,pathlib,inspect\nT=pathlib.Path(tempfile.mkdtemp())\ndef W(p,v):\n    p=pathlib.Path(p); p.parent.mkdir(parents=True,exist_ok=True); p.write_text(v if isinstance(v,str) else json.dumps(v),encoding=\"utf-8\"); return p\ndef R(*a,env=None,cwd=None,inp=None):\n    return subprocess.run([sys.executable,*a],capture_output=True,text=True,env=dict(os.environ,**(env or {})),cwd=cwd,input=inp,timeout=900)\ndef need(c,m):\n    if not c: sys.exit(\"not yet: \"+str(m)[:1500])\ndef git(d,*a):\n    return subprocess.run([\"git\",\"-C\",str(d),*a],capture_output=True,text=True,check=True)\ndef repo(d):\n    d=pathlib.Path(d); d.mkdir(parents=True,exist_ok=True); git(d,\"init\",\"-q\",\"-b\",\"main\"); git(d,\"config\",\"user.name\",\"t\"); git(d,\"config\",\"user.email\",\"t@corp.example.com\"); return d\ndef mod(name):\n    sys.path.insert(0,\"_tools\")\n    try: return __import__(name)\n    except ImportError as x: sys.exit(\"not yet: \"+str(x))\ndef EXT(body):\n    return 'KBEXT_REQUIRES = \">=0.1\"\\n'+body\ndef PY(code,*a,env=None,flags=()):\n    w=\"import sys\\ntry:\\n\"+\"\".join(\"    \"+l+\"\\n\" for l in code.splitlines())+\"except Exception as x:\\n    print('failed: '+type(x).__name__+': '+str(x),file=sys.stderr); sys.exit(3)\\n\"\n    return R(*flags,\"-c\",w,*a,env=env)\n\ne=T/\"ext\"\nW(e/\"grp_tools.py\",EXT(\"ECHO = {'name': 'echo', 'description': 'kb group echo', 'inputSchema': {'type': 'object', 'properties': {'text': {'type': 'string'}}}, 'call': lambda a: a['text']}\\nCLASH = dict(ECHO, name='pack')\\ndef _boom(a):\\n    raise RuntimeError('planted')\\nBOOM = dict(ECHO, name='boom', call=_boom)\\n\"))\n\ndef mcp(env):\n    msgs=[{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-06-18\",\"capabilities\":{},\"clientInfo\":{\"name\":\"check\",\"version\":\"0\"}}},{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"},{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\"},{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"tools/call\",\"params\":{\"name\":\"kb_echo\",\"arguments\":{\"text\":\"planted\"}}},{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"tools/call\",\"params\":{\"name\":\"kb_boom\",\"arguments\":{}}}]\n    r=R(\"_tools/kb_mcp.py\",env=env,inp=\"\".join(json.dumps(m)+\"\\n\" for m in msgs))\n    need(r.returncode==0, r.stderr)\n    return r,{o.get(\"id\"):o for o in map(json.loads,filter(None,r.stdout.splitlines()))}\n\ng=W(T/\"g.json\",{\"extensions\":{\"mcp_tools\":[\"grp_tools:ECHO\"]},\"extension_paths\":[str(e)]})\nr,out=mcp({\"KB_GROUP_SETTINGS\":str(g)}); names=[t[\"name\"] for t in out[2][\"result\"][\"tools\"]]\nneed(\"kb_pack\" in names and not any(n.endswith(\"_echo\") for n in names) and \"mcp_tools\" in r.stderr, (names,r.stderr))\ng=W(T/\"g.json\",{\"group\":\"kb\",\"extensions\":{\"mcp_tools\":[\"grp_missing:ECHO\"]},\"extension_paths\":[str(e)]})\nr,out=mcp({\"KB_GROUP_SETTINGS\":str(g)}); names=[t[\"name\"] for t in out[2][\"result\"][\"tools\"]]\nneed(\"kb_pack\" in names and \"grp_missing\" in r.stderr, (names,r.stderr))\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
