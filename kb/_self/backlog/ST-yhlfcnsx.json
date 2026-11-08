@@ -59,6 +59,66 @@
     "ST-xdircstf",
     "ST-y2u3sxta"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does arm find the forge adapter: only extensions.forge, or also the entry point of group it_ops_kb.forge that kbext.load falls back to?",
+      "options": [
+        "extensions.forge or the it_ops_kb.forge entry point, as kbext.load finds it",
+        "extensions.forge only"
+      ],
+      "recommendation": "extensions.forge or the it_ops_kb.forge entry point, as kbext.load finds it",
+      "reason": "the one lookup rule every point has",
+      "do": {
+        "extensions.forge or the it_ops_kb.forge entry point, as kbext.load finds it": "ST-yhlfcnsx",
+        "extensions.forge only": "ST-yhlfcnsx"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "extensions.forge or the it_ops_kb.forge entry point, as kbext.load finds it",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "When extensions.forge names an adapter that cannot be loaded, does arm fall back to glab or gh or refuse?",
+      "options": [
+        "refuse with Rejected carrying kbext's one line, exit 2",
+        "fall back to the glab or gh arm"
+      ],
+      "recommendation": "refuse with Rejected carrying kbext's one line, exit 2",
+      "reason": "a quiet fall back would read the wrong forge",
+      "do": {
+        "refuse with Rejected carrying kbext's one line, exit 2": "ST-yhlfcnsx",
+        "fall back to the glab or gh arm": "ST-yhlfcnsx"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "refuse with Rejected carrying kbext's one line, exit 2",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "Which callers does the forge adapter answer: those reading through arm(root) only, or url_arm too (the query log's delivery and the CI detector, which have a url and no root)?",
+      "options": [
+        "arm(root) only; url_arm keeps reading the url's own forge",
+        "arm(root) and url_arm"
+      ],
+      "recommendation": "arm(root) only; url_arm keeps reading the url's own forge",
+      "reason": "the goal names land, stalled and red-pipeline, and url_arm has no root to find a settings layer from",
+      "do": {
+        "arm(root) only; url_arm keeps reading the url's own forge": "ST-yhlfcnsx",
+        "arm(root) and url_arm": "ST-yhlfcnsx"
+      },
+      "class": "querylog",
+      "answer": "arm(root) only; url_arm keeps reading the url's own forge",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-a796fc75",
   "operator": "op-f618a13e"
