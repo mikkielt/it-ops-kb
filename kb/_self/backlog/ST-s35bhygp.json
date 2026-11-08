@@ -20,8 +20,14 @@
     "_tools/bl_close.py",
     "kb/_self/backlog.md"
   ],
-  "links": [
-    "parked: SP-ipeewrlv close"
+  "relates_to": [
+    "ST-cngfj2rv",
+    "ST-ip7wzext",
+    "ST-pokd2oim"
   ],
-  "notes": "SP-ipeewrlv close: land removed agent-ST-y53hvh64 as its first step, then stopped at stale; the orchestrator re-added the worktree by hand before resuming the worker. The check is a placeholder text read: the planner replaces it with a planted land run that fails at a step."
+  "links": [
+    "parked: SP-ipeewrlv close",
+    "retro: drain 2026-10-27..11-08"
+  ],
+  "notes": "SP-ipeewrlv close: land removed agent-ST-y53hvh64 as its first step, then stopped at stale; the orchestrator re-added the worktree by hand before resuming the worker. The check is a placeholder text read: the planner replaces it with a planted land run that fails at a step. Retro of the drain: land removed the worker's worktree on every stop (a rebase conflict, failed checks, a sync refusal) and each retry needed git worktree add .claude/worktrees/agent-ID work/ID, which land prints (bl_land.worktree_back): seen 6+ times. No new item is filed: this and ST-cngfj2rv, ST-ip7wzext and ST-pokd2oim are one defect (land releases the worktree at its start, bl_land.py release_worker_worktree, and the landing worktree takes the branch, which git lets one worktree hold), filed from four closes; the sprint that takes one takes the others or drops them."
 }

@@ -1,0 +1,34 @@
+{
+  "id": "BG-gt4i6ec6",
+  "kind": "bug",
+  "title": "reopen leaves the run state of an item that had landed at landed, so land refuses every step and runs --reconcile does not repair it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "reopen of a done item moves its coord run state from landed to none, and runs --reconcile moves a landed run state whose item file is not done to none, so land's first step takes a reopened item to landing",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import glob, json, os, subprocess, sys, tempfile\nwith tempfile.TemporaryDirectory() as d:\n    env = dict(os.environ, KB_COORD_STORE=os.path.join(d, \"coord.sqlite\"))\n    def bl(*a):\n        return subprocess.run([sys.executable, \"_tools/backlog.py\", \"--root\", d, *a], capture_output=True, text=True, env=env)\n    def coord(*a):\n        return subprocess.run([sys.executable, \"_tools/coord.py\", *a], capture_output=True, text=True, env=env)\n    def state(iid):\n        return json.loads(coord(\"get\", \"run/\" + iid).stdout).get(\"value\")\n    def plant(iid):\n        rev = (json.loads(coord(\"get\", \"run/\" + iid).stdout) or {}).get(\"revision\", 0)\n        put = coord(\"put\", \"run/\" + iid, \"--value=landed\", \"--revision\", str(rev))\n        assert put.returncode == 0, (\"coord put\", put.stderr[-200:])\n    iid = bl(\"new\", \"story\", \"--title\", \"T\", \"--goal\", \"g\").stdout.split()[2]\n    path = glob.glob(os.path.join(d, \"**\", iid + \".json\"), recursive=True)[0]\n    item = json.load(open(path))\n    item[\"status\"] = \"done\"\n    item[\"evidence\"] = {\"commit\": \"0\" * 40, \"checks\": []}\n    json.dump(item, open(path, \"w\"))\n    plant(iid)\n    reopened = bl(\"reopen\", iid, \"--why\", \"planted\")\n    assert reopened.returncode == 0, (\"reopen\", (reopened.stdout + reopened.stderr)[-300:])\n    assert state(iid) != \"landed\", (\"reopen left the run state at\", state(iid))\n    plant(iid)\n    reconciled = bl(\"runs\", iid, \"--reconcile\")\n    assert reconciled.returncode == 0, (\"runs --reconcile\", (reconciled.stdout + reconciled.stderr)[-300:])\n    assert state(iid) != \"landed\", (\"runs --reconcile left the run state of an item that is not done at\", state(iid))\n"
+    ]
+  },
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/bl_runs.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "relates_to": [
+    "BG-5tvbfivn",
+    "BG-wcgmj4zu",
+    "BG-udpm37tj",
+    "BG-mwqxiqqx"
+  ],
+  "links": [
+    "retro: drain 2026-10-27..11-08"
+  ],
+  "notes": "Retro finding of the drain: after reopen of an item that had landed its coord run state stays landed, so land printed 'run/ID is landed, which does not move to landing' at every step, and runs --reconcile did not repair it. Premise (reproduces: the repro): bl_items.cmd_reopen clears evidence, claim and operator and leaves the run key, and bl_runs.drift_of reads a done item whose state is not landed, but never a landed state of an item whose file is not done, since landed is in SETTLED. The new state is none (bl_runs.NONE), the value an item with no run has. BG-mwqxiqqx also edits bl_items.py (cmd_reopen gains --commit): land one after the other.",
+  "filed_in": "clone-0ea70e5c"
+}

@@ -1,0 +1,32 @@
+{
+  "id": "BG-3pqzpd2q",
+  "kind": "bug",
+  "title": "dispatch starts a worker's claude -p with no --settings, so its plugins' MCP servers run unless the orchestrator's PATH wrapper turns them off",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "backlog.json takes a setting worker_plugins_off (a list of plugin keys, default none) and claude_argv adds --settings with enabledPlugins false for each, so dispatch, begin and dispatch --resume start a worker with those plugins off and no wrapper is needed; this clone's backlog.json lists gitkraken@synced, whose gk mcp children orphan in the worker's worktree and block land at step branch",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import glob, json, os, subprocess, sys, tempfile\nwith tempfile.TemporaryDirectory() as d:\n    bindir = os.path.join(d, \"bin\"); os.mkdir(bindir)\n    log = os.path.join(d, \"argv.log\")\n    open(os.path.join(bindir, \"claude\"), \"w\").write(\"#!/bin/sh\\necho \\\"$@\\\" >> \\\"$ARGV_LOG\\\"\\ncat >/dev/null\\necho '{\\\"is_error\\\":false,\\\"session_id\\\":\\\"s\\\"}'\\n\")\n    os.chmod(os.path.join(bindir, \"claude\"), 0o755)\n    env = dict(os.environ, PATH=bindir + os.pathsep + os.environ[\"PATH\"], ARGV_LOG=log, KB_COORD_STORE=os.path.join(d, \"coord.sqlite\"))\n    origin = os.path.join(d, \"origin.git\")\n    subprocess.run([\"git\", \"init\", \"-q\", \"--bare\", \"-b\", \"main\", origin], check=True)\n    root = os.path.join(d, \"root\"); os.mkdir(root)\n    def g(*a):\n        return subprocess.run([\"git\", \"-C\", root, *a], capture_output=True, text=True)\n    def bl(*a):\n        return subprocess.run([sys.executable, \"_tools/backlog.py\", \"--root\", root, *a], capture_output=True, text=True, env=env, timeout=120)\n    g(\"init\", \"-q\", \"-b\", \"main\"); g(\"config\", \"user.email\", \"x@example.com\"); g(\"config\", \"user.name\", \"x\"); g(\"remote\", \"add\", \"origin\", origin)\n    json.dump({\"worker_plugins_off\": [\"gitkraken@synced\"]}, open(os.path.join(root, \"backlog.json\"), \"w\"))\n    open(os.path.join(root, \"README\"), \"w\").write(\"x\\n\"); g(\"add\", \".\"); g(\"commit\", \"-qm\", \"init\"); g(\"push\", \"-q\", \"origin\", \"main\")\n    iid = bl(\"new\", \"story\", \"--title\", \"T\", \"--goal\", \"g\", \"--touch\", \"f.txt\", \"--check\", \"python3 -c pass\").stdout.split()[2]\n    path = glob.glob(os.path.join(root, \"**\", iid + \".json\"), recursive=True)[0]\n    item = json.load(open(path)); item[\"status\"] = \"todo\"; json.dump(item, open(path, \"w\"))\n    g(\"add\", \".\"); g(\"commit\", \"-qm\", \"plant todo\"); g(\"push\", \"-q\", \"origin\", \"main\")\n    claimed = bl(\"claim\", iid, \"--by\", \"claude-aaaaaaaa\")\n    assert claimed.returncode == 0, (\"claim\", (claimed.stdout + claimed.stderr)[-300:])\n    dispatched = bl(\"dispatch\", iid)\n    argv = open(log).read() if os.path.exists(log) else \"\"\n    assert argv, (\"the worker session did not start\", (dispatched.stdout + dispatched.stderr)[-300:])\n    assert \"--settings\" in argv and \"gitkraken@synced\" in argv, (\"dispatch gave the worker session no --settings turning the plugin off\", argv[:200])\n"
+    ]
+  },
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "_tools/bl_base.py",
+    "backlog.json",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "relates_to": [
+    "ST-y5volitm"
+  ],
+  "links": [
+    "retro: drain 2026-10-27..11-08"
+  ],
+  "notes": "Retro finding of the drain: headless workers must run with the gitkraken plugin off (its gk mcp children orphan in the worker's worktree and block land at step branch); the orchestrator did it with a wrapper named claude first on PATH, kept in a temporary directory that vanished between sessions, so one worker started without it. Premise (reproduces: the repro): claude_argv (bl_dispatch.py) builds the argv with no --settings. The key a plugin takes in enabledPlugins is gitkraken@synced on this host; a committed backlog.json setting is chosen over an environment variable like KB_WORKER_BUDGET_USD because the wrapper failed as a missing out-of-repo file; the setting's default is none, so a host project is unchanged. claude_argv serves new, resumed and begun dispatches, and agent_bench.py and kb_ask.py call it too: keep its signature compatible. The repro plants a root whose backlog.json names the setting and a fake claude that logs its argv.",
+  "filed_in": "clone-0ea70e5c"
+}

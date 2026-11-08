@@ -1,0 +1,32 @@
+{
+  "id": "ST-o4ona6gh",
+  "kind": "story",
+  "title": "precheck warns of a check that names the id of an item other than its own, since that item's rows may change before the review's rerun",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py precheck SP warns, exit 0, of each committed item whose check or repro names the id of another item of the clone, naming both ids and saying the other item's file, gates or rows may change before the review reruns the check; a check that names only its own id gets no warning",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json, os, subprocess, sys, tempfile\nwith tempfile.TemporaryDirectory() as d:\n    def run(*a):\n        return subprocess.run(a, cwd=d, capture_output=True, text=True, timeout=60)\n    live = json.load(open(\"backlog.json\"))\n    json.dump({\"item_dir\": \"items\", \"id_prefixes\": live[\"id_prefixes\"]}, open(os.path.join(d, \"backlog.json\"), \"w\"))\n    bl_py = os.path.abspath(\"_tools/backlog.py\")\n    def bl(*a):\n        return run(sys.executable, bl_py, \"--root\", d, *a)\n    run(\"git\", \"init\", \"-q\")\n    run(\"git\", \"-c\", \"user.name=t\", \"-c\", \"user.email=t@example.com\", \"commit\", \"-q\", \"--allow-empty\", \"-m\", \"base\")\n    bl(\"new\", \"sprint\", \"--title\", \"s\", \"--goal\", \"g\")\n    sp = [f[:-5] for f in os.listdir(os.path.join(d, \"items\")) if f.startswith(\"SP-\")][0]\n    def story(title):\n        bl(\"new\", \"story\", \"--title\", title, \"--goal\", \"g\", \"--touch\", \"f.txt\", \"--sprint\", sp, \"--check\", \"python3 -c pass\")\n        return [f[:-5] for f in os.listdir(os.path.join(d, \"items\")) if f.startswith(\"ST-\") and json.load(open(os.path.join(d, \"items\", f)))[\"title\"] == title][0]\n    other, naming, own = story(\"other\"), story(\"names another\"), story(\"names itself\")\n    bl(\"set\", naming, \"--check\", \"python3 -c \\\"import sys; sys.exit('%s')\\\"\" % other)\n    bl(\"set\", own, \"--check\", \"python3 -c \\\"import sys; sys.exit('%s')\\\"\" % own)\n    out = bl(\"precheck\", sp)\n    assert out.returncode == 0, (\"precheck\", out.returncode, out.stderr[-200:])\n    warns = [l for l in (out.stdout + out.stderr).splitlines() if l.startswith(\"warning:\") and \"already exits\" not in l]\n    assert any(naming in l and other in l and \"another item\" in l for l in warns), (\"precheck does not warn of a check that names another item\", warns[-3:])\n    assert not any(own in l and \"another item\" in l for l in warns), (\"precheck warns of a check that names only its own item\", warns[-3:])\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_precheck.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "relates_to": [
+    "ST-jz2gj3lz",
+    "ST-bayyjscc"
+  ],
+  "links": [
+    "retro: drain 2026-10-27..11-08"
+  ],
+  "notes": "Retro finding of the drain: ST-5uhzyvrd's check called ops_work_rows on a real item whose rows were later delivered, so it passed at landing and failed at the review's rerun. The planning rule exists (kb/_self/backlog.md: a check that reads clone or host state is paired with one that runs the code path the goal names); this adds the precheck warning that finds the case. 'Real' is an id in the clone's items (bl.items), so a planted id that no item holds gets no warning. Related: ST-jz2gj3lz (precheck warns of a check that reads its own item's brief) and ST-bayyjscc, which read the same check argv.",
+  "filed_in": "clone-0ea70e5c"
+}

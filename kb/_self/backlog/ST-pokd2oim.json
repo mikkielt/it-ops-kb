@@ -18,6 +18,9 @@
   "touches": [
     "_tools/bl_land.py"
   ],
+  "relates_to": [
+    "ST-s35bhygp"
+  ],
   "links": [
     "parked: SP-2rjhs7se close"
   ]

@@ -19,6 +19,9 @@
     "_tools/bl_land.py",
     "kb/_self/tools.md"
   ],
+  "relates_to": [
+    "ST-s35bhygp"
+  ],
   "links": [
     "parked: SP-yjugq5c2 close"
   ]

@@ -1,0 +1,34 @@
+{
+  "id": "ST-rperovj2",
+  "kind": "story",
+  "title": "A rule that changes how gates are classed lists the open items whose gates on work branches it makes blocking, before its own push, not at another item's landing",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py check --work-branches reads each local work/ID branch's item file and warns, exit 0, of each gate of it that the tree's classifier makes blocking while it is provisional or answered by an agent, naming the item, the gate and the reason; land runs it before its push when its commits change _tools/bl_authority.py and prints the lines",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import glob, json, os, subprocess, sys, tempfile\nwith tempfile.TemporaryDirectory() as d:\n    def g(*a):\n        return subprocess.run([\"git\", \"-C\", d, *a], capture_output=True, text=True)\n    def bl(*a):\n        return subprocess.run([sys.executable, \"_tools/backlog.py\", \"--root\", d, *a], capture_output=True, text=True)\n    g(\"init\", \"-q\", \"-b\", \"main\"); g(\"config\", \"user.email\", \"x@example.com\"); g(\"config\", \"user.name\", \"x\")\n    open(os.path.join(d, \"README\"), \"w\").write(\"x\\n\"); g(\"add\", \".\"); g(\"commit\", \"-qm\", \"init\")\n    iid = bl(\"new\", \"story\", \"--title\", \"T\", \"--goal\", \"g\", \"--touch\", \"f.txt\", \"--check\", \"python3 -c pass\").stdout.split()[2]\n    g(\"add\", \".\"); g(\"commit\", \"-qm\", \"item\")\n    g(\"switch\", \"-q\", \"-c\", \"work/\" + iid)\n    path = glob.glob(os.path.join(d, \"**\", iid + \".json\"), recursive=True)[0]\n    item = json.load(open(path))\n    item[\"gates\"] = [{\"id\": \"g1\", \"kind\": \"provisional\", \"question\": \"Which USD cap does the paid run take?\", \"options\": [\"1 USD\", \"2 USD\"],\n                      \"recommendation\": \"1 USD\", \"answer\": \"1 USD\", \"by\": \"agent\", \"class\": \"design\"}]\n    json.dump(item, open(path, \"w\"))\n    g(\"add\", \".\"); g(\"commit\", \"-qm\", \"gate on the work branch\")\n    g(\"switch\", \"-q\", \"main\")\n    p = bl(\"check\", \"--work-branches\")\n    out = p.stdout + p.stderr\n    assert p.returncode == 0 and iid in out and \"g1\" in out, (\"check --work-branches does not name the gate of a work branch that the classifier blocks\", p.returncode, out[-200:])\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_check.py",
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "relates_to": [
+    "ST-qij4urim",
+    "ST-wxodyx66",
+    "ST-c5twwnja"
+  ],
+  "links": [
+    "retro: drain 2026-10-27..11-08"
+  ],
+  "notes": "Retro finding of the drain: gate-class rules that landed mid-sprint turned provisional agent answers of items already planned or worked into blocking, and sync --push refused them at those items' own landing, after the work was done: ST-d4lwbr2o g2 (strict money 'usd'), ST-i5az334d g3 (an option names a path outside the touches) and ST-qqpcgqe7's work-row gate. Why the rule's own landing did not see them: bl_check.py:747 re-derives each gate's disposition with the tree's classifier for the items the tree holds, and a gate a worker adds lives only on its work/ID branch until that item lands. Premise (reproduces): backlog.py check on a planted tree holding a provisional agent-answered gate that names USD exits 1 with 'is blocking (strict money USD): an answer by agent is not the operator's'. The check proves the flag; the land step (a rebase fixture) is proven by the sprint reviewer running land on a rule item. Related: the closed gate-class work of SP-lmpjclxz and SP-v6crf4rx (ST-xl4w2pmg, ST-7pogsj4c), ST-qij4urim (orders a rule item before the items it governs at planning: this is the mechanism for a case the plan did not order), ST-wxodyx66 and ST-c5twwnja (rule-narrowing items).",
+  "filed_in": "clone-0ea70e5c"
+}
