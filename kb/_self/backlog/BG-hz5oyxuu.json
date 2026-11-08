@@ -2,7 +2,7 @@
   "id": "BG-hz5oyxuu",
   "kind": "bug",
   "title": "kbjob.py cancel ends the wrong job's process group when the executor runs jobs in parallel",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,7 @@
     "kb/_self/coordination.md"
   ],
   "notes": "Taken into SP-lwkdljxg 2026-11-09: ST-iw7pe3mc shipped parallel serve (3 slots) relying on this fix. The repro only matches group_of's source text; the worker adds a planted behaviour check (two running jobs, cancel one, the other's process group still alive) as the item's check, read from the job record's member pid, and runs it before done.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-61c966d6",
+  "operator": "op-f618a13e"
 }
