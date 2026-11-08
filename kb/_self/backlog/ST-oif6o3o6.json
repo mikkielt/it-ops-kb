@@ -1,0 +1,32 @@
+{
+  "id": "ST-oif6o3o6",
+  "kind": "story",
+  "title": "land runs as one job across its merge request: the job waits as waiting-merge without holding a slot or the landing lock, and finishes with the second pass",
+  "status": "draft",
+  "parent": "EP-tmw3tokk",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kj_land.drive(job, run_pass, merged, sleep, post) runs a land job as one job: the first pass is bl_land's land ID --wait-merge 0; when it pushed a code branch its pending (shas, branch) is read with bl_land.pending_merge(root, iid), the job moves to waiting-merge with the branch in the event, the executor's slot and the landing lock are free while it polls merged_on_main every 60 s for up to the wait_merge option (default 1800 s), and when the shas are on the integration main the job moves back to running for the second pass (land ID --wait-merge 0 again, which finishes the item as a content landing) and ends succeeded; a wait that runs out ends refused with step wait-merge and the text land says today (merge it with backlog.py merge ID, then submit again); the job never merges the request itself; a job found in waiting-merge after an executor restart (ST-5cqlfweg) polls again from its recorded pending without running the first pass again; a content landing is one pass and never waits",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.path.insert(0,\"_tools\"); import kj_land; ev=[]; calls=iter([False,False,True]); r=kj_land.drive({\"job\":\"JB-x\",\"subject\":\"ST-1\",\"options\":{\"wait_merge\":600}}, run_pass=lambda second: (0,\"ok\",None) if second else (0,\"pushed code/ST-1\",([\"abc\"],\"code/ST-1\")), merged=lambda shas: next(calls), sleep=lambda s: ev.append((\"sleep\",s)), post=lambda state,**f: ev.append((state,f.get(\"step\")))); st=[e[0] for e in ev if e[0]!=\"sleep\"]; assert st==[\"running\",\"waiting-merge\",\"running\",\"succeeded\"], ev; assert sum(1 for e in ev if e[0]==\"sleep\")==2, ev; assert r==(0,\"succeeded\"), r"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kj_land.py",
+    "_tools/kj_exec.py",
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md",
+    "kb/_self/git.md",
+    "kb/_self/coordination.md"
+  ],
+  "depends_on": [
+    "ST-rmv67pks",
+    "ST-iw7pe3mc"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
