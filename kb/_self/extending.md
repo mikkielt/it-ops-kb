@@ -2,6 +2,36 @@
 
 A group extends the kb from its own repository with Python functions at named extension points. `_tools/kbext.py` finds one for a point, checks it against the extension API version and, for `call`, runs it. It uses the standard library only, and a shipped tool reads an extender through `kbext.load`, never by its own search.
 
+Everything not in `kbext.SURFACE` is internal: only the extension points and settings keys in the two tables below are the public API, and a group may rely on nothing else. The tables hold the code's registry, entry for entry: `python3 _tools/kbext.py surface` prints `API_VERSION` and the registry (`--json` for a tool), and `python3 _tools/selfdoc.py check` fails when a row is missing, differs from the code or names an entry the code does not have.
+
+## Extension points
+
+`SURFACE` is a literal (`ast.literal_eval` reads it) of dicts with `name`, `signature` and `added`, the `API_VERSION` that introduced the entry; a deprecated entry also has `deprecated` and, once it stops working, `removed`. The extender of a point is the `module:attr` that `extensions.<point>` names.
+
+| name | signature | added | deprecated | removed |
+| --- | --- | --- | --- | --- |
+| `lane` | `module with path_lane(path) -> str and commit_paths(repo, sha) -> list` | 0.1.0 | | |
+| `forge` | `Adapter(target, run, cwd=None) with request, pipelines, pipeline, jobs, trace, set_description, merge` | 0.1.0 | | |
+| `ranker` | `rank(question, candidates) -> list of candidate paths` | 0.1.0 | | |
+| `mcp_tools` | `list of dicts with name, description, inputSchema and call(arguments) -> str` | 0.1.0 | | |
+| `ingest_mappers` | `module with SUFFIXES and mapper(repo_dir, rev, files) -> dict` | 0.1.0 | | |
+| `leak_scan` | `file_hits(path, text, allow, pinned=()) -> list` | 0.1.0 | | |
+| `backlog_commands` | `list of modules adding or replacing a command through bl_cli.register(name, handler, add_arguments=None, help=None) or bl_cli.extend(name, wrap, add_arguments)` | 0.1.0 | | |
+
+## Settings keys
+
+The keys of a settings file (`kb/_self/coordination.md`, Coordination settings) that the extension API reads.
+
+| name | signature | added | deprecated | removed |
+| --- | --- | --- | --- | --- |
+| `extensions` | `object: point name -> module:attr` | 0.1.0 | | |
+| `extension_paths` | `list of directories put on sys.path` | 0.1.0 | | |
+| `backlog` | `object overriding backlog.json key by key` | 0.1.0 | | |
+| `gate_checks` | `list of argument lists run after the shipped gate` | 0.1.0 | | |
+| `group` | `string: the group's name` | 0.1.0 | | |
+| `leak` | `object with shapes: list of kind and regular expression` | 0.1.0 | | |
+| `locked` | `list of key names a later layer may not set` | 0.1.0 | | |
+
 ## Finding an extender
 
 - **`API_VERSION` is the extension API's version.** `kbext.API_VERSION` is a `MAJOR.MINOR.PATCH` string of its own, apart from the content and the plugin. Below 1.0 no compatibility is promised; an extender that declares `>=0.1` stays valid when 1.0 comes.

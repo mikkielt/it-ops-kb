@@ -5,8 +5,13 @@
                                                                     layer that names it and that layer's file; exit 0
   kbext.py call POINT --root WS [--kb-root NAME] --json ARGS        call the extender with the JSON list ARGS as its
                                                                     arguments and print its answer as JSON
+  kbext.py surface [--json]                                         print API_VERSION and `SURFACE`, the public
+                                                                    extension API: each point and settings key with its
+                                                                    signature and the version that added it; exit 0
 
-`API_VERSION` is the version of the extension API (MAJOR.MINOR.PATCH). `load(point, root, kb_root=None)` returns the
+`API_VERSION` is the version of the extension API (MAJOR.MINOR.PATCH). `SURFACE` is the one registry of the public API (a
+literal: dicts with `name`, `signature`, `added`, and `deprecated` / `removed` for a deprecated one); anything not in it
+is internal, and `selfdoc.py check` fails when `kb/_self/extending.md`'s table differs from it. `load(point, root, kb_root=None)` returns the
 extender of an extension point, found in this order:
   1. `extensions.<point>` of the settings layers (`kbsettings.layered`: group, clone, kb root, user, later over earlier),
      written `module:attr` (the attribute, dotted when nested) or `module` alone (the module is the extender);
@@ -25,7 +30,8 @@ an extender that raises. Two entry points for one point exit 2 naming both distr
 exit 2 naming the point. A bad argument exits 2 too; the commands never exit 1.
 
 Answers: how a group's extender for an extension point is found, loaded and checked against the API version
-Use: python3 _tools/kbext.py resolve|call POINT --root WS
+Answers: which extension points and settings keys are the public extension API, and its version
+Use: python3 _tools/kbext.py resolve|call POINT --root WS | surface [--json]
 """
 import argparse, importlib, json, re, sys
 from importlib import metadata
@@ -37,6 +43,55 @@ API_VERSION = "0.1.0"
 POINT_RE = re.compile(r"[a-z][a-z0-9_]*")
 BOUND_RE = re.compile(r"\s*(>=|<=|==|>|<)\s*(\d+)\.(\d+)\s*")
 GROUP = "it_ops_kb"
+
+
+# The public extension API: the one registry of what a group may rely on, a literal `ast.literal_eval` reads.
+# Everything not listed here is internal. `points` are the extension points (the key of `extensions.<name>`), `settings`
+# the keys of a settings file an extender or a group sets. Each entry is a dict with `name`, `signature` and `added` (the
+# API_VERSION that introduced it); a deprecated one also has `deprecated` and, once it stops working, `removed`, each an
+# API_VERSION. `kb/_self/extending.md` holds the same table and `selfdoc.py check` fails when they differ.
+SURFACE = {
+    "points": [
+        {"name": "lane", "signature": "module with path_lane(path) -> str and commit_paths(repo, sha) -> list",
+         "added": "0.1.0"},
+        {"name": "forge", "signature": "Adapter(target, run, cwd=None) with request, pipelines, pipeline, jobs, trace, "
+                                       "set_description, merge", "added": "0.1.0"},
+        {"name": "ranker", "signature": "rank(question, candidates) -> list of candidate paths", "added": "0.1.0"},
+        {"name": "mcp_tools", "signature": "list of dicts with name, description, inputSchema and call(arguments) -> str",
+         "added": "0.1.0"},
+        {"name": "ingest_mappers", "signature": "module with SUFFIXES and mapper(repo_dir, rev, files) -> dict",
+         "added": "0.1.0"},
+        {"name": "leak_scan", "signature": "file_hits(path, text, allow, pinned=()) -> list", "added": "0.1.0"},
+        {"name": "backlog_commands", "signature": "list of modules adding or replacing a command through bl_cli.register(name, "
+                                              "handler, add_arguments=None, help=None) or bl_cli.extend(name, wrap, "
+                                              "add_arguments)", "added": "0.1.0"},
+    ],
+    "settings": [
+        {"name": "extensions", "signature": "object: point name -> module:attr", "added": "0.1.0"},
+        {"name": "extension_paths", "signature": "list of directories put on sys.path", "added": "0.1.0"},
+        {"name": "backlog", "signature": "object overriding backlog.json key by key", "added": "0.1.0"},
+        {"name": "gate_checks", "signature": "list of argument lists run after the shipped gate", "added": "0.1.0"},
+        {"name": "group", "signature": "string: the group's name", "added": "0.1.0"},
+        {"name": "leak", "signature": "object with shapes: list of kind and regular expression", "added": "0.1.0"},
+        {"name": "locked", "signature": "list of key names a later layer may not set", "added": "0.1.0"},
+    ],
+}
+
+
+def surface():
+    """The public extension API as a dict: `api_version`, `points` and `settings` (the entries of SURFACE)."""
+    return {"api_version": API_VERSION, "points": [dict(e) for e in SURFACE["points"]],
+            "settings": [dict(e) for e in SURFACE["settings"]]}
+
+
+def _surface_text(info):
+    out = [f"API_VERSION {info['api_version']}"]
+    for title, key in (("extension points", "points"), ("settings keys", "settings")):
+        out.append(f"{title}:")
+        for e in info[key]:
+            note = "".join(f", {k} {e[k]}" for k in ("deprecated", "removed") if e.get(k))
+            out.append(f"  {e['name']}  {e['signature']}  (added {e['added']}{note})")
+    return "\n".join(out)
 
 
 class ExtensionError(ValueError):
@@ -167,6 +222,8 @@ def call(point, root, args, kb_root=None):
 def main(argv=None):
     ap = argparse.ArgumentParser(description="A group's extenders for the kb's extension points.")
     sub = ap.add_subparsers(dest="cmd", required=True)
+    sp = sub.add_parser("surface", help="print API_VERSION and the public extension API (points and settings keys)")
+    sp.add_argument("--json", action="store_true", dest="as_json", help="print one JSON object")
     for name, help_ in (("resolve", "print the extender of POINT, its layer and file"),
                         ("call", "call the extender of POINT with a JSON list and print its answer")):
         sp = sub.add_parser(name, help=help_)
@@ -177,6 +234,9 @@ def main(argv=None):
             sp.add_argument("--json", dest="args_json", default="[]", metavar="ARGS",
                             help="a JSON list: the extender's arguments")
     args = ap.parse_args(argv)
+    if args.cmd == "surface":
+        print(json.dumps(surface(), indent=2, sort_keys=True) if args.as_json else _surface_text(surface()))
+        return 0
     try:
         if args.cmd == "call":
             try:
