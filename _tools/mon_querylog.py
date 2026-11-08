@@ -4,19 +4,22 @@ delivered, the last distill and apply outcome, and today's usage rows with their
 The panel reads the query log home of this copy of the tools (`ql_base.places`) through the structured readers of
 `ql_report` and writes nothing. It carries counts, kinds, outcomes, times and commit hashes: no question, prompt or reply
 text of the spool or the store. Cost is priced as `backlog.py cost` prices it (`bl_cost.price_usd`, at
-`bench_core.PRICE`); a model the table has no price for adds nothing and is named. Imports `mon_base`, `ql_base` and
-`ql_report`; `bl_cost` only when it prices. `alerts(data)` is the panel's judgement of its data (a refused delivery), which
+`bench_core.PRICE`); a model the table has no price for adds nothing and is named. Imports `mon_base`, `ql_base`, `ql_report` and `ql_store`
+(`OPS`); `ql_distill` only when it splits the spool, `bl_cost` only when it prices. `alerts(data)` is the panel's judgement of its data (a refused delivery), which
 `mon_view.judged` adds to the snapshot's `alerts`.
 """
 import re
+import time
 
 import ql_base
 import ql_report
+from ql_store import OPS
 
 REFRESH_S = 30  # seconds the live view serves the last result: the spool and the store are read whole
 TOPICS_MAX = 20  # topics the day's by_topic keeps, the costliest first: a metric attribute's values stay few
 SHOWN_KINDS = 4  # spool kinds the text row names, most rows first, before it counts the rest
 HASH_CHARS = 7
+ENDED_OLD_S = 86400  # age of a session's `.end` marker over which its rows count as `ended_old`, not as waiting for delivery
 NO_SESSION = "distilled"  # the by_session key of usage only a distilled sidecar line stands for: the spool no longer holds its session
 NO_SPRINT = "none"  # the by_sprint key of usage outside any work window
 
@@ -84,6 +87,25 @@ def held_back(qdir):
     return 0
 
 
+def spool_split(spool, now=None):
+    """{waiting, ops, ended_old} of the spool directory's readable rows, counted by file: `ops` rows (the `ops`
+    surface, which a delivery never takes into an entry), `ended_old` the other rows of a session whose `.end` marker
+    is over `ENDED_OLD_S` old (by the marker's modification time), `waiting` all the rest, which a delivery takes."""
+    import ql_distill
+    now = time.time() if now is None else now
+    out = {"waiting": 0, "ops": 0, "ended_old": 0}
+    for p in sorted(spool.glob("*.jsonl")) if spool.is_dir() else []:
+        rows, _ = ql_distill.spool_rows(p)
+        ops = sum(1 for r in rows if r.get("surface") == OPS)
+        out["ops"] += ops
+        try:
+            old = now - p.with_suffix(".end").stat().st_mtime > ENDED_OLD_S
+        except OSError:
+            old = False
+        out["ended_old" if old else "waiting"] += len(rows) - ops
+    return out
+
+
 def collect(ctx):
     qdir, cfg = ql_base.places()
     outcomes = ql_report.last_outcomes(qdir)
@@ -96,7 +118,7 @@ def collect(ctx):
              "by_topic": dict(list(split_usd(models["by_topic"]).items())[:TOPICS_MAX])}
     waiting = ql_report.undelivered(qdir, cfg)
     return {"mode": ql_base.read_mode(cfg), "disabled": (qdir / ql_base.DISABLED_NAME).exists(),
-            "spool": ql_report.spool_state(qdir / "spool"),
+            "spool": {**ql_report.spool_state(qdir / "spool"), **spool_split(qdir / "spool")},
             "undelivered": waiting["entries"], "undelivered_runs": waiting["runs"],
             "undelivered_since": waiting["since"], "delivery_ref": waiting["ref"],
             "last_distill": outcomes["distill"], "last_delivery": delivery_of(outcomes["apply"], qdir),

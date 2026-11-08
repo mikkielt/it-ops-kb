@@ -1,0 +1,19 @@
+{
+  "id": "BG-tlwnkrd3",
+  "kind": "bug",
+  "title": "The query-log spool keeps the rows of sessions whose end marker is over a day old, with no entry undelivered",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "A spool file whose session ended over a day ago is delivered and removed, or kept with a stated reason; the clone's spool holds no ended session of days ago with rows while no entry waits for delivery",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys,time;from pathlib import Path;g=Path(subprocess.check_output(['git','rev-parse','--path-format=absolute','--git-common-dir'],text=True).strip());sp=g.parent/'_cache'/'querylog'/'spool';sys.exit(any(e.stat().st_mtime<time.time()-86400 and e.with_suffix('.jsonl').exists() and e.with_suffix('.jsonl').stat().st_size for e in sp.glob('*.end')))"
+    ]
+  },
+  "notes": "Evidence 2026-11-08 (ST-fmjrshug): querylog show --spool listed 4 ended sessions of 2026-10-24 holding 30, 31, 30 and 57 rows, 15 days old, while kbmon read 0 entries undelivered; only 7 rows matched an id the committed store holds. Not known whether delivery skips these rows by design (mode auto keeps rows until their run file is on origin/main) or distill never reached them; read ql_distill and ql_deliver for what removes a closed session's file.",
+  "filed_in": "clone-0ea70e5c"
+}
