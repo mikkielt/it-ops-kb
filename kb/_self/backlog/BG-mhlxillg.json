@@ -1,0 +1,23 @@
+{
+  "id": "BG-mhlxillg",
+  "kind": "bug",
+  "title": "benchmarks.md's record table joins the paid record's spend to 553d9e5, a commit before the paid mode existed",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/_self/reports/benchmarks.md's record table names the paid record's own commit (1f6011b) beside its spend, apart from the intake-real rows' commit",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "t = open('kb/_self/reports/benchmarks.md', encoding='utf-8').read()\nassert '1f6011b' in t, 'the record table does not name the paid record commit'"
+    ]
+  },
+  "repro_reason": "the generated report's table text is what misstates the commit; the csv rows themselves are right",
+  "links": [
+    "parked: SP-wv3ob5vy review"
+  ],
+  "notes": "Review gap 3 of SP-wv3ob5vy: benchmarks.md:1417 row '2026-10-28 | 553d9e5 | ... | $0.56'; 648 paid rows name 1f6011b, 3 intake-real rows 553d9e5 (one record date, two commits).",
+  "filed_in": "clone-0ea70e5c"
+}
