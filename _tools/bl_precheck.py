@@ -7,9 +7,10 @@ Standard library only; imports `bl_base`, `bl_check`, `bl_cli`, `bl_intake`, `bl
 `backlog`: `bl_land` imports this module, so every name the other modules read as `bl_land.NAME` stays importable
 from there. It registers `researched` and `precheck` with `bl_cli` itself when imported (`backlog.py`'s USAGE puts each in
 its usage position)."""
-import csv, datetime, importlib, io, json, re, shlex, sys
+import csv, datetime, io, json, re, shlex, sys
 
 import bl_authority
+import bl_base
 import bl_cli
 import bl_intake
 import bl_peers
@@ -384,13 +385,12 @@ def after_merge_proof(bl, iid):
     """The command (argument list) of a code-lane item's check or repro that reads the committed query-log store or
     backlog.py's cost figures (DELIVERY_READ), else None. Only a query-log delivery after the merge changes what it
     reads, and `land` runs a code item's checks and repro before it pushes the merge request, so it stops there. A
-    project with no `lane_module` has no code lane: None."""
-    name = setting("lane_module")
+    project with no lane module (`bl_base.lane`: extension point `lane`, else `lane_module`) has no code lane: None."""
+    lane_module = bl_base.lane(bl.root)
     it = bl.items[iid]
-    if not name or not it.get("touches"):
+    if lane_module is None or not it.get("touches"):
         return None
-    kblane = importlib.import_module(name)
-    if kblane.paths_lane(it["touches"])[0] != kblane.CODE:
+    if not bl_base.code_paths(lane_module, it["touches"]):
         return None
     return next((c["run"] for c in clause_commands(it)
                  if DELIVERY_READ.search(" ".join(str(x) for x in c.get("run") or []))), None)

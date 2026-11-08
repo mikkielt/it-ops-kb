@@ -208,6 +208,15 @@ def load(point, root, kb_root=None):
     return resolve(point, root, kb_root)["extender"]
 
 
+def configured(point, root, kb_root=None):
+    """True when a group names an extender for POINT: an `extensions.<point>` in a settings layer or an entry point of
+    group `it_ops_kb.<point>`. A shipped tool asks it to fall back to its own default only when none is named, so a
+    named extender that cannot be loaded is a refusal of `load`, never a silent fall back."""
+    if not POINT_RE.fullmatch(str(point)):
+        raise ExtensionError(f"point {point!r}: a name of lower-case letters, digits and underscores is expected")
+    return _named(root, kb_root, "extensions", point) is not None or _entry_point(point) is not None
+
+
 def call(point, root, args, kb_root=None):
     """The answer of the extender of POINT called with the list ARGS."""
     found = resolve(point, root, kb_root)
