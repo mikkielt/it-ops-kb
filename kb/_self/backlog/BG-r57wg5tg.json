@@ -124,6 +124,26 @@
       "operator": "op-f618a13e",
       "role": "interactive",
       "agent_session": true
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How does a push-time scan find a file's root, and what does a root list that kbcommon refuses do?",
+      "options": [
+        "The nearest enclosing _root.md of the scanned tree gives the names (a nearer root listing none ends the search), and a list kbcommon refuses lets no name pass",
+        "The nearest enclosing _root.md that lists names gives them, and a refused list stops the scan with an error"
+      ],
+      "recommendation": "The nearest enclosing _root.md of the scanned tree gives the names (a nearer root listing none ends the search), and a list kbcommon refuses lets no name pass",
+      "do": {
+        "The nearest enclosing _root.md of the scanned tree gives the names (a nearer root listing none ends the search), and a list kbcommon refuses lets no name pass": "BG-r57wg5tg",
+        "The nearest enclosing _root.md that lists names gives them, and a refused list stops the scan with an error": "BG-r57wg5tg"
+      },
+      "class": "push",
+      "answer": "The nearest enclosing _root.md of the scanned tree gives the names (a nearer root listing none ends the search), and a list kbcommon refuses lets no name pass",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "links": [

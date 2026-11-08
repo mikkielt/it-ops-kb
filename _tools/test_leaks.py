@@ -122,6 +122,7 @@ def scan():
     internal = tuple(kbcommon.repo_rel(".", r.path) + "/" for r in kbcommon.roots() if r.visibility != "public")
     internal += tuple(kbcommon.repo_rel(p.path, kbcommon.HOME) for p in kbcommon.pointers() if p.visibility != "public")
     secrets = re.compile(kbcommon.secrets_rx())
+    table = {kbcommon.repo_rel(".", r.path): tuple(r.placeholders) for r in kbcommon.roots()}  # the user names each root lists
     out = []
     for f in tracked():
         t = text(f)
@@ -131,12 +132,13 @@ def scan():
         probe = candidate(t, vendored)
         if probe is None:
             continue
+        root = kbpublic.root_of(f, table)
         if vendored:
             if not secrets.search(probe):
                 continue
-        elif not kbcommon.leak_hits(probe, allow, kbpublic.structured_kinds(f, False)):
+        elif not kbcommon.leak_hits(probe, allow, kbpublic.structured_kinds(f, False), root=root):
             continue
-        out += [(f, k, v) for k, v in kbpublic.file_hits(f, t, allow, pins) if k == "secret" or not f.startswith(internal)]
+        out += [(f, k, v) for k, v in kbpublic.file_hits(f, t, allow, pins, root=root) if k == "secret" or not f.startswith(internal)]
     return out
 
 
