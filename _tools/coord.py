@@ -131,7 +131,7 @@ when it is the same target or a claim on its path (a claim on a path covers its 
 entry it adds as a `code_added` event (fields `target`, REPO:PATH[#SYMBOL], and optionally `ref`, `path:line`), which
 `wait --kind code_added` returns: an agent that waits on the claim reads those events instead of reading the code.
 
-  coord.py serve --bind [HOST:]PORT --keys DIR [--policy-dir DIR]
+  coord.py serve --bind [HOST:]PORT --keys DIR [--policy-dir DIR] [--bundle-key FILE]
                                                      answer every command above as a JSON request over HTTP, on the store;
                                                      the bundles below are read with GET
   coord.py --url URL --key-file PATH COMMAND ...     send COMMAND to such a server instead of a local store
@@ -161,6 +161,11 @@ kbjobs/groups; 404 where serve has no --policy-dir), and `/v1/bundles/kbjobs-ove
 which maps each group path to the JSON object its key `group/G1/.../GN/policy/placement` holds (manifest root kbjobs/overrides).
 Each reply carries an `ETag` that is a digest of the bundle's bytes, so it changes only with the content, and a request whose
 `If-None-Match` names it gets 304 with no body. Any other GET path answers 404, and any other method 405.
+With `--bundle-key FILE` (mode 0600, else exit 2 naming `chmod 0600`; read once at start, its bytes the HS256 secret) each bundle also
+holds `/.signatures.json`: one HS256 JWT, keyid `kbjobs` in its header (`kid`) and payload, listing every file of the bundle, the
+`.manifest` too, with its SHA-256 hash, so OPA refuses a bundle changed on the way. A `data.json` and the manifest are hashed as
+OPA does, parsed with sorted keys (keep numbers in data files as strings: Go and Python may write a number differently); a
+`data.yaml` cannot be signed, and a bundle holding one answers 500. Without it bundles are unsigned.
 
 Without `--holder`, `claim` and `dedup` take the holder from the environment variable KB_COORD_HOLDER, else `anonymous`.
 
@@ -273,6 +278,7 @@ BUNDLE_POLICY = "/v1/bundles/kbjobs.tar.gz"  # the committed placement policy, a
 BUNDLE_OVERRIDES = "/v1/bundles/kbjobs-overrides.tar.gz"  # the groups' placement overrides, an OPA bundle of the store's keys
 POLICY_ROOTS = ("kbjobs/placement", "kbjobs/groups")  # the manifest roots of the policy bundle
 OVERRIDES_ROOT = "kbjobs/overrides"  # the manifest root of the overrides bundle, which holds data.json there
+BUNDLE_KEYID = "kbjobs"  # the keyid of a signed bundle's JWT, in its header (`kid`) and its payload
 POLICY_DATA_FILES = ("data.json", "data.yaml")  # the data files of --policy-dir a bundle carries, besides *.rego
 LIVE = "(expires IS NULL OR expires > :now OR value IS NOT NULL)"  # a row with a value outlives its lease
 PUBLIC = ("key, value, revision, CASE WHEN expires > :now THEN holder END AS holder, "
@@ -1361,6 +1367,8 @@ def build_parser(parser_class=argparse.ArgumentParser, remote=False):
         p.add_argument("--keys", required=True, metavar="DIR", help="one file per operator, named for it, holding its token")
         p.add_argument("--policy-dir", metavar="DIR", help="the committed placement policy (.rego and data files), served as "
                        f"GET {BUNDLE_POLICY}; without it that path answers 404")
+        p.add_argument("--bundle-key", metavar="FILE", help="sign each bundle with the bytes of this file (mode 0600) as an "
+                       f"HS256 key, in a `.signatures.json` with the keyid {BUNDLE_KEYID}; without it bundles go out unsigned")
     return parser
 
 
@@ -1449,23 +1457,66 @@ def authenticate(keys_dir, header):
     return found[0] if len(found) == 1 else None
 
 
-def bundle_bytes(members, roots):
-    """An OPA bundle as a gzipped tar: the `.manifest` naming ROOTS, then MEMBERS ((name, bytes), in the order given). Fixed
+class BundleError(Exception):
+    """A bundle that cannot be made as asked: the text is the reply's error."""
+
+
+def opa_hash(name, data):
+    """The SHA-256 hex digest OPA's bundle signing lists for the file NAME holding DATA: a `data.json` or `.manifest` is
+    parsed and hashed as compact JSON with its object keys sorted (non-ASCII kept, as Go's encoder with HTML escaping off
+    writes it), any other file over its bytes. A `data.yaml` needs a YAML parser the standard library lacks: BundleError."""
+    base = name.rpartition("/")[2]
+    if base == "data.yaml":
+        raise BundleError(f"bundle: {name} cannot be signed: OPA hashes a YAML file after parsing it, and coord.py has no YAML parser")
+    if base in ("data.json", ".manifest"):
+        try:
+            data = json.dumps(json.loads(data), sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+        except (ValueError, RecursionError):
+            raise BundleError(f"bundle: {name} is not JSON, so it cannot be signed") from None
+    return hashlib.sha256(data).hexdigest()
+
+
+def b64url(data):
+    import base64
+    return base64.urlsafe_b64encode(data).rstrip(b"=").decode("ascii")
+
+
+def bundle_signatures(files, key):
+    """The `.signatures.json` of a bundle holding FILES ((name, bytes) for each file, the `.manifest` first): one HS256 JWT,
+    signed with the bytes KEY, whose payload lists each file with its SHA-256 hash and the keyid BUNDLE_KEYID. No time
+    claim goes in, so the same files are the same bytes."""
+    import hmac
+
+    def part(value):
+        return b64url(json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8"))
+
+    listed = [{"algorithm": "SHA-256", "hash": opa_hash(name, data), "name": f"/{name}"} for name, data in files]
+    signing_input = f"{part({'alg': 'HS256', 'kid': BUNDLE_KEYID, 'typ': 'JWT'})}.{part({'files': listed, 'keyid': BUNDLE_KEYID})}"
+    token = f"{signing_input}.{b64url(hmac.new(key, signing_input.encode('ascii'), hashlib.sha256).digest())}"
+    return json.dumps({"signatures": [token]}, sort_keys=True).encode("utf-8")
+
+
+def bundle_bytes(members, roots, key=None):
+    """An OPA bundle as a gzipped tar: the `.manifest` naming ROOTS, then MEMBERS ((name, bytes), in the order given), then,
+    when KEY (the bytes of the --bundle-key file) is given, the `.signatures.json` that signs them all. Fixed
     times, owners and modes and an unstamped gzip header make the same members the same bytes, so a digest of them is an ETag."""
     import gzip
     import io
     import tarfile
     manifest = json.dumps({"roots": list(roots)}, sort_keys=True).encode("utf-8")
+    files = [(".manifest", manifest), *members]
+    if key is not None:
+        files.append((".signatures.json", bundle_signatures(files, key)))
     raw = io.BytesIO()
     with tarfile.open(fileobj=raw, mode="w", format=tarfile.GNU_FORMAT) as tar:
-        for name, data in [(".manifest", manifest), *members]:
+        for name, data in files:
             info = tarfile.TarInfo(name)
             info.size, info.mtime, info.mode = len(data), 0, 0o644
             tar.addfile(info, io.BytesIO(data))
     return gzip.compress(raw.getvalue(), mtime=0)
 
 
-def policy_bundle(policy_dir):
+def policy_bundle(policy_dir, key=None):
     """The bundle of POLICY_DIR: every `*.rego` and POLICY_DATA_FILES file under it, by relative path in name order, with the
     roots POLICY_ROOTS; a hidden directory or file and a symbolic link are left out. Read on every request, so a committed change is served at once."""
     members = []
@@ -1477,10 +1528,10 @@ def policy_bundle(policy_dir):
             if name.startswith(".") or path.is_symlink() or not (name.endswith(".rego") or name in POLICY_DATA_FILES):
                 continue
             members.append((path.relative_to(top).as_posix(), path.read_bytes()))
-    return bundle_bytes(sorted(members), POLICY_ROOTS)
+    return bundle_bytes(sorted(members), POLICY_ROOTS, key)
 
 
-def overrides_bundle(store, now):
+def overrides_bundle(store, now, key=None):
     """The bundle whose one data file, `kbjobs/overrides/data.json`, maps each group path to the placement override its
     key `group/G1/.../GN/policy/placement` holds as parsed JSON (a value that is not a JSON object is left out), root OVERRIDES_ROOT."""
     con = connect(store)
@@ -1502,7 +1553,7 @@ def overrides_bundle(store, now):
         if isinstance(override, dict):
             data["/".join(parts[1:-2])] = override
     body = json.dumps(data, sort_keys=True, ensure_ascii=False).encode("utf-8")
-    return bundle_bytes([(f"{OVERRIDES_ROOT}/data.json", body)], (OVERRIDES_ROOT,))
+    return bundle_bytes([(f"{OVERRIDES_ROOT}/data.json", body)], (OVERRIDES_ROOT,), key)
 
 
 def etag_matches(header, etag):
@@ -1582,11 +1633,13 @@ def server_class():
                 return self.refuse(401, "unknown or revoked token", [("WWW-Authenticate", "Bearer")])
             try:
                 if self.path == BUNDLE_POLICY and self.server.policy_dir is not None:
-                    data = policy_bundle(self.server.policy_dir)
+                    data = policy_bundle(self.server.policy_dir, self.server.bundle_key)
                 elif self.path == BUNDLE_OVERRIDES:
-                    data = overrides_bundle(self.server.store, time.time())
+                    data = overrides_bundle(self.server.store, time.time(), self.server.bundle_key)
                 else:
                     return self.refuse(404, f"only GET {BUNDLE_OVERRIDES}, and GET {BUNDLE_POLICY} where serve has --policy-dir")
+            except BundleError as error:
+                return self.refuse(500, str(error))
             except (OSError, sqlite3.Error) as error:
                 return self.refuse(500, f"bundle: {error.__class__.__name__}")
             etag = '"' + hashlib.sha256(data).hexdigest() + '"'
@@ -1606,8 +1659,8 @@ def server_class():
     class Server(http.server.ThreadingHTTPServer):
         daemon_threads = True
 
-        def __init__(self, address, keys, store, policy_dir=None):
-            self.keys, self.store, self.policy_dir = keys, store, policy_dir
+        def __init__(self, address, keys, store, policy_dir=None, bundle_key=None):
+            self.keys, self.store, self.policy_dir, self.bundle_key = keys, store, policy_dir, bundle_key
             if ":" in address[0]:
                 self.address_family = socket.AF_INET6
             super().__init__(address, Handler)
@@ -1660,6 +1713,21 @@ def serve(args):
     if policy_dir is not None and not Path(policy_dir).is_dir():
         print(f"coord.py: --policy-dir {policy_dir} is not a directory", file=sys.stderr)
         return 2
+    bundle_key = None
+    bundle_key_file = getattr(args, "bundle_key", None)
+    if bundle_key_file is not None:
+        mode = open_key_mode(bundle_key_file)
+        if mode:
+            print(open_key_text(bundle_key_file, mode), file=sys.stderr)
+            return 2
+        try:
+            bundle_key = Path(bundle_key_file).read_bytes()
+        except OSError as error:
+            print(f"coord.py: --bundle-key {bundle_key_file}: {error}", file=sys.stderr)
+            return 2
+        if not bundle_key:
+            print(f"coord.py: --bundle-key {bundle_key_file} is empty", file=sys.stderr)
+            return 2
     try:
         files = key_files(args.keys)
     except OSError as error:
@@ -1674,7 +1742,7 @@ def serve(args):
     if loose:
         return 2
     try:
-        httpd = server_class()((host, port), args.keys, args.store, policy_dir)
+        httpd = server_class()((host, port), args.keys, args.store, policy_dir, bundle_key)
     except OSError as error:
         print(f"coord.py: cannot bind {args.bind}: {error}", file=sys.stderr)
         return 2
