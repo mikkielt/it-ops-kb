@@ -87,6 +87,78 @@
       "by": "operator",
       "operator": "op-f618a13e",
       "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How does kbext.py verify treat a --root directory that does not exist?",
+      "options": [
+        "a workspace with no clone file",
+        "exit 2 as a bad argument"
+      ],
+      "recommendation": "a workspace with no clone file",
+      "reason": "the item's own check calls verify with a root that is absent and KB_GROUP_SETTINGS naming the overlay's group file, so the group's CI can check the overlay alone",
+      "do": {
+        "a workspace with no clone file": "ST-czmclv6j",
+        "exit 2 as a bad argument": "ST-czmclv6j"
+      },
+      "class": "design",
+      "answer": "a workspace with no clone file",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Which tag does init-team pin when --ref is left out?",
+      "options": [
+        "ext-v and the running API_VERSION",
+        "no default: --ref is required"
+      ],
+      "recommendation": "ext-v and the running API_VERSION",
+      "reason": "the first release is 0.1.0 so the sample pins ext-v0.1.0, and a fresh overlay then pins the API its sample ranker was verified against",
+      "do": {
+        "ext-v and the running API_VERSION": "ST-czmclv6j",
+        "no default: --ref is required": "ST-czmclv6j"
+      },
+      "class": "design",
+      "answer": "ext-v and the running API_VERSION",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "How does init-team treat a file that already exists, and what does its plugin manifest list?",
+      "options": [
+        "compare the exact text, write nothing on any difference, manifest holds name and description only",
+        "merge JSON keys into an existing file, manifest lists skills, agents and hooks paths"
+      ],
+      "recommendation": "compare the exact text, write nothing on any difference, manifest holds name and description only",
+      "reason": "the goal says a file with other content is never overwritten, and Claude Code finds skills/, agents/ and hooks/hooks.json at the plugin root itself, where a manifest path to hooks/hooks.json would load it twice",
+      "do": {
+        "compare the exact text, write nothing on any difference, manifest holds name and description only": "ST-czmclv6j",
+        "merge JSON keys into an existing file, manifest lists skills, agents and hooks paths": "ST-czmclv6j"
+      },
+      "class": "design",
+      "answer": "compare the exact text, write nothing on any difference, manifest holds name and description only",
+      "by": "agent"
+    },
+    {
+      "id": "g5",
+      "kind": "provisional",
+      "question": "What names does init-team give the marketplace, the sample ranker module and the accepted group name?",
+      "options": [
+        "marketplace NAME-kb, module group_ranker, name of lower-case letters digits and single hyphens",
+        "marketplace NAME, module NAME_ranker, any plugin-safe name"
+      ],
+      "recommendation": "marketplace NAME-kb, module group_ranker, name of lower-case letters digits and single hyphens",
+      "reason": "the marketplace name differs from the plugin's so the two never read as one, a fixed module name is importable whatever hyphens the group's name holds, and kebab-case is what plugin names allow",
+      "do": {
+        "marketplace NAME-kb, module group_ranker, name of lower-case letters digits and single hyphens": "ST-czmclv6j",
+        "marketplace NAME, module NAME_ranker, any plugin-safe name": "ST-czmclv6j"
+      },
+      "class": "design",
+      "answer": "marketplace NAME-kb, module group_ranker, name of lower-case letters digits and single hyphens",
+      "by": "agent"
     }
   ],
   "filed_in": "clone-0ea70e5c",
