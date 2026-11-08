@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "session-load --paid passes only --allowedTools, so a paid session's tools are not limited to Read, git status and rag.py as its gate chose",
   "status": "draft",
+  "sprint": "SP-n7zxspch",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "bench_load.paid_argv restricts a paid session's tools to Read, git status and rag.py (--tools, or --permission-mode dontAsk with the allow list), so no paid session can run Edit, Write, Agent or another tool",
+  "goal": "bench_load.paid_argv passes --tools Read,Bash and --permission-mode dontAsk beside its allow list of Read, git status and rag.py",
   "repro": {
     "run": [
       "python3",
@@ -14,6 +15,10 @@
       "import sys\nsys.path.insert(0, '_tools')\nimport bench_load as b\na = b.paid_argv('A')\nassert '--tools' in a or ('--permission-mode' in a and 'dontAsk' in a), ('a paid session is not limited to its tools', [x for x in a if x.startswith('--')])"
     ]
   },
+  "touches": [
+    "_tools/bench_load.py",
+    "kb/_self/benchmarks.md"
+  ],
   "links": [
     "parked: SP-wv3ob5vy review"
   ],
