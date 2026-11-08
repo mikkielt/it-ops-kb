@@ -1,0 +1,29 @@
+{
+  "id": "ST-5cqlfweg",
+  "kind": "story",
+  "title": "A job that was running when its executor died is found lost at the next serve and runs again once, or fails",
+  "status": "draft",
+  "parent": "EP-tmw3tokk",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbjob.py serve, at its start and every 30 s, finds each job in running, waiting-lock or waiting-merge whose lease jobrun/ID has expired and whose recorded pid no longer runs, moves it to lost (step lost), then to queued with attempt raised by one the first time and to failed the second time; a child whose pid still runs and whose command line names the job's operation is adopted: serve takes the lease again and follows that pid instead of starting a second process; kj_exec.recover(root, store=None, alive=..., leased=...) is that pass and returns the moves it made; a sync-push or check job simply runs again, and land and stage-back rely on their own resume rules (a land state left at landing by a dead land is taken over, bl_land.enter_run)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,tempfile,subprocess; sys.path.insert(0,\"_tools\"); import kj_store, kj_exec; s=os.path.join(tempfile.mkdtemp(),\"c.sqlite\"); a=kj_store.submit(\".\",\"check\",\"\",\"claude-0123abcd\",{\"name\":\"backlog-check\"},store=s); j=a[\"job\"]; co=lambda *x: subprocess.run([sys.executable,\"_tools/coord.py\",\"--store\",s,*x],capture_output=True,text=True); co(\"transition\",\"job/\"+j,\"--to\",\"running\"); kj_exec.recover(\".\",store=s,alive=lambda p: False,leased=lambda k: False); assert kj_store.status(\".\",j,store=s)[\"state\"]==\"queued\"; co(\"transition\",\"job/\"+j,\"--to\",\"running\"); kj_exec.recover(\".\",store=s,alive=lambda p: False,leased=lambda k: False); st=kj_store.status(\".\",j,store=s); assert st[\"state\"]==\"failed\", st; assert [e[\"fields\"][\"state\"] for e in st[\"events\"]]==[\"queued\",\"running\",\"lost\",\"queued\",\"running\",\"lost\",\"failed\"], st[\"events\"]"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kj_exec.py",
+    "_tools/kbjob.py",
+    "kb/_self/coordination.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-rmv67pks"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
