@@ -848,32 +848,37 @@ class PaidBench(Bench):
 
 
 def arm_settings(clone, arm):
-    """Write into `clone` the .claude/settings.json of `arm`: the project's own, less the hook commands the arm leaves out
-    (LEFT_OUT, as `arm_hooks` does). Arm D has its hooks turned off by NO_HOOKS on the command line instead."""
-    out = LEFT_OUT[arm]
-    if not out:
-        return
+    """Write into `clone` the .claude/settings.json of a paid session of `arm`: the project's own, less the hook commands the arm
+    leaves out (LEFT_OUT, as `arm_hooks` does; arm D has its hooks turned off by NO_HOOKS on the command line instead), and
+    with `permissions.allow` replaced by the rules of PAID_TOOLS, so the clone's own allow rules admit no Bash command that
+    the paid allow list does not."""
     path = Path(clone) / ".claude" / "settings.json"
     spec = json.loads(path.read_text(encoding="utf-8"))
-    hooks = {}
-    for ev, groups in spec.get("hooks", {}).items():
-        kept = []
-        for g in groups:
-            left = [h for h in g["hooks"] if not any(x in h.get("command", "") for x in out)]
-            if left:
-                kept.append({**g, "hooks": left})
-        if kept:
-            hooks[ev] = kept
-    spec["hooks"] = hooks
+    spec.setdefault("permissions", {})["allow"] = PAID_TOOLS.split(",")
+    out = LEFT_OUT[arm]
+    if out:
+        hooks = {}
+        for ev, groups in spec.get("hooks", {}).items():
+            kept = []
+            for g in groups:
+                left = [h for h in g["hooks"] if not any(x in h.get("command", "") for x in out)]
+                if left:
+                    kept.append({**g, "hooks": left})
+            if kept:
+                hooks[ev] = kept
+        spec["hooks"] = hooks
     path.write_text(json.dumps(spec, indent=2) + "\n", encoding="utf-8", newline="\n")
 
 
 def paid_argv(arm):
     """The `claude -p` of one paid session of `arm`: Haiku 5.5, a budget cap, the project's and local settings only (the user's
-    own hooks and plugins are not the clone's), the prompt on stdin."""
+    own hooks and plugins are not the clone's), the prompt on stdin, and only the tools of PAID_TOOLS: `--tools` leaves the
+    built-in Read and Bash (no Edit, Write or Agent), `--allowedTools` allows Read and the two Bash rules, and
+    `--permission-mode dontAsk` denies every other call at once, as no prompt can be answered in a print session."""
     return [shutil.which("claude") or "claude", "-p", "--model", PAID_MODEL, "--max-budget-usd", f"{PAID_RUN_USD:g}",
             "--output-format", "stream-json", "--verbose", "--no-session-persistence", "--setting-sources", "project,local",
-            "--allowedTools", PAID_TOOLS, *(NO_HOOKS if arm == "D" else [])]
+            "--tools", "Read,Bash", "--permission-mode", "dontAsk", "--allowedTools", PAID_TOOLS,
+            *(NO_HOOKS if arm == "D" else [])]
 
 
 def read_stream(path):
