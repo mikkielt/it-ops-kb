@@ -1,0 +1,22 @@
+{
+  "id": "BG-qm623dvn",
+  "kind": "bug",
+  "title": "session-load --paid passes only --allowedTools, so a paid session's tools are not limited to Read, git status and rag.py as its gate chose",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bench_load.paid_argv restricts a paid session's tools to Read, git status and rag.py (--tools, or --permission-mode dontAsk with the allow list), so no paid session can run Edit, Write, Agent or another tool",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys\nsys.path.insert(0, '_tools')\nimport bench_load as b\na = b.paid_argv('A')\nassert '--tools' in a or ('--permission-mode' in a and 'dontAsk' in a), ('a paid session is not limited to its tools', [x for x in a if x.startswith('--')])"
+    ]
+  },
+  "links": [
+    "parked: SP-wv3ob5vy review"
+  ],
+  "notes": "Review gap 1 of SP-wv3ob5vy: bench_load.py:871-876 paid_argv, :57 PAID_TOOLS; --allowedTools lists tools that run without a prompt and does not restrict which exist (kb public/claude/cli-flags.csv:10); .claude/settings.json allows Agent, Edit, Write, SendMessage. ST-i5az334d g3 (operator) chose 'tools Read, git status and rag.py only'. Sessions run in a throwaway clone.",
+  "filed_in": "clone-0ea70e5c"
+}
