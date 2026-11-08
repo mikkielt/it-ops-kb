@@ -84,6 +84,28 @@
   "depends_on": [
     "BG-r57wg5tg"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the pattern-row guard decide that two adjacent quantifiers overlap, and where does PatternMapper check its file timeout?",
+      "options": [
+        "Compare the character sets of consecutive variable-width atoms on a 768-character probe alphabet, and check the clock once per line",
+        "Refuse any two consecutive variable-width atoms and check the clock once per file"
+      ],
+      "recommendation": "Compare the character sets of consecutive variable-width atoms on a 768-character probe alphabet, and check the clock once per line",
+      "do": {
+        "Compare the character sets of consecutive variable-width atoms on a 768-character probe alphabet, and check the clock once per line": "BG-76mclha4",
+        "Refuse any two consecutive variable-width atoms and check the clock once per file": "BG-76mclha4"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "Compare the character sets of consecutive variable-width atoms on a 768-character probe alphabet, and check the clock once per line",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-iir3d2tu review"
   ],
