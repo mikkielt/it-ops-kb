@@ -136,11 +136,12 @@ entry it adds as a `code_added` event (fields `target`, REPO:PATH[#SYMBOL], and 
 
 `serve` binds 127.0.0.1 unless --bind names a host (port 0 picks a free port) and prints `coord.py: serving URL` as
 its first line. DIR holds one file per operator, named for the operator and holding that operator's token, and a file in
-a subdirectory named for a team (DIR/TEAM/OPERATOR) makes its operator TEAM/OPERATOR, beside flat files whose operators
-have no team; the server reads DIR on every request, so removing a file revokes that operator at once. An event carries
-`operator` TEAM/OPERATOR, a claim or `dedup` of such an operator holds as TEAM/OPERATOR/HOLDER, and its `claim` or `put`
-of a key under another team's `team/NAME/` prefix exits 1 (a flat operator's too): its own team's keys and every other
-key stay open. A client sends its own token, read from
+subdirectories named for groups, up to 20 deep (DIR/G1/.../OPERATOR), makes its operator G1/.../OPERATOR, whose groups
+are G1, G1/G2 and so on, beside flat files whose operators have no group; the server reads DIR on every request, so
+removing a file revokes that operator at once. An event carries `operator` G1/.../OPERATOR, a claim or `dedup` of such
+an operator holds as G1/.../OPERATOR/HOLDER, and its `claim` or `put` of a key under `group/G1/.../GN/` exits 1 unless
+its group path is that path or one of its ancestors (a flat operator's too); `team/NAME/` reads as the group NAME one
+level deep: every other key stays open. A client sends its own token, read from
 the file --key-file names (never from argv or the environment), as `Authorization: Bearer TOKEN` in `POST /v1/run`
 with the body {"argv": [the command and its arguments]}; the server answers 401 to a token no file holds (or two
 files hold) and runs the command on its store otherwise, answering {"code": N, "body": ...}, where code and body are
@@ -240,7 +241,8 @@ GLOB_LIST = re.compile(r"(?=.{1,120}$)[A-Za-z0-9_.:/#@*?-]+(,[A-Za-z0-9_.:/#@*?-
 LIST_VALUES = {("intent", "item"): ID_LIST, ("intent", "topic"): ID_LIST, ("intent", "touch"): GLOB_LIST,
                ("progress", "gates"): ID_LIST, ("coordinate", "touch"): GLOB_LIST}
 INTENT_SECONDS = 86400
-TEAM_KEYS = "team/"  # a team's keys: team/<team>/<name>, written by that team's operators alone behind `serve`
+GROUP_KEYS = "group/"  # a group's keys: group/G1/.../GN/<name>, written by operators of G1/.../GN and of the groups above it
+MAX_GROUP_DEPTH = 20 # GitLab's deepest group nesting: a key file below that many group directories is not read
 SESSION_LEASE = "session/"  # the presence lease of a session: key session/<id>, held while the session lives
 RESERVATIONS = "reservation/"  # an imported external reservation: key reservation/<source>/<holder>/<path glob>
 RESERVATION_SOURCE = "external"  # the source of a reservation line that names none
@@ -346,22 +348,37 @@ def holder_name(args):
     return f"{operator}/{holder}" if operator else holder
 
 
-def team_refusal(args):
-    """Refuse, exit 1, a served caller's claim or put of a key under another team's `team/NAME/` prefix: its own team's
-    keys, every key outside `team/` and a local command's keys stay open."""
+def key_scope(key):
+    """The group path a key belongs to, as a list of group names, else None for a key that no group holds: `group/G1/.../GN/NAME`
+    is held by G1/.../GN, `team/NAME/KEY` by the one-level group NAME; a key with no name after its groups is open."""
+    parts = key.split("/")
+    if len(parts) < 3:
+        return None
+    if parts[0] == "group":
+        return parts[1:-1]
+    if parts[0] == "team":
+        return parts[1:2]
+    return None
+
+
+def scope_refusal(args):
+    """Refuse, exit 1, a served caller's claim or put of a key under `group/G1/.../GN/` or `team/NAME/` unless the operator's
+    group path (its name without the last part) is that path or one of its ancestors: every other key and a local
+    command's keys stay open. A group path deeper than GitLab's 20 levels matches no group, so no key holds one."""
     operator = getattr(args, "operator", None)
-    if not operator or not args.key.startswith(TEAM_KEYS):
+    scope = key_scope(args.key) if operator else None
+    if scope is None:
         return
-    owner = args.key.split("/")[1]
-    if "/" in args.key[len(TEAM_KEYS):] and owner != operator.partition("/")[0]:
+    mine = operator.split("/")[:-1]
+    if not mine or len(scope) > MAX_GROUP_DEPTH or scope[:len(mine)] != mine:
         raise Refused({"ok": False, "key": args.key,
-                       "error": f"{args.key} is under team {owner}'s keys, which {operator} does not write"})
+                       "error": f"{args.key} is under group {'/'.join(scope)}'s keys, which {operator} does not write"})
 
 
 def recorded(key):
-    """Whether a claim of KEY leaves events: a research key, a code key or a backlog item id, never a session's presence lease (the
-    coord hook renews those all session long)."""
-    if key.startswith((RESEARCH, CODE)):
+    """Whether a claim of KEY leaves events: a research key, a code key, a group's key or a backlog item id, never a session's
+    presence lease (the coord hook renews those all session long)."""
+    if key.startswith((RESEARCH, CODE, GROUP_KEYS)):
         return True
     if key.startswith(SESSION_LEASE):
         return False
@@ -386,7 +403,7 @@ def claim(args, clock):
     holder = holder_name(args)
     if not FIELD_VALUE.fullmatch(args.key):
         raise Refused({"ok": False, "error": f"a claim's key is an id of 1 to 120 characters of letters, digits and _ . : / # @ -, not {args.key[:40]!r}"}, 2)
-    team_refusal(args)
+    scope_refusal(args)
     budget = getattr(args, "budget", None)
     if budget is not None:
         import bl_base
@@ -461,7 +478,7 @@ def get(args, clock):
 
 
 def put(args, clock):
-    team_refusal(args)
+    scope_refusal(args)
     with Tx(args.store) as con:
         now = clock()
         if args.token is not None:
@@ -624,7 +641,7 @@ def transition(args, clock):
     extra = sorted(set(fields) - set(STEP_FIELDS))
     if extra:
         raise Refused({"ok": False, "error": f"transition takes only the fields {', '.join(STEP_FIELDS)}, not {', '.join(extra)}"}, 2)
-    team_refusal(args)
+    scope_refusal(args)
     with Tx(args.store) as con:
         now = clock()
         row = live_row(con, args.key, now)
@@ -672,7 +689,7 @@ def job_transition(args, clock):
     extra = sorted(set(fields) - set(JOB_FIELDS))
     if extra:
         raise Refused({"ok": False, "error": f"a job transition takes only the fields {', '.join(JOB_FIELDS)}, not {', '.join(extra)}"}, 2)
-    team_refusal(args)
+    scope_refusal(args)
     with Tx(args.store) as con:
         now = clock()
         row = live_row(con, args.key, now)
@@ -1327,18 +1344,20 @@ def open_key_text(path, mode):
 
 def key_files(keys_dir):
     """The files authenticate reads in keys_dir: (name, path) for each regular file named for an operator, and for each
-    one in a subdirectory named for a team, whose name is `team/operator`."""
+    one in subdirectories named for groups, whose name is `G1/.../OPERATOR`, up to MAX_GROUP_DEPTH groups deep."""
     out = []
-    for name in sorted(os.listdir(keys_dir)):
-        path = Path(keys_dir) / name
-        if not OPERATOR_NAME.fullmatch(name):
-            continue
-        if path.is_file():
-            out.append((name, path))
-        elif path.is_dir():
-            for member in sorted(os.listdir(path)):
-                if OPERATOR_NAME.fullmatch(member) and (path / member).is_file():
-                    out.append((f"{name}/{member}", path / member))
+
+    def walk(directory, groups):
+        for name in sorted(os.listdir(directory)):
+            path = directory / name
+            if not OPERATOR_NAME.fullmatch(name):
+                continue
+            if path.is_file():
+                out.append(("/".join([*groups, name]), path))
+            elif path.is_dir() and len(groups) < MAX_GROUP_DEPTH:
+                walk(path, [*groups, name])
+
+    walk(Path(keys_dir), [])
     return out
 
 

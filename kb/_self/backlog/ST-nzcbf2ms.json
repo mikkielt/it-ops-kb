@@ -53,6 +53,62 @@
     "ST-mbnpveyw",
     "EP-fxrzbuza"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Does a claim of a group/ key leave claim, release and dup_of events, as a research key does?",
+      "options": [
+        "yes, a group/ claim is recorded",
+        "no, group/ claims stay unrecorded"
+      ],
+      "recommendation": "yes, a group/ claim is recorded",
+      "reason": "the check needs an event naming the operator path, and put leaves none",
+      "do": {
+        "yes, a group/ claim is recorded": "ST-nzcbf2ms",
+        "no, group/ claims stay unrecorded": "ST-nzcbf2ms"
+      },
+      "class": "design",
+      "answer": "yes, a group/ claim is recorded",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How does coord treat a group path deeper than GitLab's 20 levels?",
+      "options": [
+        "refuse: no key file below 20 group directories is read, and no key names a deeper group path",
+        "accept any depth"
+      ],
+      "recommendation": "refuse: no key file below 20 group directories is read, and no key names a deeper group path",
+      "do": {
+        "refuse: no key file below 20 group directories is read, and no key names a deeper group path": "ST-nzcbf2ms",
+        "accept any depth": "ST-nzcbf2ms"
+      },
+      "class": "design",
+      "answer": "refuse: no key file below 20 group directories is read, and no key names a deeper group path",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Which operators write a team's keys, now that a team is a group one level deep?",
+      "options": [
+        "operators whose group path is the team or above it, so an operator of a sub-group below the team does not",
+        "every operator whose first group is the team, sub-groups included"
+      ],
+      "recommendation": "operators whose group path is the team or above it, so an operator of a sub-group below the team does not",
+      "do": {
+        "operators whose group path is the team or above it, so an operator of a sub-group below the team does not": "ST-nzcbf2ms",
+        "every operator whose first group is the team, sub-groups included": "ST-nzcbf2ms"
+      },
+      "class": "design",
+      "answer": "operators whose group path is the team or above it, so an operator of a sub-group below the team does not",
+      "by": "agent"
+    }
+  ],
   "notes": "Research 2026-11-08 (kb public/gitlab/codeowners.md, Groups and subgroups): GitLab nests groups up to 20 levels on every tier and advises five or fewer; members inherit into subgroups. A coord group path deeper than 20 levels matches no GitLab group, so refusing it is consistent with the forge.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-61c966d6",
