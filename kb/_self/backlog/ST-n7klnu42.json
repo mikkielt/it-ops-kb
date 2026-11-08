@@ -66,6 +66,62 @@
     "ST-y2u3sxta",
     "ST-vhzvqlo3"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How do a point's samples and answer shape sit in kbext.SURFACE?",
+      "options": [
+        "samples are dicts (call or value, args, shape name) with a plain-words answer per point, shapes in kbext.SHAPES",
+        "one JSON schema per point"
+      ],
+      "recommendation": "samples are dicts (call or value, args, shape name) with a plain-words answer per point, shapes in kbext.SHAPES",
+      "reason": "SURFACE stays an ast literal and the shape checks stay code the child runs",
+      "do": {
+        "samples are dicts (call or value, args, shape name) with a plain-words answer per point, shapes in kbext.SHAPES": "ST-n7klnu42",
+        "one JSON schema per point": "ST-n7klnu42"
+      },
+      "class": "design",
+      "answer": "samples are dicts (call or value, args, shape name) with a plain-words answer per point, shapes in kbext.SHAPES",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which extenders does verify read, and what does it do with a key of extensions that is no point?",
+      "options": [
+        "settings layers only, an unknown key fails",
+        "settings layers and entry points, an unknown key is ignored"
+      ],
+      "recommendation": "settings layers only, an unknown key fails",
+      "reason": "the goal says the settings layers name them, and a typo in a point name is what a group's CI should catch",
+      "do": {
+        "settings layers only, an unknown key fails": "ST-n7klnu42",
+        "settings layers and entry points, an unknown key is ignored": "ST-n7klnu42"
+      },
+      "class": "design",
+      "answer": "settings layers only, an unknown key fails",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "What does verify call for the points whose extender is data or has side effects, and what timeout does it default to?",
+      "options": [
+        "load and shape-check mcp_tools and backlog_commands without calling a tool, build a forge adapter with a runner that runs no command, 30 seconds per extender",
+        "call every tool and command with empty arguments, 60 seconds"
+      ],
+      "recommendation": "load and shape-check mcp_tools and backlog_commands without calling a tool, build a forge adapter with a runner that runs no command, 30 seconds per extender",
+      "reason": "a tool's arguments are the group's own and a call could change state",
+      "do": {
+        "load and shape-check mcp_tools and backlog_commands without calling a tool, build a forge adapter with a runner that runs no command, 30 seconds per extender": "ST-n7klnu42",
+        "call every tool and command with empty arguments, 60 seconds": "ST-n7klnu42"
+      },
+      "class": "design",
+      "answer": "load and shape-check mcp_tools and backlog_commands without calling a tool, build a forge adapter with a runner that runs no command, 30 seconds per extender",
+      "by": "agent"
+    }
+  ],
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-a796fc75",
   "operator": "op-f618a13e"
