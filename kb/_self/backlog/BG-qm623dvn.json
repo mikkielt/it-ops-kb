@@ -12,7 +12,7 @@
     "run": [
       "python3",
       "-c",
-      "import sys\nsys.path.insert(0, '_tools')\nimport bench_load as b\na = b.paid_argv('A')\nassert '--tools' in a or ('--permission-mode' in a and 'dontAsk' in a), ('a paid session is not limited to its tools', [x for x in a if x.startswith('--')])"
+      "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport sys\nsys.path.insert(0, '_tools')\nimport bench_load as b\na = b.paid_argv('A')\nassert '--tools' in a or ('--permission-mode' in a and 'dontAsk' in a), ('a paid session is not limited to its tools', [x for x in a if x.startswith('--')])"
     ]
   },
   "checks": [
@@ -20,7 +20,7 @@
       "run": [
         "python3",
         "-c",
-        "import sys\nsys.path.insert(0, '_tools')\nimport bench_load as b\nrules = [\"Read\", \"Bash(git status:*)\", \"Bash(python3 _tools/rag.py:*)\"]\nassert b.PAID_TOOLS.split(\",\") == rules, (\"the allow list is not Read, git status and rag.py\", b.PAID_TOOLS)\nfor arm in (\"A\", \"C\", \"D\", \"worker\"):\n    a = b.paid_argv(arm)\n    val = lambda flag: a[a.index(flag) + 1] if flag in a else None\n    assert val(\"--tools\") == \"Read,Bash\", (\"arm \" + arm + \" passes no --tools Read,Bash\", val(\"--tools\"))\n    assert val(\"--permission-mode\") == \"dontAsk\", (\"arm \" + arm + \" passes no --permission-mode dontAsk\", val(\"--permission-mode\"))\n    assert val(\"--allowedTools\") == b.PAID_TOOLS, (\"arm \" + arm + \" lost its allow list\", val(\"--allowedTools\"))\n    assert arm != \"D\" or all(x in a for x in b.NO_HOOKS), \"arm D lost its hooks-off flags\"\n"
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport sys\nsys.path.insert(0, '_tools')\nimport bench_load as b\nrules = [\"Read\", \"Bash(git status:*)\", \"Bash(python3 _tools/rag.py:*)\"]\nassert b.PAID_TOOLS.split(\",\") == rules, (\"the allow list is not Read, git status and rag.py\", b.PAID_TOOLS)\nfor arm in (\"A\", \"C\", \"D\", \"worker\"):\n    a = b.paid_argv(arm)\n    val = lambda flag: a[a.index(flag) + 1] if flag in a else None\n    assert val(\"--tools\") == \"Read,Bash\", (\"arm \" + arm + \" passes no --tools Read,Bash\", val(\"--tools\"))\n    assert val(\"--permission-mode\") == \"dontAsk\", (\"arm \" + arm + \" passes no --permission-mode dontAsk\", val(\"--permission-mode\"))\n    assert val(\"--allowedTools\") == b.PAID_TOOLS, (\"arm \" + arm + \" lost its allow list\", val(\"--allowedTools\"))\n    assert arm != \"D\" or all(x in a for x in b.NO_HOOKS), \"arm D lost its hooks-off flags\"\n"
       ]
     }
   ],
