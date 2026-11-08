@@ -74,6 +74,43 @@
       "operator": "op-f618a13e",
       "role": "interactive",
       "agent_session": true
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Which version does ext-release tag when --root names another repository, and what is the tag message?",
+      "options": [
+        "kbext.API_VERSION of the running tools, message 'Extension API V' then the changelog entry body",
+        "API_VERSION read from the root's own _tools/kbext.py"
+      ],
+      "recommendation": "kbext.API_VERSION of the running tools, message 'Extension API V' then the changelog entry body",
+      "reason": "the tools that tag are the ones that lint, and a repository without _tools/kbext.py can still be tagged",
+      "do": {
+        "kbext.API_VERSION of the running tools, message 'Extension API V' then the changelog entry body": "ST-3brmklge",
+        "API_VERSION read from the root's own _tools/kbext.py": "ST-3brmklge"
+      },
+      "class": "push",
+      "answer": "kbext.API_VERSION of the running tools, message 'Extension API V' then the changelog entry body",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "Which sync pushes carry the ext-v tags?",
+      "options": [
+        "only a push of the range to the integration main, not a code branch push",
+        "a code branch push too"
+      ],
+      "recommendation": "only a push of the range to the integration main, not a code branch push",
+      "reason": "the main branch does not move on a code branch push, so a tag of main would point at a commit main lacks",
+      "do": {
+        "only a push of the range to the integration main, not a code branch push": "ST-3brmklge",
+        "a code branch push too": "ST-3brmklge"
+      },
+      "class": "push"
     }
   ],
   "notes": "Sending ext-v tags to the public home through kbgit.py publish is left to a later item (a public-push gate class); plugin.md section 4 names ext-v tags beside census tags as the channel a group pins. Shared files with SP-lwkdljxg (kbcommon.py, kbpublic.py, bl_land.py, map.csv): agreed with its manager on 2026-11-08 that the first claim lands first and the other rebases; its items reach these files late. SP-uh5h46fm (mon_coord.py, mon_status.py) was asked the same and has not answered: the same rule applies.",
