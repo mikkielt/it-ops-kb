@@ -57,6 +57,59 @@
     "ST-nwwcf3kk",
     "ST-rmv67pks"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "What does the closing line of follow print for a job that has a step, and for one that has no exit or log?",
+      "options": [
+        "JOB STATE [step=NAME] exit=N log=PATH, a dash for an exit or log a job lacks",
+        "JOB STATE exit=N log=PATH only, the step on the terminal event line above it"
+      ],
+      "recommendation": "JOB STATE [step=NAME] exit=N log=PATH, a dash for an exit or log a job lacks",
+      "do": {
+        "JOB STATE [step=NAME] exit=N log=PATH, a dash for an exit or log a job lacks": "ST-5h2kx2ri",
+        "JOB STATE exit=N log=PATH only, the step on the terminal event line above it": "ST-5h2kx2ri"
+      },
+      "class": "design",
+      "answer": "JOB STATE [step=NAME] exit=N log=PATH, a dash for an exit or log a job lacks",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "What shape do status --active and log print, and how long is a log tail by default?",
+      "options": [
+        "status --active prints one JSON list of the stored job records, oldest first; log prints the last 40 lines and exits 1 before the job has an output file",
+        "status --active prints one kj_store.status object per job; log prints the whole file"
+      ],
+      "recommendation": "status --active prints one JSON list of the stored job records, oldest first; log prints the last 40 lines and exits 1 before the job has an output file",
+      "do": {
+        "status --active prints one JSON list of the stored job records, oldest first; log prints the last 40 lines and exits 1 before the job has an output file": "ST-5h2kx2ri",
+        "status --active prints one kj_store.status object per job; log prints the whole file": "ST-5h2kx2ri"
+      },
+      "class": "design",
+      "answer": "status --active prints one JSON list of the stored job records, oldest first; log prints the last 40 lines and exits 1 before the job has an output file",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "How does cancel end a running job, given the job record holds no process id?",
+      "options": [
+        "Find the executor from the lease jobrun/JOB (holder serve-PID), take its child that leads its own process group, move the job to cancelled, then TERM and after a grace KILL that group; POSIX hosts, the job's own host only",
+        "Add a pid field to the job record in kj_exec and kill by it"
+      ],
+      "recommendation": "Find the executor from the lease jobrun/JOB (holder serve-PID), take its child that leads its own process group, move the job to cancelled, then TERM and after a grace KILL that group; POSIX hosts, the job's own host only",
+      "do": {
+        "Find the executor from the lease jobrun/JOB (holder serve-PID), take its child that leads its own process group, move the job to cancelled, then TERM and after a grace KILL that group; POSIX hosts, the job's own host only": "ST-5h2kx2ri",
+        "Add a pid field to the job record in kj_exec and kill by it": "ST-5h2kx2ri"
+      },
+      "class": "design",
+      "answer": "Find the executor from the lease jobrun/JOB (holder serve-PID), take its child that leads its own process group, move the job to cancelled, then TERM and after a grace KILL that group; POSIX hosts, the job's own host only",
+      "by": "agent"
+    }
+  ],
   "notes": "Why a line per move and exit codes: Claude Code's Monitor tool runs a command and each stdout line reaches the session as an event, its exit ends the watch, timeout_ms defaults to 300000 and the effective deadline is at most 1800000 ms, persistent false (live docs, not in the kb: https://code.claude.com/docs/en/agent-sdk/python#monitor, read 2026-11-08; kb: public/claude/hooks.md:212 DOC S-fksbud2r). A Bash command with run_in_background ends with a task notification at exit and, in a local interactive session, has no time limit, while unattended -p runs stop it at 30 min by default and 2 h at most (https://code.claude.com/docs/en/tools-reference#time-limit-for-background-commands, read 2026-11-08), and every background task dies when Claude Code exits (https://code.claude.com/docs/en/interactive-mode#how-backgrounding-works, read 2026-11-08): the job outlives the session because the executor, not the session's shell, owns it; follow only reads. Exit 4 with the since cursor makes a follow resumable across Monitor deadlines. follow prints no command output so a Monitor line never carries a path's content or a secret; the skill's current wait is coord.py wait --kind progress --item (kb-sprint SKILL.md:57), whose events follow reuses (coord wait --kind job). cancel is by the submitting operator only (authority rule). No test added (ceiling). Order agreed 2026-11-08 with SP-ep7ck2ab's manager (ask A1e21b0d155): shared kb/_self/map.csv rows land by first claim, the later item rebases; no hard dependency.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-61c966d6",
