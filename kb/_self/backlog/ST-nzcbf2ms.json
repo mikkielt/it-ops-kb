@@ -2,7 +2,7 @@
   "id": "ST-nzcbf2ms",
   "kind": "story",
   "title": "coord's key directory nests groups as deep as GitLab's, and a group's keys are written by its own operators and those of the groups above it",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-p4guu2ip",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",
@@ -111,6 +111,19 @@
   ],
   "notes": "Research 2026-11-08 (kb public/gitlab/codeowners.md, Groups and subgroups): GitLab nests groups up to 20 levels on every tier and advises five or fewer; members inherit into subgroups. A coord group path deeper than 20 levels matches no GitLab group, so refusing it is consistent with the forge.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-61c966d6",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "e4aa7dc02bf0b0280fd365ec0b13df847d5f2796",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,json,tempfile,subprocess\nd=tempfile.mkdtemp()\nimport atexit\nkd=os.path.join(d,\"keys\")\ndef key(p,t):\n    f=os.path.join(kd,*p.split(\"/\")); os.makedirs(os.path.dirname(f),exist_ok=True); open(f,\"w\").write(t); os.chmod(f,0o600); return f\ndef serve(*extra):\n    sv=subprocess.Popen([sys.executable,\"_tools/coord.py\",\"--store\",os.path.join(d,\"c.sqlite\"),\"serve\",\"--bind\",\"127.0.0.1:0\",\"--keys\",kd,*extra],stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,text=True); atexit.register(sv.kill)\n    return sv, sv.stdout.readline().split(\"serving\")[1].strip()\na=key(\"corp/ops/jan.kowalski\",\"ka-placeholder\"); b=key(\"corp/dev/anna.nowak\",\"kb-placeholder\"); cc=key(\"corp/ops/edge/piotr.nowak\",\"kc-placeholder\"); t=key(\"ops/ewa.nowak\",\"kd-placeholder\"); f=key(\"flat.op\",\"kf-placeholder\")\nsv,url=serve()\nco=lambda k,*x: subprocess.run([sys.executable,\"_tools/coord.py\",\"--url\",url,\"--key-file\",k,*x],capture_output=True,text=True,timeout=60)\nput=lambda k,kk: co(k,\"put\",kk,\"--value\",\"{}\",\"--revision\",\"0\").returncode\nr=[put(a,\"group/corp/ops/x\"),put(a,\"group/corp/ops/edge/y\"),put(cc,\"group/corp/ops/z\"),put(b,\"group/corp/ops/w\"),put(t,\"team/ops/v\"),put(b,\"team/ops/u\"),put(f,\"free/x\"),put(a,\"free/y\"),put(f,\"group/corp/ops/q\")]\nassert co(a,\"claim\",\"group/corp/ops/c\",\"--ttl\",\"60\",\"--holder\",\"h\").returncode==0\nev=json.loads(co(a,\"wait\",\"--since\",\"0\",\"--timeout\",\"0\").stdout)[\"events\"]; sv.terminate()\nassert r==[0,0,1,1,0,1,0,0,1], r\nassert any(e[\"fields\"].get(\"operator\")==\"corp/ops/jan.kowalski\" for e in ev), ev\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
