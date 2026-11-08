@@ -101,7 +101,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "Compare the character sets of consecutive variable-width atoms on a 768-character probe alphabet, and check the clock once per line",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
