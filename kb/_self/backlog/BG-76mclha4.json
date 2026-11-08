@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "A shipped Lua rule of the kbingest pattern table is quadratic on a hostile line, and the in-process mapper has no timeout",
   "status": "draft",
+  "sprint": "SP-n7zxspch",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "kbingest's pattern-row guard refuses adjacent quantifiers that overlap (as in [\\w.:]*? followed by \\w+), the shipped Lua def rule is rewritten without them, and PatternMapper bounds its time per file, so a hostile .lua line costs linear time",
+  "goal": "kbingest's pattern-row guard refuses a rules row whose adjacent quantifiers overlap; the shipped Lua def rule takes under 0.5 ms on a 990-letter hostile line and still names the function of function f(, function M.f( and function M:f(; PatternMapper stops reading a file after PATTERN_FILE_TIMEOUT_S seconds and notes it; PATTERN_FILE_TIMEOUT_S is 10 and PatternMapper reads it when it maps a file",
   "repro": {
     "run": [
       "python3",
@@ -14,6 +15,13 @@
       "import re, time\nrx = re.compile(r'^\\s*function\\s+[\\w.:]*?(?P<name>\\w+)\\s*\\(')\nline = 'function ' + 'a' * 990\nt = time.perf_counter()\nfor _ in range(50):\n    rx.search(line)\nper = (time.perf_counter() - t) / 50 * 1000\nassert per < 0.5, ('the Lua def rule takes %.2f ms on one hostile line' % per)"
     ]
   },
+  "touches": [
+    "_tools/kbingest.py",
+    "_tools/kbingest_rules.csv",
+    "_tools/test_kbingest_guards.py",
+    "kb/_self/tools.md",
+    ".claude/skills/kb-ingest/SKILL.md"
+  ],
   "links": [
     "parked: SP-iir3d2tu review"
   ],
