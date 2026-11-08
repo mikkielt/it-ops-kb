@@ -2,7 +2,7 @@
   "id": "BG-tm7hwv5i",
   "kind": "bug",
   "title": "kbmon --receipt prints needs you: 0 when the panels that hold asks and orphans were not read, so an unknown count reads as nothing waiting",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-uh5h46fm",
   "priority": "P2",
@@ -41,5 +41,7 @@
     "kb/_self/tools.md"
   ],
   "notes": "Evidence 2026-11-08: mon_receipt.needs_tail (_tools/mon_receipt.py) prints len(entries) over the panels read, so the session-start line said 'needs you: 0 (not read: sprint, sessions, host, coord)' while the coord store held five open asks. mon_needs.line already says 'nothing; not read: ...' for the same case. Premise run 2026-11-08: the repro fails (exit 1), because the live receipt still prints 'needs you: 0 (not read'. Planted check 0 (mon_receipt.receipt on three planted snapshots: no panel, coord and sessions in state timeout, every panel ok) fails on the base: the first two print 'needs you: 0 (not read: ...)'. The wording of the count is settled in the goal.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-7064b8a6",
+  "operator": "op-f618a13e"
 }
