@@ -670,6 +670,12 @@ def capture_rows(b):
         b.row("session-load", f"capture {cls}", "capture", "distinct_paths", len(got["paths"] if cls == "all" else cells[0]["paths"]), 1)
 
 
+INTAKE_REAL_SPAWNS_NOTE = (
+    "the command and the processes Python programs of its tree started, per replay; the real hook is cut at its wait "
+    "(bl_ci.INTAKE_HOOK_BUDGET_S, 50 s) while its drift scan still runs item checks, whereas the pinned row's drift scan "
+    "checks no item, so these spawns are not comparable with the pinned row's `idle hook intake`")
+
+
 def intake_real_rows(b):
     """The rows of `run session-load --intake-real`: arm A's SessionStart intake hook alone, replayed in a clone left as
     the checkout is (no pin_drift), so its drift scan runs the checks of the draft and todo items whose touches changed
@@ -692,7 +698,7 @@ def intake_real_rows(b):
             f"its budget of {bl_intake.DRIFT_BUDGET_S} s is spent (the hook stops waiting for its detectors after "
             f"{bl_ci.INTAKE_HOOK_BUDGET_S} s): the checks that fit move with the host's speed and load")
     for metric, vals, n in (("cpu_s", [h["cpu_s"] for h in runs], note), ("wall_s", [h["wall_s"] for h in runs], ""),
-                            ("spawns", kids, "the command and the processes Python programs of its tree started, per replay")):
+                            ("spawns", kids, INTAKE_REAL_SPAWNS_NOTE)):
         b.row("session-load", INTAKE_REAL_CASE, "A", metric, statistics.median(vals), len(vals), note=n)
 
 

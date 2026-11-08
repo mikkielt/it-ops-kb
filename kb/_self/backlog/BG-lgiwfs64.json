@@ -33,6 +33,26 @@
   "depends_on": [
     "BG-qm623dvn"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the spawns note name the hook's wait: the module constant spells the 50 s as a literal, or the note is built from bl_ci.INTAKE_HOOK_BUDGET_S at run time?",
+      "options": [
+        "literal 50 s in INTAKE_REAL_SPAWNS_NOTE",
+        "built at run time from bl_ci"
+      ],
+      "recommendation": "literal 50 s in INTAKE_REAL_SPAWNS_NOTE",
+      "reason": "the goal and repro need a module constant equal to the written note, and bench_load imports bl_ci only inside functions",
+      "do": {
+        "literal 50 s in INTAKE_REAL_SPAWNS_NOTE": "BG-lgiwfs64",
+        "built at run time from bl_ci": "BG-lgiwfs64"
+      },
+      "class": "design",
+      "answer": "literal 50 s in INTAKE_REAL_SPAWNS_NOTE",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-m5m67goe review"
   ],
