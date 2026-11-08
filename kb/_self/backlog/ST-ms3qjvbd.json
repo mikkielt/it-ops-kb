@@ -2,7 +2,7 @@
   "id": "ST-ms3qjvbd",
   "kind": "story",
   "title": "A root pointer names its owning group path, and a pointer that names only a team is read as a group one level deep",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-p4guu2ip",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",

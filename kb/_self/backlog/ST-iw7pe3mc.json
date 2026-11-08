@@ -2,7 +2,7 @@
   "id": "ST-iw7pe3mc",
   "kind": "story",
   "title": "Jobs of one class run one at a time in submit order and the rest in parallel, and a job whose lock another process holds waits as waiting-lock",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-tmw3tokk",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",

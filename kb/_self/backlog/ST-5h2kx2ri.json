@@ -2,7 +2,7 @@
   "id": "ST-5h2kx2ri",
   "kind": "story",
   "title": "kbjob.py follow prints one line per move of a job and exits with its result, so a Monitor or a background shell reports the end",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-tmw3tokk",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",

@@ -2,7 +2,7 @@
   "id": "ST-ft5a6j5o",
   "kind": "story",
   "title": "Research sprint goal: Operations run as jobs a central queue places on workstation, server or CI executors",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-lwkdljxg",
   "goal_research": true,
   "priority": "P1",

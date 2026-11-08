@@ -2,7 +2,7 @@
   "id": "ST-bbfdim4v",
   "kind": "story",
   "title": "Review sprint: Operations run as jobs a central queue places on workstation, server or CI executors",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-lwkdljxg",
   "review": true,
   "priority": "P1",

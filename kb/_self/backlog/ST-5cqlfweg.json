@@ -2,7 +2,7 @@
   "id": "ST-5cqlfweg",
   "kind": "story",
   "title": "A job that was running when its executor died is found lost at the next serve and runs again once, or fails",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-tmw3tokk",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",

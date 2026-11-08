@@ -2,7 +2,7 @@
   "id": "ST-rmv67pks",
   "kind": "story",
   "title": "kbjob.py serve runs the queued jobs of its host one after another, each as a process group of its own with its output kept",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-tmw3tokk",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",

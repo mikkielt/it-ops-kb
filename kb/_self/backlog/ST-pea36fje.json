@@ -2,7 +2,7 @@
   "id": "ST-pea36fje",
   "kind": "story",
   "title": "An executor runs a job as the identity its placement names, reading the credential from a 0600 file or a masked CI variable, and refuses a job whose credential is missing",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-p4guu2ip",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",

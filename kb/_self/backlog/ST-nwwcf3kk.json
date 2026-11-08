@@ -2,7 +2,7 @@
   "id": "ST-nwwcf3kk",
   "kind": "story",
   "title": "kbjob.py submit queues one job per clone, operation and subject, and a second submit returns the live job",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-tmw3tokk",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",

@@ -2,7 +2,7 @@
   "id": "ST-vst4vom3",
   "kind": "story",
   "title": "kbjob.py serve --kind server keeps one clone per integration remote and runs the jobs placed on the server there, landings from the pushed worker branch",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-p4guu2ip",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",

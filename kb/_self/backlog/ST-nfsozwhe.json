@@ -2,7 +2,7 @@
   "id": "ST-nfsozwhe",
   "kind": "story",
   "title": "A job placed on CI starts a pipeline through GitLab's pipeline trigger API, and its kb-job runs only for such pipelines",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-p4guu2ip",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",

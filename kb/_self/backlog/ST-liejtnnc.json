@@ -2,7 +2,7 @@
   "id": "ST-liejtnnc",
   "kind": "story",
   "title": "kbjob.py opa-config --print prints the OPA configuration and service unit that pull both bundles from coord, and writes nothing",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-p4guu2ip",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",

@@ -2,7 +2,7 @@
   "id": "ST-vxwngvv7",
   "kind": "story",
   "title": "The bundles coord serve hands out are signed with an HS256 key file, so OPA refuses a bundle changed on the way",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-p4guu2ip",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",

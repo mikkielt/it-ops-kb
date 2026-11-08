@@ -2,7 +2,7 @@
   "id": "ST-ugkw5mt3",
   "kind": "story",
   "title": "A worker branch is pushed to the integration remote at stage-back when its landing is placed off the workstation, and land deletes it after",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-p4guu2ip",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",
