@@ -205,13 +205,13 @@ def _apply_layers(root, values, sources, problems):
     import kbsettings
     try:
         merged, layer_of = kbsettings.layered(root, "backlog")
-        files = {layer: path for layer, path, _ in kbsettings._layers(root)}
+        files = {layer: path for layer, path, _ in kbsettings.layer_files(root)}
     except kbsettings.SettingsError as e:
         problems.append(str(e))
         return
     for k, v in merged.items():
         layer = layer_of[k]
-        where = f"{layer}, {kbsettings._shown(files[layer], root)}"
+        where = f"{layer}, {kbsettings.shown_path(files[layer], root)}"
         if k not in SETTINGS:
             problems.append(f"{where}: unknown key {k!r} (keys: {', '.join(SETTINGS)})")
             continue

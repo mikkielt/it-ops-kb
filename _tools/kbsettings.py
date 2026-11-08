@@ -141,7 +141,7 @@ def _allowed(kind):
     return ("a list of " if kind[0] == "list" else "one of ") + ", ".join(kind[1])
 
 
-def _shown(path, root):
+def shown_path(path, root):
     """PATH as a posix path relative to the workspace ROOT when it lies under it, else its file name alone (a group file
     outside the workspace), so no home directory reaches a caller."""
     try:
@@ -154,7 +154,7 @@ def _read(path, root):
     """The whole object of the settings file PATH, its `coordination` object validated and its `locked` list (a group
     file's) checked to be a list of names; empty when the file is missing. A message names PATH relative to the
     workspace ROOT, so no home directory reaches a caller."""
-    shown = _shown(path, root)
+    shown = shown_path(path, root)
     try:
         text = path.read_text(encoding="utf-8")
     except FileNotFoundError:
@@ -204,7 +204,7 @@ def _leaves(data):
     return out
 
 
-def _layers(root, kb_root=None):
+def layer_files(root, kb_root=None):
     """[(layer, path, object)] of the files that exist or are named, in merge order: the group file (when one is
     named), the clone file, the kb root's (when named) and the user's, each validated; a missing file's object is {}.
     A later layer that sets a key the group file locks raises SettingsError."""
@@ -215,18 +215,18 @@ def _layers(root, kb_root=None):
     clone_data = _read(clone, root)
     named = clone_data.get("group_settings", os.environ.get(GROUP_ENV) or None)
     if named is not None and not (isinstance(named, str) and named):
-        raise SettingsError(f"{_shown(clone, root)}: key group_settings must be a file path")
+        raise SettingsError(f"{shown_path(clone, root)}: key group_settings must be a file path")
     out = []
     locked = []
     if named:
         group = Path(named) if Path(named).is_absolute() else root / named
         if not group.is_file():
-            raise SettingsError(f"group settings file {_shown(group, root)} named by "
+            raise SettingsError(f"group settings file {shown_path(group, root)} named by "
                                 f"{'group_settings' if 'group_settings' in clone_data else GROUP_ENV} is missing")
         group_data = _read(group, root)
         locked = group_data.get("locked", [])
         if not isinstance(locked, list) or not all(isinstance(k, str) and k for k in locked):
-            raise SettingsError(f"{_shown(group, root)}: key locked must be a list of key names")
+            raise SettingsError(f"{shown_path(group, root)}: key locked must be a list of key names")
         out.append(("group", group, group_data))
     out.append(("clone", clone, clone_data))
     if kb_root:
@@ -240,15 +240,15 @@ def _layers(root, kb_root=None):
         for leaf in _leaves(data):
             for lock in locked:
                 if leaf == lock or leaf.startswith(lock + "."):
-                    raise SettingsError(f"{_shown(path, root)}: key {leaf} is locked by the group file "
-                                        f"{_shown(out[0][1], root)} and cannot be set in the {layer} file")
+                    raise SettingsError(f"{shown_path(path, root)}: key {leaf} is locked by the group file "
+                                        f"{shown_path(out[0][1], root)} and cannot be set in the {layer} file")
     return out
 
 
 def effective(root, kb_root=None):
     """`{"coordination": {"announce": {...}, "strategy": {...}}}` for workspace ROOT and the kb root named KB_ROOT."""
     merged = json.loads(json.dumps(DEFAULTS))
-    for _, _, data in _layers(root, kb_root):
+    for _, _, data in layer_files(root, kb_root):
         for group, body in data.get("coordination", {}).items():
             merged[group].update(body)
     return {"coordination": merged}
@@ -262,10 +262,10 @@ def layered(root, name, kb_root=None):
         raise SettingsError(f"unknown object {name}; allowed: {', '.join(OBJECTS)}")
     root = Path(root)
     merged, source = {}, {}
-    for layer, path, data in _layers(root, kb_root):
+    for layer, path, data in layer_files(root, kb_root):
         body = data.get(name, {})
         if not isinstance(body, dict):
-            raise SettingsError(f"{_shown(path, root)}: key {name} must be an object")
+            raise SettingsError(f"{shown_path(path, root)}: key {name} must be an object")
         for key, value in body.items():
             merged[key], source[key] = value, layer
     return merged, source
@@ -284,11 +284,11 @@ def explain(root, kb_root=None, key=None):
         for name, v in body.items():
             k = f"{group}.{name}"
             value[k], layer[k], source[k] = json.loads(json.dumps(v)), "default", "default"
-    for which, path, data in _layers(root, kb_root):
+    for which, path, data in layer_files(root, kb_root):
         for group, body in data.get("coordination", {}).items():
             for name, v in body.items():
                 k = f"{group}.{name}"
-                value[k], layer[k], source[k] = v, which, _shown(path, root)
+                value[k], layer[k], source[k] = v, which, shown_path(path, root)
     return [{"key": k, "value": value[k], "layer": layer[k], "source": source[k], "meaning": SETTINGS[k],
              "doc": f"{DOC}, {DOC_SECTION}, the bullet for `{k}`"} for k in SETTINGS if key in (None, k)]
 
