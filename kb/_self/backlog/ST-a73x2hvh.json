@@ -128,6 +128,42 @@
       "class": "design",
       "answer": "validate first, so a refused job starts no executor",
       "by": "agent"
+    },
+    {
+      "id": "g5",
+      "kind": "provisional",
+      "question": "How is the serve lock named per store?",
+      "options": [
+        "plain name for the clone's own store, plus 8 hex of the store path's hash for any other",
+        "one name per store, 8 hex of the hash, own store included"
+      ],
+      "recommendation": "plain name for the clone's own store, plus 8 hex of the store path's hash for any other",
+      "reason": "the executor of the clone keeps its known file",
+      "do": {
+        "plain name for the clone's own store, plus 8 hex of the store path's hash for any other": "ST-a73x2hvh",
+        "one name per store, 8 hex of the hash, own store included": "ST-a73x2hvh"
+      },
+      "class": "design",
+      "answer": "plain name for the clone's own store, plus 8 hex of the store path's hash for any other",
+      "by": "agent"
+    },
+    {
+      "id": "g6",
+      "kind": "provisional",
+      "question": "How does a serve that ensure started for a store of its own end by itself, and after how long?",
+      "options": [
+        "serve --idle-exit 60: ends after 60 s with no queued or running job",
+        "serve --idle-exit 300: ends after 300 s with no queued or running job"
+      ],
+      "recommendation": "serve --idle-exit 60: ends after 60 s with no queued or running job",
+      "reason": "the 60 s the operator named, an option of serve that a hand-started serve and the login item do not set",
+      "do": {
+        "serve --idle-exit 60: ends after 60 s with no queued or running job": "ST-a73x2hvh",
+        "serve --idle-exit 300: ends after 300 s with no queued or running job": "ST-a73x2hvh"
+      },
+      "class": "design",
+      "answer": "serve --idle-exit 60: ends after 60 s with no queued or running job",
+      "by": "agent"
     }
   ],
   "notes": "Choice: a session starts the executor (ensure, called by submit) and a login item is only printed, because writing a LaunchAgent or a systemd unit changes the operator's host outside the clone (the operator names 'started by a session or a login item'; the print leaves the install to them, so no host-setup gate). The executor then outlives the session that started it, as dispatch --detach does for a worker (bl_dispatch.py:1051 spawn_detached, start_new_session): a background shell would die with Claude Code (https://code.claude.com/docs/en/interactive-mode#how-backgrounding-works, read 2026-11-08), so ensure starts it with its own session and never as a Bash background task. One executor per host holds an exclusive file in the host lock directory (KB_HOST_LOCK_DIR, kg_lock's mechanism, git.md:62) so two sessions' ensure never start two. Claude Code's own supervisor (claude daemon, background sessions restarted when their process exits: kb public/claude/parallel-sessions.md:84, DOC https://code.claude.com/docs/en/agent-view, kb retrieved 2026-10-26) hosts model sessions, not shell commands; it does not replace this executor and is not rebuilt here.",

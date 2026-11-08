@@ -5,8 +5,8 @@ kb/_self/coordination.md, section "Operation jobs").
                                           line `NAME stopped at step STEP: ...` (`land stopped at step rebase: ...`, as
                                           bl_land.land_refused_step reads it) refused, naming that step; any other end failed
   serve(root, store, once, poll, out)  -> exit code of `kbjob.py serve`
-  running_pid()                         -> the pid the host file names while it runs, else None
-  ping(out)                             -> exit code of `kbjob.py ping` (0 printing the pid, 1 none)
+  running_pid(root, store)              -> the pid the store's host file names while it runs, else None
+  ping(root, store, out)                -> exit code of `kbjob.py ping` (0 printing the pid, 1 none)
   ensure(root, store, wait)             -> (pid, started, error): starts a detached serve when none runs and waits for the host file
   login_item(root, store, out)          -> prints a LaunchAgent plist and a systemd user unit; writes nothing
   recover(root, store, alive, leased)  ->the moves made on the jobs an executor that died left: a job in running,
@@ -19,8 +19,9 @@ A job is taken with the lease `jobrun/<job id>` (JOB_LEASE_TTL_S, renewed every 
 queued to running, and run as `python <argv of kj_ops.OPS>` in the job's clone: the leader of a process group of its own, stdin
 closed, stdout and stderr appended to the job's `kb-jobs/<job id>/output.log` under the clone's common git directory. Every
 move goes through `coord.job_transition`, the job table. A job of another operator, host or clone stays queued. One serve
-runs per host: an exclusive file `kb-jobs-serve.lock` in the host lock directory (`tests.host_lock_dir`) holds its pid, clone
-and start time and is cleared when that pid is gone, as `kg_lock.main_lock` clears the main lock.
+runs per store and host: an exclusive file in the host lock directory (`tests.host_lock_dir`), `kb-jobs-serve.lock` for the clone's own
+store and the same name with a short hash of the store path for any other (`lock_name`), holds its pid, clone and start time and
+is cleared when that pid is gone, as `kg_lock.main_lock` clears the main lock.
 
 The job's record keeps the pid of its child (the member `pid`, written after the child starts, dropped when the job is queued
 again). Serve runs `recover` at its start and every RECOVER_S seconds, and follows each adopted child (the lease renewed
@@ -29,6 +30,7 @@ loss: the job is requeued once or failed, like any lost job.
 """
 import contextlib
 import datetime
+import hashlib
 import json
 import os
 import platform
@@ -52,12 +54,14 @@ JOB_LEASE_TTL_S = 60
 JOB_LEASE_RENEW_S = 20
 RECOVER_S = 30  # the wait between two recovery passes of a serve
 MAX_LOST = 2  # a job lost this many times is failed, not run again: a crash loop ends at attempt 2
+IDLE_EXIT_S = 60.0  # how long a serve that `ensure` started for a store of its own waits with no live job before it ends
 RECOVERABLE = ("running", "waiting-lock", "waiting-merge", "lost")  # the states a dead executor leaves a job in
+LIVE_STATES = ("queued",) + RECOVERABLE  # the states of a job that still has work to do
 POLL_S = 5.0  # the wait between two looks at the queue of a serve that does not stop when it is empty (KB_JOB_POLL)
 ENSURE_WAIT_S = 10.0  # how long `ensure` waits for the host file to name the executor it started
 LOGIN_LABEL = "dev.it-ops-kb.jobs"  # the LaunchAgent label and the systemd unit's name that `login-item --print` gives
 LOG_FALLBACK = "serve.log"
-STOP_LINE =re.compile(r"^[a-z][a-z-]* stopped at step ([^:\n]+):", re.MULTILINE)
+STOP_LINE = re.compile(r"^[a-z][a-z-]* stopped at step ([^:\n]+):", re.MULTILINE)
 
 
 def classify(code, text):
@@ -86,8 +90,8 @@ def poll_seconds():
     return n if n > 0 and n != float("inf") else POLL_S
 
 
-def pending(store, clone, host, operator):
-    """[(job id, record)] of the queued jobs of this host, clone and operator, in submit order."""
+def pending(store, clone, host, operator, states=("queued",)):
+    """[(job id, record)] of the jobs of this host, clone and operator in one of STATES (the queued ones by default), in submit order."""
     con = coord.connect(store)
     try:
         coord.ensure_schema(con)
@@ -97,7 +101,7 @@ def pending(store, clone, host, operator):
     found = []
     for row in rows:
         record = coord.job_record(row["value"])
-        if (record and record.get("state") == "queued" and record.get("host") == host and record.get("clone") == clone
+        if (record and record.get("state") in states and record.get("host") == host and record.get("clone") == clone
                 and record.get("operator") == operator and record.get("job") == row["key"][len(coord.JOB_KEYS):]):
             found.append((record["job"], record))
     return sorted(found, key=lambda one: (one[1].get("submitted_ts", 0), one[0]))
@@ -109,11 +113,25 @@ def move(store, job, state, **fields):
     return coord.job_transition(Namespace(key=coord.JOB_KEYS + job, to=state, field=given, store=store), time.time)
 
 
-def take_lock(clone):
-    """Take the host's serve lock: (path, None) when this process now holds it, (None, holder) when a live process does, holder
+def own_store(root, store):
+    """Whether STORE is the clone's own coord store, the one its sessions share (a clone with none has no other)."""
+    own = coord.store_of(root)
+    return own is None or os.path.realpath(store) == os.path.realpath(own)
+
+
+def lock_name(root, store):
+    """The name of the serve lock file of STORE: LOCK_NAME for the clone's own store (the one its sessions share), else the same
+    name with a short hash of the resolved store path, so a serve of another store neither blocks nor is blocked by it."""
+    if own_store(root, store):
+        return LOCK_NAME
+    return f"{LOCK_NAME[:-len('.lock')]}-{hashlib.sha256(os.path.realpath(store).encode('utf-8')).hexdigest()[:8]}.lock"
+
+
+def take_lock(clone, name=LOCK_NAME):
+    """Take the serve lock NAME of the host: (path, None) when this process now holds it, (None, holder) when a live process does, holder
     being {pid, clone, started}. A lock whose pid no longer runs, or whose record stays unwritten past the grace, is cleared."""
     import tests as tests_py  # the test lock's helpers, as kg_lock uses them
-    path = os.path.join(tests_py.host_lock_dir(), LOCK_NAME)
+    path = os.path.join(tests_py.host_lock_dir(), name)
     os.makedirs(os.path.dirname(path), exist_ok=True)
     stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     me = f"pid={os.getpid()}\nclone={clone}\nstarted={stamp}\n"
@@ -416,23 +434,18 @@ def drain(store, clone, host, operator, out):
                 coord.release(Namespace(key=lease_key(job), token=token, store=store, operator=None), time.time)
 
 
-def lock_path():
+def running_pid(root, store):
+    """The pid of the executor of STORE on this host (the pid its host file in the host lock directory names, when that process
+    runs), else None. Only reads: a stale file is left for the next serve to clear."""
     import tests as tests_py
-    return os.path.join(tests_py.host_lock_dir(), LOCK_NAME)
-
-
-def running_pid():
-    """The pid of the executor of this host (the pid its host file `kb-jobs-serve.lock` names, when that process runs), else None.
-    Only reads: a stale file is left for the next serve to clear."""
-    import tests as tests_py
-    holder = tests_py.read_holder(lock_path())
+    holder = tests_py.read_holder(os.path.join(tests_py.host_lock_dir(), lock_name(root, store)))
     return holder["pid"] if holder is not None and tests_py.pid_alive(holder["pid"]) else None
 
 
-def ping(out=None):
-    """`kbjob.py ping`: 0 printing the pid when an executor of this host runs, 1 printing that none does."""
+def ping(root, store, out=None):
+    """`kbjob.py ping`: 0 printing the pid when an executor of STORE runs on this host, 1 printing that none does."""
     out = out or sys.stdout
-    pid = running_pid()
+    pid = running_pid(root, store)
     print(pid if pid is not None else "kbjob: no executor on this host", file=out, flush=True)
     return 0 if pid is not None else 1
 
@@ -446,9 +459,11 @@ def serve_log_path(root):
 def ensure(root, store, wait=ENSURE_WAIT_S):
     """Start the executor when none runs: (pid, started, error). `serve` runs detached (a session of its own, stdin closed, its
     output appended to serve.log), so it outlives the session that started it; the wait ends when the host file names a live
-    process (the new one, or one a racing ensure started) or at WAIT seconds. error is None when pid is set, else the last line
-    of the log (or why serve could not start)."""
-    pid = running_pid()
+    process (the new one, or one a racing ensure started) or at WAIT seconds. The child inherits this process's environment
+    (KB_HOST_LOCK_DIR and the rest). For a STORE that is not the clone's own the serve ends by itself after IDLE_EXIT_S seconds
+    with no live job, so a planted store leaves no executor behind. error is None when pid is set, else the last line of the
+    log (or why serve could not start)."""
+    pid = running_pid(root, store)
     if pid is not None:
         return pid, False, None
     log = serve_log_path(root)
@@ -458,17 +473,20 @@ def ensure(root, store, wait=ENSURE_WAIT_S):
     start = log.stat().st_size if log.exists() else 0
     group = {"start_new_session": True} if os.name == "posix" else {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP | getattr(subprocess, "DETACHED_PROCESS", 0)}
     argv = [sys.executable, str(Path(__file__).resolve().parent / "kbjob.py"), "--store", str(store), "serve"]
+    if not own_store(root, store):
+        argv += ["--idle-exit", f"{IDLE_EXIT_S:g}"]
     try:
         with open(log, "ab") as sink:
-            proc = subprocess.Popen(argv, cwd=kj_store.clone_path(root), stdin=subprocess.DEVNULL, stdout=sink, stderr=subprocess.STDOUT, **group)
+            proc = subprocess.Popen(argv, cwd=kj_store.clone_path(root), env=dict(os.environ), stdin=subprocess.DEVNULL, stdout=sink,
+                                    stderr=subprocess.STDOUT, **group)
     except OSError as error:
         return None, False, f"serve did not start: {str(error)[:200]}"
     until = time.monotonic() + wait
     while time.monotonic() < until:
-        pid = running_pid()
+        pid = running_pid(root, store)
         if pid is not None:
             return pid, pid == proc.pid, None
-        if proc.poll() is not None and running_pid() is None:
+        if proc.poll() is not None and running_pid(root, store) is None:
             break
         time.sleep(0.1)
     if proc.poll() is None:
@@ -540,15 +558,16 @@ def login_item(root, store=None, out=None):
     return 0
 
 
-def serve(root, store, once=False, out=None):
-    """`kbjob.py serve`: 0 when the queue was drained (--once) or this process ended by a signal, 1 when --once ran a job that
-    failed, 2 where the clone has no git directory; a second serve on the host prints the running one's pid and returns 0."""
+def serve(root, store, once=False, out=None, idle_exit=None):
+    """`kbjob.py serve`: 0 when the queue was drained (--once), when IDLE_EXIT seconds passed with no live job of this host,
+    clone and operator, or when this process ended by a signal; 1 when --once ran a job that failed, 2 where the clone has no
+    git directory; a second serve for the same store on the host prints the running one's pid and returns 0."""
     out = out or sys.stdout
     clone = kj_store.clone_path(root)
     if kj_store.log_path(clone, "JB-00000000") is None:
         print("kbjob.py: serve needs a git clone for its job logs", file=sys.stderr)
         return 2
-    path, holder = take_lock(clone)
+    path, holder = take_lock(clone, lock_name(root, store))
     if path is None:
         print(f"kbjob.py: serve already runs on this host: pid {holder['pid']} (clone {holder['clone']}, started {holder['started']})",
               file=out, flush=True)
@@ -556,7 +575,7 @@ def serve(root, store, once=False, out=None):
     before = None
     with contextlib.suppress(ValueError, OSError):  # not the main thread
         before = signal.signal(signal.SIGTERM, lambda *_: sys.exit(143))
-    host, operator, failed, recovered = platform.node(), kj_store.operator_id(), [], None
+    host, operator, failed, recovered, idle = platform.node(), kj_store.operator_id(), [], None, None
     try:
         while True:
             if recovered is None or time.monotonic() - recovered >= RECOVER_S:
@@ -565,6 +584,10 @@ def serve(root, store, once=False, out=None):
             failed += drain(store, clone, host, operator, out)
             if once:
                 break
+            if idle_exit is not None:
+                idle = None if pending(store, clone, host, operator, LIVE_STATES) else (idle if idle is not None else time.monotonic())
+                if idle is not None and time.monotonic() - idle >= idle_exit:
+                    break
             time.sleep(poll_seconds())
     finally:
         if before is not None:

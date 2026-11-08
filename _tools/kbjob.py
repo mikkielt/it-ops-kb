@@ -12,13 +12,15 @@
                                         deduped true, also when submits race (one job); after a terminal state (succeeded,
                                         failed, refused, cancelled) a submit makes a new job with its attempt raised by one
 
-  kbjob.py [--store PATH] serve [--once]
+  kbjob.py [--store PATH] serve [--once] [--idle-exit S]
                                         run the queued jobs of this host, clone and operator in submit order, one at a time
                                         (`kj_exec`): each is leased as jobrun/JOB, moved queued to running, run as the leader of a
                                         process group of its own in the clone with its output appended to the job's output.log,
                                         and moved to succeeded (exit 0), refused (exit 1 and a line `... stopped at step NAME:`)
                                         or failed. --once drains the queue and exits 0 (1 when a job failed); without it serve
-                                        keeps polling. A second serve on the host exits 0 naming the running one's pid.
+                                        keeps polling, or ends after S seconds with no live job (--idle-exit, which `ensure` sets for a store of its own). One
+                                        serve runs per store and host (a lock file per store in the host lock directory): a second serve
+                                        for the same store exits 0 naming the running one's pid, one for another store runs beside it.
                                         At its start and every 30 s serve recovers the jobs a dead executor left in running, waiting-lock
                                         or waiting-merge (lease jobrun/JOB expired, pid gone): lost, then queued again with attempt
                                         raised by one the first time, failed the second; a child still running is adopted.
@@ -36,12 +38,13 @@
                                         not in a terminal state, oldest first
   kbjob.py [--store PATH] log JOB [--tail N]
                                         print the last N lines (default 40) of the job's output log; exit 1 before it has one
-  kbjob.py [--store PATH] ping          print the pid of this host's executor (the pid its host file `kb-jobs-serve.lock` names, while that
+  kbjob.py [--store PATH] ping          print the pid of this host's executor of the store (the pid its host file names, while that
                                         process runs) and exit 0; print `kbjob: no executor on this host` and exit 1 when none runs
   kbjob.py [--store PATH] ensure        ping; when none runs, start `serve` detached (a session of its own, stdin closed, output appended
                                         to kb-jobs/serve.log in the git common directory, so it outlives the session that started it),
                                         wait up to 10 s for the host file to name a live pid and print `kbjob: serving pid N` (exit 0);
-                                        exit 1 printing the log's last line when none came up
+                                        exit 1 printing the log's last line when none came up. The child inherits the environment; for
+                                        a --store other than the clone's own it ends by itself after 60 s with no live job
   kbjob.py [--store PATH] login-item --print
                                         print a macOS LaunchAgent plist (Label, ProgramArguments serve, RunAtLoad, KeepAlive,
                                         StandardErrorPath) and a systemd user unit that run serve at login; it writes nothing and
@@ -71,6 +74,7 @@ import sqlite3
 import sys
 from pathlib import Path
 
+import bl_base
 import coord
 import kj_exec
 import kj_follow
@@ -95,8 +99,9 @@ def build_parser():
     sub.add_parser("ensure", help="start the executor detached when none runs, wait for it, print `kbjob: serving pid N`")
     li = sub.add_parser("login-item", help="print a macOS LaunchAgent plist and a systemd user unit that run serve at login")
     li.add_argument("--print", dest="show", action="store_true", help="print them (the only mode: nothing is installed)")
-    s =sub.add_parser("serve", help="run the queued jobs of this host, clone and operator, one at a time")
+    s = sub.add_parser("serve", help="run the queued jobs of this host, clone and operator, one at a time")
     s.add_argument("--once", action="store_true", help="drain the queue and exit (1 when a job failed)")
+    s.add_argument("--idle-exit", type=float, default=None, metavar="S", help="exit 0 after S seconds with no live job (`ensure` sets it for a store of its own)")
     f = sub.add_parser("follow", help="print one line per move of a job and exit with its result (0, 1, 3; 4 past --timeout)")
     f.add_argument("job")
     f.add_argument("--since", type=int, default=0, help="the event sequence after which to print (default 0)")
@@ -153,19 +158,23 @@ def ensure_command(store):
 
 def run(args, parser):
     if args.command == "serve":
-        return kj_exec.serve(str(ROOT), kj_store.resolve_store(ROOT, args.store), once=args.once)
+        return kj_exec.serve(str(ROOT), kj_store.resolve_store(ROOT, args.store), once=args.once, idle_exit=args.idle_exit)
     if args.command == "login-item":
         if not args.show:
             parser.error("login-item only prints: pass --print")
         return kj_exec.login_item(str(ROOT), args.store)
     if args.command == "ping":
-        return kj_exec.ping()
+        return kj_exec.ping(str(ROOT), kj_store.resolve_store(ROOT, args.store))
     if args.command == "ensure":
         return ensure_command(kj_store.resolve_store(ROOT, args.store))
     if args.command == "submit":
         if not args.no_ensure:
             given = options_of(args)
             kj_ops.check_job(args.op, args.subject, args.by or None, given)  # a refused job starts no executor
+            if kj_ops.OPS[args.op]["subject"]:
+                bl_base.load_settings(str(ROOT))
+                if not (ROOT / bl_base.rel_dir() / f"{args.subject}.json").is_file():
+                    raise kj_ops.Refusal(f"{args.subject} is no item of this clone's backlog: a subject is the id of an item file under {bl_base.rel_dir()}")
             pid, started, error = kj_exec.ensure(str(ROOT), kj_store.resolve_store(ROOT, args.store))
             if error is not None:
                 print(f"kbjob: no executor and none started, job not queued: {error}", file=sys.stderr)
