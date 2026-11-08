@@ -45,8 +45,6 @@
   "touches": [
     "_tools/kbgit.py",
     "_tools/kg_sync.py",
-    "_tools/kg_bridge.py",
-    "_tools/kbpublic.py",
     "kb/_self/git.md",
     "kb/_self/plugin.md",
     "kb/_self/extension-changelog.md",
