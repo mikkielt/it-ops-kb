@@ -242,6 +242,11 @@ LIST_VALUES = {("intent", "item"): ID_LIST, ("intent", "topic"): ID_LIST, ("inte
                ("progress", "gates"): ID_LIST, ("coordinate", "touch"): GLOB_LIST}
 INTENT_SECONDS = 86400
 GROUP_KEYS = "group/"  # a group's keys: group/G1/.../GN/<name>, written by operators of G1/.../GN and of the groups above it
+PLACEMENT_KEY = ("policy", "placement")  # a group's placement overrides: group/G1/.../GN/policy/placement, held by G1/.../GN
+PLACEMENT_OPS = ("check", "land", "done", "stage-back", "sync-push", "bench", "dispatch", "begin")  # the operations a placement names
+PLACEMENT_EXECUTORS = ("workstation", "server", "ci")
+PLACEMENT_IDENTITIES = ("none", "group-bot", "operator")
+PLACEMENT_FIELDS = ("executor", "identity", "fallback", "fallback_after_s", "budget_cap_usd")
 MAX_GROUP_DEPTH = 20 # GitLab's deepest group nesting: a key file below that many group directories is not read
 SESSION_LEASE = "session/"  # the presence lease of a session: key session/<id>, held while the session lives
 RESERVATIONS = "reservation/"  # an imported external reservation: key reservation/<source>/<holder>/<path glob>
@@ -350,12 +355,13 @@ def holder_name(args):
 
 def key_scope(key):
     """The group path a key belongs to, as a list of group names, else None for a key that no group holds: `group/G1/.../GN/NAME`
-    is held by G1/.../GN, `team/NAME/KEY` by the one-level group NAME; a key with no name after its groups is open."""
+    is held by G1/.../GN, `team/NAME/KEY` by the one-level group NAME; a key with no name after its groups is open. The
+    placement key `group/G1/.../GN/policy/placement` is held by G1/.../GN: `policy` is no group below it."""
     parts = key.split("/")
     if len(parts) < 3:
         return None
     if parts[0] == "group":
-        return parts[1:-1]
+        return parts[1:-2] if len(parts) >= 4 and tuple(parts[-2:]) == PLACEMENT_KEY else parts[1:-1]
     if parts[0] == "team":
         return parts[1:2]
     return None
@@ -477,8 +483,49 @@ def get(args, clock):
     return {"ok": True, **row_json(row)}
 
 
+def placement_refusal(key, value):
+    """Refuse, exit 2, a put of a group's placement key whose VALUE is no placement object: one JSON object mapping an
+    operation of PLACEMENT_OPS to an object of PLACEMENT_FIELDS (each optional), the error naming the field at fault."""
+    if not (key.startswith(GROUP_KEYS) and len(key.split("/")) >= 4 and tuple(key.split("/")[-2:]) == PLACEMENT_KEY):
+        return
+
+    def bad(why):
+        return Refused({"ok": False, "key": key, "error": f"{key} holds one JSON object mapping an operation to "
+                        f"{{{', '.join(PLACEMENT_FIELDS)}}}: {why}"}, 2)
+
+    def number(op, name, v, allow_null):
+        if v is None and allow_null:
+            return
+        if isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v) or v < 0:
+            raise bad(f"{op}.{name} is {'null or ' if allow_null else ''}a number of 0 or more, not {json.dumps(v)[:40]}")
+
+    try:
+        placement = json.loads(value)
+    except (ValueError, RecursionError):
+        raise bad("the value is not JSON") from None
+    if not isinstance(placement, dict):
+        raise bad("the value is not an object")
+    for op, entry in placement.items():
+        if op not in PLACEMENT_OPS:
+            raise bad(f"operation {op[:40]!r} is none of {', '.join(PLACEMENT_OPS)}")
+        if not isinstance(entry, dict):
+            raise bad(f"{op} is not an object")
+        for name in entry:
+            if name not in PLACEMENT_FIELDS:
+                raise bad(f"{op}.{str(name)[:40]} is none of {', '.join(PLACEMENT_FIELDS)}")
+        for name, allowed in (("executor", PLACEMENT_EXECUTORS), ("identity", PLACEMENT_IDENTITIES), ("fallback", PLACEMENT_EXECUTORS)):
+            if name in entry and not (isinstance(entry[name], str) and entry[name] in allowed
+                                      or name == "fallback" and entry[name] is None):
+                raise bad(f"{op}.{name} is {'null or ' if name == 'fallback' else ''}one of {', '.join(allowed)}, not {json.dumps(entry[name])[:40]}")
+        if "fallback_after_s" in entry:
+            number(op, "fallback_after_s", entry["fallback_after_s"], False)
+        if "budget_cap_usd" in entry:
+            number(op, "budget_cap_usd", entry["budget_cap_usd"], True)
+
+
 def put(args, clock):
     scope_refusal(args)
+    placement_refusal(args.key, args.value)
     with Tx(args.store) as con:
         now = clock()
         if args.token is not None:

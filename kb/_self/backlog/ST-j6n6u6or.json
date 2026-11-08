@@ -51,6 +51,45 @@
   "depends_on": [
     "ST-nzcbf2ms"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which operations may a group's placement override name, and are its fields optional?",
+      "options": [
+        "the eight operations of the planned closed table (check, land, done, stage-back, sync-push, bench, dispatch, begin), every field optional, an unknown field refused",
+        "only the operations kj_ops.OPS holds today, every field required"
+      ],
+      "recommendation": "the eight operations of the planned closed table (check, land, done, stage-back, sync-push, bench, dispatch, begin), every field optional, an unknown field refused",
+      "do": {
+        "the eight operations of the planned closed table (check, land, done, stage-back, sync-push, bench, dispatch, begin), every field optional, an unknown field refused": "ST-j6n6u6or",
+        "only the operations kj_ops.OPS holds today, every field required": "ST-j6n6u6or"
+      },
+      "class": "push",
+      "answer": "the eight operations of the planned closed table (check, land, done, stage-back, sync-push, bench, dispatch, begin), every field optional, an unknown field refused",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which group holds the key group/G1/.../GN/policy/placement?",
+      "options": [
+        "G1/.../GN: the trailing policy is no group, so a group named policy below GN gains no write to its parent's overrides",
+        "G1/.../GN/policy: the generic rule that every name before the last is a group"
+      ],
+      "recommendation": "G1/.../GN: the trailing policy is no group, so a group named policy below GN gains no write to its parent's overrides",
+      "do": {
+        "G1/.../GN: the trailing policy is no group, so a group named policy below GN gains no write to its parent's overrides": "ST-j6n6u6or",
+        "G1/.../GN/policy: the generic rule that every name before the last is a group": "ST-j6n6u6or"
+      },
+      "class": "design",
+      "answer": "G1/.../GN: the trailing policy is no group, so a group named policy below GN gains no write to its parent's overrides",
+      "by": "agent"
+    }
+  ],
   "notes": "Check 2 passes before the work by design: it pins that a local put and get of group/<path>/policy/placement round-trips the override unchanged, which the schema refusal of check 1 must not break.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-61c966d6",
