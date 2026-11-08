@@ -215,7 +215,9 @@
       },
       "class": "design",
       "answer": "A folder per code with stop.txt, suffixes.csv and fold.csv",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g5",
