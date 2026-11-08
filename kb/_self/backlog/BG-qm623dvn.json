@@ -54,7 +54,11 @@
         "--tools Read,Bash and --permission-mode dontAsk beside the allow list: Edit, Write and Agent are gone, and a Bash command the clone's own .claude/settings.json allows still runs": "BG-qm623dvn",
         "The same, and the throwaway clone's settings.json of a paid session has its permissions.allow replaced by the allow list, so Bash runs only git status and rag.py": "BG-qm623dvn"
       },
-      "class": "design"
+      "class": "design",
+      "answer": "The same, and the throwaway clone's settings.json of a paid session has its permissions.allow replaced by the allow list, so Bash runs only git status and rag.py",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
