@@ -2,7 +2,7 @@
   "id": "ST-nwwcf3kk",
   "kind": "story",
   "title": "kbjob.py submit queues one job per clone, operation and subject, and a second submit returns the live job",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-tmw3tokk",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",
@@ -70,5 +70,7 @@
     "ST-hojylkmb"
   ],
   "notes": "Interface the paired MCP planner (plan/mcp-write) names: kj_store.submit(root, op, subject, by, options=None, store=None) -> {job, state, deduped, seq, follow} and kj_store.status(root, job, since=0, store=None) -> {job, state, exit, step, log, events, last}; job states queued, running, waiting-lock, waiting-merge, succeeded, failed, refused, cancelled, lost (terminal: succeeded, failed, refused, cancelled). Choices: module names kbjob.py with kj_* behind it, not ops*, so the query log's ops rows and backlog.py ops stay one meaning; the job id is random (kbid style) and idempotence is a coord key jobkey/<sha256 of clone path, op, subject> holding the live job id, written with put at the revision read, so racing submits meet one winner (coord.py:455 put, BEGIN IMMEDIATE at coord.py:274); a closed operation table is the authority rule: publish, answer and any operator-only command are no operation, and the executor runs only argv the table builds (the CLI's own gates and refusals then apply unchanged). by is claude-<8 hex>, never a full session id (memory claim-by-no-session-guid). No test is added: code.md allows tests only for critical parts and the suite sits at its ceiling; the planted checks above run the tool. Evidence measured 2026-11-08 from kb/_querylog/ops, real items 2026-10-02..2026-11-08: land.end ok median 103 s for content (p90 628 s, n=1701) and 430 s for code (n=133); orchestrator sessions held 285 foreground coord waits of 30 s or more, median 212 s, 20.8 h of 104.7 h file wall (20%). Order agreed 2026-11-08 with SP-ep7ck2ab's manager (ask A1e21b0d155): shared kb/_self/map.csv rows land by first claim, the later item rebases; no hard dependency.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-61c966d6",
+  "operator": "op-f618a13e"
 }
