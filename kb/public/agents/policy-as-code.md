@@ -1,9 +1,9 @@
 ---
 topic: agents/policy-as-code
 priority: P3
-applies_to: "Open Policy Agent v1.21.2 (Rego, bundles, REST API); Cedar docs at commit 3a37098e (2026-09-25); Amazon Verified Permissions (Cedar 4.7); Policy in Amazon Bedrock AgentCore (GA 2026-03-03); Azure Policy effects, remediation and Policy as Code workflow (Learn, 2026-10)"
-retrieved_utc: 2026-10-15
-sources: [S-tcvnt2sk, S-iq6vp7q2, S-hvug6eux, S-fnw2pa3v, S-qbgkkkgs, S-lyw4ziag, S-ksyczslf, S-fd4vxmr2, S-gbndonu5, S-mflbdcpq, S-o6ybh6w2, S-tlwezbfd, S-3wgje3ri, S-sfwmzlty, S-dyazlyh5, S-nfmfjmf4, S-y5rp4spd, S-xgmsiz27, S-yzbv3f7p, S-gca2wrxp, S-prq2x4xt, S-ady4i6kn, S-o43a4uum, S-nvgcf3ru, S-777jjbr6]
+applies_to: "Open Policy Agent v1.21.2 and v1.21.3 (Rego, bundles, bundle signing and configuration, REST API); Cedar docs at commit 3a37098e (2026-09-25); Amazon Verified Permissions (Cedar 4.7); Policy in Amazon Bedrock AgentCore (GA 2026-03-03); Azure Policy effects, remediation and Policy as Code workflow (Learn, 2026-10)"
+retrieved_utc: 2026-11-08
+sources: [S-tcvnt2sk, S-iq6vp7q2, S-hvug6eux, S-fnw2pa3v, S-qbgkkkgs, S-lyw4ziag, S-ksyczslf, S-fd4vxmr2, S-gbndonu5, S-mflbdcpq, S-o6ybh6w2, S-tlwezbfd, S-3wgje3ri, S-sfwmzlty, S-dyazlyh5, S-nfmfjmf4, S-y5rp4spd, S-xgmsiz27, S-yzbv3f7p, S-gca2wrxp, S-prq2x4xt, S-ady4i6kn, S-o43a4uum, S-nvgcf3ru, S-777jjbr6, S-mz4pgiw4, S-xrw6ar44, S-iqk7tct2, S-rv5ikahl, S-jyby5slx, S-rjjydcbh]
 status: partial
 ---
 
@@ -24,11 +24,39 @@ Policy-as-code moves an authorization or governance rule out of the code that en
 - A bundle is a gzipped tarball of policy and data files built with `opa build`, which can also sign it; data files are placed in the `data` document by their directory path inside the tarball. [DOC S-o43a4uum]
 - OPA polls for bundles between `min_delay_seconds` and `max_delay_seconds`, sends the last `Etag` in `If-None-Match` so the server can answer 304 Not Modified, and can use HTTP long polling (`long_polling_timeout_seconds`), falling back to periodic polling when the server does not support it. [DOC S-o43a4uum]
 - With `persist: true` OPA writes each activated bundle to disk and starts from the most recently activated one when the bundle server cannot be reached. [DOC S-o43a4uum]
-- A signed bundle carries a `.signatures.json` file of JWTs listing the files and their hashes; remote bundles take their verification keys from the configuration's `keys` section, and a bundle that holds signatures while its configuration names no signing fails verification. [DOC S-o43a4uum]
+- A signed bundle carries a `.signatures.json` file of JWTs listing the files and their hashes; remote bundles take their verification keys from the configuration's `keys` section, and a bundle that holds signatures fails verification when no verification key is configured at all. [DOC S-o43a4uum]
 - `opa eval` and `opa test` do not verify bundle signatures, so signature checking protects a running OPA that downloads bundles, not the pre-production commands. [DOC S-o43a4uum]
 - OPA can also download bundles stored as images in OCI-compatible registries, with one bundle layer per image. [DOC S-o43a4uum]
 - OPA's decision logs record each policy query with the policy queried, its input and the bundle metadata, for auditing and offline debugging; with decision logging on, API responses include a `decision_id`. [DOC S-qbgkkkgs]
 - Rego policies are unit-tested with `opa test`, whose test rules replace the input with `with input as {...}` and report PASS or FAIL per test. [DOC S-lyw4ziag]
+- `opa test` runs every rule whose name starts with `test_` in the Rego files it is given, loading the files of a directory argument; a `_test` package suffix is good practice but not required, and a rule prefixed `todo_` is reported as `SKIPPED`. [DOC S-lyw4ziag]
+- OPA is a graduated project of the Cloud Native Computing Foundation, and its repository at v1.21.3 is licensed under the Apache License, Version 2.0. [DOC S-rv5ikahl, S-jyby5slx]
+
+### OPA bundle manifest, signing and configuration
+- A bundle's `.manifest` may carry a `revision` (for example a Git commit hash) and `roots`, the path prefixes of `data` the bundle owns; a manifest with no `roots` defaults to `[""]`, so all data and policy must come from that bundle. [DOC S-o43a4uum]
+- OPA checks a scoped bundle when it loads it: the roots of one manifest must not overlap (not checked across bundles), each policy's `package` and all data must lie under the roots, and a failure is reported through the Status API. [DOC S-o43a4uum]
+- A new snapshot bundle erases and overwrites the policy and data under its manifest's roots and leaves what other roots hold intact. [DOC S-o43a4uum]
+- A bundle is fetched as `GET` of the service url followed by the bundle's `resource`, which defaults to `bundles/<name>` for the bundle's key in the configuration. [DOC S-o43a4uum]
+- A bundle service should set an `Etag` on bundle responses; OPA sends it back in `If-None-Match`, and the service may answer `304 Not Modified` when the bundle is unchanged. [DOC S-o43a4uum]
+- `.signatures.json` is a JSON object whose `signatures` array holds JWTs; OPA currently supports one signature per bundle. [DOC S-o43a4uum]
+- The JWT payload must list `files`, each with `name` (a path in the bundle), `hash` and `algorithm`; `scope`, `iat` and `iss` are optional claims. [DOC S-o43a4uum]
+- The documented file hash algorithms are MD5, SHA-1, SHA-224, SHA-256, SHA-384, SHA-512, SHA-512-224 and a last entry printed as `SHA-512-25`. [DOC S-o43a4uum]
+- The hashing code at the same tag names that last algorithm `SHA-512-256`, beside `SHA-512-224`. [CODE S-iqk7tct2: v1/bundle/hash.go#walk, HashingAlgorithm]
+- A file that is not JSON or YAML is hashed over its bytes; a JSON or YAML file is parsed, the fields of every object are ordered alphabetically, and the result is hashed, so whitespace does not change the hash. [DOC S-o43a4uum]
+- The code decides "structured" by the file's base name, not its extension: only `data.json`, `data.yaml`, `.signatures.json` and `.manifest` are parsed before hashing, so any other `.json` file in a bundle is hashed over its bytes. [CODE S-rjjydcbh: v1/bundle/bundle.go#IsStructuredDoc]
+- The hasher writes an object as `{`, each key JSON-encoded in sorted order, `:` and the value's encoding, with `,` between members and `}` at the end, an array as `[`, its elements and `]`, and every other value through Go's JSON encoder with HTML escaping off and the trailing newline removed. [CODE S-iqk7tct2: v1/bundle/hash.go#walk, HashingAlgorithm]
+- Verification checks the JWT signature with the configured key, that the payload and the bundle hold the same set of files, and each file's hash; any failure leaves the previous bundle active and reports an activation failure in the Status API and the logs. [DOC S-o43a4uum]
+- The key is chosen by `keyid` from the command line, else from the bundle's `signing` configuration, else from the JWT header's `kid`; a payload `scope` must equal the configured scope exactly, and `iat` and `iss` play no part in verification. [DOC S-o43a4uum]
+- Any `bundles[_].signing` block, even an empty one, enforces verification. Top-level `keys` without one verify only bundles that carry `.signatures.json`, so an unsigned bundle still activates, with a warning logged at startup. [DOC S-o43a4uum, S-mz4pgiw4]
+- Delta bundles cannot be signed: a bundle configured to verify signatures rejects them unless `bundles[_].signing.allow_unsigned_delta_bundles` is set, and activated delta bundles are not persisted. [DOC S-o43a4uum, S-mz4pgiw4]
+- A `keys` entry has `key` (described as a PEM public key), `private_key`, `algorithm` (default `RS256`) and `scope`, and a scope in the bundle's `signing` block takes precedence over the key's. [DOC S-mz4pgiw4]
+- The supported signing algorithms are ES256, ES384, ES512, HS256, HS384, HS512, PS256, PS384, PS512 and RS256 to RS512, HMAC with SHA-256 being `HS256`. [DOC S-mz4pgiw4]
+- For HS256, HS384 and HS512 the verifier uses the configured key string's bytes as the HMAC secret; for the other algorithms it parses the key as a PEM block. [CODE S-xrw6ar44: v1/bundle/verify.go#parseVerificationKey]
+- A service authenticates OPA's bundle requests with `services[_].credentials.bearer.token`, or `token_path` naming a file that holds the token, and an optional `scheme`. [DOC S-mz4pgiw4]
+- `opa run` replaces `${NAME}` references in its configuration file with the environment variable's value, leaving a reference to an undefined variable unreplaced; other commands do not substitute. [DOC S-mz4pgiw4]
+- `opa run --set-file KEY=PATH` sets a configuration value from a file's contents, such as a bearer token kept in a secrets file. [DOC S-mz4pgiw4]
+- OPA masks secrets given in a service's `credentials` field from the `/v1/config` API, but a credential placed in custom configuration outside that field is returned to callers. [DOC S-mz4pgiw4]
+- `persistence_directory` defaults to `$PWD/.opa`, and a persisted bundle is written by default to `./.opa/bundles/<bundle-name>/bundle.tar.gz`; `bundles[_].size_limit_bytes` caps each file in a bundle at 1073741824 bytes by default. [DOC S-mz4pgiw4, S-o43a4uum]
 
 ### Cedar policies
 - A Cedar authorization request has four parts, principal, action, resource and context (PARC), and asks whether that principal may take that action on that resource in that context. [DOC S-ksyczslf]
@@ -80,6 +108,9 @@ Policy-as-code moves an authorization or governance rule out of the code that en
 - Both decision engines suit a tiered confirm gate: a Cedar `forbid` on higher-tier tools unless the context carries a confirmation, or a Rego rule with `default allow := false`, keeps the tier table in reviewed policy files rather than in the server's code. [DER S-ksyczslf, S-fnw2pa3v: forbid overrides permit; default supplies the fallback value]
 - No page of the OPA docs (v1.21.2), the Cedar docs or the AgentCore Policy page, read 2026-10-15, describes OPA or Cedar placed in front of an MCP server's tools outside AgentCore Gateway; two other projects' documentation does (the next two facts), read 2026-10-21. [UNK: looked in the OPA docs at v1.21.2, the Cedar docs and the AgentCore Policy page, 2026-10-15]
 - Dapr's MCP access control page says MCP transports route every tool call through one HTTP endpoint with the tool name inside the JSON-RPC body (`params.name`), so path-based access control rules give no per-tool control, and recommends layering an OPA middleware on the MCP server's inbound pipeline that reads the body, extracts the tool name and applies a Rego policy keyed by caller App ID and tool name. [DOC S-nvgcf3ru]
+- A bundle server written without OPA's own tooling must hash a `data.json` or `.manifest` file as OPA does: compact JSON with sorted keys (Python's `json.dumps(v, sort_keys=True, separators=(",", ":"), ensure_ascii=False)` is close), not the file's bytes, or a correctly signed bundle fails verification; how Go's encoder writes numbers can still differ from another language's, so numeric data is safest checked against `opa build --signing-key` output. [DER S-o43a4uum, S-iqk7tct2, S-rjjydcbh: structured files, chosen by base name, are hashed after sorting keys; primitives go through Go's JSON encoder]
+- An HS256-signed bundle needs only a shared secret on both sides, an HMAC a standard library can compute, but the secret then verifies and signs alike, so whoever can read OPA's configuration can sign bundles; RS256 or ES256 keep signing apart from verification. [DER S-mz4pgiw4, S-xrw6ar44: HMAC algorithms take the key string as the secret; the other families use PEM keys]
+- A `${NAME}` reference to a key or token works only under `opa run` and stays literal when the variable is unset, so a deployment must set it before start; a file named by `token_path` or `--set-file` keeps the token out of the configuration and the environment. [DER S-mz4pgiw4: substitution only with opa run, none for an undefined variable; token_path and --set-file read files]
 - Stacklok's ToolHive documentation describes Cedar policies evaluated on every request to an MCP server, denying anything not explicitly permitted: the principal is `Client::<client_id>` taken from the access token's `sub` claim, an action is such as `Action::"call_tool"`, and a resource is such as `Tool::"weather"`. [DOC S-777jjbr6]
 
 ## Reference

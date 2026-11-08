@@ -2,9 +2,9 @@
 topic: gitlab/multi-project-pipelines
 priority: P3
 applies_to: "GitLab 19.x docs (gitlab-org/gitlab master @9f1632e2, retrieved 2026-10-15): downstream pipelines, the `trigger` keyword, pipeline trigger API, CI/CD job token allowlist and fine-grained permissions; Free, Premium and Ultimate on GitLab.com, Self-Managed and Dedicated"
-retrieved_utc: 2026-10-21
-sources: [S-pt32lcdt, S-s67nwj2e, S-xz7iisq3, S-7zthwzzb, S-5pu4zmds]
-status: complete
+retrieved_utc: 2026-11-08
+sources: [S-pt32lcdt, S-s67nwj2e, S-xz7iisq3, S-7zthwzzb, S-5pu4zmds, S-obz2yhhs, S-k5jbt3xk]
+status: partial
 ---
 
 # GitLab multi-project pipelines: trigger jobs, variables, mirrored status and job token scope
@@ -109,6 +109,25 @@ settings for job-token Git pushes. The token never carries more than the rights 
   data or a query string (not recommended); job tokens cannot authenticate GraphQL requests. [DOC S-7zthwzzb]
 - Of the Pipelines API, a job token reaches only `PUT /projects/:id/pipelines/:pipeline_id/metadata`, and of the
   trigger API only `POST /projects/:id/trigger/pipeline`. [DOC S-7zthwzzb]
+- Pipeline trigger tokens are Free tier; creating one needs the Maintainer or Owner role in the project, and the token
+  impersonates its creator's project access and permissions. [DOC S-obz2yhhs]
+- Only the creator of a trigger token can view and copy it in full; other project members see its first 4
+  characters, and a revoked trigger token cannot be restored. [DOC S-obz2yhhs]
+- The token and `ref` go as form fields (`--form token=... --form ref=...`) or in the query string; variables go as
+  `variables[KEY]=value` and inputs as `inputs[name]=value`, the inputs validated against the pipeline's
+  `spec:inputs`. [DOC S-obz2yhhs]
+- Variables passed in a trigger call have the highest CI/CD variable precedence and override any variable of the
+  same name, and GitLab's page recommends inputs over variables for better security and flexibility. [DOC S-obz2yhhs]
+- A pipeline started with a trigger token has `CI_PIPELINE_SOURCE` `trigger` and `CI_PIPELINE_TRIGGERED` set to
+  `true`; one started with the job token or the `trigger` keyword has `pipeline`. [DOC S-obz2yhhs]
+- A `{"message":"404 Not Found"}` answer to a trigger call can mean a personal access token was sent instead of a
+  pipeline trigger token. [DOC S-obz2yhhs]
+- Passing variables in a trigger call also meets the project's minimum role for pipeline variables
+  (`gitlab/variables.md`), which on a project at `no_one_allowed` stops the pipeline whoever owns the token; the
+  role it is checked against is the token owner's, since the token impersonates its creator. [DER S-obz2yhhs,
+  S-k5jbt3xk: the token impersonates its creator; pipeline variables need the configured minimum role]
+- Neither page read says whether a trigger call that passes only `inputs` is held by the minimum role for pipeline
+  variables. [UNK: S-obz2yhhs and S-k5jbt3xk at commit a1faf261 read for inputs and the minimum role, 2026-11-08]
 
 ### Job token scope: what one project's job may do in another
 - `CI_JOB_TOKEN` is generated per job, valid only while the job runs, masked in job logs, and has the access level of

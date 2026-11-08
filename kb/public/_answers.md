@@ -4679,3 +4679,21 @@ _Agent: kb-research_
 - See agents/decision-records.md, claude/settings-and-scopes.md, claude/otel-monitoring.md.
 
 _Agent: kb-research_
+
+## QK-operations-placement-stories-need-opa-bundles. What do the operations placement stories need from OPA bundles, GitLab CODEOWNERS, subgroups and pipeline triggers?
+- A served bundle is a gzipped tarball with an optional `.manifest` (`revision`, `roots`; no `roots` means the bundle owns all data and policy), fetched as `GET` of the service url plus `resource` (default `bundles/<name>`), with `Etag` and `If-None-Match` for 304 answers. [DOC S-o43a4uum]
+- A signed bundle adds `.signatures.json`, a `signatures` array holding one JWT whose payload lists `files` (`name`, `hash`, `algorithm`) and optionally `scope`; OPA checks the signature, the same file set and each hash, and keeps the previous bundle on any failure. [DOC S-o43a4uum]
+- JSON and YAML files are hashed after their object keys are sorted, not over their bytes; the code writes compact JSON with sorted keys and Go's encoding of primitives. [CODE S-iqk7tct2: v1/bundle/hash.go#walk]
+- For HS256, HS384 and HS512 the bundle verifier takes the configured key string's bytes as the HMAC secret. [CODE S-xrw6ar44: v1/bundle/verify.go#parseVerificationKey]
+- Any `bundles[_].signing` block enforces verification, while top-level `keys` alone lets unsigned bundles through. [DOC S-o43a4uum]
+- OPA's configuration authenticates bundle requests with a bearer `token` or `token_path`, substitutes `${NAME}` only under `opa run` and only for defined variables, and persists bundles under `persistence_directory` (default `$PWD/.opa`). [DOC S-mz4pgiw4]
+- OPA is a graduated CNCF project under the Apache License 2.0. [DOC S-rv5ikahl, S-jyby5slx]
+- A CODEOWNERS group owner is written by its full path (`@group/subgroup`) and contributes only its direct members; the group must be the project's group, an ancestor, or invited to or shared with it; sections take the last matching entry each and may be optional (`^`) or require a count (`[Section][2]`). [DOC S-iavvx4cz]
+- Subgroups nest up to 20 levels on every tier (five or fewer advised), and members inherit into subgroups. [DOC S-25vbkrdv]
+- A pipeline trigger token impersonates its creator (a Maintainer or Owner), sets `CI_PIPELINE_SOURCE` to `trigger`, and passes `variables[KEY]` with top precedence or `inputs[name]` validated against `spec:inputs`. [DOC S-obz2yhhs]
+- Pipeline variables are held by the project's minimum role for pipeline variables, `no_one_allowed` by default for new projects in new namespaces on GitLab.com since 17.7. [DOC S-k5jbt3xk]
+- Conclusion: a standard-library bundle server can sign with HS256 if it hashes JSON files with sorted keys, so a check that hashes data files' raw bytes would refuse correct bundles. A CI trigger that names its job through `variables[KB_JOB]` can be stopped by the minimum-role setting, which makes `inputs` the safer channel where the CI file declares `spec:inputs`. A group that owns policy paths in CODEOWNERS approves through its direct members only. [DER S-o43a4uum, S-iqk7tct2, S-xrw6ar44, S-obz2yhhs, S-k5jbt3xk, S-iavvx4cz]
+- Open: whether a trigger call that passes only `inputs` is held by the minimum role for pipeline variables, and whether Go's and Python's JSON number encodings agree for every value in a data file. [UNK]
+- See agents/policy-as-code.md, gitlab/codeowners.md, gitlab/multi-project-pipelines.md, gitlab/variables.md.
+
+_Agent: kb-research_

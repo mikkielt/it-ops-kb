@@ -54,7 +54,7 @@ agents/langgraph,P3,complete,agents/langgraph.md,15
 agents/mmlw-e5-polish-embeddings,P3,partial,agents/mmlw-e5-polish-embeddings.md,31
 agents/onnx-runtime-rust-ort,P3,partial,agents/onnx-runtime-rust-ort.md,47
 agents/peer-state-sync,P3,complete,agents/peer-state-sync.md,17
-agents/policy-as-code,P3,partial,agents/policy-as-code.md,25
+agents/policy-as-code,P3,partial,agents/policy-as-code.md,31
 agents/repository-ingestion,P3,complete,agents/repository-ingestion.md,4
 agents/shared-state-concurrency,P3,partial,agents/shared-state-concurrency.md,36
 agents/test-suite-size-and-agent-overengineering,P3,partial,agents/test-suite-size-and-agent-overengineering.md,17
@@ -193,11 +193,11 @@ entra/dsregcmd,P1,complete,entra/dsregcmd.md;entra/dsregcmd-fields.csv,2
 entra/hybrid-deviceid-objectguid,P1,complete,entra/hybrid-deviceid-objectguid.md,8
 entra/stale-devices,P1,complete,entra/stale-devices.md,3
 entra/pim-and-governance,P2,complete,entra/pim-and-governance.md,16
-gitlab/codeowners,P0,complete,gitlab/codeowners.md,4
+gitlab/codeowners,P0,complete,gitlab/codeowners.md,5
 gitlab/mr-approvals,P0,complete,gitlab/mr-approvals.md,11
 gitlab/pipelines-rules,P0,partial,gitlab/pipelines-rules.md,7
 gitlab/protected-branches-tags,P0,partial,gitlab/protected-branches-tags.md,19
-gitlab/variables,P0,complete,gitlab/variables.md,2
+gitlab/variables,P0,complete,gitlab/variables.md,3
 gitlab/automated-merge-requests,P3,complete,gitlab/automated-merge-requests.md,64
 gitlab/commit-signing-and-provenance,P3,partial,gitlab/commit-signing-and-provenance.md,39
 gitlab/deploy-keys-and-tokens,P3,partial,gitlab/deploy-keys-and-tokens.md,10
@@ -214,7 +214,7 @@ gitlab/hosted-runners-windows,P3,complete,gitlab/hosted-runners-windows.md,5
 gitlab/issue-closing-patterns,P3,complete,gitlab/issue-closing-patterns.md,5
 gitlab/jira-issue-keys-in-commits,P3,partial,gitlab/jira-issue-keys-in-commits.md,3
 gitlab/job-log-timestamps,P3,complete,gitlab/job-log-timestamps.md,6
-gitlab/multi-project-pipelines,P3,complete,gitlab/multi-project-pipelines.md,5
+gitlab/multi-project-pipelines,P3,partial,gitlab/multi-project-pipelines.md,7
 gitlab/multi-repository-layouts,P3,partial,gitlab/multi-repository-layouts.md,50
 gitlab/package-registries,P3,partial,gitlab/package-registries.md,11
 gitlab/project-settings-api,P3,complete,gitlab/project-settings-api.md,7
