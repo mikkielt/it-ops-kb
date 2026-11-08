@@ -1,0 +1,23 @@
+{
+  "id": "BG-ozzvdojj",
+  "kind": "bug",
+  "title": "benchmarks.md says the paid record's cells are the mean of 3 reps, but the rows are medians",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/_self/reports/benchmarks.md states the paid record's cells as the median of 3 reps, as bench_load writes them",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "t = open('kb/_self/reports/benchmarks.md', encoding='utf-8').read()\nassert 'mean of 3 reps' not in t, 'the report calls median cells a mean'"
+    ]
+  },
+  "repro_reason": "the defect is report wording against what the code writes (statistics.median at bench_load.py:1102-1110); the text is the thing that is wrong",
+  "links": [
+    "parked: SP-wv3ob5vy review"
+  ],
+  "notes": "Review gap 2 of SP-wv3ob5vy: benchmarks.md:1422.",
+  "filed_in": "clone-0ea70e5c"
+}
