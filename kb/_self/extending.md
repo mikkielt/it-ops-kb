@@ -6,7 +6,7 @@ Everything not in `kbext.SURFACE` is internal: only the extension points and set
 
 ## Extension points
 
-`SURFACE` is a literal (`ast.literal_eval` reads it) of dicts with `name`, `signature` and `added`, the `API_VERSION` that introduced the entry; a deprecated entry also has `deprecated` and, once it stops working, `removed`. The extender of a point is the `module:attr` that `extensions.<point>` names.
+`SURFACE` is a literal (`ast.literal_eval` reads it) of dicts with `name`, `signature` and `added`, the `API_VERSION` that introduced the entry; a deprecated entry also has `deprecated` and, once it stops working, `removed`. A point also has `answer`, its answer in words, and `samples`, the inputs `kbext.py verify` calls it with (below). The extender of a point is the `module:attr` that `extensions.<point>` names.
 
 | name | signature | added | deprecated | removed |
 | --- | --- | --- | --- | --- |
@@ -87,4 +87,12 @@ The keys of a settings file (`kb/_self/coordination.md`, Coordination settings) 
 
 - **`kbext.py resolve POINT --root WS [--kb-root NAME]`** imports the module, checks its version and prints `POINT module:attr (layer LAYER, file FILE)`, or `POINT module:attr (entry point of distribution NAME)`; exit 0, or 2 for a refusal above.
 - **`kbext.py call POINT --root WS [--kb-root NAME] --json ARGS`** resolves the extender and calls it with the JSON list `ARGS` as its positional arguments (`[]` with no `--json`), then prints its answer as one JSON line. An extender that is no callable, that raises, or whose answer is not JSON exits 2 with the same one-line form. `resolve`, `call` and `surface` never exit 1.
-- **`kbext.py lint [--root REPO]`** is the compatibility check above: exit 0 (one line when there is no `ext-v` tag), or 1 naming each break; the only command that exits 1.
+- **`kbext.py lint [--root REPO]`** is the compatibility check above: exit 0 (one line when there is no `ext-v` tag), or 1 naming each break; with `verify`, one of the two commands that exit 1.
+- **`kbext.py verify --root WS [--kb-root NAME] [--timeout S]`** is the command a group's CI runs after each upstream pull (see Verifying a group's extenders below): exit 0 when every configured extender passes or none is configured, 1 when one fails, 2 for a bad argument.
+
+## Verifying a group's extenders
+
+- **A group's CI runs `python3 _tools/kbext.py verify --root WS` after each upstream pull.** It reads `extensions` through the settings layers as `resolve` does (an object-valued key such as `ingest_mappers` and a list such as `mcp_tools` count each entry; an entry point with no setting is not read), loads each extender and calls it with its point's `samples`, so a break shows at pull time, not in a user's session. `--kb-root NAME` adds `kb/NAME/settings.json` as a layer.
+- **Each extender runs in a child process** that `--timeout` (default 30 seconds) bounds, with its own `sys.path` from `extension_paths`, so a hang, an exit or a crash fails that extender and no other. It is a bound, not a sandbox: the extender runs with the group's own rights. A sample hands a lane module a throw-away repository with one empty commit, an ingest mapper an empty directory and a forge adapter a runner that runs no command.
+- **A point's `samples` and `answer` are in `kbext.SURFACE`.** A sample is `call` (the attribute to call, `""` for the extender itself) with `args`, or `value` (the attribute to read), and a `shape` that checks the answer: `str`, `list`, `list_of_str`, `suffixes`, `module`, `tools`, `adapter` or `mapping` (`kbext.SHAPES`). `mcp_tools` and `backlog_commands` extenders are only loaded and checked, never called with arguments of the group's.
+- **One line per extender.** `ok    POINT MODULE:ATTR (layer LAYER, file FILE)`, or `FAIL  point POINT: module MODULE, layer LAYER (FILE): WHY`. A module that does not load, a `KBEXT_REQUIRES` the API does not meet, a call that raises or times out, an answer of another shape and an `extensions` key that is no point of `SURFACE` all FAIL. With nothing configured it prints one line and exits 0.

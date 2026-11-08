@@ -10,6 +10,9 @@
                                                                     signature and the version that added it; exit 0
   kbext.py lint [--root REPO]                                       compare `SURFACE` at the newest `ext-v` tag with the
                                                                     working tree's: exit 1 naming each break, 0 when none
+  kbext.py verify --root WS [--kb-root NAME] [--timeout S]          call each extender the settings layers name with its
+                                                                    point's samples in a child process and check the shape
+                                                                    of the answer: one line each, exit 1 when one fails
 
 `API_VERSION` is the version of the extension API (MAJOR.MINOR.PATCH). `SURFACE` is the one registry of the public API (a
 literal: dicts with `name`, `signature`, `added`, and `deprecated` / `removed` for a deprecated one); anything not in it
@@ -35,6 +38,14 @@ the layer (`entry point` for an entry point), for a missing module, a missing at
 an extender that raises. Two entry points for one point exit 2 naming both distributions; no setting and no entry point
 exit 2 naming the point. A bad argument exits 2 too; `resolve`, `call` and `surface` never exit 1.
 
+`verify` is the check a group's CI runs after each upstream pull. For each point of `SURFACE` that `extensions.<point>`
+names in a settings layer (an object-valued setting such as `ingest_mappers` and a list such as `mcp_tools` count each
+entry) it loads the extender and calls it with the point's `samples`, each in a child process that `--timeout` (default
+30 seconds) bounds, and checks each answer with the sample's `shape` (`SHAPES`). It prints one line per extender, `ok` or
+`FAIL` with the point, the module and the layer, and exits 1 when any failed (a module that does not load, a
+`KBEXT_REQUIRES` the API does not meet, a call that raises or times out, an answer of another shape, a key of
+`extensions` that is no point of `SURFACE`), else 0, also when none is configured; a bad argument exits 2.
+
 `lint` is the gate on the API's compatibility. A repository with no tag `ext-vMAJOR.MINOR.PATCH` prints one line and exits 0.
 Otherwise it reads `API_VERSION` and `SURFACE` of `_tools/kbext.py` at the newest such tag (`git show`) and of the working
 tree with `ast`, never importing either file, and exits 1 with one line per problem: an entry removed or with a changed
@@ -45,9 +56,10 @@ entry calls when it is used.
 Answers: how a group's extender for an extension point is found, loaded and checked against the API version
 Answers: which extension points and settings keys are the public extension API, and its version
 Answers: whether a change removes or changes a public extension entry without a major API version, a deprecation and a changelog entry
-Use: python3 _tools/kbext.py resolve|call POINT --root WS | surface [--json] | lint [--root REPO]
+Answers: whether each extender a group configured still loads and answers its point's sample inputs in the shape the API promises
+Use: python3 _tools/kbext.py resolve|call POINT --root WS | surface [--json] | lint [--root REPO] | verify --root WS
 """
-import argparse, ast, importlib, json, re, subprocess, sys
+import argparse, ast, collections, importlib, json, re, subprocess, sys, tempfile
 from importlib import metadata
 from pathlib import Path
 
@@ -63,22 +75,41 @@ GROUP = "it_ops_kb"
 # Everything not listed here is internal. `points` are the extension points (the key of `extensions.<name>`), `settings`
 # the keys of a settings file an extender or a group sets. Each entry is a dict with `name`, `signature` and `added` (the
 # API_VERSION that introduced it); a deprecated one also has `deprecated` and, once it stops working, `removed`, each an
-# API_VERSION. `kb/_self/extending.md` holds the same table and `selfdoc.py check` fails when they differ.
+# API_VERSION. `kb/_self/extending.md` holds the same table and `selfdoc.py check` fails when they differ. A point also
+# has `answer` (its answer in words) and `samples`, which `verify` runs: each a dict with `shape` (a key of SHAPES, the
+# check of the answer) and either `call` (the attribute to call, "" for the extender itself) with `args` (a JSON list;
+# the strings $REPO, $SHA, $EMPTY, $TARGET, $RUN and $CWD stand for objects `verify` makes) or `value` (the attribute to
+# read, "" for the extender itself).
 SURFACE = {
     "points": [
         {"name": "lane", "signature": "module with path_lane(path) -> str and commit_paths(repo, sha) -> list",
-         "added": "0.1.0"},
+         "added": "0.1.0", "answer": "path_lane answers a string, commit_paths a list",
+         "samples": [{"call": "path_lane", "args": ["_tools/example.py"], "shape": "str"},
+                     {"call": "commit_paths", "args": ["$REPO", "$SHA"], "shape": "list"}]},
         {"name": "forge", "signature": "Adapter(target, run, cwd=None) with request, pipelines, pipeline, jobs, trace, "
-                                       "set_description, merge", "added": "0.1.0"},
-        {"name": "ranker", "signature": "rank(question, candidates) -> list of candidate paths", "added": "0.1.0"},
+                                       "set_description, merge", "added": "0.1.0",
+         "answer": "an object with the seven methods as callables",
+         "samples": [{"call": "", "args": ["$TARGET", "$RUN", "$CWD"], "shape": "adapter"}]},
+        {"name": "ranker", "signature": "rank(question, candidates) -> list of candidate paths", "added": "0.1.0",
+         "answer": "a list of path strings",
+         "samples": [{"call": "", "args": ["how do I enroll a device in Intune",
+                                            ["public/intune/enroll.md", "public/autopilot/overview.md"]],
+                      "shape": "list_of_str"}]},
         {"name": "mcp_tools", "signature": "list of dicts with name, description, inputSchema and call(arguments) -> str",
-         "added": "0.1.0"},
+         "added": "0.1.0", "answer": "a tool dict, or a list of them, each with name, description, inputSchema and call",
+         "samples": [{"value": "", "shape": "tools"}]},
         {"name": "ingest_mappers", "signature": "module with SUFFIXES and mapper(repo_dir, rev, files) -> dict",
-         "added": "0.1.0"},
-        {"name": "leak_scan", "signature": "file_hits(path, text, allow, pinned=()) -> list", "added": "0.1.0"},
+         "added": "0.1.0", "answer": "SUFFIXES lists suffixes, the mapper function answers a dict of optional lists",
+         "samples": [{"value": "SUFFIXES", "shape": "suffixes"},
+                     {"call": "", "args": ["$EMPTY", "HEAD", []], "shape": "mapping"}]},
+        {"name": "leak_scan", "signature": "file_hits(path, text, allow, pinned=()) -> list", "added": "0.1.0",
+         "answer": "a list of hits",
+         "samples": [{"call": "file_hits", "args": ["docs/example.md", "A note about corp.example.com.\n", [], []],
+                      "shape": "list"}]},
         {"name": "backlog_commands", "signature": "list of modules adding or replacing a command through bl_cli.register(name, "
                                               "handler, add_arguments=None, help=None) or bl_cli.extend(name, wrap, "
-                                              "add_arguments)", "added": "0.1.0"},
+                                              "add_arguments)", "added": "0.1.0", "answer": "each extender is a module",
+         "samples": [{"value": "", "shape": "module"}]},
     ],
     "settings": [
         {"name": "extensions", "signature": "object: point name -> module:attr", "added": "0.1.0"},
@@ -423,6 +454,210 @@ def call(point, root, args, kb_root=None):
         raise ExtensionError(f"{found['where']}: the extender raised {type(e).__name__}: {e}")
 
 
+def _expect(ok, answer, wanted):
+    return "" if ok else f"answered {type(answer).__name__}, expected {wanted}"
+
+
+def _list_of(answer, kind):
+    return isinstance(answer, list) and all(isinstance(x, kind) for x in answer)
+
+
+def _tools_problem(answer):
+    items = []
+    for part in answer if isinstance(answer, list) else [answer]:
+        items += part if isinstance(part, list) else [part]
+    for tool in items:
+        if not isinstance(tool, dict):
+            return f"a tool is a {type(tool).__name__}, expected a dict"
+        for key, kind in (("name", str), ("description", str), ("inputSchema", dict)):
+            if not isinstance(tool.get(key), kind):
+                return f"tool {tool.get('name', '?')}: key {key} is no {kind.__name__}"
+        if not callable(tool.get("call")):
+            return f"tool {tool['name']}: key call is not callable"
+    return ""
+
+
+def _adapter_problem(answer):
+    missing = [m for m in ("request", "pipelines", "pipeline", "jobs", "trace", "set_description", "merge")
+               if not callable(getattr(answer, m, None))]
+    return f"the adapter has no method {', '.join(missing)}" if missing else ""
+
+
+def _mapping_problem(answer):
+    if not isinstance(answer, dict):
+        return f"answered {type(answer).__name__}, expected a dict"
+    for key in ("packages", "imports", "entry_points", "symbols"):
+        if key in answer and not _list_of(answer[key], dict):
+            return f"key {key} is no list of dicts"
+    return ""
+
+
+# The shape checks `samples` name: each takes the answer and returns "" when it fits or one line saying why not.
+SHAPES = {
+    "str": lambda a: _expect(isinstance(a, str), a, "a string"),
+    "list": lambda a: _expect(isinstance(a, list), a, "a list"),
+    "list_of_str": lambda a: _expect(_list_of(a, str), a, "a list of strings"),
+    "suffixes": lambda a: _expect(_list_of(a, str) and a and all(x.startswith(".") for x in a), a,
+                                  "a list of suffixes such as '.foo'"),
+    "module": lambda a: _expect(isinstance(a, type(sys)), a, "a module"),
+    "tools": _tools_problem,
+    "adapter": _adapter_problem,
+    "mapping": _mapping_problem,
+}
+Target = collections.namedtuple("Target", "forge host project")
+MANY = ("mcp_tools", "backlog_commands")
+MARK = "KBEXT-VERIFY "
+
+
+def _sample_repo(tmp):
+    """A repository with one empty commit under TMP: its path and the commit."""
+    repo = Path(tmp) / "repo"
+    repo.mkdir()
+    for args in (("init", "-q"), ("-c", "user.name=kbext", "-c", "user.email=kbext@corp.example.com",
+                                   "-c", "commit.gpgsign=false", "commit", "--allow-empty", "-q", "-m", "sample")):
+        if _git(repo, *args)[0]:
+            raise ExtensionError(f"cannot make the sample repository: git {args[0]} failed")
+    return str(repo), _git(repo, "rev-parse", "HEAD")[1].strip()
+
+
+def _sample_objects(tmp, root):
+    """{placeholder: factory} for the strings the samples' arguments may hold."""
+    made = {}
+
+    def once(name, make):
+        if name not in made:
+            made[name] = make()
+        return made[name]
+
+    def empty():
+        path = Path(tmp) / "empty"
+        path.mkdir()
+        return str(path)
+
+    return {"$EMPTY": lambda: once("$EMPTY", empty),
+            "$REPO": lambda: once("repo", lambda: _sample_repo(tmp))[0],
+            "$SHA": lambda: once("repo", lambda: _sample_repo(tmp))[1],
+            "$TARGET": lambda: Target("gitlab", "gitlab.corp.example.com", "group/project"),
+            "$RUN": lambda: (lambda argv, cwd=None: (1, "", "kbext verify runs no command")),
+            "$CWD": lambda: str(root)}
+
+
+def _fill(value, objects):
+    if isinstance(value, str) and value in objects:
+        return objects[value]()
+    if isinstance(value, list):
+        return [_fill(v, objects) for v in value]
+    return value
+
+
+def _run_sample(sample, extender, module, objects):
+    """One sample's answer shape problem ("" when it fits); an ExtensionError for a call that cannot be made."""
+    name = sample.get("call", sample.get("value", ""))
+    holders = [h for h in (extender, module) if not name or hasattr(h, name)]
+    if not holders:
+        raise ExtensionError(f"no attribute {name}")
+    target = getattr(holders[0], name) if name else extender
+    if "call" in sample:
+        if not callable(target):
+            raise ExtensionError(f"{name or 'the extender'} is not callable")
+        try:
+            target = target(*_fill(sample["args"], objects))
+        except ExtensionError:
+            raise
+        except Exception as e:
+            raise ExtensionError(f"{name or 'the extender'} raised {type(e).__name__}: {e}")
+    return SHAPES[sample["shape"]](target)
+
+
+def probe(point, spec, layer, file, root, kb_root=None):
+    """(ok, one line) of the extender SPEC of POINT: it is loaded as `resolve` loads it and called with each sample of the
+    point, and each answer is checked with the sample's shape. It runs in the child process `verify` starts."""
+    entry = next((e for e in SURFACE["points"] if e["name"] == point), None)
+    if entry is None:
+        return False, (f"point {point}: module {spec.partition(':')[0]}, layer {layer} ({file}): "
+                       f"not an extension point of kbext.SURFACE")
+    try:
+        _add_paths(root, kb_root)
+        found = _import(point, spec if point != "ingest_mappers" or ":" in spec else spec + ":mapper", layer, file)
+        with tempfile.TemporaryDirectory() as tmp:
+            objects = _sample_objects(tmp, root)
+            for sample in entry["samples"]:
+                problem = _run_sample(sample, found["extender"], found["module"], objects)
+                if problem:
+                    raise ExtensionError(f"{found['where']}: {problem}")
+    except ExtensionError as e:
+        return False, " ".join(str(e).split())
+    return True, f"{point} {spec} (layer {layer}, file {file})"
+
+
+def probe_main():
+    """The child process of `verify`: reads the job as JSON on stdin and prints `MARK` and the JSON `[ok, line]`."""
+    job = json.load(sys.stdin)
+    ok, line = probe(job["point"], job["spec"], job["layer"], job["file"], job["root"], job["kb_root"])
+    print(MARK + json.dumps([ok, line]))
+
+
+def _configured_extenders(root, kb_root):
+    """[(point, spec or None, layer, file, problem)] for every extender the settings layers name under `extensions`:
+    the points of `SURFACE` in its order, then any other key; PROBLEM is set for a value that names no extender."""
+    try:
+        merged, _ = kbsettings.layered(root, "extensions", kb_root)
+    except kbsettings.SettingsError as e:
+        raise ExtensionError(str(e))
+    order = [e["name"] for e in SURFACE["points"]]
+    found = []
+    for point in [p for p in order if p in merged] + sorted(set(merged) - set(order)):
+        value, layer, file = _named(root, kb_root, "extensions", point)
+        if point == "ingest_mappers" and isinstance(value, dict):
+            specs = [value[k] for k in sorted(value)]
+        else:
+            specs = value if point in MANY and isinstance(value, list) else [value]
+        wanted = ("an object: language to module:attr" if point == "ingest_mappers"
+                  else "module:attr or a module name" + (" or a list of them" if point in MANY else ""))
+        if not specs or not all(isinstance(s, str) and s for s in specs):
+            found.append((point, None, layer, file, f"extensions.{point} must be {wanted}"))
+        found += [(point, s, layer, file, "") for s in specs if isinstance(s, str) and s]
+    return found
+
+
+def verify(root, kb_root=None, timeout=30.0):
+    """(exit code, lines) of the check of every extender the settings layers of ROOT name: one line each, `ok  ...` or
+    `FAIL  point POINT: module MODULE, layer LAYER (FILE): why`, each extender probed in a child process of its own that
+    TIMEOUT seconds bound; exit 1 when any line is a FAIL, else 0 (also with none configured)."""
+    try:
+        extenders = _configured_extenders(root, kb_root)
+    except ExtensionError as e:
+        return 1, [f"FAIL  {' '.join(str(e).split())}"]
+    if not extenders:
+        return 0, [f"kbext verify: no extender is configured in the settings layers of {root}"]
+    lines, failed = [], False
+    run = [sys.executable, "-c", "import sys; sys.path.insert(0, sys.argv[1]); import kbext; kbext.probe_main()",
+           str(Path(__file__).resolve().parent)]
+    for point, spec, layer, file, problem in extenders:
+        where = f"point {point}: module {(spec or '').partition(':')[0] or '?'}, layer {layer} ({file})"
+        if problem:
+            ok, line = False, f"{where}: {problem}"
+        else:
+            job = json.dumps({"point": point, "spec": spec, "layer": layer, "file": file, "root": str(root),
+                              "kb_root": kb_root})
+            try:
+                p = subprocess.run(run, input=job, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                                   cwd=root, timeout=timeout)
+                answers = [json.loads(l[len(MARK):]) for l in p.stdout.splitlines() if l.startswith(MARK)]
+                if answers:
+                    ok, line = answers[-1]
+                else:
+                    last = next((l for l in reversed(p.stderr.splitlines()) if l.strip()), "no output")
+                    ok, line = False, f"{where}: the child process exited {p.returncode}: {last.strip()[:200]}"
+            except subprocess.TimeoutExpired:
+                ok, line = False, f"{where}: no answer within {timeout:g} s"
+            except OSError as e:
+                ok, line = False, f"{where}: the child process cannot be started: {e}"
+        failed |= not ok
+        lines.append(f"ok    {line}" if ok else f"FAIL  {line}")
+    return (1 if failed else 0), lines
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description="A group's extenders for the kb's extension points.")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -430,6 +665,10 @@ def main(argv=None):
     sp.add_argument("--json", action="store_true", dest="as_json", help="print one JSON object")
     sp = sub.add_parser("lint", help="refuse a break of the public extension API since the newest ext-v tag")
     sp.add_argument("--root", default=".", help="the repository (default: the working directory)")
+    sp = sub.add_parser("verify", help="call each configured extender with its point's samples and check the answers")
+    sp.add_argument("--root", required=True, help="the workspace directory (holds settings.json)")
+    sp.add_argument("--kb-root", help="a kb root's name: kb/NAME/settings.json is a layer too")
+    sp.add_argument("--timeout", type=float, default=30.0, metavar="S", help="seconds each extender may take (default 30)")
     for name, help_ in (("resolve", "print the extender of POINT, its layer and file"),
                         ("call", "call the extender of POINT with a JSON list and print its answer")):
         sp = sub.add_parser(name, help=help_)
@@ -445,6 +684,14 @@ def main(argv=None):
         return 0
     if args.cmd == "lint":
         code, lines = lint(args.root)
+        print("\n".join(lines))
+        return code
+    if args.cmd == "verify":
+        if not Path(args.root).is_dir():
+            ap.error(f"--root {args.root}: not a directory")
+        if not args.timeout > 0:
+            ap.error("--timeout must be above 0")
+        code, lines = verify(args.root, args.kb_root, args.timeout)
         print("\n".join(lines))
         return code
     try:
