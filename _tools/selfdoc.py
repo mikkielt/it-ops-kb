@@ -15,7 +15,9 @@
   selfdoc.py check                 map rows naming a missing doc or matching no file, kb/_self/*.md docs with no row,
                                    dead section references, and a line of the coordination doc's Settings section
                                    that no longer holds the key, default and allowed values `kbsettings.py check`
-                                   reads at the line number its table keeps; exit 1 when any
+                                   reads at the line number its table keeps, and an entry of `kbext.SURFACE` that the
+                                   tables of `kb/_self/extending.md` lack or give differently (`extending_problems`)
+                                   or a table row the code does not have; exit 1 when any
   selfdoc.py section DOC HEADING [DOC HEADING ...]
                                    the section under each heading, down to the next heading of the same or a higher
                                    level, each line with its line number; exit 1 when a heading matches none, naming
@@ -61,6 +63,7 @@ import argparse, ast, csv, functools, io, os, pathlib, re, subprocess, sys, toke
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kbcommon  # noqa: E402
+import kbext  # noqa: E402
 import kbsettings  # noqa: E402
 import kbtools  # noqa: E402
 
@@ -224,7 +227,8 @@ def stale(root=KB, since=None, work=None):
 def check(root=KB):
     """Problems with the map: missing docs, patterns that match no file, top-level _self docs with no row, dead section
     references, command-line tools whose docstring lacks the `Answers:` or `Use:` line and, where the repository holds
-    the coordination doc, `kbsettings.check` of its Settings lines."""
+    the coordination doc, `kbsettings.check` of its Settings lines and, where it holds the extending doc,
+    `extending_problems` of its tables."""
     docs = load_map(root)
     files = set(lines(git(root, "ls-files"))) | set(lines(git(root, "ls-files", "--others", "--exclude-standard")))
     problems = []
@@ -243,6 +247,54 @@ def check(root=KB):
     settings_doc = pathlib.Path(root, kbsettings.DOC)
     if settings_doc.is_file():
         problems += kbsettings.check(settings_doc.read_text(encoding="utf-8"))
+    extending = pathlib.Path(root, EXTENDING)
+    if extending.is_file():
+        problems += extending_problems(extending.read_text(encoding="utf-8"), kbext.surface())
+    return problems
+
+
+EXTENDING = f"{SELF_REL}/extending.md"  # the doc whose tables hold the public extension API
+EXT_KINDS = (("points", "extension point"), ("settings", "settings key"))
+EXT_COLUMNS = ("signature", "added", "deprecated", "removed")
+
+
+def extending_table(text):
+    """{(kind, name): {column: text}} for the rows of the tables under the headings "Extension points" and "Settings
+    keys" of the extending doc: a row starts with `|` and its first cell is the entry's name in backticks."""
+    out, kind = {}, None
+    for line in text.splitlines():
+        if line.startswith("#"):
+            kind = next((k for k, label in EXT_KINDS if label in line.lower()), None)
+        elif kind and line.startswith("|"):
+            cells = [c.strip() for c in line.strip().strip("|").split("|")]
+            m = re.fullmatch(r"`([^`]+)`", cells[0]) if cells else None
+            if m:
+                cells += [""] * (len(EXT_COLUMNS) + 1 - len(cells))
+                out[(kind, m.group(1))] = {c: cells[i + 1].strip("`").strip() for i, c in enumerate(EXT_COLUMNS)}
+    return out
+
+
+def extending_problems(text, surface):
+    """One problem per entry of the code's extension API (`kbext.surface()`) missing from the extending doc's tables,
+    per table entry the code does not have and per field that differs; [] when the doc and the code agree."""
+    doc = extending_table(text)
+    want = {}
+    for kind, label in EXT_KINDS:
+        for e in surface.get(kind, []):
+            want[(kind, e["name"])] = {c: str(e.get(c, "")) for c in EXT_COLUMNS}
+    labels = dict(EXT_KINDS)
+    problems = []
+    for key in sorted(want):
+        kind, name = key
+        if key not in doc:
+            problems.append(f"{EXTENDING}: {labels[kind]} `{name}` is in kbext.SURFACE but has no row in the doc's table")
+            continue
+        for c in EXT_COLUMNS:
+            if doc[key][c] != want[key][c]:
+                problems.append(f"{EXTENDING}: {labels[kind]} `{name}` differs in {c}: the doc has {doc[key][c]!r}, "
+                                f"kbext.SURFACE has {want[key][c]!r}")
+    for kind, name in sorted(set(doc) - set(want)):
+        problems.append(f"{EXTENDING}: {labels[kind]} `{name}` has a row in the doc's table but is not in kbext.SURFACE")
     return problems
 
 
