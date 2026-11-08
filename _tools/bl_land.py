@@ -14,10 +14,11 @@ The names the other modules read as `bl_land.NAME` stay importable from here. `b
 commits is named by `kg_lane.lane_plan`, the one helper sync uses. It registers `done`, `land` and `merge` with `bl_cli`
 itself when imported (`backlog.py`'s USAGE puts each in its usage position), and `host-check` and the repro rules there
 call `run_check` from here."""
-import argparse, csv, hashlib, importlib, io, json, os, re, shlex, shutil, subprocess, sys, time
+import argparse, csv, hashlib, io, json, os, re, shlex, shutil, subprocess, sys, time
 from collections import namedtuple
 from pathlib import Path
 
+import bl_base
 import bl_clean
 import bl_cli
 import bl_close
@@ -103,18 +104,19 @@ def unlanded_code(root, ids):
     """(short hashes, remote, owners) of the code-lane KB-Work commits on HEAD naming any of the ids that are not
     ancestors of refs/remotes/<integration>/main as last fetched; the hashes are [] when all are, and ["(no such ref)"]
     when the ref is missing and there is a code-lane commit. The owners are the ids the late commits name, first seen
-    first, for the code/<id> branches sync opened. Content-lane commits never count; a commit's paths are
-    kblane.commit_paths', which leaves out a .gitattributes change confined to the pinned block. A project whose
-    `lane_module` is empty has no code lane: every commit is content, and nothing is late."""
+    first, for the code/<id> branches sync opened. Content-lane commits never count; a commit's paths are the lane
+    module's `commit_paths`, which leaves out a .gitattributes change confined to the pinned block. The lane module is
+    `bl_base.lane(root)`: extension point `lane`, else `lane_module`; a project with neither has no code lane: every
+    commit is content, and nothing is late."""
     import kbpublic
     remote = kbpublic.integration_remote(root)
-    if not setting("lane_module"):
+    lane_module = bl_base.lane(root)
+    if lane_module is None:
         return [], remote, []
-    kblane = importlib.import_module(setting("lane_module"))
     code = []
     for sha, paths in item_commits(root, ids).items():
-        lane_paths = kblane.commit_paths(root, sha)
-        if kblane.paths_lane(paths if lane_paths is None else lane_paths)[0] == kblane.CODE:
+        lane_paths = lane_module.commit_paths(root, sha)
+        if bl_base.code_paths(lane_module, paths if lane_paths is None else lane_paths):
             code.append(sha)
     if not code:
         return [], remote, []

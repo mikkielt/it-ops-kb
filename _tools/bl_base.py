@@ -74,6 +74,7 @@ SETTINGS = {
 }
 NAMING_FIELDS = ("id", "task", "nn", "mm", "title", "slug")  # the placeholders a `naming` template may hold
 NAMING_DEFAULTS = {"branch": "work/{id}", "mr_title": "{id}: {title}", "trailer": ""}  # "" = the brief names no trailer
+LANE_CODE = "code"  # what a lane module's path_lane answers for a code path
 WORKSPACE_NAME = "workspace"  # the name the workspace's own files take in a touch, so no repository's
 
 
@@ -240,6 +241,23 @@ def setting(name):
     if not _LOADED:
         load_settings(ROOT)
     return copy.deepcopy(_LOADED[0][0][name])
+
+
+def lane(root):
+    """The lane module of the project at ROOT, or None when it has no code lane: the extender of extension point `lane`
+    (kbext.load: a module with `path_lane(path)` and `commit_paths(repo, sha)`) when `extensions.lane` or an entry point
+    names one, else the module `lane_module` names, else None. The one reader of the lane for `bl_land.unlanded_code`
+    and `bl_precheck.after_merge_proof`; a named extender that cannot be loaded raises kbext.ExtensionError."""
+    import importlib, kbext
+    if kbext.configured("lane", root):
+        return kbext.load("lane", root)
+    name = setting("lane_module")
+    return importlib.import_module(name) if name else None
+
+
+def code_paths(lane_module, paths):
+    """The paths of PATHS that LANE_MODULE's `path_lane` puts in the code lane (`LANE_CODE`), sorted."""
+    return sorted(p for p in paths if lane_module.path_lane(p) == LANE_CODE)
 
 
 def rel_dir():

@@ -39,6 +39,8 @@ The keys of a settings file (`kb/_self/coordination.md`, Coordination settings) 
 - **An entry point is the second source.** With no `extensions.<point>` in any layer, the one entry point of group `it_ops_kb.<point>` that `importlib.metadata.entry_points` lists is the extender (its value is `module:attr` as well). Two entry points for one point exit 2 naming both distributions; no setting and no entry point exit 2 naming the point.
 - **`extension_paths` puts a directory on `sys.path`.** Each settings layer may list directories under `extension_paths`; each one is read relative to the directory of the file that names it (an absolute path stays) and put on `sys.path` before the import, a later layer's first. A group's `ext/` directory in its overlay repository is found this way, with no install step.
 
+- **`lane` is read by `bl_base.lane(root)`.** `extensions.lane` (or an entry point) names the lane module, which has `path_lane(path)` answering `code` for a code path and `commit_paths(repo, sha)`; it wins over `backlog.json`'s `lane_module`, a key that stays supported in API 1 for the kb's own `kblane`. With neither there is no code lane. A named lane module that cannot be loaded is a refusal, never a fall back to `lane_module`.
+
 ## Versions
 
 - **A module declares what it takes.** `KBEXT_REQUIRES` is a string of comma-separated bounds on `MAJOR.MINOR`, such as `>=0.1,<2.0`, with the operators `>=`, `>`, `<=`, `<` and `==`. `API_VERSION`'s `MAJOR.MINOR` must meet every bound. A module with none, or one that is no such string, is refused: an extender that does not say which API it was written for is not loaded.
