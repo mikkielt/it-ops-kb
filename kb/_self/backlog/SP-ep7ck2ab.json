@@ -2,7 +2,7 @@
   "id": "SP-ep7ck2ab",
   "kind": "sprint",
   "title": "Groups extend it-ops-kb from their own repository through a versioned extension API",
-  "status": "planned",
+  "status": "active",
   "goal": "kbsettings reads the defaults, group, clone, kb root and user layers with group locks; kbext.py loads a group's extender by point from the settings layers or an entry point and refuses a missing or mismatched one by name; backlog.json keys take overrides from the settings layers; the lane, forge, ranker, mcp_tools, ingest_mappers, gate_checks, leak_scan and backlog_commands points take a group's extender; kbext.py surface, lint, verify and kbgit.py ext-release keep the extension API versioned; kbext.py init-team writes a group overlay repository; and kbext.py rehearse takes a planted fork and overlay from one ext tag to the next with no conflict",
   "gates": [
     {
@@ -14,7 +14,12 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "creator": "op-f618a13e",
