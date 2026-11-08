@@ -236,6 +236,30 @@ def finish_job(store, job, record, code, text, out):
     return state
 
 
+def run_job(store, job, record, clone, log, token, out):
+    """Run one taken job (already in running) to its end with the lease renewed, in the calling thread; returns the state it moved
+    to: `start_job`, a wait that renews the lease, then `finish_job`. A process that cannot start moves the job to failed (exit
+    127); a signal to this process ends the child's group and moves the job to lost, then goes on; a job cancelled meanwhile
+    (kbjob.py cancel) stays cancelled, one line says so and cancelled is returned. `drain` runs its jobs by the same two steps."""
+    proc, start = start_job(store, job, record, clone, log, out)
+    if proc is None:
+        return "failed"
+    try:
+        while True:
+            try:
+                code = proc.wait(timeout=JOB_LEASE_RENEW_S)
+                break
+            except subprocess.TimeoutExpired:
+                with contextlib.suppress(coord.Refused):
+                    coord.renew(Namespace(key=lease_key(job), token=token, ttl=None, store=store), time.time)
+    except BaseException:
+        kg_lock.end_group(proc)
+        with contextlib.suppress(coord.Refused):
+            move(store, job, "lost")
+        raise
+    return finish_job(store, job, record, code, finish_text(log, start), out)
+
+
 def lease_key(job):
     return "jobrun/" + job
 
