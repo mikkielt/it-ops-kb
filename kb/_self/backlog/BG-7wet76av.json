@@ -1,0 +1,23 @@
+{
+  "id": "BG-7wet76av",
+  "kind": "bug",
+  "title": "The ledger and feedback-flag memo files of kf_fresh and kbfacts grow without bound in the shared _cache, one per worktree or sandbox path",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kf_fresh's ledger memo and kbfacts' flags memo prune files whose source path no longer exists (or are keyed so a sandbox does not add a file), so _cache holds a bounded count of them",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import glob\nn = len(glob.glob('_cache/ledger-*.json')) + len(glob.glob('_cache/flags-*.json'))\nassert n <= 20, ('memo files in _cache', n)"
+    ]
+  },
+  "repro_reason": "the defect is accumulation over many runs in the shared cache; the count of files there is the evidence, and a fixture would only show one file",
+  "links": [
+    "parked: SP-wpttdu7u review"
+  ],
+  "notes": "Review gap 3 of SP-wpttdu7u: kf_fresh.py:95 ledger-<sha1 of the ledger path>.json, kbfacts.py:1260 flags-<sha1 of the store path>.json; 197 ledger and 58 flags files, about 49 MB, since 2026-10-27.",
+  "filed_in": "clone-0ea70e5c"
+}
