@@ -2,7 +2,7 @@
   "id": "ST-k2jjwnew",
   "kind": "story",
   "title": "The kb MCP server serves a group's own tools, named as extension point mcp_tools, under the group's prefix and refuses one whose name clashes with a shipped tool",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-y7fe7qqx",
   "sprint": "SP-ep7ck2ab",
   "priority": "P2",
@@ -66,5 +66,7 @@
     "ST-xdircstf",
     "ST-y2u3sxta"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-a796fc75",
+  "operator": "op-f618a13e"
 }
