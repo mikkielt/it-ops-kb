@@ -1,0 +1,29 @@
+{
+  "id": "ST-a73x2hvh",
+  "kind": "story",
+  "title": "kbjob.py ensure starts the executor when none runs, ping tells, and submit never queues for nobody",
+  "status": "draft",
+  "parent": "EP-tmw3tokk",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbjob.py ping exits 0 printing the pid when an executor of this host runs (its host file) and 1 when none does; ensure runs ping and, when none runs, starts serve detached (new session, stdin closed, log kb-jobs/serve.log in the git common directory), waits up to 10 s for the host file to name its pid and prints kbjob: serving pid N (exit 0, or exit 1 with the log's last line); submit calls ensure first and prints kbjob: no executor, started pid N when it had to, unless --no-ensure; login-item --print prints a macOS LaunchAgent plist (Label, ProgramArguments serve, RunAtLoad, KeepAlive, StandardErrorPath) and a systemd user unit, and writes nothing and touches no file under the home directory",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,tempfile,subprocess,signal,time; d=tempfile.mkdtemp(); h=tempfile.mkdtemp(); env=dict(os.environ,KB_HOST_LOCK_DIR=d,HOME=h); s=os.path.join(d,\"c.sqlite\"); kb=lambda *x: subprocess.run([sys.executable,\"_tools/kbjob.py\",\"--store\",s,*x],env=env,capture_output=True,text=True,timeout=60); r=kb(\"ensure\"); assert r.returncode==0, r; pid=int(r.stdout.split(\"pid\")[1].split()[0]); assert kb(\"ping\").returncode==0; e=kb(\"ensure\"); assert e.returncode==0 and str(pid) in e.stdout, e; os.kill(pid,signal.SIGTERM); time.sleep(2); assert kb(\"ping\").returncode==1; p=kb(\"login-item\",\"--print\"); assert p.returncode==0 and \"RunAtLoad\" in p.stdout and \"serve\" in p.stdout and os.listdir(h)==[], (p, os.listdir(h))"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbjob.py",
+    "_tools/kj_exec.py",
+    "kb/_self/tools.md",
+    "kb/_self/coordination.md"
+  ],
+  "depends_on": [
+    "ST-rmv67pks"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
