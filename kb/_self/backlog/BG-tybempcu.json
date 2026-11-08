@@ -2,7 +2,7 @@
   "id": "BG-tybempcu",
   "kind": "bug",
   "title": "kbmon --status all's '+N more' counts hidden lines, not the items it cuts, so 'Coord: 4 live claims' shows two and '+5 more'",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-uh5h46fm",
   "priority": "P3",
@@ -68,6 +68,28 @@
   ],
   "notes": "Evidence 2026-11-08: 'Coord: 4 live claims:' showed two claims and '+5 more', where the five hidden lines were two claims, the drift line, the asks line and the settings line (mon_status.trimmed counts lines, not items). Relates to BG-p4xl2hea (sprints cut to four lines). The nouns the planted check asserts for coord are `2 claims`, `1 drift`, `1 asks`, `1 settings`; the kinds of the Sessions and Load cut lines are the work's to name, the check asserts only the form and that the counts sum to N. Premise run 2026-11-08: the repro fails (exit 1), because the live answer still prints '+N more: python3 _tools/kbmon.py --status coord'. Planted check 0 (mon_status.answer of a planted snapshot: four claims, a drift, two asks, one settings file, two orphans, host groups) fails on the base: all three cut lines read '+N more: ...' with no kinds.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-7064b8a6",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "b7fdee44f0d21a1ae831cf4bc2e724fc3a02897f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import atexit,shutil,tempfile\n_m=tempfile.mkdtemp\ndef _d(*a,**k):\n d=_m(*a,**k);atexit.register(shutil.rmtree,d,True);return d\ntempfile.mkdtemp=_d\nimport re, sys\nsys.path.insert(0, '_tools')\nimport mon_status\ndef ok(data):\n    return {\"state\": \"ok\", \"data\": data}\nclaims = [{\"key\": f\"item/ST-aaaaaaa{n}\", \"holder\": f\"s-00000{n}\", \"left_s\": 600, \"budget_usd\": None, \"spend_usd\": None, \"over_budget\": False} for n in range(4)]\nprocs = [{\"pid\": 100 + n, \"age_s\": 120, \"class\": \"orphan\", \"checkout\": \"clone\", \"session\": None, \"item\": None} for n in range(2)]\ndrift = {\"count\": 1, \"items\": [{\"item\": \"ST-aaaaaaa0\", \"title\": \"T\", \"state\": \"working\", \"git\": \"landed\", \"age_s\": 60}]}\nsnap = {\"taken\": \"2026-11-08T12:00:00Z\", \"panels\": {\n    \"coord\": ok({\"claims\": claims, \"asks\": [{\"id\": \"A1\", \"since\": \"\", \"text\": \"\"}], \"asks_open\": 2,\n                 \"settings\": {\"strategy.working\": {\"value\": \"after\", \"source\": \"settings.json\"}}}),\n    \"sessions\": ok({\"procs\": procs, \"sessions\": [], \"drift\": drift, \"stalled\": [], \"waits\": [], \"overlaps\": []}),\n    \"querylog\": ok({}), \"sprint\": ok({\"sprints\": []}),\n    \"host\": ok({\"load\": [1.0, 1.0, 1.0], \"cores\": 4, \"disk\": {\"free_pct\": 20}, \"cpu_basis\": \"recent\",\n                \"groups\": [{\"kind\": \"kbmon\", \"cpu\": 50.0, \"procs\": 1, \"clone\": None}, {\"kind\": \"claude\", \"cpu\": 10.0, \"procs\": 2, \"clone\": None}]})}}\nlines = mon_status.answer(snap, \"all\")[\"lines\"]\nprint(\"\\n\".join(lines))\ncuts = {m.group(3): m for m in (re.fullmatch(r\"\\s*\\+(\\d+) more \\(([^)]*)\\): python3 _tools/kbmon\\.py --status (\\w+)\", x) for x in lines) if m}\ndef sums(m):\n    parts = [re.fullmatch(r\"(\\d+) (.+)\", p) for p in m.group(2).split(\", \")]\n    return all(parts) and sum(int(p.group(1)) for p in parts) == int(m.group(1))\nbad = [t for t in (\"coord\", \"sessions\", \"load\") if t not in cuts or not sums(cuts[t])]\ncoord = cuts.get(\"coord\")\nbad += [] if coord and all(w in coord.group(2) for w in (\"2 claims\", \"1 drift\", \"1 asks\", \"1 settings\")) else [\"coord kinds\"]\nprint(bad)\nsys.exit(not not bool(bad))\n"
+        ],
+        "exit": 0,
+        "sha256": "00d5ae72bc425ea8"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,subprocess,sys;r=subprocess.run([sys.executable,'_tools/kbmon.py','--status','all','--timeout','60'],capture_output=True,text=True);sys.exit(r.returncode not in (0,1) or bool(re.search(r'\\+[0-9]+ more: python3 _tools/kbmon.py --status coord',r.stdout)))"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
