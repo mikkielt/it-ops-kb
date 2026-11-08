@@ -24,7 +24,9 @@
     "kb/_self/coordination.md"
   ],
   "depends_on": [
-    "ST-p2wmi3hq"
+    "ST-p2wmi3hq",
+    "ST-nwwcf3kk",
+    "ST-5h2kx2ri"
   ],
   "relates_to": [
     "EP-nij36lt7",
