@@ -149,7 +149,8 @@ def finish_text(log, start):
 
 def run_job(store, job, record, clone, log, token, out):
     """Run one taken job to its end with the lease renewed; returns the state it moved to. A process that cannot start moves
-    the job to failed (exit 127); a signal to this process ends the child's group and moves the job to lost, then goes on."""
+    the job to failed (exit 127); a signal to this process ends the child's group and moves the job to lost, then goes on; a
+    job cancelled meanwhile (kbjob.py cancel) stays cancelled, one line says so and cancelled is returned."""
     try:
         proc, start = start_child(record, clone, log)
     except OSError as error:
@@ -172,7 +173,13 @@ def run_job(store, job, record, clone, log, token, out):
     text = finish_text(log, start)
     state, step = classify(code, text)
     number = exit_number(code)
-    move(store, job, state, exit=number, step=step)
+    try:
+        move(store, job, state, exit=number, step=step)
+    except coord.Refused as refusal:
+        if refusal.body.get("state") != "cancelled":
+            raise
+        print(f"{job} {record['op']} {record.get('subject') or '-'}: cancelled", file=out, flush=True)
+        return "cancelled"
     note = f"{job} {record['op']} {record.get('subject') or '-'}: {state}"
     if state == "refused":
         note += f" at step {step}"
