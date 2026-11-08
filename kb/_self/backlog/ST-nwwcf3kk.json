@@ -69,6 +69,84 @@
   "depends_on": [
     "ST-hojylkmb"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does submit make racing submits meet one winner: the item notes say jobkey/<hash> is written with put at the revision read, but the job record must carry its fields and coord's transition from none only creates {state: queued}",
+      "options": [
+        "One BEGIN IMMEDIATE transaction reads the triple key and the live job, then writes the key and a new stateless record; coord.job_transition then moves none to queued",
+        "put the triple key at the revision read, then put the record, then move it"
+      ],
+      "recommendation": "One BEGIN IMMEDIATE transaction reads the triple key and the live job, then writes the key and a new stateless record; coord.job_transition then moves none to queued",
+      "reason": "no orphan record and no key pointing at a job that was never written when a loser retries or the winner dies",
+      "do": {
+        "One BEGIN IMMEDIATE transaction reads the triple key and the live job, then writes the key and a new stateless record; coord.job_transition then moves none to queued": "ST-nwwcf3kk",
+        "put the triple key at the revision read, then put the record, then move it": "ST-nwwcf3kk"
+      },
+      "class": "design",
+      "answer": "One BEGIN IMMEDIATE transaction reads the triple key and the live job, then writes the key and a new stateless record; coord.job_transition then moves none to queued",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "What do the goal's undefined fields hold: status's log, submit's follow, and the record's clone and by",
+      "options": [
+        "log is the end of job-logs/<job id>.log beside the store, follow is the coord.py wait command for the job's next move, clone is the main checkout shared by its worktrees, by is null when --by is not given",
+        "log is a path, follow is a hint text, clone is the working tree's path, by is required"
+      ],
+      "recommendation": "log is the end of job-logs/<job id>.log beside the store, follow is the coord.py wait command for the job's next move, clone is the main checkout shared by its worktrees, by is null when --by is not given",
+      "reason": "the MCP caller needs text, the shell caller a runnable command, and one job per clone must hold from every worktree",
+      "do": {
+        "log is the end of job-logs/<job id>.log beside the store, follow is the coord.py wait command for the job's next move, clone is the main checkout shared by its worktrees, by is null when --by is not given": "ST-nwwcf3kk",
+        "log is a path, follow is a hint text, clone is the working tree's path, by is required": "ST-nwwcf3kk"
+      },
+      "class": "design",
+      "answer": "log is the path of the job's output file, kb-jobs/<job id>/output.log under the git common directory (ST-rmv67pks's check opens it with os.path.exists, and the plan keeps output there), or null before the job ran; follow is the command line python3 _tools/kbjob.py follow <job id> (ST-5h2kx2ri's command); clone is the main checkout shared by its worktrees, so one job per clone holds from every worktree; by is null when --by is not given",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "What forms may the options take, and is a name required for the check operation",
+      "options": [
+        "flags take true, false, 1 or 0, wait_merge is 0 to 86400 seconds, trailer is one line of Key: value, self_reviewed is a doc path, trailer and self_reviewed repeat as lists, check requires its name",
+        "every option is free text and check defaults to the first name"
+      ],
+      "recommendation": "flags take true, false, 1 or 0, wait_merge is 0 to 86400 seconds, trailer is one line of Key: value, self_reviewed is a doc path, trailer and self_reviewed repeat as lists, check requires its name",
+      "reason": "the executor builds argv from only validated text, so no value can pass for a flag",
+      "do": {
+        "flags take true, false, 1 or 0, wait_merge is 0 to 86400 seconds, trailer is one line of Key: value, self_reviewed is a doc path, trailer and self_reviewed repeat as lists, check requires its name": "ST-nwwcf3kk",
+        "every option is free text and check defaults to the first name": "ST-nwwcf3kk"
+      },
+      "class": "design",
+      "answer": "flags take true, false, 1 or 0, wait_merge is 0 to 86400 seconds, trailer is one line of Key: value, self_reviewed is a doc path, trailer and self_reviewed repeat as lists, check requires its name",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "Where does submit write a job's executor output and how does status read it",
+      "options": [
+        "The executor's output file sits beside the store under a job directory, and status returns the end of it",
+        "status returns no output text"
+      ],
+      "recommendation": "The executor's output file sits beside the store under a job directory, and status returns the end of it",
+      "reason": "the goal names a log member that the MCP caller can read as text",
+      "do": {
+        "The executor's output file sits beside the store under a job directory, and status returns the end of it": "ST-nwwcf3kk",
+        "status returns no output text": "ST-nwwcf3kk"
+      },
+      "class": "design",
+      "answer": "The executor's output file is kb-jobs/<job id>/output.log under the git common directory, and status returns its path in log (null until the file exists), never its text, following the answer to g2",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "notes": "Interface the paired MCP planner (plan/mcp-write) names: kj_store.submit(root, op, subject, by, options=None, store=None) -> {job, state, deduped, seq, follow} and kj_store.status(root, job, since=0, store=None) -> {job, state, exit, step, log, events, last}; job states queued, running, waiting-lock, waiting-merge, succeeded, failed, refused, cancelled, lost (terminal: succeeded, failed, refused, cancelled). Choices: module names kbjob.py with kj_* behind it, not ops*, so the query log's ops rows and backlog.py ops stay one meaning; the job id is random (kbid style) and idempotence is a coord key jobkey/<sha256 of clone path, op, subject> holding the live job id, written with put at the revision read, so racing submits meet one winner (coord.py:455 put, BEGIN IMMEDIATE at coord.py:274); a closed operation table is the authority rule: publish, answer and any operator-only command are no operation, and the executor runs only argv the table builds (the CLI's own gates and refusals then apply unchanged). by is claude-<8 hex>, never a full session id (memory claim-by-no-session-guid). No test is added: code.md allows tests only for critical parts and the suite sits at its ceiling; the planted checks above run the tool. Evidence measured 2026-11-08 from kb/_querylog/ops, real items 2026-10-02..2026-11-08: land.end ok median 103 s for content (p90 628 s, n=1701) and 430 s for code (n=133); orchestrator sessions held 285 foreground coord waits of 30 s or more, median 212 s, 20.8 h of 104.7 h file wall (20%). Order agreed 2026-11-08 with SP-ep7ck2ab's manager (ask A1e21b0d155): shared kb/_self/map.csv rows land by first claim, the later item rebases; no hard dependency.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-61c966d6",

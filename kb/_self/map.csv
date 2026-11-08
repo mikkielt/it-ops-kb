@@ -177,3 +177,7 @@ kb/_self/tools.md,_tools/kbsettings.py
 kb/_self/coordination.md,_tools/kbsettings.py
 kb/_self/extending.md,_tools/kbext.py
 kb/_self/tools.md,_tools/kbext.py
+kb/_self/tools.md,_tools/kbjob.py
+kb/_self/coordination.md,_tools/kbjob.py
+kb/_self/coordination.md,_tools/kj_store.py
+kb/_self/coordination.md,_tools/kj_ops.py
