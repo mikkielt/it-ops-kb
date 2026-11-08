@@ -45,7 +45,12 @@
       ],
       "recommendation": "Keep the blanket allow",
       "reason": "because Bash(python3 _tools/backlog.py *) is already allowed without a prompt and an ask rule denies the same call in an unattended headless run",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Keep the blanket allow",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "notes": "Evidence 2026-11-08. Claude Code (docs mcp.md and permissions.md): allow/ask/deny take mcp__server__tool, evaluated deny, ask, allow; settings files skip mcp__ rules with parentheses, so no argument-level rule exists. The annotations the docs name: readOnlyHint (calls run in parallel with other read-only calls) and idempotentHint (a pending call may be repeated once after a closed connection, HTTP servers only); destructiveHint is not named, so it informs a person and no rule. _meta anthropic/requiresUserInteraction true forces a prompt on every call even in bypassPermissions and with an allow rule, and in dontAsk or non-interactive mode it denies: unusable for the unattended runners that land and close, so none sets it. This clone's .claude/settings.json allows the whole mcp__kb server (so coord_claim and the write tools run without a prompt: ST-wqbibuy6 holds that decision for the coord tools) and Bash(python3 _tools/backlog.py *); its deny list names no backlog command, so bash_denied (kb_mcp.py:1504) mirrors nothing today for the backlog; 211 bash permission.request rows against 35,919 Bash calls, so the Bash route prompts rarely too. The mirror reads only the clone's two settings files (backlog.md:85); a managed policy's deny stays unread. destructiveHint true marks calls that replace or delete (set replaces whole lists, drop deletes an item outside a sprint, close deletes a sprint, cancel stops work); land and stage-back are idempotent by their documented re-runs. The settings.json change an answer to the gate may need is its own follow-up, not in this story's touches. test_redact.py:255-259 must move to this table.",
