@@ -48,6 +48,11 @@
       never `dotnet package list`), npm (`npm ls --all --json --package-lock-only`) and TypeScript (`tsc
       --showConfig`, `--listFilesOnly`) run per project directory. `tsc` is the one on PATH, never `npx` and never
       a program inside the worktree; a toolchain is never installed.
+      A group's mapper (`extensions.ingest_mappers`: language to `module:attr`, kb/_self/extending.md) is called in
+      this process as `mapper(repo_dir, rev, files)` with the worktree, the commit and the kept files its SUFFIXES
+      list that no earlier language maps; the packages, imports, entry points and symbols it answers join the map
+      under that language, and win over a shipped mapper of the language. One that raises, answers another shape or
+      cannot be loaded is a note naming `ingest_mappers` and the language, and maps nothing.
 
   kbingest.py drift REPO [--rev NEW] [--root NAME] [--prefix TOPIC] [--remote HOST/PROJECT]
       Read-only: writes no file. For each CODE fact (`[CODE S-id: path#symbol]`, or `path#L10-L20`) of the served roots
@@ -123,7 +128,7 @@ from pathlib import Path
 from urllib.parse import quote, unquote, urlsplit
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import kbcommon, kbfacts  # noqa: E402
+import kbcommon, kbext, kbfacts, kbsettings  # noqa: E402
 from kbsandbox import NETWORK_OFF, run_tool, scrub_env, tool_exe  # noqa: E402,F401  the sandbox `map` runs commands in
 
 ATTRS = ("linguist-generated", "linguist-vendored", "gitlab-generated")
@@ -1054,6 +1059,10 @@ class Mapper:
     def map(self, ctx, files):
         raise NotImplementedError
 
+    def version_label(self):
+        """The `version` a mapper with no program records in the map's `tools`."""
+        return getattr(self, "revision", "")
+
 
 IMPORT_BLOCK = re.compile(r"^(\s*)(Import|ImportFrom)\($")
 PY_ALIAS = re.compile(r"\bname='([^']*)'")
@@ -1863,6 +1872,9 @@ class PatternMapper(Mapper):
         self.word, self.rules, self.skipped = re.compile(spec["word"] + "+"), spec["rules"], spec["skipped"]
         self.max_line, self.max_matches = spec["max_line"], spec["max_matches"]
 
+    def version_label(self):
+        return f"table {self.revision}"
+
     def files(self, rows):
         return sorted(path for path, _kind in rows if path.lower().endswith(self.extensions))
 
@@ -1926,6 +1938,174 @@ PATTERN_MAPPERS, PATTERN_REFUSED = load_patterns()
 MAPPERS = [PythonMapper(), GoMapper(), CargoMapper(), DotnetMapper(), NodeMapper(), TypeScriptMapper(),
            *PATTERN_MAPPERS]
 
+# ---------------------------------------------------------------- a group's mappers (extension point ingest_mappers)
+
+GROUP_POINT = "ingest_mappers"
+GROUP_KEYS = ("packages", "imports", "entry_points", "symbols")  # what a group mapper's answer may hold
+
+
+def is_text(value):
+    return isinstance(value, str) and bool(value)
+
+
+def is_line(value):
+    return isinstance(value, int) and not isinstance(value, bool) and value >= 1
+
+
+def is_repo_path(value):
+    return is_text(value) and not value.startswith("/") and ".." not in value.split("/")
+
+
+def record_problem(key, rec):
+    """Why REC is not a record of the shipped shape of the map's list KEY, or None."""
+    if not isinstance(rec, dict):
+        return f"{key}: an entry is a {type(rec).__name__}, not an object"
+    fields = {"packages": ("name", "path"), "imports": ("path", "imports"), "entry_points": ("path", "kind"),
+              "symbols": ("name", "kind", "path", "line")}[key]
+    optional = {"packages": None, "imports": (), "entry_points": ("name",), "symbols": ("references",)}[key]
+    for f in fields:
+        if f not in rec:
+            return f"{key}: an entry lacks `{f}`"
+    if optional is not None and set(rec) - set(fields) - set(optional):
+        return f"{key}: an entry has the key {sorted(set(rec) - set(fields) - set(optional))[0]!r}"
+    if key == "packages" and "language" in rec:
+        return "packages: an entry sets `language`, which the map sets"
+    if key != "imports" and not all(is_text(rec[f]) for f in fields if f != "line"):
+        return f"{key}: `{'`, `'.join(f for f in fields if f != 'line')}` must be non-empty text"
+    if key == "imports" and not (is_repo_path(rec["path"]) and isinstance(rec["imports"], list)
+                                 and all(is_text(m) for m in rec["imports"])):
+        return "imports: `path` must be a repository path and `imports` a list of module names"
+    if key != "imports" and "path" in rec and not is_repo_path(rec["path"]):
+        return f"{key}: `path` must be a path inside the repository"
+    if key == "entry_points" and "name" in rec and not is_text(rec["name"]):
+        return "entry_points: `name` must be non-empty text"
+    if key == "symbols":
+        if not is_line(rec["line"]):
+            return "symbols: `line` must be a whole number from 1"
+        refs = rec.get("references", [])
+        if not isinstance(refs, list) or not all(isinstance(r, dict) and set(r) == {"path", "line"}
+                                                 and is_repo_path(r["path"]) and is_line(r["line"]) for r in refs):
+            return "symbols: `references` must be a list of objects with `path` and `line`"
+    try:
+        json.dumps(rec)
+    except (TypeError, ValueError):
+        return f"{key}: an entry is not JSON"
+    return None
+
+
+def answer_problem(answer):
+    """Why a group mapper's ANSWER is not a dict of the map's lists (packages, imports, entry_points, symbols; each key
+    optional) of records of the shipped shapes, or None."""
+    if not isinstance(answer, dict):
+        return f"answered a {type(answer).__name__}, not a dict"
+    if set(answer) - set(GROUP_KEYS):
+        return f"answered the key {sorted(set(answer) - set(GROUP_KEYS))[0]!r}; allowed: {', '.join(GROUP_KEYS)}"
+    for key in GROUP_KEYS:
+        if key in answer and not isinstance(answer[key], list):
+            return f"answered {key} as a {type(answer[key]).__name__}, not a list"
+        for rec in answer.get(key, ()):
+            if (why := record_problem(key, rec)) is not None:
+                return "answered " + why
+    return None
+
+
+class GroupMapper(Mapper):
+    """A group's mapper for LANGUAGE (extension point ingest_mappers): `func(repo_dir, rev, files)` called in this process
+    with the scratch worktree's path, the commit and the kept files whose suffix SUFFIXES lists, answering a dict of
+    packages, imports, entry_points and symbols. A file goes to the first mapper of the run that lists its suffix, so a
+    group's language never takes a shipped language's files. The answer is checked whole before any of it joins the
+    map; one that raises or is of another shape is a note and maps nothing."""
+    tool = ""
+
+    def __init__(self, language, spec, func, suffixes, commit):
+        self.language, self.name, self.spec, self.func, self.commit = language, f"{GROUP_POINT} {spec}", spec, func, commit
+        self.suffixes = tuple(s.lower() for s in suffixes)
+        self.before = []  # the mappers ahead of this one in the run: a file one of them maps is theirs
+
+    def files(self, rows):
+        taken = {path for m in self.before for path in m.files(rows)}
+        return sorted(path for path, _kind in rows if path.lower().endswith(self.suffixes) and path not in taken)
+
+    def version_label(self):
+        return "group"
+
+    def map(self, ctx, files):
+        who = f"{GROUP_POINT}: {self.language}: {self.spec}"
+        try:
+            answer = self.func(str(ctx.root), self.commit, list(files))
+        except Exception as e:  # noqa: BLE001 - a group's bug must not lose the other languages' maps
+            ctx.note(f"{who}: raised {type(e).__name__}: {str(e)[:150]}; nothing mapped")
+            return
+        if (why := answer_problem(answer)) is not None:
+            ctx.note(f"{who}: {why}; nothing mapped")
+            return
+        for rec in answer.get("packages", ()):
+            ctx.add_package(rec["name"], rec["path"], **{k: v for k, v in rec.items() if k not in ("name", "path")})
+        for rec in answer.get("imports", ()):
+            ctx.add_imports(rec["path"], rec["imports"])
+        for rec in answer.get("entry_points", ()):
+            ctx.add_entry_point(rec["path"], rec["kind"], rec.get("name"))
+        for rec in answer.get("symbols", ()):
+            ctx.add_symbol(rec["name"], rec["kind"], rec["path"], rec["line"],
+                           [(r["path"], r["line"]) for r in rec.get("references", ())])
+
+
+def load_group_mapper(language, spec, commit, root):
+    """(GroupMapper, None) for `extensions.ingest_mappers.LANGUAGE` = SPEC (`module:attr`, or a module whose `mapper` is
+    the function), loaded by `kbext.load_spec`, or (None, why) when that refuses it (no module, no KBEXT_REQUIRES, a
+    version it does not take) or the function is none or no SUFFIXES (on the function, else on the module) lists
+    suffixes."""
+    if not is_text(spec):
+        return None, "must be module:attr or a module name"
+    try:
+        loaded = kbext.load_spec(GROUP_POINT, spec if ":" in spec else spec + ":mapper", root)
+    except kbext.ExtensionError as e:
+        return None, str(e)
+    func, module = loaded["extender"], loaded["module"]
+    if not callable(func):
+        return None, f"{spec} is not a function"
+    suffixes = getattr(func, "SUFFIXES", getattr(module, "SUFFIXES", None))
+    if not isinstance(suffixes, (list, tuple)) or not suffixes or not all(is_text(s) and s.startswith(".") for s in suffixes):
+        return None, f"no SUFFIXES (a list of suffixes such as '.foo') on {spec} or in its module"
+    return GroupMapper(language, spec, func, suffixes, commit), None
+
+
+def group_mappers(commit, root=None):
+    """({language: GroupMapper}, [(language, note)]): the mappers `extensions.ingest_mappers` names (an object: language
+    to `module:attr`), each loaded and checked; a language whose mapper cannot be used is in the notes, naming the point
+    and the language, and has no mapper, so the shipped one does not run for it either. No setting: ({}, [])."""
+    root = kbcommon.HOME if root is None else root
+    try:
+        named, _source = kbsettings.layered(root, "extensions")
+        named = named.get(GROUP_POINT)
+        if named is None:
+            return {}, []
+        if not isinstance(named, dict):
+            return {}, [("map", f"{GROUP_POINT}: extensions.{GROUP_POINT} must be an object: language to module:attr")]
+    except kbsettings.SettingsError as e:
+        return {}, [("map", f"{GROUP_POINT}: {e}")]
+    found, notes = {}, []
+    for language, spec in sorted(named.items()):
+        mapper, why = load_group_mapper(str(language).lower(), spec, commit, root)
+        if mapper is None:
+            notes.append((str(language).lower(), f"{GROUP_POINT}: {language}: {why}; nothing mapped"))
+        else:
+            found[mapper.language] = mapper
+    return found, notes
+
+
+def effective_mappers(commit):
+    """([Mapper], [(language, note)]): MAPPERS with each language a group names replaced by (or, when new, joined by) the
+    group's mapper, and the notes of the group mappers that could not be used (their languages left out)."""
+    group, notes = group_mappers(commit)
+    refused = {lang for lang, _ in notes}
+    mappers = [group.pop(m.language, m) for m in MAPPERS if m.language not in refused]
+    mappers += [group[lang] for lang in sorted(group)]
+    for i, m in enumerate(mappers):
+        if isinstance(m, GroupMapper):
+            m.before = mappers[:i]
+    return mappers, notes
+
 
 @contextlib.contextmanager
 def scratch_worktree(repo, commit):
@@ -1968,7 +2148,9 @@ def build_map(repo, commit, rev, rows, langs=None, timeout=MAP_TIMEOUT, base_env
         doc["remote"] = {"host": rem[1], "project": rem[2]}  # what `where` builds the pinned urls from
     with scratch_worktree(repo, commit) as root:
         env = scrub_env(base_env, root=root, repo=repo)
-        for m in MAPPERS:
+        mappers, load_notes = effective_mappers(commit)
+        doc["notes"] += [{"language": lang, "note": note} for lang, note in load_notes]
+        for m in mappers:
             if langs and m.language not in langs:
                 continue
             files = m.files(kept)
@@ -1985,7 +2167,7 @@ def build_map(repo, commit, rev, rows, langs=None, timeout=MAP_TIMEOUT, base_env
                 ctx.note(why)
             else:
                 if not m.tool:  # the table's revision stands for the version; no process is started
-                    doc["tools"][m.language] = {"tool": m.name, "version": f"table {m.revision}"}
+                    doc["tools"][m.language] = {"tool": m.name, "version": m.version_label()}
                 else:
                     v = run_tool([m.tool, *m.version_args], root, env, timeout)
                     ok = v.rc == 0 and not v.timed_out and not v.missing
@@ -2076,7 +2258,8 @@ def cmd_map(a):
         print(f"refused: {out}: a map goes under _cache/ingest/, never under kb/")
         return 2
     langs = {x.strip().lower() for x in a.lang.split(",") if x.strip()} if a.lang else None
-    known = {m.language for m in MAPPERS}
+    mappers, _load_notes = effective_mappers(commit)
+    known = {m.language for m in mappers}
     if langs and langs - known:
         refused = "".join(f"; pattern table refused {k}: {v}" for k, v in sorted(PATTERN_REFUSED.items()))
         print(f"refused: unknown language {', '.join(sorted(langs - known))} (known: {', '.join(sorted(known))}{refused})")

@@ -103,6 +103,25 @@
       "hold": true,
       "answer": "files no earlier language maps",
       "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "What does a group mapper get as rev, and what happens to a language whose named mapper cannot be loaded?",
+      "options": [
+        "the commit hash, and a note with nothing mapped",
+        "the rev as typed, and the shipped mapper runs instead"
+      ],
+      "recommendation": "the commit hash, and a note with nothing mapped",
+      "reason": "the hash is what a mapper's own git reads need and a named mapper that cannot load is a refusal, never a silent fall back (as kbext.configured says for every point)",
+      "do": {
+        "the commit hash, and a note with nothing mapped": "ST-7n742jnj",
+        "the rev as typed, and the shipped mapper runs instead": "ST-7n742jnj"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "the commit hash, and a note with nothing mapped",
+      "by": "agent"
     }
   ],
   "filed_in": "clone-0ea70e5c",
