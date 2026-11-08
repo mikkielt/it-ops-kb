@@ -1,0 +1,22 @@
+{
+  "id": "ST-w26jj2fh",
+  "kind": "story",
+  "title": "Eval rows for the Lua function-form and Python re backtracking packs that missed before their facts were added",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/public/_retrieval/lookup_eval.csv holds a row EV-lua-function-definition-forms-function-m-f for the question 'Lua function definition forms function f, function M.f and function M:f' expecting arch/lua-modules-and-functions.md with verdict good, and a row EV-python-re-backtracking-possessive-signal-timer for 'Python re possessive quantifier atomic group backtracking timeout signal setitimer' expecting python/stdlib-re-backtracking.md with verdict good, and python3 _tools/rag.py eval passes; the rows are tested rows, a code-lane path (_tools/kblane.py), so the story lands through backlog.py land ID --wait-merge SECONDS",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/public/_retrieval/lookup_eval.csv',encoding='utf-8').read();sys.exit(0 if 'EV-lua-function-definition-forms-function-m-f' in t and 'EV-python-re-backtracking-possessive-signal-timer' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/_retrieval/lookup_eval.csv"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
