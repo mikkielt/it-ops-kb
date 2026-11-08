@@ -154,7 +154,12 @@
         "A named gate check 'kbext.py lint' in the kg_sync checks list, run when a changed path is under _tools/ (every check when there is no base), from the repository root; an unreadable or unparsable surface at the tag or in the working tree exits 1 with one line": "ST-vhzvqlo3",
         "Run it through the settings layers' gate_checks only": "ST-vhzvqlo3"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "A named gate check 'kbext.py lint' in the kg_sync checks list, run when a changed path is under _tools/ (every check when there is no base), from the repository root; an unreadable or unparsable surface at the tag or in the working tree exits 1 with one line",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "notes": "Ordered after ST-qtypcthx only to serialise kbext.py; that dependency was dropped on 2026-11-08 because ST-qtypcthx waits on other sprints' claims of kbpublic.py and mon_status.py, and begin refuses two items with overlapping touches anyway.",
