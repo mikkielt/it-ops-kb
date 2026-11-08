@@ -2,7 +2,7 @@
   "id": "ST-ft5a6j5o",
   "kind": "story",
   "title": "Research sprint goal: Operations run as jobs a central queue places on workstation, server or CI executors",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-lwkdljxg",
   "goal_research": true,
   "priority": "P1",
@@ -23,6 +23,20 @@
   ],
   "notes": "No outside facts: the research landed before this story was filed, in commit 7d191fe8f (docs(kb): research OPA bundle signing, CODEOWNERS groups and pipeline triggers) and the kb's existing claude/ci-and-headless.md and claude/hooks.md facts; QK-operations-placement-stories-need-opa-bundles summarises it. Goal lead-in moved here: the sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts through the kb skills.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-61c966d6",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "e6f47bdcdfcd8c6ba9ff8656c92d9f2a1c2fbc31",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-ft5a6j5o"
+        ],
+        "exit": 0,
+        "sha256": "e08072de24b6902e"
+      }
+    ]
+  }
 }
