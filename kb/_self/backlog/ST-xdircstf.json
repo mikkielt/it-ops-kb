@@ -74,10 +74,85 @@
     "kb/_self/extending.md",
     "kb/_self/tools.md",
     "kb/_self/code.md",
-    "kb/_self/map.csv"
+    "kb/_self/map.csv",
+    "kb/_self/README.md"
   ],
   "depends_on": [
     "ST-ed7utpmg"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "What does kbext.py do with a module that has no KBEXT_REQUIRES?",
+      "options": [
+        "refuse it, exit 2 naming the point, the module and the layer",
+        "load it and take it as valid for every API version"
+      ],
+      "recommendation": "refuse it, exit 2 naming the point, the module and the layer",
+      "do": {
+        "refuse it, exit 2 naming the point, the module and the layer": "ST-xdircstf",
+        "load it and take it as valid for every API version": "ST-xdircstf"
+      },
+      "class": "design",
+      "answer": "refuse it, exit 2 naming the point, the module and the layer",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "What is the extender when extensions.<point> names a module with no attribute?",
+      "options": [
+        "the module itself, which call refuses as not callable",
+        "the module's attribute named like the point"
+      ],
+      "recommendation": "the module itself, which call refuses as not callable",
+      "do": {
+        "the module itself, which call refuses as not callable": "ST-xdircstf",
+        "the module's attribute named like the point": "ST-xdircstf"
+      },
+      "class": "design",
+      "answer": "the module itself, which call refuses as not callable",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "How does kbext.py learn the file of the layer that set extensions.<point> and the extension_paths of each layer, when kbsettings has no public reader of its layers?",
+      "options": [
+        "call kbsettings._layers and file bug BG-nhpbkkut for a public name",
+        "copy the layer file lookup into kbext.py",
+        "edit kbsettings.py to add a public reader in this item"
+      ],
+      "recommendation": "call kbsettings._layers and file bug BG-nhpbkkut for a public name",
+      "do": {
+        "call kbsettings._layers and file bug BG-nhpbkkut for a public name": "ST-xdircstf",
+        "copy the layer file lookup into kbext.py": "ST-xdircstf",
+        "edit kbsettings.py to add a public reader in this item": "ST-xdircstf"
+      },
+      "class": "design",
+      "answer": "neither private call nor a copy: ST-xx5yzpky (in flight) renames kbsettings._layers and _shown to public layer_files and shown_path; code kbext.py against kbsettings.layer_files and kbsettings.shown_path, file no bug for it, and the orchestrator lands ST-xx5yzpky first and rebases this branch on it before landing",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "Which bounds does KBEXT_REQUIRES accept?",
+      "options": [
+        "comma-separated comparisons on MAJOR.MINOR with >=, >, <=, < and ==, the upper bound optional",
+        "exactly one lower and one upper bound, both required"
+      ],
+      "recommendation": "comma-separated comparisons on MAJOR.MINOR with >=, >, <=, < and ==, the upper bound optional",
+      "do": {
+        "comma-separated comparisons on MAJOR.MINOR with >=, >, <=, < and ==, the upper bound optional": "ST-xdircstf",
+        "exactly one lower and one upper bound, both required": "ST-xdircstf"
+      },
+      "class": "design",
+      "answer": "comma-separated comparisons on MAJOR.MINOR with >=, >, <=, < and ==, the upper bound optional",
+      "by": "agent"
+    }
   ],
   "notes": "Shared files with SP-lwkdljxg (kbcommon.py, kbpublic.py, bl_land.py, map.csv): agreed with its manager on 2026-11-08 that the first claim lands first and the other rebases; its items reach these files late. SP-uh5h46fm (mon_coord.py, mon_status.py) was asked the same and has not answered: the same rule applies. API_VERSION starts at 0.1.0: the operator's answer to ST-3brmklge's gate on 2026-11-08 (no compatibility promise until 1.0); the planted extenders declare >=0.1 so they stay valid when 1.0 comes.",
   "filed_in": "clone-0ea70e5c",
