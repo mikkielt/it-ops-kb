@@ -646,22 +646,27 @@ def hit_key(hit):
     return hashlib.sha256("\0".join(hit).encode("utf-8")).hexdigest()
 
 
-def public_values(tip, cwd):
+def public_values(tip, cwd, projected=True):
     """{hit_key} of every leak-scan hit (file_hits without an allowlist) in any file of the public tip TIP's tree: the
-    values the public home already holds, whichever file holds them. Scanned once per tip and scan rule and cached in
-    CACHE_DIR/public-<scan_form()>-<tip>.json, so a change to what the scan flags or to the registry's private names
-    reads none of an older rule's values; empty without a tip. Raises RuntimeError on a git error."""
+    values the public home already holds, whichever file holds them. PROJECTED False: TIP is a commit not yet projected
+    (the sync gate's upstream), so the files the projection removes (kept_off: the query log's store, a `_logs.csv`) are
+    left out, as the public home never holds them. Scanned once per tip, scan rule and mode and cached in
+    CACHE_DIR/public-<projected|raw>-<scan_form()>-<tip>.json, so a change to what the scan flags or to the registry's
+    private names reads none of an older rule's values, and the sync gate reads none that publish's scan filled; empty
+    without a tip. Raises RuntimeError on a git error."""
     if not tip:
         return set()
-    name = f"public-{scan_form()}-{tip}.json"
+    mode = "projected" if projected else "raw"
+    name = f"public-{mode}-{scan_form()}-{tip}.json"
     got = cache_load(cwd, name)
     if isinstance(got, list) and all(isinstance(x, str) for x in got):
         return set(got)
     files = tree_files(tip, cwd)
     if files is None:
         raise RuntimeError(f"git ls-tree {tip[:12]} failed")
+    files = [x for x in files if projected or not kept_off(x)]
     res = {hit_key(h) for x, text in blobs(tip, files, cwd).items() for h in file_hits(x, text, {})}
-    cache_save(cwd, name, sorted(res), "public-")
+    cache_save(cwd, name, sorted(res), f"public-{mode}-")
     return res
 
 
@@ -698,9 +703,9 @@ class LongRange(Exception):
         self.n = n
 
 
-def leak_verdicts(written, proj, tip, final, cwd, pinned=frozenset()):
+def leak_verdicts(written, proj, tip, final, cwd, pinned=frozenset(), projected=True):
     """{commit: [(path, kinds)]} of the leak check of WRITTEN [(commit, old blob, new blob, path)], the files the
-    commits write: a hit in the lines a commit adds that the public tip holds in no file (public_values), and neither
+    commits write: a hit in the lines a commit adds that the public tip holds in no file the projection keeps (public_values; with PROJECTED False the tip's files it removes hold nothing), and neither
     the parent's nor TIP's version of the file holds, allowing FINAL (PROJ's allowlist) and the commit's own, and reading PINNED (pinned_paths) for secrets only. A commit
     with no hit is left out."""
     # scan only the lines a commit adds (the new version's lines its parent's version lacks), a chunk of writes at a
@@ -709,7 +714,7 @@ def leak_verdicts(written, proj, tip, final, cwd, pinned=frozenset()):
 
     def public():  # scanned on first use: a range with no hit never reads the tip's whole tree
         if not memo:
-            memo.append(public_values(tip, cwd))
+            memo.append(public_values(tip, cwd, projected))
         return memo[0]
 
     pairs, added = list(dict.fromkeys((old, new, x) for c, old, new, x in written)), {}
@@ -839,7 +844,7 @@ def history_refusals(proj, tip, files, cwd, sources=None, bound=None, projected=
                     f"({r + '/' if r else ''}{kbcommon.ROOT_FILE} says visibility: internal), e.g. {xs[0]}")
     if todo:
         found = leak_verdicts([w for w in written if w[0] in todo and (projected or not kept_off(w[3]))],
-                              proj, tip, parse_allowlist(final), cwd, pinned)
+                              proj, tip, parse_allowlist(final), cwd, pinned, projected)
         verdicts.update({c: found.get(c, []) for c in todo})
         cache_save(cwd, vname, verdicts, "verdicts-")
     leak = [f"commit {name(c)}: {x} has a leak-scan hit ({', '.join(kinds)})" for c, _ in changes for x, kinds in verdicts[c]]
