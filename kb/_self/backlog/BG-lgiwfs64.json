@@ -2,7 +2,7 @@
   "id": "BG-lgiwfs64",
   "kind": "bug",
   "title": "session-load --intake-real's check compares against a case no row has, and its real row starts fewer processes than the pinned hook",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-n7zxspch",
   "priority": "P2",
   "rank": 0,

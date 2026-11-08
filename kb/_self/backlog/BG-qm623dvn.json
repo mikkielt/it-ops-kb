@@ -2,7 +2,7 @@
   "id": "BG-qm623dvn",
   "kind": "bug",
   "title": "session-load --paid passes only --allowedTools, so a paid session's tools are not limited to Read, git status and rag.py as its gate chose",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-n7zxspch",
   "priority": "P2",
   "rank": 0,

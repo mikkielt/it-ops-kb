@@ -2,7 +2,7 @@
   "id": "BG-o6fbskv5",
   "kind": "bug",
   "title": "The sync range leak gate exempts any value the private query-log store already holds, so a store GUID copied into a public file passes sync and then blocks publish",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-n7zxspch",
   "priority": "P2",
   "rank": 0,

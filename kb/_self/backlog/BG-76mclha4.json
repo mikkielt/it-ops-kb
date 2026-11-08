@@ -2,7 +2,7 @@
   "id": "BG-76mclha4",
   "kind": "bug",
   "title": "A shipped Lua rule of the kbingest pattern table is quadratic on a hostile line, and the in-process mapper has no timeout",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-n7zxspch",
   "priority": "P2",
   "rank": 0,

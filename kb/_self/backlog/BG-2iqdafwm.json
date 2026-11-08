@@ -2,7 +2,7 @@
   "id": "BG-2iqdafwm",
   "kind": "bug",
   "title": "The sync range leak gate refuses internal-root content that the tracked-file scan accepts, so a team clone cannot sync its own internal facts",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-n7zxspch",
   "priority": "P2",
   "rank": 0,

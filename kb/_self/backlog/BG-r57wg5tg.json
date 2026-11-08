@@ -2,7 +2,7 @@
   "id": "BG-r57wg5tg",
   "kind": "bug",
   "title": "A root's placeholder names reach no production path: redact and the tracked-file leak scan never pass a root",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-n7zxspch",
   "priority": "P2",
   "rank": 0,
