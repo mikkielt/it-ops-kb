@@ -52,7 +52,9 @@
       },
       "class": "design",
       "answer": "sum over sessions, peak as the sum of peaks, wall_s the longest, hook timings pooled",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
