@@ -14,6 +14,20 @@
         "-c",
         "import sys; sys.path.insert(0,\"_tools\"); import kj_land; ev=[]; calls=iter([False,False,True]); r=kj_land.drive({\"job\":\"JB-x\",\"subject\":\"ST-1\",\"options\":{\"wait_merge\":600}}, run_pass=lambda second: (0,\"ok\",None) if second else (0,\"pushed code/ST-1\",([\"abc\"],\"code/ST-1\")), merged=lambda shas: next(calls), sleep=lambda s: ev.append((\"sleep\",s)), post=lambda state,**f: ev.append((state,f.get(\"step\")))); st=[e[0] for e in ev if e[0]!=\"sleep\"]; assert st==[\"running\",\"waiting-merge\",\"running\",\"succeeded\"], ev; assert sum(1 for e in ev if e[0]==\"sleep\")==2, ev; assert r==(0,\"succeeded\"), r"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.path.insert(0,\"_tools\"); import kj_land; ev=[]; r=kj_land.drive({\"job\":\"JB-x\",\"subject\":\"ST-1\",\"options\":{\"wait_merge\":120}}, run_pass=lambda second: (0,\"pushed\",([\"abc\"],\"code/ST-1\")), merged=lambda shas: False, sleep=lambda s: None, post=lambda state,**f: ev.append((state,f.get(\"step\")))); assert r==(1,\"refused\") and ev[-1]==(\"refused\",\"wait-merge\"), (r,ev)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.path.insert(0,\"_tools\"); import kj_land; seen=[]; def_rp=None; r=kj_land.drive({\"job\":\"JB-x\",\"subject\":\"ST-1\",\"state\":\"waiting-merge\",\"pending\":{\"shas\":[\"abc\"],\"branch\":\"code/ST-1\"},\"options\":{\"wait_merge\":600}}, run_pass=lambda second: seen.append(second) or (0,\"ok\",None), merged=lambda shas: True, sleep=lambda s: None, post=lambda state,**f: None); assert seen==[True] and r==(0,\"succeeded\"), (seen,r)"
+      ]
     }
   ],
   "touches": [
@@ -28,5 +42,12 @@
     "ST-rmv67pks",
     "ST-iw7pe3mc"
   ],
+  "relates_to": [
+    "ST-igkt3vsr",
+    "ST-yh5ivly4",
+    "ST-5l6ldosq",
+    "ST-ep7loyre"
+  ],
+  "notes": "Premise (reproduces today): a code item's land is one command that waits inside the session's call: bl_land.land_pass (bl_land.py:2404) runs pass one, polls wait_merge (bl_land.py:2206, every WAIT_POLL 60 s, bound --wait-merge default 1800) and runs land_once again; the orchestrator's call, or its background shell, is held for all of it. Measured 2026-11-08 from kb/_querylog/ops (real items, 2026-10-02..11-08): wait-merge step median 2.6 s but p90 240 s, p95 458 s, max 1736 s (n=1157); a code landing's land.end median 430 s (n=133, p90 1409 s) against 103 s for a content landing (n=1701); 133 code landings ended exit 0 and 133 exit 1, the exit-1 ones median 168 s (p95 2282 s), many of them the wait-merge stop. Choice: poll in the executor with merged_on_main (read from git, not the forge CLI, as land does), because the executor can hold a thousand waiting jobs for the price of one poll loop, where today each wait holds a process; the job never merges the request: backlog.py merge ID stays the one agent merge (bl_land.py:2462 cmd_merge) and the operator's, the job only reports waiting-merge so the session can run backlog.py merge or tell the operator, then go on. The second pass is the same land command: it already finishes a merged code item as content (bl_land.py:1973 docstring), and the run-state moves landing/landed/refused stay the CLI's (bl_land.py:2378). bl_land.pending_merge reads what LAND_OPS['pending'] holds from git (the code/ID branch pushed and its commits not on the main), so a restarted executor needs no memory. Related drafts: ST-igkt3vsr (wait-merge does not count landing-lock wait, which the executor's queue removes), ST-yh5ivly4 (a request stuck preparing), ST-5l6ldosq (branch gone because it merged), ST-ep7loyre (second pass stops at fetch with no line) share the same step; none is duplicated here.",
   "filed_in": "clone-0ea70e5c"
 }
