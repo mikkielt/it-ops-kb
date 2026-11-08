@@ -94,6 +94,27 @@
     "ST-7k2popo6",
     "ST-hgicbqm3"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where and in what form does redact.known keep its scan across processes?",
+      "options": [
+        "One JSON file per root under _cache/redact-known (CLAUDE_PLUGIN_DATA for the plugin), written atomically, sorted, replaced when known_key changes",
+        "One shared file for every root"
+      ],
+      "recommendation": "One JSON file per root under _cache/redact-known (CLAUDE_PLUGIN_DATA for the plugin), written atomically, sorted, replaced when known_key changes",
+      "do": {
+        "One JSON file per root under _cache/redact-known (CLAUDE_PLUGIN_DATA for the plugin), written atomically, sorted, replaced when known_key changes": "BG-2n4csy5p",
+        "One shared file for every root": "BG-2n4csy5p"
+      },
+      "class": "querylog",
+      "answer": "One JSON file per root under _cache/redact-known (CLAUDE_PLUGIN_DATA for the plugin), written atomically, sorted, replaced when known_key changes",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "notes": "Evidence 2026-11-08: coord store 2418 own/, 423 run/, 107 ask/ keys; collect 8.35 s alone (8.4 s user CPU); with all panels as threads under one deadline (mon_base) sessions and sprint timed out and --status coord dropped its run-state drift line (mon_status returns [] when sessions is unread). Relates to ST-7k2popo6, ST-hgicbqm3. Spread 2026-11-08 (14 cores, load 4.89/6.07/5.49 by `kbmon.py --status load`, calm): five runs of `kbmon.py --json --panel coord --timeout 60` gave 8.452, 8.151, 8.282, 8.314, 8.211 s (spread 0.30 s). Margin: the 3 s bound sits 5.15 s under the fastest base run, 17 times the spread, so the work must save at least 5.2 s. Clause 2: sessions alone 2.68, 2.78, 2.53, 2.64 s, sprint alone 2.40, 2.64, 2.43, 2.55 s (spread 0.25 s) against 10 s. Profile (cProfile of mon_coord.collect, 8.52 s): 8.16 s in the one scan of kb/public that redact.known makes per process (via ask_texts), none in with_silence: the suspect in the title is not the cause. A planted store of three asks takes 8.37 s too, so time does not grow with the store. redact.py guards the leak rule and is not in the touches: caching or narrowing that scan there, warming it outside the panel budget, or leaving ask text unredacted is a choice for the operator. Premise run 2026-11-08: the repro fails (state timeout at --timeout 3). Planted check 0 fails on the base (8.37 s), check 1 fails (coord ok 8.4 s, sessions and sprint timeout at 10 s), check 2 fails (no 'Run state drift' line). Operator 2026-11-08: cache redact.known across processes in redact.py, key redact.known_key(root) (sha256 of redact.py + files' path/size/mtime_ns), file under _cache. Check 4 passes on base by design: it pins freshness the cache must keep.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-7064b8a6",
