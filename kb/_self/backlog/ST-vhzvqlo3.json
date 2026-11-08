@@ -122,6 +122,39 @@
       "operator": "op-f618a13e",
       "role": "interactive",
       "agent_session": true
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "When does kbext.py lint require a changelog entry, and how does it read the entry and the newest tag?",
+      "options": [
+        "Only when API_VERSION differs from the tag's: a heading '## MAJOR.MINOR.PATCH' in kb/_self/extension-changelog.md; newest tag is the highest ext-vMAJOR.MINOR.PATCH by version; a lower API_VERSION is refused",
+        "On every lint run, for the working tree's API_VERSION whether or not it changed"
+      ],
+      "recommendation": "Only when API_VERSION differs from the tag's: a heading '## MAJOR.MINOR.PATCH' in kb/_self/extension-changelog.md; newest tag is the highest ext-vMAJOR.MINOR.PATCH by version; a lower API_VERSION is refused",
+      "do": {
+        "Only when API_VERSION differs from the tag's: a heading '## MAJOR.MINOR.PATCH' in kb/_self/extension-changelog.md; newest tag is the highest ext-vMAJOR.MINOR.PATCH by version; a lower API_VERSION is refused": "ST-vhzvqlo3",
+        "On every lint run, for the working tree's API_VERSION whether or not it changed": "ST-vhzvqlo3"
+      },
+      "class": "push",
+      "hold": true,
+      "answer": "Only when API_VERSION differs from the tag's: a heading '## MAJOR.MINOR.PATCH' in kb/_self/extension-changelog.md; newest tag is the highest ext-vMAJOR.MINOR.PATCH by version; a lower API_VERSION is refused",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "How does the sync gate run kbext.py lint, and what does lint print and exit with when the newest tag's kbext.py cannot be read?",
+      "options": [
+        "A named gate check 'kbext.py lint' in the kg_sync checks list, run when a changed path is under _tools/ (every check when there is no base), from the repository root; an unreadable or unparsable surface at the tag or in the working tree exits 1 with one line",
+        "Run it through the settings layers' gate_checks only"
+      ],
+      "recommendation": "A named gate check 'kbext.py lint' in the kg_sync checks list, run when a changed path is under _tools/ (every check when there is no base), from the repository root; an unreadable or unparsable surface at the tag or in the working tree exits 1 with one line",
+      "do": {
+        "A named gate check 'kbext.py lint' in the kg_sync checks list, run when a changed path is under _tools/ (every check when there is no base), from the repository root; an unreadable or unparsable surface at the tag or in the working tree exits 1 with one line": "ST-vhzvqlo3",
+        "Run it through the settings layers' gate_checks only": "ST-vhzvqlo3"
+      },
+      "class": "push"
     }
   ],
   "notes": "Ordered after ST-qtypcthx only to serialise kbext.py; that dependency was dropped on 2026-11-08 because ST-qtypcthx waits on other sprints' claims of kbpublic.py and mon_status.py, and begin refuses two items with overlapping touches anyway.",
