@@ -2,7 +2,7 @@
   "id": "BG-r57wg5tg",
   "kind": "bug",
   "title": "A root's placeholder names reach no production path: redact and the tracked-file leak scan never pass a root",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-n7zxspch",
   "priority": "P2",
   "rank": 0,
@@ -151,6 +151,73 @@
   ],
   "notes": "Operator answered g1: option 2 (the push-time scans pass each file's root, read from the root's _root.md in the scanned tree, caches keyed on the placeholders); re-planned. Order: after BG-2iqdafwm (same kbpublic functions; it follows BG-o6fbskv5) and after BG-lgiwfs64 (tools.md). Peers: kbpublic.py is also in ST-qtypcthx (SP-ep7ck2ab: file_hits defers to a group's leak_scan, leak_hits gains data shapes: file_hits is the shared function, this item adds an optional root parameter and theirs rebases on it), ST-3brmklge and ST-ugkw5mt3 (SP-lwkdljxg); BG-2n4csy5p (SP-uh5h46fm) may touch redact.known, not main. Planning: repro on the base: exit 1, redact.py takes no --root. Checks 0 (redact CLI on the fixture root ok), 1 (check_logs on two roots), 2 (push scans on a planted tree: public root team-p lists anna.nowak, team-q lists none, the public tip holds the name in team-p/x.md; tree_hits and range_leaks must accept it in team-p, flag it in team-q, and flag another user and a GUID in team-p) and 3 (the same commit judged again after the root drops its placeholders gets a fresh verdict; a range scan reads REV's roots as it reads REV's allowlist) fail on the base. Check 4 reads test_leaks.scan's syntax tree for root= on file_hits (a source read: scan walks the tracked tree and cannot run in a planted clone, which has no pytest). Check 5 (the test_leaks selection, a critical component) passes before the work and pins it. The repro is index 6. No real root lists placeholders yet, so no tracked file changes verdict. Re-planned after the answer. Ask Aec94bb1a6a to ST-qtypcthx on file_hits is open; test_leaks.py is also in session s-b2c9c7's plan (SP-ep7ck2ab): this item changes only scan(), ours first.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-557596e3",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "b0597523c92a6581c3238010af8cfef1ce228d0c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, shutil, subprocess, sys, tempfile\ndef run(*args, text):\n    return subprocess.run([sys.executable, '_tools/redact.py', *args], input=text, capture_output=True, text=True)\nT = tempfile.mkdtemp()\nopen(T + '/_root.md', 'w').write('---\\nroot: plain\\nid_prefix: PN\\nvisibility: internal\\ndescription: a root with no placeholders\\n---\\n\\n# plain\\n')\nown = '_tools/fixtures/placeholders/ok'\nhome = 'C:' + chr(92) + 'Users' + chr(92) + 'anna.nowak' + chr(92) + 'x'\nlogon = 'logon CORP' + chr(92) + 'anna.nowak'\nr = run('--root', own, text=logon)\nassert r.returncode == 0 and 'anna.nowak' in r.stdout, (\"redact.py --root DIR does not keep the root's own user\", r.returncode, r.stdout[-100:], r.stderr[-200:])\ns = run('--scan', '--root', own, text=home)\nassert s.returncode == 0 and not s.stdout.strip(), (\"redact.py --scan --root DIR flags the root's own user\", s.returncode, s.stdout[-100:], s.stderr[-200:])\nn = run('--scan', '--root', T, text=home)\nassert n.returncode == 1 and n.stdout.strip(), (\"another root's --scan accepts a name its _root.md does not list\", n.returncode, n.stderr[-200:])\nw = run('--scan', text=home)\nassert w.returncode == 1 and w.stdout.strip(), ('--scan with no --root accepts a root-listed name', w.returncode)\nassert 'anna.nowak' not in run(text=logon).stdout, 'redact with no --root keeps a root-listed name'\nshutil.rmtree(T, ignore_errors=True)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, shutil, sys, tempfile\nsys.path.insert(0, '_tools')\nimport kbcommon, check\nhome = 'C:' + chr(92) + 'Users' + chr(92) + 'anna.nowak' + chr(92) + 'x'\ndef log_errors(placeholders):\n    d = tempfile.mkdtemp()\n    open(d + '/_root.md', 'w').write('---\\nroot: plx\\nid_prefix: PX\\nvisibility: internal\\n' + ('placeholders: anna.nowak\\n' if placeholders else '') + 'description: fixture\\n---\\n\\n# plx\\n')\n    open(d + '/_logs.csv', 'w', newline='').write(','.join(check.LOG_COLS) + '\\nL-aaaaaaaa,\"seen 3 times at ' + home + '\",20260101T000000Z-0123abcd,2026-01-01,2026-01-02,domain:x,proposed,,\\n')\n    root = kbcommon.load_root(d)\n    del check.errors[:]\n    check.check_logs(root, 'plx', {})\n    out = list(check.errors)\n    shutil.rmtree(d)\n    return out\nown, plain = log_errors(True), log_errors(False)\nprint(own); print(plain)\nhit = lambda errs: [e for e in errs if 'leak-scan hit (home)' in e]\nassert hit(plain), ('the same log row in a root with no placeholders is not flagged', plain)\nassert not hit(own), ('a root lists the user as a placeholder and its log row is still flagged', own)\n"
+        ],
+        "exit": 0,
+        "sha256": "48919e40f8a2494a"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, shutil, subprocess, sys, tempfile\ndef sh(*a, cwd=None, env=None):\n    return subprocess.run(a, cwd=cwd, env=env, capture_output=True, text=True)\nenv = dict(os.environ, GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t\")\nguid = \"-\".join([\"3f2b8c1e\", \"9d4a\", \"4e7b\", \"8a61\", \"5c0d2e9f7b13\"])\nmine = \"C:\" + chr(92) + \"Users\" + chr(92) + \"anna.nowak\" + chr(92) + \"x\"\nother = \"C:\" + chr(92) + \"Users\" + chr(92) + \"bob.nowak\" + chr(92) + \"x\"\nt = tempfile.mkdtemp(); c = t + \"/c\"; os.mkdir(c)\nsubprocess.run([\"tar\", \"-x\", \"-C\", c], input=subprocess.run([\"git\", \"archive\", \"HEAD\", \"_tools\"], capture_output=True, check=True).stdout, check=True)\ndef put(p, s):\n    os.makedirs(os.path.dirname(c + \"/\" + p), exist_ok=True); open(c + \"/\" + p, \"w\").write(s)\ndef commit(m):\n    sh(\"git\", \"add\", \"-A\", cwd=c, env=env); sh(\"git\", \"commit\", \"-q\", \"-m\", m, \"--no-verify\", cwd=c, env=env)\nfor r, extra in ((\"team-p\", \"placeholders: anna.nowak\\n\"), (\"team-q\", \"\")):\n    put(\"kb/%s/_root.md\" % r, \"---\\nroot: %s\\nid_prefix: %sX\\nvisibility: public\\n%sdescription: fixture\\n---\\n\\n# %s\\n\" % (r, r[-1].upper(), extra, r))\nput(\"kb/team-p/x.md\", \"# x\\n\\nthe profile is %s\\n\" % mine)\nsh(\"git\", \"init\", \"-q\", \"-b\", \"main\", cwd=c, env=env); commit(\"base\")\nup = sh(\"git\", \"rev-parse\", \"HEAD\", cwd=c, env=env).stdout.strip()\nput(\"kb/team-p/y.md\", \"# y\\n\\nthe profile is %s\\n\" % mine); put(\"kb/team-q/y.md\", \"# y\\n\\nthe profile is %s\\n\" % mine)\nput(\"kb/team-p/z.md\", \"# z\\n\\nthe profile is %s and the tenant %s\\n\" % (other, guid)); commit(\"probe\")\ncode = (\"import sys; sys.path.insert(0,'_tools'); import kbpublic as k\\n\"\n        \"p = ['kb/team-p/x.md', 'kb/team-p/y.md', 'kb/team-q/y.md', 'kb/team-p/z.md']\\n\"\n        \"for x, ln, kind in sorted(set(k.tree_hits('HEAD', p, '.'))): print('TREE', x, kind)\\n\"\n        \"for x in k.range_leaks(sys.argv[1], '.'): print('RANGE', x)\")\nr = sh(sys.executable, \"-I\", \"-c\", code, up, cwd=c, env=env)\nshutil.rmtree(t, ignore_errors=True)\nassert r.returncode == 0, (\"planted run failed\", r.stderr[-300:])\ntree = [ln for ln in r.stdout.splitlines() if ln.startswith(\"TREE\")]\nrng = [ln for ln in r.stdout.splitlines() if ln.startswith(\"RANGE\")]\nhas = lambda lines, name, kind=None: any(name in ln and (kind is None or kind in ln) for ln in lines)\nassert not has(tree, \"kb/team-p/x.md\") and not has(tree, \"kb/team-p/y.md\"), (\"tree_hits flags the placeholder name a root lists in that root's files\", tree)\nassert has(tree, \"kb/team-q/y.md\", \"home\"), (\"tree_hits accepts the same name in a root that lists none\", tree)\nassert has(tree, \"kb/team-p/z.md\", \"home\") and has(tree, \"kb/team-p/z.md\", \"guid\"), (\"tree_hits accepts another user or a GUID in a root that lists a name\", tree)\nassert not has(rng, \"kb/team-p/y.md\"), (\"the range scan flags the placeholder name a root lists in that root's files (the tip's own file holds it too)\", rng[:3])\nassert has(rng, \"kb/team-q/y.md\", \"home\"), (\"the range scan lets the name pass in a root that lists none because the public tip holds it in another root's file\", rng[:3])\nassert has(rng, \"kb/team-p/z.md\", \"guid\"), (\"the range scan accepts another user or a GUID in a root that lists a name\", rng[:3])\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, shutil, subprocess, sys, tempfile\ndef sh(*a, cwd=None, env=None):\n    return subprocess.run(a, cwd=cwd, env=env, capture_output=True, text=True)\nenv = dict(os.environ, GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t\")\nmine = \"C:\" + chr(92) + \"Users\" + chr(92) + \"anna.nowak\" + chr(92) + \"x\"\nt = tempfile.mkdtemp(); c = t + \"/c\"; os.mkdir(c)\nsubprocess.run([\"tar\", \"-x\", \"-C\", c], input=subprocess.run([\"git\", \"archive\", \"HEAD\", \"_tools\"], capture_output=True, check=True).stdout, check=True)\ndef put(p, s):\n    os.makedirs(os.path.dirname(c + \"/\" + p), exist_ok=True); open(c + \"/\" + p, \"w\").write(s)\ndef commit(m):\n    sh(\"git\", \"add\", \"-A\", cwd=c, env=env); sh(\"git\", \"commit\", \"-q\", \"-m\", m, \"--no-verify\", cwd=c, env=env)\ndef root(extra):\n    put(\"kb/team-p/_root.md\", \"---\\nroot: team-p\\nid_prefix: PX\\nvisibility: public\\n%sdescription: fixture\\n---\\n\\n# team-p\\n\" % extra)\nroot(\"placeholders: anna.nowak\\n\")\nsh(\"git\", \"init\", \"-q\", \"-b\", \"main\", cwd=c, env=env); commit(\"base\")\nup = sh(\"git\", \"rev-parse\", \"HEAD\", cwd=c, env=env).stdout.strip()\nput(\"kb/team-p/y.md\", \"# y\\n\\nthe profile is %s\\n\" % mine); commit(\"probe one\")\none = sh(\"git\", \"rev-parse\", \"HEAD\", cwd=c, env=env).stdout.strip()\nroot(\"\"); commit(\"probe two: the root lists no name\")\ncode = \"import sys; sys.path.insert(0,'_tools'); import kbpublic as k\\nfor x in k.range_leaks(sys.argv[1], '.', sys.argv[2]): print('RANGE', x)\"\nfirst = sh(sys.executable, \"-I\", \"-c\", code, up, one, cwd=c, env=env)\nsecond = sh(sys.executable, \"-I\", \"-c\", code, up, \"HEAD\", cwd=c, env=env)\nshutil.rmtree(t, ignore_errors=True)\nassert first.returncode == 0 and second.returncode == 0, (\"planted run failed\", first.stderr[-200:], second.stderr[-200:])\nassert \"RANGE\" not in first.stdout, (\"the range scan flags a name the root lists\", first.stdout[-200:])\nassert \"kb/team-p/y.md\" in second.stdout, (\"after the root drops its placeholders the cached verdict of the same commit is read, not a fresh one\", second.stdout[-200:])\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport ast\ntree = ast.parse(open('_tools/test_leaks.py', encoding='utf-8').read())\nscan = [n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef) and n.name == 'scan']\nassert len(scan) == 1, ('test_leaks has no single scan function', len(scan))\ncalls = [c for c in ast.walk(scan[0]) if isinstance(c, ast.Call) and getattr(c.func, 'attr', '') == 'file_hits']\nassert calls, 'test_leaks.scan no longer calls file_hits'\nassert all(any(k.arg == 'root' for k in c.keywords) for c in calls), 'test_leaks.scan calls file_hits with no root'\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "_tools/test_leaks.py"
+        ],
+        "exit": 0,
+        "sha256": "b31b3935f3679aab"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport subprocess, sys\np = subprocess.run([sys.executable, '_tools/redact.py', '--help'], capture_output=True, text=True)\nassert '--root' in p.stdout, 'redact.py takes no --root, so no pipeline can pass a root'"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
