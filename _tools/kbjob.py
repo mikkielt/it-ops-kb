@@ -17,6 +17,9 @@
                                         and moved to succeeded (exit 0), refused (exit 1 and a line `... stopped at step NAME:`)
                                         or failed. --once drains the queue and exits 0 (1 when a job failed); without it serve
                                         keeps polling. A second serve on the host exits 0 naming the running one's pid.
+                                        At its start and every 30 s serve recovers the jobs a dead executor left in running, waiting-lock
+                                        or waiting-merge (lease jobrun/JOB expired, pid gone): lost, then queued again with attempt
+                                        raised by one the first time, failed the second; a child still running is adopted.
 
   kbjob.py [--store PATH] follow JOB [--since SEQ] [--timeout S]
                                         print one line per `job` event of JOB after sequence SEQ (default 0), flushed at once:
