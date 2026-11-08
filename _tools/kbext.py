@@ -14,6 +14,10 @@
                                                                     point's samples in a child process and check the shape
                                                                     of the answer: one line each, exit 1 when one fails
   kbext.py init-team DIR --group NAME --upstream URL [--ref TAG]    write a group's overlay repository into DIR (below)
+  kbext.py rehearse --team DIR (--upstream URL --from TAG --to TAG | --plant [--break]) [--fork]
+                                                                    dry-run the group's move from one upstream ext tag to
+                                                                    the next in temporary directories (below): exit 0 only
+                                                                    with no conflict, no shipped file changed, every extender ok
 
 `API_VERSION` is the version of the extension API (MAJOR.MINOR.PATCH). `SURFACE` is the one registry of the public API (a
 literal: dicts with `name`, `signature`, `added`, and `deprecated` / `removed` for a deprecated one); anything not in it
@@ -54,6 +58,17 @@ own; `settings/group.json` names the group, `extension_paths` `../ext` and `exte
 `ext/` that `verify` passes. A file that is there with the same text is left alone, so a second run changes nothing; one
 that holds other text exits 2 naming it on stderr, and nothing is written.
 
+`rehearse` is the dry run of a group's upgrade, in temporary directories it removes (also on a failure). It clones URL at the
+tag FROM into a copy whose `main` it then moves to TO, takes the group's `TEAM/settings/group.json` as the group layer
+(`KB_GROUP_SETTINGS`), with `--fork` makes a commit that adds the group's root with `kbroot.py add`, lists the shipped files
+(tracked at FROM) that the group's setup modified or deleted, takes TO with the clone's own `kbgit.py upstream` (scope `team`,
+a merge) and, when it left no conflict, runs the clone's `kbext.py verify`. It prints the conflicting paths, the shipped
+files changed and verify's lines. Exit 0 only with no conflict, no shipped file changed and every extender verified, 1 for
+any of them, 2 for a rehearsal that could not be made (a tag or file missing, a git or tool failure). `--plant` builds the
+upstream from the running checkout's tracked `_tools` (what kbgit.py, kbroot.py and kbext.py import, no tests) as two commits
+tagged `ext-v` and `API_VERSION` and the next minor; with `--break` the second removes the `ranker` point, which `verify`
+reports by name.
+
 `lint` is the gate on the API's compatibility. A repository with no tag `ext-vMAJOR.MINOR.PATCH` prints one line and exits 0.
 Otherwise it reads `API_VERSION` and `SURFACE` of `_tools/kbext.py` at the newest such tag (`git show`) and of the working
 tree with `ast`, never importing either file, and exits 1 with one line per problem: an entry removed or with a changed
@@ -66,9 +81,10 @@ Answers: which extension points and settings keys are the public extension API, 
 Answers: whether a change removes or changes a public extension entry without a major API version, a deprecation and a changelog entry
 Answers: whether each extender a group configured still loads and answers its point's sample inputs in the shape the API promises
 Answers: how to start a group's overlay repository that pins it-ops-kb by an ext tag and holds the group's plugin and extenders
-Use: python3 _tools/kbext.py resolve|call POINT --root WS | surface [--json] | lint [--root REPO] | verify --root WS | init-team DIR --group NAME --upstream URL
+Answers: whether a group's overlay and fork take the next upstream ext tag with no conflict, no shipped file edited and every extender verified
+Use: python3 _tools/kbext.py resolve|call POINT --root WS | surface [--json] | lint [--root REPO] | verify --root WS | init-team DIR --group NAME --upstream URL | rehearse --team DIR --plant|--upstream URL --from TAG --to TAG
 """
-import argparse, ast, collections, importlib, json, re, subprocess, sys, tempfile
+import argparse, ast, collections, importlib, json, os, re, shutil, subprocess, sys, tempfile
 from importlib import metadata
 from pathlib import Path
 
@@ -732,6 +748,206 @@ def init_team(dest, group, upstream, ref):
     return 0, lines
 
 
+REHEARSE_SCRIPTS = ("kbgit", "kbroot", "kbext")  # the tools a rehearsal runs from the clone: a plant holds these and what they import
+ISOLATED = {"GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_NOSYSTEM": "1", "GIT_TERMINAL_PROMPT": "0",
+            "PYTHONDONTWRITEBYTECODE": "1"}
+
+
+def _step(argv, cwd=None, env=None, isolate=True):
+    """(exit code, output lines) of the command ARGV, stderr after stdout; (127, [reason]) when it cannot be started.
+    With ISOLATE no global or system git config applies and no bytecode is written."""
+    try:
+        p = subprocess.run([str(a) for a in argv], cwd=cwd, capture_output=True, text=True, encoding="utf-8",
+                           errors="replace", env={**os.environ, **(ISOLATED if isolate else {}), **(env or {})})
+    except OSError as e:
+        return 127, [f"{argv[0]}: cannot be started: {e.strerror or type(e).__name__}"]
+    return p.returncode, [l for l in (p.stdout + p.stderr).splitlines() if l.strip()]
+
+
+def _gitc(repo, *args):
+    """git in REPO with a fixed author and no signing: (exit code, output lines)."""
+    return _step(["git", "-c", "user.name=kbext", "-c", "user.email=kbext@corp.example.com", "-c",
+                  "commit.gpgsign=false", "-C", repo, *args])
+
+
+def _import_closure(tools, names):
+    """The module names under the directory TOOLS that the modules NAMES import, directly or not, NAMES included."""
+    seen, todo = set(), list(names)
+    while todo:
+        name = todo.pop()
+        path = Path(tools) / f"{name}.py"
+        if name in seen or not path.is_file():
+            continue
+        seen.add(name)
+        try:
+            tree = ast.parse(path.read_text(encoding="utf-8"))
+        except (OSError, SyntaxError, UnicodeDecodeError):
+            continue
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                todo += [a.name.partition(".")[0] for a in node.names]
+            elif isinstance(node, ast.ImportFrom) and node.module and not node.level:
+                todo.append(node.module.partition(".")[0])
+    return seen
+
+
+def _next_minor(version):
+    major, minor, _ = _numbers(version)
+    return f"{major}.{minor + 1}.0"
+
+
+def plant(dest, broken=False):
+    """(url, from tag, to tag) of an upstream repository built in the directory DEST from the running checkout: two commits
+    on `main`, the first tagged `ext-v<API_VERSION>` and the second, which sets API_VERSION to the next minor and adds its
+    changelog entry, tagged with that. The tree is the tracked `_tools` files that kbgit.py, kbroot.py and kbext.py import
+    and the data files beside them (no tests, no fixtures) and the changelog. With BROKEN the second commit also removes
+    the `ranker` point from `SURFACE` and keeps its API version a minor, so no deprecation or major version covers it."""
+    home = Path(__file__).resolve().parent.parent
+    code, listed = _step(["git", "-C", home, "ls-files", "--", "_tools", CHANGELOG])
+    if code:
+        raise ExtensionError(f"--plant needs a git checkout of the kb with tracked _tools files: {home}")
+    want = _import_closure(home / "_tools", REHEARSE_SCRIPTS)
+    keep = [p for p in listed if (home / p).is_file() and "/fixtures/" not in p and not Path(p).name.startswith("tests_")
+            and (p == CHANGELOG or not p.endswith(".py") or Path(p).stem in want)]
+    dest = Path(dest)
+    dest.mkdir(parents=True)
+    for rel in keep:
+        (dest / rel).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(home / rel, dest / rel)
+    first, second = f"ext-v{API_VERSION}", f"ext-v{_next_minor(API_VERSION)}"
+    log = dest / CHANGELOG
+    if not log.is_file():
+        log.parent.mkdir(parents=True, exist_ok=True)
+        log.write_text(f"# Extension API changelog\n\n## {API_VERSION}\n\nThe planted first release.\n", encoding="utf-8",
+                       newline="\n")
+    steps = [("init", "-q", "-b", "main"), ("add", "-A"), ("commit", "-q", "-m", f"plant: it-ops-kb at {first}"),
+             ("tag", first)]
+    for args in steps:
+        if _gitc(dest, *args)[0]:
+            raise ExtensionError(f"--plant: git {args[0]} failed in the planted upstream")
+    source = dest / SOURCE
+    text = source.read_text(encoding="utf-8")
+    text, n = re.subn(r'^API_VERSION = "[^"]*"', f'API_VERSION = "{_next_minor(API_VERSION)}"', text, count=1, flags=re.M)
+    if broken:
+        start = text.find('        {"name": "ranker"')
+        end = text.find('        {"name": ', start + 1)
+        if start < 0 or end < 0:
+            raise ExtensionError("--plant --break: the ranker point is not in SURFACE as a block of its own")
+        text = text[:start] + text[end:]
+    if not n:
+        raise ExtensionError(f"--plant: no API_VERSION line in {SOURCE}")
+    source.write_text(text, encoding="utf-8", newline="\n")
+    with log.open("a", encoding="utf-8", newline="\n") as f:
+        f.write(f"\n## {_next_minor(API_VERSION)}\n\nThe planted next minor release{' without the ranker point' if broken else ''}.\n")
+    for args in (("add", "-A"), ("commit", "-q", "-m", f"plant: the next minor at {second}"), ("tag", second)):
+        if _gitc(dest, *args)[0]:
+            raise ExtensionError(f"--plant: git {args[0]} failed in the planted upstream")
+    return str(dest), first, second
+
+
+def _tag_commit(repo, tag):
+    code, out = _step(["git", "-C", repo, "rev-parse", "--verify", "-q", f"refs/tags/{tag}^{{commit}}"])
+    return out[0] if not code and out else None
+
+
+def _rehearse_in(tmp, upstream, frm, to, team, fork):
+    """(exit code, lines) of the rehearsal that works in the directory TMP; see `rehearse`."""
+    team = Path(team).resolve()
+    group_file = team / "settings" / "group.json"
+    try:
+        group = json.loads(group_file.read_text(encoding="utf-8")).get("group")
+    except (OSError, ValueError, AttributeError) as e:
+        return 2, [f"rehearse: {group_file} cannot be read as the group's settings: {e}"]
+    if not isinstance(group, str) or not GROUP_NAME_RE.fullmatch(group):
+        return 2, [f"rehearse: {group_file} has no `group` name of lower-case letters, digits and hyphens"]
+    lines = [f"rehearse: upstream {upstream}, {frm} to {to}, group {group} ({group_file})"]
+    src, clone = tmp / "src.git", tmp / "clone"
+    code, out = _step(["git", "clone", "-q", "--bare", upstream, src], isolate=False)  # the user's git config: credentials
+    if code:
+        return 2, lines + [f"rehearse: git clone of {upstream} failed: {out[-1] if out else code}"]
+    old, new = _tag_commit(src, frm), _tag_commit(src, to)
+    for tag, sha in ((frm, old), (to, new)):
+        if sha is None:
+            return 2, lines + [f"rehearse: the upstream has no tag {tag}"]
+    for args in (("symbolic-ref", "HEAD", "refs/heads/main"), ("update-ref", "refs/heads/main", old)):
+        if _gitc(src, *args)[0]:
+            return 2, lines + [f"rehearse: git {args[0]} failed in the upstream copy"]
+    if _gitc(tmp, "clone", "-q", "--origin", "upstream", src, clone)[0]:
+        return 2, lines + ["rehearse: the clone at the first tag failed"]
+    for key, value in (("kb.scope", "team"), ("kb.upstreamRemote", "upstream"), ("user.name", "kbext"),
+                       ("user.email", "kbext@corp.example.com"), ("commit.gpgsign", "false")):
+        if _gitc(clone, "config", key, value)[0]:
+            return 2, lines + [f"rehearse: git config {key} failed"]
+    lines.append(f"cloned the upstream at {frm}; settings: KB_GROUP_SETTINGS={group_file}")
+    py = sys.executable
+    if fork:
+        prefix = "".join(c for c in group.upper() if c.isalpha())[:4]
+        add = ["kbroot.py", "add", group, "--prefix", prefix, "--description", f"{group}'s own knowledge"]
+        code, out = _step([py, clone / "_tools" / add[0], *add[1:]], cwd=clone)
+        lines.append(f"fork commit: python3 _tools/{' '.join(add)}: exit {code}")
+        if code or _gitc(clone, "add", "-A")[0] or _gitc(clone, "commit", "-q", "-m", f"feat: add the group root {group}")[0]:
+            return 2, lines + [f"  {l}" for l in out[-3:]] + ["rehearse: the planted fork commit could not be made"]
+    code, out = _step(["git", "-C", clone, "diff", "--name-status", "--no-renames", old])
+    shipped = sorted({l.split("\t", 1)[1] for l in out if l[:1] in "MDT" and "\t" in l}) if not code else None
+    if shipped is None:
+        return 2, lines + ["rehearse: git diff of the group's setup failed"]
+    lines.append(f"shipped files the group's setup changed ({len(shipped)}): " + (", ".join(shipped) or "none"))
+    if _gitc(src, "update-ref", "refs/heads/main", new)[0]:
+        return 2, lines + ["rehearse: the upstream copy cannot move main to the second tag"]
+    code, out = _step([py, clone / "_tools" / "kbgit.py", "upstream"], cwd=clone)
+    lines.append(f"python3 _tools/kbgit.py upstream (take {to}): exit {code}")
+    lines += [f"  {l}" for l in out]
+    conflicts = []
+    if code == 3:
+        conflicts = sorted(set(_step(["git", "-C", clone, "diff", "--name-only", "--diff-filter=U"])[1]))
+    elif code:
+        return 2, lines + ["rehearse: kbgit.py upstream could not take the second tag"]
+    lines.append(f"conflicting paths ({len(conflicts)}): " + (", ".join(conflicts) or "none"))
+    failed = []
+    if conflicts or code:
+        failed.append("a conflict")
+        lines.append("verify: skipped, the bring-in left a conflict in progress")
+    else:
+        vcode, vout = _step([py, clone / "_tools" / "kbext.py", "verify", "--root", clone],
+                            env={"KB_GROUP_SETTINGS": str(group_file)})
+        lines.append(f"python3 _tools/kbext.py verify --root CLONE (the clone at {to}): exit {vcode}")
+        lines += [f"  {l}" for l in vout]
+        if vcode:
+            failed.append("an extender that no longer verifies")
+    if shipped:
+        failed.append("a shipped file the group's setup changed")
+    lines.append("rehearse: " + (f"failed, {', '.join(failed)}" if failed else
+                                 f"ok, no conflict, no shipped file changed, every extender verified from {frm} to {to}"))
+    return (1 if failed else 0), lines
+
+
+def rehearse(upstream, frm, to, team, fork=False, planted=False, broken=False):
+    """(exit code, lines) of a dry run of a group's upgrade from the upstream tag FROM to the tag TO, in temporary
+    directories this removes: the upstream is cloned at FROM (the copy of a `plant`ed upstream with PLANTED, whose two tags
+    FROM and TO are then the planted ones and BROKEN removes the ranker point from the second), the group's settings at
+    TEAM/settings/group.json are the group layer, with FORK a commit that adds the group's root by `kbroot.py add` is made,
+    and the clone's own `kbgit.py upstream` takes TO. The lines name the conflicting paths, the shipped files the group's
+    setup changed and the lines of the clone's `kbext.py verify`. Exit 0 with no conflict, no shipped file changed and every
+    extender verified, 1 otherwise, 2 for a rehearsal that could not be made."""
+    tmp = Path(tempfile.mkdtemp(prefix="kbext-rehearse-"))
+
+    def forget(func, path, _):
+        try:
+            os.chmod(path, 0o700)
+            func(path)
+        except OSError:
+            pass
+    try:
+        if planted:
+            try:
+                upstream, frm, to = plant(tmp / "plant", broken)
+            except ExtensionError as e:
+                return 2, [f"rehearse: {e}"]
+        return _rehearse_in(tmp, upstream, frm, to, team, fork)
+    finally:
+        shutil.rmtree(tmp, onerror=forget)
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description="A group's extenders for the kb's extension points.")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -745,6 +961,17 @@ def main(argv=None):
     sp.add_argument("--group", required=True, help="the group's name: lower-case letters, digits and hyphens")
     sp.add_argument("--upstream", required=True, help="the git url of it-ops-kb the marketplace pins")
     sp.add_argument("--ref", default=f"ext-v{API_VERSION}", help="the ext tag to pin (default: ext-v%s)" % API_VERSION)
+    sp = sub.add_parser("rehearse", help="dry-run a group's upgrade from one upstream ext tag to the next in temporary "
+                                         "directories: conflicts, shipped files changed, extenders verified")
+    sp.add_argument("--team", required=True, help="the group's overlay repository (init-team's): its settings/group.json")
+    sp.add_argument("--upstream", help="the git url of it-ops-kb (not with --plant)")
+    sp.add_argument("--from", dest="from_tag", metavar="TAG", help="the ext tag the group is at (not with --plant)")
+    sp.add_argument("--to", dest="to_tag", metavar="TAG", help="the ext tag to take (not with --plant)")
+    sp.add_argument("--fork", action="store_true", help="first commit a group root into the clone with kbroot.py add")
+    sp.add_argument("--plant", action="store_true", help="build the upstream from this checkout's tracked tools as two "
+                                                         "commits tagged ext-v<API_VERSION> and the next minor")
+    sp.add_argument("--break", action="store_true", dest="broken", help="with --plant: the second commit removes the "
+                                                                         "ranker point, keeping its API version a minor")
     sp = sub.add_parser("verify", help="call each configured extender with its point's samples and check the answers")
     sp.add_argument("--root", required=True, help="the workspace directory (holds settings.json)")
     sp.add_argument("--kb-root", help="a kb root's name: kb/NAME/settings.json is a layer too")
@@ -769,6 +996,16 @@ def main(argv=None):
     if args.cmd == "init-team":
         code, lines = init_team(args.dir, args.group, args.upstream, args.ref)
         print("\n".join(lines), file=sys.stderr if code else sys.stdout)
+        return code
+    if args.cmd == "rehearse":
+        if args.plant == bool(args.upstream or args.from_tag or args.to_tag):
+            ap.error("give --plant, or --upstream with --from and --to, not both and not neither")
+        if not args.plant and not (args.upstream and args.from_tag and args.to_tag):
+            ap.error("--upstream, --from and --to go together")
+        if args.broken and not args.plant:
+            ap.error("--break goes with --plant")
+        code, lines = rehearse(args.upstream, args.from_tag, args.to_tag, args.team, args.fork, args.plant, args.broken)
+        print("\n".join(lines), file=sys.stderr if code == 2 else sys.stdout)
         return code
     if args.cmd == "verify":
         if Path(args.root).exists() and not Path(args.root).is_dir():
