@@ -82,6 +82,61 @@
     "kb/_self/plugin.md",
     "kb/_self/token-efficiency.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "A group file that group_settings or KB_GROUP_SETTINGS names but that does not exist: error or silently skipped?",
+      "options": [
+        "raise SettingsError naming the file (locks would otherwise go unseen)",
+        "treat as a missing file, no error"
+      ],
+      "recommendation": "raise SettingsError naming the file (locks would otherwise go unseen)",
+      "do": {
+        "raise SettingsError naming the file (locks would otherwise go unseen)": "ST-ed7utpmg",
+        "treat as a missing file, no error": "ST-ed7utpmg"
+      },
+      "class": "design",
+      "answer": "raise SettingsError naming the file (locks would otherwise go unseen)",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How is a locked key written and matched in the group file's locked list?",
+      "options": [
+        "dotted key as the files hold it (coordination.announce.x, extensions.k); a name ending before the key locks everything below",
+        "exact keys only"
+      ],
+      "recommendation": "dotted key as the files hold it (coordination.announce.x, extensions.k); a name ending before the key locks everything below",
+      "do": {
+        "dotted key as the files hold it (coordination.announce.x, extensions.k); a name ending before the key locks everything below": "ST-ed7utpmg",
+        "exact keys only": "ST-ed7utpmg"
+      },
+      "class": "design",
+      "answer": "dotted key as the files hold it (coordination.announce.x, extensions.k); a name ending before the key locks everything below",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "Which file does kbsettings init write, and how is a group file outside the workspace named in messages?",
+      "options": [
+        "init writes the clone file (.it-ops-kb/settings.json when it exists); a group file outside the workspace is named by its file name only",
+        "init always writes <WS>/settings.json; outside files by absolute path"
+      ],
+      "recommendation": "init writes the clone file (.it-ops-kb/settings.json when it exists); a group file outside the workspace is named by its file name only",
+      "do": {
+        "init writes the clone file (.it-ops-kb/settings.json when it exists); a group file outside the workspace is named by its file name only": "ST-ed7utpmg",
+        "init always writes <WS>/settings.json; outside files by absolute path": "ST-ed7utpmg"
+      },
+      "class": "design",
+      "answer": "init writes the clone file (.it-ops-kb/settings.json when it exists); a group file outside the workspace is named by its file name only",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "notes": "Check 2 (kbsettings.py check) passes before the work: it keeps the settings table and coordination.md in step, which must stay. Shared files with SP-lwkdljxg (kbcommon.py, kbpublic.py, bl_land.py, map.csv): agreed with its manager on 2026-11-08 that the first claim lands first and the other rebases; its items reach these files late. SP-uh5h46fm (mon_coord.py, mon_status.py) was asked the same and has not answered: the same rule applies.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-a796fc75",

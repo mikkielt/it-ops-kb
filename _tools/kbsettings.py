@@ -1,27 +1,40 @@
 #!/usr/bin/env python3
-"""The coordination settings (stdlib only): defaults, a workspace's settings.json, a kb root's settings.json.
+"""The settings of a workspace (stdlib only): defaults, a group file, the clone's settings.json, a kb root's, the user's.
 
   kbsettings.py show --root WS [--kb-root NAME] [--json]            print the effective coordination settings
-  kbsettings.py explain [KEY] --root WS [--kb-root NAME] [--json]   each setting (or KEY) with its value, the file that
-                                                                    set it, its meaning and the doc bullet that states it
-  kbsettings.py init --root WS [--set KEY=VALUE]...                 write the coordination section of <WS>/settings.json
+  kbsettings.py explain [KEY] --root WS [--kb-root NAME] [--json]   each setting (or KEY) with its value, the layer and
+                                                                    file that set it, its meaning and the doc bullet
+  kbsettings.py init --root WS [--set KEY=VALUE]...                 write the coordination section of the clone file
                                                                     and turn the coord hook on in <WS>/backlog.json
   kbsettings.py check                                               exit 1 when the table below and the doc disagree
 
-`effective(root, kb_root=None)` is the one reader: the coord hook, kbmon and the explain command call it, never the
-files. It merges key by key, later over earlier: DEFAULTS, then `<WS>/settings.json`, then
-`<WS>/kb/<NAME>/settings.json` when a kb root is named. A file holds `{"coordination": {"announce": {...},
-"strategy": {...}}}`; a missing file is no error, and a key of another top-level object is not read. An unknown key,
-or a value outside its closed set, raises `SettingsError` (a ValueError whose message names the file, the key and the
-allowed values); `show` and `explain` print it on stderr and exit 2. Exit 0 printed; 1 `check` found a mismatch; 2 a
-bad setting or argument. `explain` reads the settings files and the SETTINGS table and nothing else: no model, no
-subprocess, no network, and not the doc, whose bullet for each key `check` finds by the key and verifies.
+`effective(root, kb_root=None)` is the one reader of the coordination settings: the coord hook, kbmon and the explain
+command call it, never the files. It merges five layers key by key, later over earlier:
+  default   DEFAULTS
+  group     the file `group_settings` names in the clone file (a path, relative to WS when not absolute), else the file
+            the environment variable `KB_GROUP_SETTINGS` names when the clone file names none
+  clone     `<WS>/settings.json`, or `<WS>/.it-ops-kb/settings.json` when that file exists (a host project with the
+            plugin installed)
+  root      `<WS>/kb/<NAME>/settings.json` when a kb root is named
+  user      `<WS>/_private/settings.json`, which wins over every other layer
+A file holds `{"coordination": {"announce": {...}, "strategy": {...}}}`; a missing file is no error (a group file that
+is named and missing is), and a key of another top-level object is not read by `effective`. `layered(root, name,
+kb_root=None)` reads one of those objects (`extensions`, `extension_paths`, `backlog`, `gate_checks`, `group`,
+`leak`) the same way and returns `(merged, {key: layer})`. A group file may hold `locked`, a list of keys written as the
+file holds them (`coordination.announce.needs_you_after_min`, `extensions.ranker`; a name that ends before the key
+locks everything below it): a later layer that sets a locked key raises `SettingsError` naming the key, the file that
+sets it and the group file. An unknown key, or a value outside its closed set, raises `SettingsError` (a ValueError
+whose message names the file, the key and the allowed values); `show` and `explain` print it on stderr and exit 2.
+Exit 0 printed; 1 `check` found a mismatch; 2 a bad setting or argument. `explain` reads the settings files and the
+SETTINGS table and nothing else: no model, no subprocess, no network, and not the doc, whose bullet for each key
+`check` finds by the key and verifies; each row names its layer (`default`, `group`, `clone`, `root` or `user`) and
+the file.
 
-`init` writes the whole `coordination` section: each key the file already holds keeps its value, each `--set KEY=VALUE`
-(KEY as `group.name`; a list as comma-separated values, `start,claim`) sets one, and a key neither names takes its
-default. Another top-level key of `settings.json` is kept. It adds `coord` to the `hooks` list of `<WS>/backlog.json`
-(made with that list alone when the file is missing). A file whose content would not change is not written, so a second
-run with the same values changes nothing.
+`init` writes the whole `coordination` section of the clone file: each key the file already holds keeps its value, each
+`--set KEY=VALUE` (KEY as `group.name`; a list as comma-separated values, `start,claim`) sets one, and a key neither
+names takes its default. Another top-level key of the file is kept. It adds `coord` to the `hooks` list of
+`<WS>/backlog.json` (made with that list alone when the file is missing). A file whose content would not change is not
+written, so a second run with the same values changes nothing.
 
 announce (what a session says about its work):
   when                 list of start, claim, midrun, edit: the moments a session announces itself
@@ -38,9 +51,12 @@ Answers: how coordination is set up here: each setting, the file that set it and
 Use: python3 _tools/kbsettings.py show|explain|init|check --root WS
 MCP: kb_settings explains the effective settings
 """
-import argparse, json, re, sys
+import argparse, json, os, re, sys
 from pathlib import Path
 
+LAYERS = ("default", "group", "clone", "root", "user")
+OBJECTS = ("extensions", "extension_paths", "backlog", "gate_checks", "group", "leak")
+GROUP_ENV = "KB_GROUP_SETTINGS"
 STRATEGIES = ("wait", "ask", "after", "join", "proceed")
 RUN_STATES = ("working", "landing", "blocked", "returned")
 
@@ -125,10 +141,20 @@ def _allowed(kind):
     return ("a list of " if kind[0] == "list" else "one of ") + ", ".join(kind[1])
 
 
+def _shown(path, root):
+    """PATH as a posix path relative to the workspace ROOT when it lies under it, else its file name alone (a group file
+    outside the workspace), so no home directory reaches a caller."""
+    try:
+        return Path(path).relative_to(root).as_posix()
+    except ValueError:
+        return Path(path).name
+
+
 def _read(path, root):
-    """The validated `coordination` object of PATH; empty when the file is missing. A message names PATH relative to
-    the workspace ROOT, so no home directory reaches a caller."""
-    shown = path.relative_to(root).as_posix()
+    """The whole object of the settings file PATH, its `coordination` object validated and its `locked` list (a group
+    file's) checked to be a list of names; empty when the file is missing. A message names PATH relative to the
+    workspace ROOT, so no home directory reaches a caller."""
+    shown = _shown(path, root)
     try:
         text = path.read_text(encoding="utf-8")
     except FileNotFoundError:
@@ -157,53 +183,123 @@ def _read(path, root):
             if not _valid(kind, value):
                 raise SettingsError(f"{shown}: key coordination.{group}.{key} has value {json.dumps(value)}; "
                                     f"allowed: {_allowed(kind)}")
-    return coord
+    return data
+
+
+def _clone_path(root):
+    """The clone file of workspace ROOT: `.it-ops-kb/settings.json` when that file exists, else `settings.json`."""
+    plugin = Path(root) / ".it-ops-kb" / "settings.json"
+    return plugin if plugin.is_file() else Path(root) / "settings.json"
+
+
+def _leaves(data):
+    """The keys a settings file sets, as it holds them: `coordination.group.name` for each coordination key and
+    `object.key` for each key of another named object."""
+    out = []
+    for group, body in (data.get("coordination") or {}).items():
+        out += [f"coordination.{group}.{name}" for name in body]
+    for name in OBJECTS:
+        if isinstance(data.get(name), dict):
+            out += [f"{name}.{key}" for key in data[name]]
+    return out
 
 
 def _layers(root, kb_root=None):
-    """[(path, coordination object)] for the workspace file, then the kb root's, validated; a missing file is {}. Each
-    path is ROOT joined with the file's place in the workspace."""
+    """[(layer, path, object)] of the files that exist or are named, in merge order: the group file (when one is
+    named), the clone file, the kb root's (when named) and the user's, each validated; a missing file's object is {}.
+    A later layer that sets a key the group file locks raises SettingsError."""
     root = Path(root)
     if kb_root is not None and not re.fullmatch(r"[A-Za-z0-9_][A-Za-z0-9_.-]*", str(kb_root)):
         raise SettingsError(f"kb root name {str(kb_root)!r}: a plain directory name is expected")
-    files = [root / "settings.json"] + ([root / "kb" / kb_root / "settings.json"] if kb_root else [])
-    return [(path, _read(path, root)) for path in files]
+    clone = _clone_path(root)
+    clone_data = _read(clone, root)
+    named = clone_data.get("group_settings", os.environ.get(GROUP_ENV) or None)
+    if named is not None and not (isinstance(named, str) and named):
+        raise SettingsError(f"{_shown(clone, root)}: key group_settings must be a file path")
+    out = []
+    locked = []
+    if named:
+        group = Path(named) if Path(named).is_absolute() else root / named
+        if not group.is_file():
+            raise SettingsError(f"group settings file {_shown(group, root)} named by "
+                                f"{'group_settings' if 'group_settings' in clone_data else GROUP_ENV} is missing")
+        group_data = _read(group, root)
+        locked = group_data.get("locked", [])
+        if not isinstance(locked, list) or not all(isinstance(k, str) and k for k in locked):
+            raise SettingsError(f"{_shown(group, root)}: key locked must be a list of key names")
+        out.append(("group", group, group_data))
+    out.append(("clone", clone, clone_data))
+    if kb_root:
+        path = root / "kb" / kb_root / "settings.json"
+        out.append(("root", path, _read(path, root)))
+    user = root / "_private" / "settings.json"
+    out.append(("user", user, _read(user, root)))
+    for layer, path, data in out:
+        if layer == "group":
+            continue
+        for leaf in _leaves(data):
+            for lock in locked:
+                if leaf == lock or leaf.startswith(lock + "."):
+                    raise SettingsError(f"{_shown(path, root)}: key {leaf} is locked by the group file "
+                                        f"{_shown(out[0][1], root)} and cannot be set in the {layer} file")
+    return out
 
 
 def effective(root, kb_root=None):
     """`{"coordination": {"announce": {...}, "strategy": {...}}}` for workspace ROOT and the kb root named KB_ROOT."""
     merged = json.loads(json.dumps(DEFAULTS))
-    for _, coord in _layers(root, kb_root):
-        for group, body in coord.items():
+    for _, _, data in _layers(root, kb_root):
+        for group, body in data.get("coordination", {}).items():
             merged[group].update(body)
     return {"coordination": merged}
 
 
+def layered(root, name, kb_root=None):
+    """`(merged, layers)` for the top-level object NAME (one of `OBJECTS`) of the settings files of workspace ROOT and
+    the kb root KB_ROOT: its keys merged over the five layers, later over earlier, and a map from each key to the layer
+    that set it last (`group`, `clone`, `root` or `user`; no default holds an object)."""
+    if name not in OBJECTS:
+        raise SettingsError(f"unknown object {name}; allowed: {', '.join(OBJECTS)}")
+    root = Path(root)
+    merged, source = {}, {}
+    for layer, path, data in _layers(root, kb_root):
+        body = data.get(name, {})
+        if not isinstance(body, dict):
+            raise SettingsError(f"{_shown(path, root)}: key {name} must be an object")
+        for key, value in body.items():
+            merged[key], source[key] = value, layer
+    return merged, source
+
+
 def explain(root, kb_root=None, key=None):
-    """[{key, value, source, meaning, doc}] for each setting of `effective`, or for KEY alone (`group.name`): source is
-    the file whose layer set the value last as a path relative to ROOT (`kb/NAME/settings.json`), or "default"; doc is
-    the doc, its section and the bullet for the key, which names no line, so a line added to the doc moves nothing."""
+    """[{key, value, layer, source, meaning, doc}] for each setting of `effective`, or for KEY alone (`group.name`):
+    layer is the one that set the value last (`default`, `group`, `clone`, `root` or `user`), source the file of that
+    layer as a path relative to ROOT (`kb/NAME/settings.json`; a group file outside ROOT by its name), or "default"; doc is the doc, its
+    section and the bullet for the key, which names no line, so a line added to the doc moves nothing."""
     if key is not None and key not in SETTINGS:
         raise SettingsError(f"unknown key {key}; allowed: {', '.join(SETTINGS)}")
     root = Path(root)
-    value, source = {}, {}
+    value, layer, source = {}, {}, {}
     for group, body in DEFAULTS.items():
         for name, v in body.items():
-            value[f"{group}.{name}"], source[f"{group}.{name}"] = json.loads(json.dumps(v)), "default"
-    for path, coord in _layers(root, kb_root):
-        for group, body in coord.items():
+            k = f"{group}.{name}"
+            value[k], layer[k], source[k] = json.loads(json.dumps(v)), "default", "default"
+    for which, path, data in _layers(root, kb_root):
+        for group, body in data.get("coordination", {}).items():
             for name, v in body.items():
-                value[f"{group}.{name}"], source[f"{group}.{name}"] = v, path.relative_to(root).as_posix()
-    return [{"key": k, "value": value[k], "source": source[k], "meaning": SETTINGS[k],
+                k = f"{group}.{name}"
+                value[k], layer[k], source[k] = v, which, _shown(path, root)
+    return [{"key": k, "value": value[k], "layer": layer[k], "source": source[k], "meaning": SETTINGS[k],
              "doc": f"{DOC}, {DOC_SECTION}, the bullet for `{k}`"} for k in SETTINGS if key in (None, k)]
 
 
 def explain_text(rows):
-    """ROWS of `explain` as lines: key = value (source), the meaning, the doc bullet."""
+    """ROWS of `explain` as lines: key = value (source: layer, file), the meaning, the doc bullet."""
     out = []
     for r in rows:
         value = r["value"] if isinstance(r["value"], str) else json.dumps(r["value"])
-        out += [f"{r['key']} = {value}  (source: {r['source']})", f"  {r['meaning']}", f"  doc: {r['doc']}"]
+        where = r["layer"] if r["layer"] == "default" else f"{r['layer']}, {r['source']}"
+        out += [f"{r['key']} = {value}  (source: {where})", f"  {r['meaning']}", f"  doc: {r['doc']}"]
     return "\n".join(out)
 
 
@@ -255,14 +351,15 @@ def _write_json(path, doc):
 
 
 def init(root, sets=()):
-    """Write the whole coordination section of `<ROOT>/settings.json` (each key the file holds keeps its value, SETS
+    """Write the whole coordination section of the clone file of ROOT (`<ROOT>/settings.json`, or
+    `<ROOT>/.it-ops-kb/settings.json` when that exists; each key the file holds keeps its value, SETS
     (`group.name=VALUE`) set theirs, the rest take their defaults) and add `coord` to the `hooks` list of
     `<ROOT>/backlog.json`. Returns the names of the files it changed; a file whose content would not change is not
     written."""
     root = Path(root)
     changes = [_parse_set(item) for item in sets]
-    path, hooks_path = root / "settings.json", root / "backlog.json"
-    held = _read(path, root)
+    path, hooks_path = _clone_path(root), root / "backlog.json"
+    held = _read(path, root).get("coordination", {})
     section = json.loads(json.dumps(DEFAULTS))
     for group, body in held.items():
         section[group].update(body)
@@ -298,7 +395,7 @@ def _text(settings):
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(description="The coordination settings: defaults, workspace and kb root files.")
+    ap = argparse.ArgumentParser(description="The settings: defaults, group, clone, kb root and user files.")
     sub = ap.add_subparsers(dest="cmd", required=True)
     for name, help_ in (("show", "print the effective coordination settings"),
                         ("explain", "print each setting (or KEY) with its value, source, meaning and doc bullet")):
@@ -306,7 +403,7 @@ def main(argv=None):
         if name == "explain":
             sp.add_argument("key", nargs="?", help="one setting, e.g. strategy.working (default: all)")
         sp.add_argument("--root", required=True, help="the workspace directory (holds settings.json and kb/)")
-        sp.add_argument("--kb-root", help="a kb root's name: kb/NAME/settings.json overrides the workspace's")
+        sp.add_argument("--kb-root", help="a kb root's name: kb/NAME/settings.json overrides the group and clone files")
         sp.add_argument("--json", action="store_true", help="print JSON")
     sp = sub.add_parser("init", help="write the coordination section of settings.json and turn the coord hook on")
     sp.add_argument("--root", required=True, help="the workspace directory (holds settings.json and backlog.json)")

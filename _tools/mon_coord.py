@@ -9,9 +9,9 @@ is `absent` and is not created. A server that cannot be reached, or that answers
 `timeout`. A session id (a holder, a `session/` key, an event's session fields) shows as its label
 (`mon_view.session_label`). An ask is open when an `ask` event names `operator` and no `answer` event of its id has a
 closing state (`CLOSED`, the coord hook's); its question is redacted before it is cut to `ASK_CHARS`. The settings are
-`kbsettings.explain` of the clone at `--root` (its settings.json, and the one `kb/NAME/settings.json` when exactly one
-root has one): each key with its value and its source, `default` or the file relative to the clone; a settings file that
-cannot be read gives `settings_error` and no settings. Imports `mon_base` and `mon_view`; `coord` only to name
+`kbsettings.explain` of the clone at `--root` (its group, clone, user and the one `kb/NAME/settings.json` files when
+exactly one root has one): each key with its value, its layer and its source, `default` or the file relative to the
+clone (a group file outside the clone by its name); a settings file that cannot be read gives `settings_error` and no settings. Imports `mon_base` and `mon_view`; `coord` only to name
 the clone's store, `kbsettings` and `redact` where they are used.
 """
 import atexit
@@ -169,21 +169,14 @@ def kb_root_of(root):
 
 
 def settings_of(root):
-    """({key: {value, source}}, the error text or None): the effective coordination settings of the clone at ROOT, each
-    key with its source, `default` or the settings file relative to ROOT."""
+    """({key: {value, source, layer}}, the error text or None): the effective coordination settings of the clone at ROOT,
+    each key with its layer and its source, `default` or the settings file relative to ROOT."""
     import kbsettings
     try:
         rows = kbsettings.explain(root, kb_root_of(root))
     except kbsettings.SettingsError as e:
         return {}, " ".join(str(e).replace(str(root) + os.sep, "").split())
-    def source(text):
-        if text == "default":
-            return text
-        try:
-            return Path(text).relative_to(root).as_posix()
-        except ValueError:
-            return Path(text).name
-    return {r["key"]: {"value": r["value"], "source": source(r["source"])} for r in rows}, None
+    return {r["key"]: {"value": r["value"], "source": r["source"], "layer": r["layer"]} for r in rows}, None
 
 
 def claim_of(row, now):
