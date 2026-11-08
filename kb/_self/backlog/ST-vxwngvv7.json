@@ -2,7 +2,7 @@
   "id": "ST-vxwngvv7",
   "kind": "story",
   "title": "The bundles coord serve hands out are signed with an HS256 key file, so OPA refuses a bundle changed on the way",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-p4guu2ip",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",
@@ -52,5 +52,7 @@
     "ST-mpbq7lyz"
   ],
   "notes": "Research 2026-11-08 (kb public/agents/policy-as-code.md, OPA bundle manifest, signing and configuration): OPA hashes a JSON or YAML file after sorting its object keys (compact JSON, Go's encoding of primitives; CODE S-iqk7tct2 v1/bundle/hash.go#walk), not over its bytes, and the payload must list exactly the bundle's files, .manifest included; for HS256 the verifier takes the configured key string's bytes as the secret (CODE S-xrw6ar44). The check hashes JSON files that way; numeric values in data files are safest kept as strings, since Go's and Python's number encodings may differ (UNK in QK-operations-placement-stories-need-opa-bundles).",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-61c966d6",
+  "operator": "op-f618a13e"
 }
