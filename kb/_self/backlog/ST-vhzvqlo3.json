@@ -97,7 +97,6 @@
   ],
   "depends_on": [
     "ST-y2u3sxta",
-    "ST-qtypcthx",
     "ST-vsdhy56r"
   ],
   "gates": [
@@ -125,5 +124,6 @@
       "agent_session": true
     }
   ],
+  "notes": "Ordered after ST-qtypcthx only to serialise kbext.py; that dependency was dropped on 2026-11-08 because ST-qtypcthx waits on other sprints' claims of kbpublic.py and mon_status.py, and begin refuses two items with overlapping touches anyway.",
   "filed_in": "clone-0ea70e5c"
 }
