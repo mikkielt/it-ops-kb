@@ -7,14 +7,32 @@
   "sprint": "SP-uh5h46fm",
   "priority": "P2",
   "rank": 0,
-  "goal": "A claude session whose process is detached (parent pid 1, as backlog.py procs classes it: a dispatch --detach worker, a reviewer, a headless runner or plan session) counts as headless in kbmon's sessions panel and its line says so with its checkout, never interactive, and the panel names the count of detached processes bl_procs lists: mon_sessions treats only a work/<id> branch as headless, so on 2026-11-08 the detached claude pid 87971 in the plan-ops worktree showed as 's-6dc3ca interactive up 17m' and the headline said '0 headless', and no status line names procs' detached processes (a 19-day-old tmux among them). The check compares procs' detached claude count with the panel's headless count, so it reads the defect only while a detached claude runs; the worker plants one (a detached sleep-wrapped stub named claude in a scratch worktree) to prove it.",
+  "goal": "A `claude` process whose parent is gone and that `backlog.py procs` classes as detached counts as headless in kbmon's sessions panel, never interactive; its row in the panel's sessions says headless; a `claude` process with a live parent in the clone still counts as interactive; the sessions panel's text names the count of detached processes as `N detached processes`",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import re,subprocess,sys;p=subprocess.run([sys.executable,'_tools/backlog.py','procs'],capture_output=True,text=True).stdout;d=len(re.findall(r'detached claude',p));r=subprocess.run([sys.executable,'_tools/kbmon.py','--status','sessions','--timeout','60'],capture_output=True,text=True);m=re.search(r'([0-9]+) headless',r.stdout);sys.exit(r.returncode not in (0,1) or m is None or int(m.group(1))<d)"
+        "import atexit,shutil,tempfile\n_m=tempfile.mkdtemp\ndef _d(*a,**k):\n d=_m(*a,**k);atexit.register(shutil.rmtree,d,True);return d\ntempfile.mkdtemp=_d\nimport os, re, sys, tempfile, time\nfrom pathlib import Path\nhome = tempfile.mkdtemp()\nos.environ[\"CLAUDE_PLUGIN_DATA\"] = home\nos.environ[\"CLAUDE_PLUGIN_ROOT\"] = os.getcwd()\nos.environ[\"KB_COORD_STORE\"] = home + \"/none.db\"\nsys.path.insert(0, '_tools')\nimport bl_procs, mon_base, mon_sessions, mon_status\nhere = str(Path('.').resolve())\nthen = int(time.time()) - 1200\ntab = {90001: (1, then, \"claude\"), 90002: (90001, then, \"node\"), 90003: (1, then, \"sh\"), 90004: (90003, then, \"sleep\"),\n       90005: (90006, then, \"claude\"), 90006: (77777, then, \"zsh\")}\nbl_procs.process_table = lambda: dict(tab)\nbl_procs.cwd_map = lambda: ({p: here for p in tab}, None)\nbl_procs.leads_group = lambda pid: pid in (90001, 90003)\ndata = mon_sessions.collect(mon_base.Ctx(root=Path(here)))\nrole = {s[\"pid\"]: s[\"role\"] for s in data[\"sessions\"]}\nkind = {p[\"pid\"]: (p[\"class\"], p[\"session\"]) for p in data[\"procs\"]}\nfacts = mon_status.answer({\"taken\": \"2026-11-08T12:00:00Z\", \"panels\": {\"sessions\": {\"state\": \"ok\", \"data\": data}}}, \"sessions\")\ntext = \"\\n\".join(mon_sessions.lines(data, 120))\nprint(role, kind, facts[\"facts\"], sep=\"\\n\")\nbad = (kind.get(90001) != (\"detached\", \"headless\") or kind.get(90005) != (\"foreign\", \"interactive\") or role.get(90001) != \"headless\"\n       or role.get(90005) != \"interactive\" or facts[\"facts\"][\"headless\"] != 1 or facts[\"facts\"][\"interactive\"] != 1\n       or not re.search(r\"\\b2 detached process\", text))\nsys.exit(not not bad)\n"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "A `claude` process whose parent is gone and that `backlog.py procs` classes as detached counts as headless in kbmon's sessions panel, never interactive",
+      "check": 0
+    },
+    {
+      "clause": "its row in the panel's sessions says headless",
+      "check": 0
+    },
+    {
+      "clause": "a `claude` process with a live parent in the clone still counts as interactive",
+      "check": 0
+    },
+    {
+      "clause": "the sessions panel's text names the count of detached processes as `N detached processes`",
+      "check": 0
     }
   ],
   "touches": [
@@ -22,5 +40,6 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
+  "notes": "Evidence 2026-11-08: mon_sessions treats only a work/<id> branch as headless (session_of), so the detached claude pid 87971 in the plan-ops worktree showed as 's-6dc3ca interactive up 17m' and the headline said '0 headless'; no status line names procs' detached processes (a 19-day-old tmux among them). Detached means parent pid 1 as `backlog.py procs` classes it: a dispatch --detach worker, a reviewer, a headless runner or plan session. Premise run 2026-11-08: planted check 0 (bl_procs.process_table, cwd_map and leads_group replaced by a planted table of a detached claude with a child, a detached sh with a sleep child, a claude under a live shell and that shell; mon_sessions.collect, mon_status.answer and mon_sessions.lines, in a temp query-log home with no coord store) fails on the base: the detached claude is session `interactive` in its process row and its sessions row, the answer counts 0 headless and 2 interactive, and no panel line names detached processes. The earlier live check (procs' detached claude count against the panel's headless count) is replaced: it read the defect only while a detached claude runs. Settled in the goal: a sessions row holds no checkout (only the processes table does), so the row says headless and not its checkout; the count is named in the panel's text (mon_sessions.lines), not in the status answer, whose file mon_status.py six items already touch; the goal covers class detached, and a `claude` of class orphan (parent gone, no record, no recent transcript) is not changed here.",
   "filed_in": "clone-0ea70e5c"
 }

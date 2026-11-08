@@ -8,7 +8,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
-  "goal": "kbmon's coord panel collects within 3 s alone on this clone's coord store (2026-11-08: 2418 own/, 423 run/ and 107 ask/ keys, list 664 KB, event log 739 KB), so --status all and --receipt read every panel within the default 10 s budget (kbmon.py DEFAULT_TIMEOUT) on a calm host: on 2026-11-08 coord collect took 8.35 s alone (8.4 s user CPU), and with all panels as threads under one deadline (mon_base) the sessions and sprint panels timed out, --status said 'not readable (timeout)' and --status coord silently dropped its run-state drift line (mon_status returns [] when sessions is unread). The cause is profiled first (with_silence in mon_coord is the suspect); the fix keeps every line coord shows today. Planning measures the run-to-run spread of coord collect before setting the margin.",
+  "goal": "kbmon's coord panel collects in under 3 s alone on a small coord store; the sessions and sprint panels read within the default 10 s budget (kbmon.py DEFAULT_TIMEOUT) when read beside it; `--status coord` keeps its run-state drift line; the coord panel keeps every line it shows today (claims, events, intents, asks, settings)",
   "repro": {
     "run": [
       "python3",
@@ -16,6 +16,47 @@
       "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/kbmon.py','--json','--panel','coord','--timeout','3'],capture_output=True,text=True);sys.exit(r.returncode!=0 or '\"timeout\"' in r.stdout)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import atexit,shutil,tempfile\n_m=tempfile.mkdtemp\ndef _d(*a,**k):\n d=_m(*a,**k);atexit.register(shutil.rmtree,d,True);return d\ntempfile.mkdtemp=_d\nimport subprocess, sys, tempfile, time\nfrom pathlib import Path\nsys.path.insert(0, '_tools')\nimport mon_base, mon_coord\nstore = str(Path(tempfile.mkdtemp()) / 'c.db')\ndef coord(*a):\n    subprocess.run([sys.executable, '_tools/coord.py', '--store', store, *a], capture_output=True, text=True, check=True)\nfor k in ('A1', 'A2', 'A3'):\n    coord('put', f'ask/{k}', '--value', f'May I widen the touches of item {k}?', '--revision', '0')\n    coord('post', '--kind', 'ask', '--field', f'id={k}', '--field', 'to=operator', '--field', f'ref=ask/{k}')\ncoord('post', '--kind', 'intent', '--field', 'item=ST-aaaaaaaa', '--field', 'topic=plan')\nt = time.monotonic()\ndata = mon_coord.collect(mon_base.Ctx(root=Path('.').resolve(), store=store))\ntook = time.monotonic() - t\nrows = mon_coord.lines(data)\ntext = '\\n'.join(rows)\nprint(round(took, 2), text)\nsys.exit(not not took >= 3.0 or data['asks_open'] != 3 or not all(w in text for w in ('claims', 'events', 'intents', 'asks      3 open to the operator', 'settings')))\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import atexit,shutil,tempfile\n_m=tempfile.mkdtemp\ndef _d(*a,**k):\n d=_m(*a,**k);atexit.register(shutil.rmtree,d,True);return d\ntempfile.mkdtemp=_d\nimport json, subprocess, sys, tempfile\nfrom pathlib import Path\nstore = str(Path(tempfile.mkdtemp()) / 'c.db')\ndef coord(*a):\n    subprocess.run([sys.executable, '_tools/coord.py', '--store', store, *a], capture_output=True, text=True, check=True)\ncoord('put', 'ask/A1', '--value', 'May I widen the touches of item A1?', '--revision', '0')\ncoord('post', '--kind', 'ask', '--field', 'id=A1', '--field', 'to=operator', '--field', 'ref=ask/A1')\nonly = sys.argv[1:] or ['coord', 'sessions', 'sprint']\nargv = [sys.executable, '_tools/kbmon.py', '--json', '--store', store] + [x for n in only for x in ('--panel', n)]\np = subprocess.run(argv, capture_output=True, text=True)\nstates = {n: (v['state'], v['seconds']) for n, v in json.loads(p.stdout)['panels'].items()}\nprint(p.returncode, states)\nsys.exit(not not p.returncode not in (0, 1) or any(v[0] != 'ok' for v in states.values()))\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import atexit,shutil,tempfile\n_m=tempfile.mkdtemp\ndef _d(*a,**k):\n d=_m(*a,**k);atexit.register(shutil.rmtree,d,True);return d\ntempfile.mkdtemp=_d\nimport subprocess, sys, tempfile\nfrom pathlib import Path\nstore = str(Path(tempfile.mkdtemp()) / 'c.db')\ndef coord(*a):\n    subprocess.run([sys.executable, '_tools/coord.py', '--store', store, *a], capture_output=True, text=True, check=True)\ncoord('put', 'ask/A1', '--value', 'May I widen the touches of item A1?', '--revision', '0')\ncoord('post', '--kind', 'ask', '--field', 'id=A1', '--field', 'to=operator', '--field', 'ref=ask/A1')\np = subprocess.run([sys.executable, '_tools/kbmon.py', '--status', 'coord', '--store', store], capture_output=True, text=True)\nprint(p.returncode, p.stdout)\nsys.exit(not not p.returncode not in (0, 1) or 'Run state drift' not in p.stdout or '1 open ask to the operator' not in p.stdout)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbmon's coord panel collects in under 3 s alone on a small coord store",
+      "check": 0
+    },
+    {
+      "clause": "the sessions and sprint panels read within the default 10 s budget (kbmon.py DEFAULT_TIMEOUT) when read beside it",
+      "check": 1
+    },
+    {
+      "clause": "`--status coord` keeps its run-state drift line",
+      "check": 2
+    },
+    {
+      "clause": "the coord panel keeps every line it shows today (claims, events, intents, asks, settings)",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/mon_coord.py",
     "_tools/mon_status.py",
@@ -26,5 +67,6 @@
     "ST-7k2popo6",
     "ST-hgicbqm3"
   ],
+  "notes": "Evidence 2026-11-08: coord store 2418 own/, 423 run/, 107 ask/ keys; collect 8.35 s alone (8.4 s user CPU); with all panels as threads under one deadline (mon_base) sessions and sprint timed out and --status coord dropped its run-state drift line (mon_status returns [] when sessions is unread). Relates to ST-7k2popo6, ST-hgicbqm3. Spread 2026-11-08 (14 cores, load 4.89/6.07/5.49 by `kbmon.py --status load`, calm): five runs of `kbmon.py --json --panel coord --timeout 60` gave 8.452, 8.151, 8.282, 8.314, 8.211 s (spread 0.30 s). Margin: the 3 s bound sits 5.15 s under the fastest base run, 17 times the spread, so the work must save at least 5.2 s. Clause 2: sessions alone 2.68, 2.78, 2.53, 2.64 s, sprint alone 2.40, 2.64, 2.43, 2.55 s (spread 0.25 s) against 10 s. Profile (cProfile of mon_coord.collect, 8.52 s): 8.16 s in the one scan of kb/public that redact.known makes per process (via ask_texts), none in with_silence: the suspect in the title is not the cause. A planted store of three asks takes 8.37 s too, so time does not grow with the store. redact.py guards the leak rule and is not in the touches: caching or narrowing that scan there, warming it outside the panel budget, or leaving ask text unredacted is a choice for the operator. Premise run 2026-11-08: the repro fails (state timeout at --timeout 3). Planted check 0 fails on the base (8.37 s), check 1 fails (coord ok 8.4 s, sessions and sprint timeout at 10 s), check 2 fails (no 'Run state drift' line).",
   "filed_in": "clone-0ea70e5c"
 }

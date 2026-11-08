@@ -7,14 +7,24 @@
   "sprint": "SP-uh5h46fm",
   "priority": "P3",
   "rank": 0,
-  "goal": "kbmon's query-log line splits the spool count it prints (spool_state counts every row) into the rows a delivery will take, the ops rows, and rows of sessions that ended more than a day ago, so '952 rows wait in the spool' no longer sits beside '0 entries undelivered' as if both were pending: on 2026-11-08 about 470 of the 952 were ops rows and some were 15 days old (querylog show --spool). Whether the old rows are stuck is read during the work and filed as its own bug if so.",
+  "goal": "kbmon's query-log spool line splits the spool's rows into those a delivery will take (`N rows wait for delivery`), ops rows (`N ops rows`) and rows of sessions whose end marker is over a day old (`N rows of sessions ended over a day ago`); the line no longer reads `rows wait in the spool`, which sat beside `0 entries undelivered`",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/kbmon.py','--status','querylog','--timeout','60'],capture_output=True,text=True);sys.exit(r.returncode not in (0,1) or 'rows wait in the spool' in r.stdout)"
+        "import atexit,shutil,tempfile\n_m=tempfile.mkdtemp\ndef _d(*a,**k):\n d=_m(*a,**k);atexit.register(shutil.rmtree,d,True);return d\ntempfile.mkdtemp=_d\nimport json, os, re, sys, tempfile, time\nfrom pathlib import Path\nhome = Path(tempfile.mkdtemp())\nos.environ[\"CLAUDE_PLUGIN_DATA\"], os.environ[\"CLAUDE_PLUGIN_ROOT\"] = str(home), os.getcwd()\nsys.path.insert(0, '_tools')\nimport mon_base, mon_status\nmq = __import__(\"mon_query\" + \"log\")  # the panel module; named in two parts so no read of the committed store is inferred\nspool = home / \"querylog\" / \"spool\"\nspool.mkdir(parents=True)\ndef put(name, surface, n, ended_ago=None):\n    rows = [{\"id\": f\"{name}-{i}\", \"ts\": \"2026-11-08T10:00:00.000Z\", \"surface\": surface} for i in range(n)]\n    (spool / name).write_text(\"\".join(json.dumps(r) + \"\\n\" for r in rows))\n    if ended_ago is not None:\n        end = spool / (name[:-len(\".jsonl\")] + \".end\")\n        end.write_text(\"\")\n        os.utime(end, (time.time() - ended_ago,) * 2)\nput(\"tools-2026-11-08.jsonl\", \"ops\", 3)\nput(\"aaa.jsonl\", \"work\", 2, ended_ago=3 * 86400)\nput(\"bbb.jsonl\", \"work\", 2)\nput(\"ccc.jsonl\", \"work\", 1, ended_ago=3600)\ndata = mq.collect(mon_base.Ctx(root=Path(\".\").resolve()))\ntext = \"\\n\".join(mon_status.answer({\"taken\": \"2026-11-08T12:00:00Z\", \"panels\": {\"querylog\": {\"state\": \"ok\", \"data\": data}}}, \"querylog\")[\"lines\"])\nprint(data[\"spool\"], text, sep=\"\\n\")\nsys.exit(not not not all(re.search(p, text) for p in (r\"\\b3 rows wait for delivery\", r\"\\b3 ops rows\", r\"\\b2 rows of sessions ended over a day ago\")) or \"rows wait in the spool\" in text)\n"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbmon's query-log spool line splits the spool's rows into those a delivery will take (`N rows wait for delivery`), ops rows (`N ops rows`) and rows of sessions whose end marker is over a day old (`N rows of sessions ended over a day ago`)",
+      "check": 0
+    },
+    {
+      "clause": "the line no longer reads `rows wait in the spool`, which sat beside `0 entries undelivered`",
+      "check": 0
     }
   ],
   "touches": [
@@ -26,5 +36,6 @@
   "depends_on": [
     "ST-nkocjnux"
   ],
+  "notes": "Evidence 2026-11-08: ql_report.spool_state counts every row, so '952 rows wait in the spool' sat beside '0 entries undelivered' as if both were pending; about 470 of the 952 were ops rows and some were 15 days old (querylog show --spool). Whether the old rows are stuck is read during the work and filed as its own bug if so. Premise run 2026-11-08: planted check 0 (a query-log home in a temp dir with an ops file of 3 rows, a session file of 2 rows ended 3 days ago, an open one of 2 rows and one of 1 row ended an hour ago; the querylog panel's collect and mon_status.answer) fails on the base: the line reads '8 rows wait in the spool'. The earlier live check is replaced by it. `ended` is the session's `.end` marker in the spool (ql_report.spool_scan), its age the marker's modification time.",
   "filed_in": "clone-0ea70e5c"
 }

@@ -7,14 +7,28 @@
   "sprint": "SP-uh5h46fm",
   "priority": "P3",
   "rank": 0,
-  "goal": "kbmon's sessions headline and needs-you line name an orphan process (bl_procs class orphan) only once it is at least 60 s old, say 'with a live child' when one of its children still runs (an sh loop around sleep, as pids 46638 and 88109 were on 2026-11-08), and drop the claim 'nothing waits for them', which the code cannot know (mon_status prints it today, and listed 'orphan pid 86144, running 1s'). The worker plants an orphan sh with a sleep child in a scratch directory to prove each case.",
+  "goal": "kbmon's sessions headline and needs-you line name an orphan process (class orphan) only once it is at least 60 s old; an orphan's line in both says `with a live child` when one of its children still runs; the sessions headline drops the claim `nothing waits for them`",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/kbmon.py','--status','sessions','--timeout','60'],capture_output=True,text=True);sys.exit(r.returncode not in (0,1) or 'nothing waits for them' in r.stdout)"
+        "import atexit,shutil,tempfile\n_m=tempfile.mkdtemp\ndef _d(*a,**k):\n d=_m(*a,**k);atexit.register(shutil.rmtree,d,True);return d\ntempfile.mkdtemp=_d\nimport os, re, sys, tempfile, time\nfrom pathlib import Path\nhome = tempfile.mkdtemp()\nos.environ[\"CLAUDE_PLUGIN_DATA\"] = home\nos.environ[\"CLAUDE_PLUGIN_ROOT\"] = os.getcwd()\nos.environ[\"KB_COORD_STORE\"] = home + \"/none.db\"\nsys.path.insert(0, '_tools')\nimport bl_procs, mon_base, mon_needs, mon_sessions, mon_status\nhere = str(Path('.').resolve())\nt = int(time.time())\ntab = {90003: (1, t - 5, \"sh\"), 90007: (1, t - 120, \"sh\"), 90008: (90007, t - 120, \"sleep\"), 90009: (1, t - 300, \"sh\")}\nbl_procs.process_table = lambda: dict(tab)\nbl_procs.cwd_map = lambda: ({p: here for p in tab}, None)\nbl_procs.leads_group = lambda pid: False\ndata = mon_sessions.collect(mon_base.Ctx(root=Path(here)))\nsnap = {\"taken\": \"2026-11-08T12:00:00Z\", \"panels\": {\"sessions\": {\"state\": \"ok\", \"data\": data}}}\ntext = \"\\n\".join(mon_status.answer(snap, \"sessions\")[\"lines\"])\nneeds = mon_needs.line(snap)\nprint(text, needs, sep=\"\\n\")\nbad = (\"nothing waits for them\" in text or \"pid 90003\" in text or \"pid 90003\" in needs or not text.startswith(\"Sessions: 2 orphan processes\")\n       or not re.search(r\"pid 90007\\b[^\\n]*with a live child\", text) or not re.search(r\"orphan pid 90007\\b[^;]*with a live child\", needs)\n       or re.search(r\"pid 90009\\b[^\\n]*live child\", text) or re.search(r\"orphan pid 90009\\b[^;]*live child\", needs)\n       or \"pid 90009\" not in text or \"pid 90009\" not in needs)\nsys.exit(not not bad)\n"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbmon's sessions headline and needs-you line name an orphan process (class orphan) only once it is at least 60 s old",
+      "check": 0
+    },
+    {
+      "clause": "an orphan's line in both says `with a live child` when one of its children still runs",
+      "check": 0
+    },
+    {
+      "clause": "the sessions headline drops the claim `nothing waits for them`",
+      "check": 0
     }
   ],
   "touches": [
@@ -29,5 +43,6 @@
     "ST-mbxr44ne",
     "ST-drlo365l"
   ],
+  "notes": "Evidence 2026-11-08: orphan sh loops around sleep (pids 46638 and 88109 that day) have a live child, and the code cannot know that nothing waits for an orphan (mon_status prints the claim today and listed 'orphan pid 86144, running 1s'). Premise run 2026-11-08: planted check 0 (bl_procs.process_table, cwd_map and leads_group replaced by a planted table: an orphan sh 5 s old, one 120 s old with a sleep child, one 300 s old with none; mon_sessions.collect, mon_status.answer and mon_needs.line) fails on the base: the headline counts 3 orphans, says 'nothing waits for them' and names the 5 s one, and no line says 'with a live child'. The earlier live check (the claim absent from the live sessions answer) is replaced: it passes whenever no orphan runs.",
   "filed_in": "clone-0ea70e5c"
 }

@@ -8,7 +8,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
-  "goal": "When a panel that can hold needs-you entries (coord, sessions, sprint, host) was not read, the receipt's needs-you part says the count is unknown for those panels (as mon_needs.line already does with 'nothing; not read: ...') instead of a number: today mon_receipt.needs_tail (_tools/mon_receipt.py) prints len(entries) over the panels read, so the session-start line of 2026-11-08 said 'needs you: 0 (not read: sprint, sessions, host, coord)' while the coord store held five open asks.",
+  "goal": "When a panel the needs-you count reads (sprint, querylog, sessions, host, or coord in state timeout or error) was not read, the receipt's needs-you part reads `needs you: unknown (not read: PANELS)` and never a number; when every panel was read it still prints the count (`needs you: 0`)",
   "repro": {
     "run": [
       "python3",
@@ -16,10 +16,30 @@
       "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/kbmon.py','--receipt','--timeout','3'],capture_output=True,text=True);sys.exit(r.returncode not in (0,1) or 'needs you: 0 (not read' in r.stdout)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import atexit,shutil,tempfile\n_m=tempfile.mkdtemp\ndef _d(*a,**k):\n d=_m(*a,**k);atexit.register(shutil.rmtree,d,True);return d\ntempfile.mkdtemp=_d\nimport sys\nsys.path.insert(0, '_tools')\nimport mon_receipt\nok = {\"state\": \"ok\", \"data\": {}}\nfull = {n: ok for n in (\"sprint\", \"querylog\", \"sessions\", \"host\", \"coord\")}\ngone = mon_receipt.receipt({\"alerts\": [], \"panels\": {}})[\"line\"]\nlate = mon_receipt.receipt({\"alerts\": [], \"panels\": {**full, \"coord\": {\"state\": \"timeout\"}, \"sessions\": {\"state\": \"timeout\"}}})[\"line\"]\nread = mon_receipt.receipt({\"alerts\": [], \"panels\": full})[\"line\"]\nprint(gone, late, read, sep=\"\\n\")\nbad = (\"needs you: unknown\" not in gone or \"needs you: 0\" in gone or \"not read: sprint, querylog, sessions, host\" not in gone\n       or \"needs you: unknown\" not in late or \"needs you: 0\" in late or \"not read: sessions, coord\" not in late\n       or \"needs you: 0\" not in read or \"unknown\" in read or \"not read\" in read)\nsys.exit(not not bad)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "When a panel the needs-you count reads (sprint, querylog, sessions, host, or coord in state timeout or error) was not read, the receipt's needs-you part reads `needs you: unknown (not read: PANELS)` and never a number",
+      "check": 0
+    },
+    {
+      "clause": "when every panel was read it still prints the count (`needs you: 0`)",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/mon_receipt.py",
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
+  "notes": "Evidence 2026-11-08: mon_receipt.needs_tail (_tools/mon_receipt.py) prints len(entries) over the panels read, so the session-start line said 'needs you: 0 (not read: sprint, sessions, host, coord)' while the coord store held five open asks. mon_needs.line already says 'nothing; not read: ...' for the same case. Premise run 2026-11-08: the repro fails (exit 1), because the live receipt still prints 'needs you: 0 (not read'. Planted check 0 (mon_receipt.receipt on three planted snapshots: no panel, coord and sessions in state timeout, every panel ok) fails on the base: the first two print 'needs you: 0 (not read: ...)'. The wording of the count is settled in the goal.",
   "filed_in": "clone-0ea70e5c"
 }
