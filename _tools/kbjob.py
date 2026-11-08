@@ -12,9 +12,12 @@
                                         deduped true, also when submits race (one job); after a terminal state (succeeded,
                                         failed, refused, cancelled) a submit makes a new job with its attempt raised by one
 
-  kbjob.py [--store PATH] serve [--once] [--idle-exit S]
-                                        run the queued jobs of this host, clone and operator in submit order, one at a time
-                                        (`kj_exec`): each is leased as jobrun/JOB, moved queued to running, run as the leader of a
+  kbjob.py [--store PATH] serve [--once] [--parallel N] [--idle-exit S]
+                                        run the queued jobs of this host, clone and operator in submit order, at most N at once
+                                        (--parallel, default 3; `kj_exec.next_runnable`): lands of the clone, sync-pushes of the host,
+                                        a tests-full check and the done and stage-back of one item each run one at a time, in submit order,
+                                        and a job whose lock a process outside the executor holds (a session's own land or sync) waits as
+                                        waiting-lock, naming the holder's pid, clone and step in its step, until the lock is free. Each is leased as jobrun/JOB, moved queued to running, run as the leader of a
                                         process group of its own in the clone with its output appended to the job's output.log,
                                         and moved to succeeded (exit 0), refused (exit 1 and a line `... stopped at step NAME:`)
                                         or failed. --once drains the queue and exits 0 (1 when a job failed); without it serve
@@ -99,8 +102,9 @@ def build_parser():
     sub.add_parser("ensure", help="start the executor detached when none runs, wait for it, print `kbjob: serving pid N`")
     li = sub.add_parser("login-item", help="print a macOS LaunchAgent plist and a systemd user unit that run serve at login")
     li.add_argument("--print", dest="show", action="store_true", help="print them (the only mode: nothing is installed)")
-    s = sub.add_parser("serve", help="run the queued jobs of this host, clone and operator, one at a time")
+    s = sub.add_parser("serve", help="run the queued jobs of this host, clone and operator, at most --parallel at once")
     s.add_argument("--once", action="store_true", help="drain the queue and exit (1 when a job failed)")
+    s.add_argument("--parallel", type=int, default=kj_exec.SLOTS, metavar="N", help="run at most N jobs at once (default %(default)s)")
     s.add_argument("--idle-exit", type=float, default=None, metavar="S", help="exit 0 after S seconds with no live job (`ensure` sets it for a store of its own)")
     f = sub.add_parser("follow", help="print one line per move of a job and exit with its result (0, 1, 3; 4 past --timeout)")
     f.add_argument("job")
@@ -158,7 +162,8 @@ def ensure_command(store):
 
 def run(args, parser):
     if args.command == "serve":
-        return kj_exec.serve(str(ROOT), kj_store.resolve_store(ROOT, args.store), once=args.once, idle_exit=args.idle_exit)
+        return kj_exec.serve(str(ROOT), kj_store.resolve_store(ROOT, args.store), once=args.once, idle_exit=args.idle_exit,
+                             slots=args.parallel)
     if args.command == "login-item":
         if not args.show:
             parser.error("login-item only prints: pass --print")

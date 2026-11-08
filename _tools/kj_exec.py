@@ -1,10 +1,12 @@
-"""The job executor: `kbjob.py serve` runs the queued jobs of its host, clone and operator, one after another (stdlib only;
-kb/_self/coordination.md, section "Operation jobs").
+"""The job executor: `kbjob.py serve` runs the queued jobs of its host, clone and operator, in submit order, at most SLOTS at a
+time (stdlib only; kb/_self/coordination.md, section "Operation jobs").
 
   classify(exit, text)  -> (state, step)  the end of a job's process as the job table's state: exit 0 succeeded; exit 1 and a
                                           line `NAME stopped at step STEP: ...` (`land stopped at step rebase: ...`, as
                                           bl_land.land_refused_step reads it) refused, naming that step; any other end failed
   serve(root, store, once, poll, out)  -> exit code of `kbjob.py serve`
+  next_runnable(jobs, running, holders, slots) -> (run, wait): which queued jobs start now and which wait for a lock
+  lock_holders(root)                    -> {lock: {pid, clone, step}}: the host main, host test and the clone's landing lock holders
   running_pid(root, store)              -> the pid the store's host file names while it runs, else None
   ping(root, store, out)                -> exit code of `kbjob.py ping` (0 printing the pid, 1 none)
   ensure(root, store, wait)             -> (pid, started, error): starts a detached serve when none runs and waits for the host file
@@ -14,6 +16,13 @@ kb/_self/coordination.md, section "Operation jobs").
                                           recorded pid no longer runs moves to lost (step lost), then to queued with its attempt
                                           raised by one the first time and to failed the second time; a job whose child still
                                           runs and names the job's operation is adopted (the lease taken again)
+
+Placement is `next_runnable`: land jobs of one clone run one at a time (the clone's landing lock), sync-push jobs of the host one
+at a time (the host main lock), a check tests-full one at a time (the host test lock), done and stage-back jobs one at a time per
+item, every other pair in parallel up to SLOTS (`serve --parallel N`), and inside a class in submit order. The executor takes no lock:
+the CLI a job runs does, so a hand-run land or sync in a session serialises with it. A job whose class has a lock holder outside
+the executor (`lock_holders` less its own children) is moved to waiting-lock, its event step naming the lock and the holder's pid,
+clone and step, and starts when the lock is free, so no child burns the main lock's wait.
 
 A job is taken with the lease `jobrun/<job id>` (JOB_LEASE_TTL_S, renewed every JOB_LEASE_RENEW_S while the child runs), moved
 queued to running, and run as `python <argv of kj_ops.OPS>` in the job's clone: the leader of a process group of its own, stdin
@@ -57,6 +66,8 @@ MAX_LOST = 2  # a job lost this many times is failed, not run again: a crash loo
 IDLE_EXIT_S = 60.0  # how long a serve that `ensure` started for a store of its own waits with no live job before it ends
 RECOVERABLE = ("running", "waiting-lock", "waiting-merge", "lost")  # the states a dead executor leaves a job in
 LIVE_STATES = ("queued",) + RECOVERABLE  # the states of a job that still has work to do
+SLOTS = 3  # how many jobs run at once by default (kbjob.py serve --parallel N)
+TICK_S = 0.5  # the wait between two looks of a drain at its children, its waiting jobs and the queue
 POLL_S = 5.0  # the wait between two looks at the queue of a serve that does not stop when it is empty (KB_JOB_POLL)
 ENSURE_WAIT_S = 10.0  # how long `ensure` waits for the host file to name the executor it started
 LOGIN_LABEL = "dev.it-ops-kb.jobs"  # the LaunchAgent label and the systemd unit's name that `login-item --print` gives
@@ -187,32 +198,23 @@ def finish_text(log, start):
         return f.read().decode("utf-8", errors="replace")
 
 
-def run_job(store, job, record, clone, log, token, out):
-    """Run one taken job to its end with the lease renewed; returns the state it moved to. A process that cannot start moves
-    the job to failed (exit 127); a signal to this process ends the child's group and moves the job to lost, then goes on; a
-    job cancelled meanwhile (kbjob.py cancel) stays cancelled, one line says so and cancelled is returned."""
+def start_job(store, job, record, clone, log, out):
+    """Start the child of a job already in running: (the process, the size LOG had before it) and the pid recorded in the job's record.
+    A process that cannot start moves the job to failed (exit 127), prints one line and returns (None, 0)."""
     try:
         proc, start = start_child(record, clone, log)
     except OSError as error:
         move(store, job, "failed", exit=127)
         print(f"{job} {record['op']} {record.get('subject') or '-'}: failed, exit 127: {str(error)[:200]}", file=out, flush=True)
-        return "failed"
+        return None, 0
     with contextlib.suppress(sqlite3.Error):
         amend(store, job, pid=proc.pid)
-    try:
-        while True:
-            try:
-                code = proc.wait(timeout=JOB_LEASE_RENEW_S)
-                break
-            except subprocess.TimeoutExpired:
-                with contextlib.suppress(coord.Refused):
-                    coord.renew(Namespace(key=lease_key(job), token=token, ttl=None, store=store), time.time)
-    except BaseException:
-        kg_lock.end_group(proc)
-        with contextlib.suppress(coord.Refused):
-            move(store, job, "lost")
-        raise
-    text = finish_text(log, start)
+    return proc, start
+
+
+def finish_job(store, job, record, code, text, out):
+    """Move a job whose child ended with exit CODE and output TEXT to the state classify gives, with one line printed; returns the
+    state it moved to. A job cancelled meanwhile (kbjob.py cancel) stays cancelled, one line says so and cancelled is returned."""
     state, step = classify(code, text)
     number = exit_number(code)
     try:
@@ -408,30 +410,210 @@ def recovery_pass(root, store, out):
     return failed
 
 
-def drain(store, clone, host, operator, out):
-    """Run every queued job of this host, clone and operator, in submit order, one at a time; the ids of the jobs that failed
-    or were lost. A job another executor leased, or that left queued before this one moved it, is passed over."""
-    failed, passed = [], set()
-    while True:
-        todo = [one for one in pending(store, clone, host, operator) if one[0] not in passed]
-        if not todo:
-            return failed
-        job, record = todo[0]
-        passed.add(job)
-        token = take_job(store, job)
-        if token is None:
+def serial_key(job):
+    """(the key of the one-at-a-time class of JOB, the lock a holder outside the executor keeps it waiting for), each None for none:
+    land is one at a time per clone (the clone's landing lock `landing`), sync-push per host (the host main lock `host-main`),
+    the check tests-full per host (the host test lock `host-test`), done and stage-back per item (the run-state table); every
+    other job is of no class."""
+    op, opts = job.get("op"), job.get("options") or {}
+    if op == "land":
+        return ("land", job.get("clone")), "landing"
+    if op == "sync-push":
+        return ("sync-push",), "host-main"
+    if op == "check" and opts.get("name") == "tests-full":
+        return ("tests-full",), "host-test"
+    if op in ("done", "stage-back"):
+        return ("item", job.get("subject")), None
+    return None, None
+
+
+def next_runnable(jobs, running, holders, slots=SLOTS):
+    """(run, wait) for JOBS, the jobs of the queue in submit order (those in state queued or waiting-lock count, others are
+    ignored). RUNNING holds the jobs the executor runs now (state running): they take a slot and their class. HOLDERS is
+    {lock: {pid, clone, step}} of the locks a process outside the executor holds (`lock_holders`, `outside`). A job runs when
+    no earlier job of its class (serial_key) is running or ahead of it and a slot is free (SLOTS less the running ones);
+    the first job of a class whose lock has a holder is not started but waits: `wait` holds (job, lock, holder) for each such job
+    still in queued (one already in waiting-lock is not told again), and a waiting job takes no slot. A job behind another of
+    its class stays queued, so submit order holds inside a class."""
+    taken = {key for key, _ in (serial_key(j) for j in running) if key is not None}
+    free = slots - len(running)
+    run, wait = [], []
+    for job in jobs:
+        state = job.get("state")
+        if state not in ("queued", "waiting-lock"):
             continue
-        try:
-            log = kj_store.log_path(clone, job)
-            try:
-                move(store, job, "running")
-            except coord.Refused:
+        key, lock = serial_key(job)
+        if key is not None:
+            if key in taken:
                 continue
-            if run_job(store, job, record, clone, log, token, out) in ("failed", "lost"):
-                failed.append(job)
-        finally:
+            taken.add(key)
+        held = holders.get(lock) if lock else None
+        if held:
+            if state == "queued":
+                wait.append((job, lock, held))
+            continue
+        if free > 0:
+            free -= 1
+            run.append(job)
+    return run, wait
+
+
+def lock_holders(root=None):
+    """{lock: {pid, clone, step}} for each lock of the host a live process holds, read from the lock files as `kg_lock.main_lock`
+    and `tests.py` write them: `host-main` (kb-main.lock, step as the holder gave it), `host-test` (kb-tests.lock, step `tests`)
+    and, for a ROOT in a clone, `landing` (kb-landing.lock in the git common directory, step `land ITEM`). A lock with no file, no
+    record or a pid that no longer runs is left out."""
+    import tests as tests_py
+    found = {}
+    paths = {"host-main": os.path.join(tests_py.host_lock_dir(), kg_lock.LOCK_NAME),
+             "host-test": os.path.join(tests_py.host_lock_dir(), tests_py.HOST_LOCK_NAME)}
+    if root is not None:
+        with contextlib.suppress(Exception):
+            import bl_close
+            paths["landing"] = str(bl_close.landing_lock_path(root))
+    for lock, path in paths.items():
+        text = tests_py.read_lock(path)
+        holder = tests_py.parse_holder(text) if text is not None else None
+        if holder is None or not tests_py.pid_alive(holder["pid"]):
+            continue
+        if lock == "host-main":
+            step = kg_lock.holder_step(text)
+        elif lock == "host-test":
+            step = "tests"
+        else:
+            item = next((ln[len("item="):] for ln in text.splitlines() if ln.startswith("item=")), "")
+            step = f"land {item}" if item else "land"
+        found[lock] = {"pid": holder["pid"], "clone": holder["clone"], "step": step}
+    return found
+
+
+def inside(pid, pids):
+    """Whether process PID is one of PIDS or a member of the process group one of them leads (a job's child leads its own)."""
+    if pid in pids:
+        return True
+    try:
+        return hasattr(os, "getpgid") and os.getpgid(pid) in pids
+    except OSError:
+        return False
+
+
+def outside(holders, pids):
+    """HOLDERS without those the executor itself runs: a holder whose pid is one of PIDS (the pids of its children and its own)
+    or in the process group of one is a job in progress, which the class rules already serialise."""
+    return {lock: held for lock, held in holders.items() if not inside(held["pid"], pids)}
+
+
+def wait_step(lock, held):
+    """The step member of a job's waiting-lock event: the lock and the holder's pid, clone (its directory name) and step, as one
+    token of the characters a job field holds."""
+    clone = Path(str(held.get("clone") or "?")).name or "?"
+    text = f"{lock}:pid.{held['pid']}:{clone}:{held.get('step') or '?'}"
+    return re.sub(r"[^A-Za-z0-9_.:/#@-]+", "-", text)[:120]
+
+
+def drain(store, clone, host, operator, out, slots=SLOTS):
+    """Run the queued jobs of this host, clone and operator to the end, at most SLOTS at a time and as `next_runnable` places them
+    (submit order inside a class); the ids of the jobs that failed or were lost. A job whose lock a process outside the executor
+    holds is moved to waiting-lock (step: lock, holder pid, clone and step) and started once the lock is free. A job another
+    executor leased, or that left queued before this one moved it, is passed over."""
+    failed, passed, active, waiting = [], set(), {}, {}  # active: job -> child state; waiting: job -> {record, token, renewed}
+    slots = max(1, int(slots))
+
+    def release(job, token):
+        with contextlib.suppress(coord.Refused):
+            coord.release(Namespace(key=lease_key(job), token=token, store=store, operator=None), time.time)
+
+    def renew(job, token, one):
+        if time.monotonic() - one["renewed"] >= JOB_LEASE_RENEW_S:
             with contextlib.suppress(coord.Refused):
-                coord.release(Namespace(key=lease_key(job), token=token, store=store, operator=None), time.time)
+                coord.renew(Namespace(key=lease_key(job), token=token, ttl=None, store=store), time.time)
+            one["renewed"] = time.monotonic()
+
+    def begin(job, record, token):
+        """Take the job out of queued or waiting-lock into running and start its child; False when it did not start."""
+        try:
+            move(store, job, "running")
+        except coord.Refused:
+            release(job, token)
+            return False
+        proc, start = start_job(store, job, record, clone, kj_store.log_path(clone, job), out)
+        if proc is None:
+            failed.append(job)
+            release(job, token)
+            return True
+        active[job] = {"record": record, "token": token, "proc": proc, "start": start, "renewed": time.monotonic()}
+        return True
+
+    try:
+        while True:
+            for job, one in list(active.items()):  # the children that ended
+                code = one["proc"].poll()
+                if code is None:
+                    renew(job, one["token"], one)
+                    continue
+                del active[job]
+                try:
+                    text = finish_text(kj_store.log_path(clone, job), one["start"])
+                    if finish_job(store, job, one["record"], code, text, out) in ("failed", "lost"):
+                        failed.append(job)
+                finally:
+                    release(job, one["token"])
+            for job, one in list(waiting.items()):  # a waiting job cancelled meanwhile leaves the table
+                now = kj_store.read_record(store, job) or {}
+                if now.get("state") != "waiting-lock":
+                    del waiting[job]
+                    release(job, one["token"])
+                else:
+                    renew(job, one["token"], one)
+            queued = [(j, r) for j, r in pending(store, clone, host, operator) if j not in passed and j not in waiting]
+            if not (queued or waiting or active):
+                return failed
+            candidates = [{**one["record"], "state": "waiting-lock"} for one in waiting.values()] + [r for _, r in queued]
+            candidates.sort(key=lambda r: (r.get("submitted_ts", 0), r["job"]))
+            mine = {os.getpid()} | {one["proc"].pid for one in active.values()}
+            holders = outside(lock_holders(clone), mine)
+            run, wait = next_runnable(candidates, [one["record"] for one in active.values()], holders, slots)
+            for record, lock, held in wait:
+                job = record["job"]
+                token = take_job(store, job)
+                if token is None:
+                    passed.add(job)
+                    continue
+                try:
+                    move(store, job, "running")
+                    move(store, job, "waiting-lock", step=wait_step(lock, held))
+                except coord.Refused:
+                    release(job, token)
+                    continue
+                waiting[job] = {"record": record, "token": token, "renewed": time.monotonic()}
+                print(f"{job} {record['op']} {record.get('subject') or '-'}: waiting-lock, {lock} held by pid {held['pid']} "
+                      f"(clone {held['clone']}, step {held['step']})", file=out, flush=True)
+            for record in run:
+                job = record["job"]
+                if job in waiting:
+                    one = waiting.pop(job)
+                    begin(job, record, one["token"])
+                    continue
+                token = take_job(store, job)
+                if token is None:
+                    passed.add(job)
+                    continue
+                begin(job, record, token)
+            if active or waiting or queued:
+                time.sleep(TICK_S)
+    except BaseException:
+        for job, one in list(active.items()):
+            kg_lock.end_group(one["proc"])
+            with contextlib.suppress(coord.Refused):
+                move(store, job, "lost")
+        for job in waiting:
+            with contextlib.suppress(coord.Refused):
+                move(store, job, "running")
+                move(store, job, "lost")
+        raise
+    finally:
+        for job, one in {**waiting, **active}.items():
+            release(job, one["token"])
 
 
 def running_pid(root, store):
@@ -558,7 +740,7 @@ def login_item(root, store=None, out=None):
     return 0
 
 
-def serve(root, store, once=False, out=None, idle_exit=None):
+def serve(root, store, once=False, out=None, idle_exit=None, slots=SLOTS):
     """`kbjob.py serve`: 0 when the queue was drained (--once), when IDLE_EXIT seconds passed with no live job of this host,
     clone and operator, or when this process ended by a signal; 1 when --once ran a job that failed, 2 where the clone has no
     git directory; a second serve for the same store on the host prints the running one's pid and returns 0."""
@@ -581,7 +763,7 @@ def serve(root, store, once=False, out=None, idle_exit=None):
             if recovered is None or time.monotonic() - recovered >= RECOVER_S:
                 failed += recovery_pass(root, store, out)
                 recovered = time.monotonic()
-            failed += drain(store, clone, host, operator, out)
+            failed += drain(store, clone, host, operator, out, slots)
             if once:
                 break
             if idle_exit is not None:
