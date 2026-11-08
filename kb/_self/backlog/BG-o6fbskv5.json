@@ -7,7 +7,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "kbpublic.range_leaks counts a value as already public only when a file that publish's projection keeps holds it, so a value only kb/_querylog or a _logs.csv holds is refused by the sync leak gate; the sync gate reads no public-values cache that publish's scan filled",
+  "goal": "kbpublic.range_leaks counts a value as already public only when a file that publish's projection keeps holds it, so a value only the query-log store or a _logs.csv holds is refused by the sync leak gate; the sync gate reads no public-values cache that publish's scan filled",
   "repro": {
     "run": [
       "python3",
@@ -26,11 +26,11 @@
   ],
   "clauses": [
     {
-      "clause": "kbpublic.range_leaks counts a value as already public only when a file that publish's projection keeps holds it, so a value only kb/_querylog or a _logs.csv holds is refused by the sync leak gate",
+      "clause": "kbpublic.range_leaks counts a value as already public only when a file that publish's projection keeps holds it, so a value only the query-log store or a _logs.csv holds is refused by the sync leak gate",
       "check": 0
     },
     {
-      "clause": "kbpublic.range_leaks counts a value as already public only when a file that publish's projection keeps holds it, so a value only kb/_querylog or a _logs.csv holds is refused by the sync leak gate",
+      "clause": "kbpublic.range_leaks counts a value as already public only when a file that publish's projection keeps holds it, so a value only the query-log store or a _logs.csv holds is refused by the sync leak gate",
       "check": 1
     },
     {
@@ -45,6 +45,6 @@
   "links": [
     "parked: SP-kkov6bbz review"
   ],
-  "notes": "Review gap 1 of SP-kkov6bbz: kbpublic.py:849 range_leaks -> history_refusals(projected=False) -> leak_verdicts (:701) -> public_values(up) (:649) scans every file of origin/main, the store included; at review HEAD 9,420 private files held 237,655 GUID-shaped hits. Publish still refuses (no public leak), so the stall BG-okrkeohe fixed returns. Planning, repro run once on the base (a clone of the whole tree, 53 s, so do not loop it): exit 1, range_leaks printed [] (a value only kb/_querylog holds passes the sync gate). Check 0 (about 5 s, a clone of _tools only) fails on the base at probe/n1.txt: it plants three holders in the base commit (kb/_querylog, a team _logs.csv, a kb/public file), commits a probe file for each, and runs range_leaks on a fresh cache and again after public_values(up) filled its cache as publish's scan does; after the fix the store and _logs.csv values are refused, the public-file value still passes (no blanket refusal) and the primed cache changes nothing. Keep SCAN_FORM at 6: the cache name of public_values names the projection mode instead, and BG-2iqdafwm's check 1 reads SCAN_FORM.",
+  "notes": "Review gap 1 of SP-kkov6bbz: kbpublic.py:849 range_leaks -> history_refusals(projected=False) -> leak_verdicts (:701) -> public_values(up) (:649) scans every file of origin/main, the store included; at review HEAD 9,420 private files held 237,655 GUID-shaped hits. Publish still refuses (no public leak), so the stall BG-okrkeohe fixed returns. Planning, repro run once on the base (a clone of the whole tree, 53 s, so do not loop it): exit 1, range_leaks printed [] (a value only kb/_querylog holds passes the sync gate). Check 0 (about 5 s, a clone of _tools only) fails on the base at probe/n1.txt: it plants three holders in the base commit (kb/_querylog, a team _logs.csv, a kb/public file), commits a probe file for each, and runs range_leaks on a fresh cache and again after public_values(up) filled its cache as publish's scan does; after the fix the store and _logs.csv values are refused, the public-file value still passes (no blanket refusal) and the primed cache changes nothing. Keep SCAN_FORM at 6: the cache name of public_values names the projection mode instead, and BG-2iqdafwm's check 1 reads SCAN_FORM. Peers (kbask asks sent on 2026-11-08 and unanswered when this plan was written: A01832227f4 to ST-qtypcthx, Af273c07a21 to ST-3brmklge, A2fbdd76f91 to ST-ugkw5mt3): kbpublic.py is also in items of SP-ep7ck2ab and SP-lwkdljxg, both planned and not started, with no claim held on it. Recorded order: this sprint's two kbpublic bug fixes (range_leaks, history_refusals, leak_verdicts, public_values, SCAN_FORM) land first and those sprints' items rebase on them; the range-gate paragraph of kb/_self/git.md is a doc overlap and orders nothing.",
   "filed_in": "clone-0ea70e5c"
 }
