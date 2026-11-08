@@ -16,6 +16,8 @@ extender of an extension point, found in this order:
   1. `extensions.<point>` of the settings layers (`kbsettings.layered`: group, clone, kb root, user, later over earlier),
      written `module:attr` (the attribute, dotted when nested) or `module` alone (the module is the extender);
   2. with no such setting, the one entry point of group `it_ops_kb.<point>` that `importlib.metadata.entry_points` finds.
+`load_all(point, root, kb_root=None)` is the same for a point whose setting may be a list of `module:attr`, as `mcp_tools`'s:
+it returns the extenders in order, with the refusals of `load`.
 Each directory a settings file lists under `extension_paths` is read relative to the directory of the file that names it
 (an absolute path stays) and put on `sys.path` before the module is imported; the later layer's comes first.
 
@@ -163,25 +165,29 @@ def _entry_point(point):
     return found[0].value, found[0].dist.name
 
 
-def resolve(point, root, kb_root=None):
-    """The extender of POINT for workspace ROOT: a dict with `point`, `spec` (module:attr), `layer` (`default`...`user`
-    or `entry point`), `file` (the settings file relative to ROOT, or the distribution name), `module` and `extender`;
-    raises ExtensionError (one line naming the point, the module and the layer) when it cannot be used."""
+def _find(point, root, kb_root, many):
+    """(specs, layer, file) of the extender of POINT: the one `module:attr` of the setting or entry point, or, with MANY, the
+    list of them a setting may hold; raises ExtensionError when none is named or the setting is malformed."""
     if not POINT_RE.fullmatch(str(point)):
         raise ExtensionError(f"point {point!r}: a name of lower-case letters, digits and underscores is expected")
     _add_paths(root, kb_root)
     setting = _named(root, kb_root, "extensions", point)
     if setting is not None:
-        spec, layer, file = setting
-        if not isinstance(spec, str) or not spec:
+        value, layer, file = setting
+        specs = value if many and isinstance(value, list) else [value]
+        if not specs or not all(isinstance(s, str) and s for s in specs):
             raise ExtensionError(f"point {point}: extensions.{point} in the {layer} layer ({file}) must be "
-                                 f"module:attr or a module name")
-    else:
-        found = _entry_point(point)
-        if found is None:
-            raise ExtensionError(f"point {point}: no extensions.{point} setting in any layer and no entry point of "
-                                 f"group {GROUP}.{point}")
-        (spec, file), layer = found, "entry point"
+                                 f"module:attr or a module name{' or a list of them' if many else ''}")
+        return specs, layer, file
+    found = _entry_point(point)
+    if found is None:
+        raise ExtensionError(f"point {point}: no extensions.{point} setting in any layer and no entry point of "
+                             f"group {GROUP}.{point}")
+    return [found[0]], "entry point", found[1]
+
+
+def _import(point, spec, layer, file):
+    """The dict `resolve` returns for the one SPEC."""
     name, _, attr = spec.partition(":")
     where = f"point {point}: module {name or spec}, layer {layer} ({file})"
     try:
@@ -201,6 +207,22 @@ def resolve(point, root, kb_root=None):
             raise ExtensionError(f"{where}: no attribute {attr}")
     return {"point": point, "spec": spec, "layer": layer, "file": file, "module": module, "extender": extender,
             "where": where}
+
+
+def resolve(point, root, kb_root=None):
+    """The extender of POINT for workspace ROOT: a dict with `point`, `spec` (module:attr), `layer` (`default`...`user`
+    or `entry point`), `file` (the settings file relative to ROOT, or the distribution name), `module` and `extender`;
+    raises ExtensionError (one line naming the point, the module and the layer) when it cannot be used."""
+    specs, layer, file = _find(point, root, kb_root, False)
+    return _import(point, specs[0], layer, file)
+
+
+def load_all(point, root, kb_root=None):
+    """The extenders of POINT as a list, in the order the setting names them: `extensions.<point>` may be one `module:attr`
+    or a list of them (an entry point gives one). Each is loaded and checked as `resolve` does, and the first that cannot
+    be used raises ExtensionError; none named raises it too (ask `configured` first)."""
+    specs, layer, file = _find(point, root, kb_root, True)
+    return [_import(point, spec, layer, file)["extender"] for spec in specs]
 
 
 def load(point, root, kb_root=None):

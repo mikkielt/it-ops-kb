@@ -1787,49 +1787,17 @@ def group_name(root):
     return name
 
 
-def group_specs(root):
-    """The module:attr specs that name the mcp_tools extender, as (specs, where), or None when none is set: a setting
-    holds a spec or a list of specs, an entry point of group it_ops_kb.mcp_tools one."""
+def group_dicts(extenders):
+    """The tool dicts the extenders of mcp_tools hold, each one a tool dict or a list of them; raises ExtensionError."""
     import kbext
-    kbext._add_paths(root, None)
-    setting = kbext._named(root, None, "extensions", "mcp_tools")
-    if setting is None:
-        found = kbext._entry_point("mcp_tools")
-        return None if found is None else ([found[0]], f"entry point of distribution {found[1]}")
-    value, layer, file = setting
-    specs = value if isinstance(value, list) else [value]
-    if not specs or not all(isinstance(s, str) and s for s in specs):
-        raise kbext.ExtensionError(f"extensions.mcp_tools in the {layer} layer ({file}) must be module:attr or a list "
-                                   f"of them")
-    return specs, f"layer {layer} ({file})"
-
-
-def group_load(spec, where):
-    """The tool dicts of one spec: its attribute is a tool dict or a list of them; raises ExtensionError."""
-    import importlib, kbext
-    name, _, attr = spec.partition(":")
-    here = f"module {name}, {where}"
-    try:
-        module = importlib.import_module(name)
-    except Exception as e:
-        raise kbext.ExtensionError(f"{here}: cannot import: {type(e).__name__}: {e}")
-    if not hasattr(module, "KBEXT_REQUIRES"):
-        raise kbext.ExtensionError(f"{here}: no KBEXT_REQUIRES: the module must declare which API versions it takes")
-    kbext._check_requires(module.KBEXT_REQUIRES, here)
-    found = module
-    for part in filter(None, attr.split(".")):
-        try:
-            found = getattr(found, part)
-        except AttributeError:
-            raise kbext.ExtensionError(f"{here}: no attribute {attr}")
-    tools = found if isinstance(found, (list, tuple)) else [found]
+    tools = [t for e in extenders for t in (e if isinstance(e, (list, tuple)) else [e])]
     for tool in tools:
         if not (isinstance(tool, dict) and isinstance(tool.get("name"), str)
                 and re.fullmatch(r"[a-z][a-z0-9_]*", tool["name"]) and isinstance(tool.get("description"), str)
                 and isinstance(tool.get("inputSchema"), dict) and callable(tool.get("call"))):
-            raise kbext.ExtensionError(f"{here}: {spec} must hold dicts with a lower-case name, a description, an "
-                                       f"inputSchema object and a callable call")
-    return list(tools)
+            raise kbext.ExtensionError("point mcp_tools: each tool must be a dict with a lower-case name, a description, "
+                                       "an inputSchema object and a callable call")
+    return tools
 
 
 def group_call(prefixed, call):
@@ -1857,15 +1825,13 @@ def group_tools():
     GROUP_TOOLS[key] = (listed, handlers)
     import kbext, kbsettings
     try:
-        found = group_specs(root)
-        if found is None:
+        if not kbext.configured("mcp_tools", root):
             return listed, handlers
         group = group_name(root)
         if not group or not re.fullmatch(r"[a-z][a-z0-9_]*", group):
             raise kbext.ExtensionError("the settings name no group (key group, lower-case letters, digits and "
                                        "underscores), so the tools carry no prefix")
-        specs, where = found
-        tools = [t for spec in specs for t in group_load(spec, where)]
+        tools = group_dicts(kbext.load_all("mcp_tools", root))
     except (kbext.ExtensionError, kbsettings.SettingsError) as e:
         group_note(f"point mcp_tools: the group's tools are left out: {' '.join(str(e).split())}")
         return listed, handlers
