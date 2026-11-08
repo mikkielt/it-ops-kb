@@ -8,7 +8,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
-  "goal": "kbmon's coord panel collects in under 3 s alone on a small coord store; the sessions and sprint panels read within the default 10 s budget (kbmon.py DEFAULT_TIMEOUT) when read beside it; `--status coord` keeps its run-state drift line; the coord panel keeps every line it shows today (claims, events, intents, asks, settings)",
+  "goal": "kbmon's coord panel collects in under 3 s alone on a small coord store; the sessions and sprint panels read within the default 10 s budget (kbmon.py DEFAULT_TIMEOUT) when read beside it; `--status coord` keeps its run-state drift line; the coord panel keeps every line it shows today (claims, events, intents, asks, settings); redact.known_key(root) changes when a root file changes and holds the sha256 of redact.py; a second process sees a word a root file gained since the first",
   "repro": {
     "run": [
       "python3",
@@ -37,6 +37,20 @@
         "-c",
         "import atexit,shutil,tempfile\n_m=tempfile.mkdtemp\ndef _d(*a,**k):\n d=_m(*a,**k);atexit.register(shutil.rmtree,d,True);return d\ntempfile.mkdtemp=_d\nimport subprocess, sys, tempfile\nfrom pathlib import Path\nstore = str(Path(tempfile.mkdtemp()) / 'c.db')\ndef coord(*a):\n    subprocess.run([sys.executable, '_tools/coord.py', '--store', store, *a], capture_output=True, text=True, check=True)\ncoord('put', 'ask/A1', '--value', 'May I widen the touches of item A1?', '--revision', '0')\ncoord('post', '--kind', 'ask', '--field', 'id=A1', '--field', 'to=operator', '--field', 'ref=ask/A1')\np = subprocess.run([sys.executable, '_tools/kbmon.py', '--status', 'coord', '--store', store], capture_output=True, text=True)\nprint(p.returncode, p.stdout)\nsys.exit(not not p.returncode not in (0, 1) or 'Run state drift' not in p.stdout or '1 open ask to the operator' not in p.stdout)\n"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import hashlib,os,sys,tempfile;sys.path.insert(0,'_tools');import redact;d=tempfile.mkdtemp();p=os.path.join(d,'a.md');open(p,'w').write('alpha');k1=redact.known_key(d);open(p,'w').write('alpha beta');os.utime(p,ns=(1,2));k2=redact.known_key(d);h=hashlib.sha256(open('_tools/redact.py','rb').read()).hexdigest();sys.exit(not(k1!=k2 and h in k1 and h in k2))"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,subprocess,sys,tempfile;d=tempfile.mkdtemp();p=os.path.join(d,'a.md');open(p,'w').write('zzqone');c='import sys;sys.path.insert(0,\"_tools\");import redact;print(int(\"zzqtwo\" in redact.known(sys.argv[1]).words))';a=subprocess.run([sys.executable,'-c',c,d],capture_output=True,text=True);open(p,'w').write('zzqone zzqtwo');os.utime(p,ns=(3,4));b=subprocess.run([sys.executable,'-c',c,d],capture_output=True,text=True);sys.exit(not(a.returncode==0 and b.returncode==0 and a.stdout.strip()=='0' and b.stdout.strip()=='1'))"
+      ]
     }
   ],
   "clauses": [
@@ -55,18 +69,31 @@
     {
       "clause": "the coord panel keeps every line it shows today (claims, events, intents, asks, settings)",
       "check": 0
+    },
+    {
+      "clause": "redact.known_key(root) changes when a root file changes and holds the sha256 of redact.py",
+      "check": 3
+    },
+    {
+      "clause": "a second process sees a word a root file gained since the first",
+      "check": 4
     }
   ],
   "touches": [
     "_tools/mon_coord.py",
     "_tools/mon_status.py",
     "kb/_self/monitoring.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/redact.py",
+    "kb/_self/querylog.md"
+  ],
+  "depends_on": [
+    "ST-ed7utpmg"
   ],
   "relates_to": [
     "ST-7k2popo6",
     "ST-hgicbqm3"
   ],
-  "notes": "Evidence 2026-11-08: coord store 2418 own/, 423 run/, 107 ask/ keys; collect 8.35 s alone (8.4 s user CPU); with all panels as threads under one deadline (mon_base) sessions and sprint timed out and --status coord dropped its run-state drift line (mon_status returns [] when sessions is unread). Relates to ST-7k2popo6, ST-hgicbqm3. Spread 2026-11-08 (14 cores, load 4.89/6.07/5.49 by `kbmon.py --status load`, calm): five runs of `kbmon.py --json --panel coord --timeout 60` gave 8.452, 8.151, 8.282, 8.314, 8.211 s (spread 0.30 s). Margin: the 3 s bound sits 5.15 s under the fastest base run, 17 times the spread, so the work must save at least 5.2 s. Clause 2: sessions alone 2.68, 2.78, 2.53, 2.64 s, sprint alone 2.40, 2.64, 2.43, 2.55 s (spread 0.25 s) against 10 s. Profile (cProfile of mon_coord.collect, 8.52 s): 8.16 s in the one scan of kb/public that redact.known makes per process (via ask_texts), none in with_silence: the suspect in the title is not the cause. A planted store of three asks takes 8.37 s too, so time does not grow with the store. redact.py guards the leak rule and is not in the touches: caching or narrowing that scan there, warming it outside the panel budget, or leaving ask text unredacted is a choice for the operator. Premise run 2026-11-08: the repro fails (state timeout at --timeout 3). Planted check 0 fails on the base (8.37 s), check 1 fails (coord ok 8.4 s, sessions and sprint timeout at 10 s), check 2 fails (no 'Run state drift' line).",
+  "notes": "Evidence 2026-11-08: coord store 2418 own/, 423 run/, 107 ask/ keys; collect 8.35 s alone (8.4 s user CPU); with all panels as threads under one deadline (mon_base) sessions and sprint timed out and --status coord dropped its run-state drift line (mon_status returns [] when sessions is unread). Relates to ST-7k2popo6, ST-hgicbqm3. Spread 2026-11-08 (14 cores, load 4.89/6.07/5.49 by `kbmon.py --status load`, calm): five runs of `kbmon.py --json --panel coord --timeout 60` gave 8.452, 8.151, 8.282, 8.314, 8.211 s (spread 0.30 s). Margin: the 3 s bound sits 5.15 s under the fastest base run, 17 times the spread, so the work must save at least 5.2 s. Clause 2: sessions alone 2.68, 2.78, 2.53, 2.64 s, sprint alone 2.40, 2.64, 2.43, 2.55 s (spread 0.25 s) against 10 s. Profile (cProfile of mon_coord.collect, 8.52 s): 8.16 s in the one scan of kb/public that redact.known makes per process (via ask_texts), none in with_silence: the suspect in the title is not the cause. A planted store of three asks takes 8.37 s too, so time does not grow with the store. redact.py guards the leak rule and is not in the touches: caching or narrowing that scan there, warming it outside the panel budget, or leaving ask text unredacted is a choice for the operator. Premise run 2026-11-08: the repro fails (state timeout at --timeout 3). Planted check 0 fails on the base (8.37 s), check 1 fails (coord ok 8.4 s, sessions and sprint timeout at 10 s), check 2 fails (no 'Run state drift' line). Operator 2026-11-08: cache redact.known across processes in redact.py, key redact.known_key(root) (sha256 of redact.py + files' path/size/mtime_ns), file under _cache. Check 4 passes on base by design: it pins freshness the cache must keep.",
   "filed_in": "clone-0ea70e5c"
 }

@@ -13,7 +13,7 @@
     "run": [
       "python3",
       "-c",
-      "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/kbmon.py','--status','sprints','--timeout','60'],capture_output=True,text=True);sys.exit(r.returncode!=0 or 'at step verify' in r.stdout)"
+      "import atexit,shutil,tempfile\n_m=tempfile.mkdtemp\ndef _d(*a,**k):\n d=_m(*a,**k);atexit.register(shutil.rmtree,d,True);return d\ntempfile.mkdtemp=_d\nimport os, sys, tempfile\nfrom types import SimpleNamespace\nos.environ[\"CLAUDE_PLUGIN_DATA\"] = tempfile.mkdtemp()\nos.environ[\"CLAUDE_PLUGIN_ROOT\"] = os.getcwd()\nsys.path.insert(0, '_tools')\nimport bl_stall, mon_sprint\nT = \"2026-11-08T16:48:46.898Z\"\ndef row(i, ev, ts, **kw):\n    return {\"id\": f\"{i}\", \"ts\": ts, \"event\": ev, **kw}\nrows = [row(1, \"land.step\", \"2026-11-08T16:40:00.000Z\", item=\"ST-aaaaaaaa\", step=\"rebase\"),\n        row(2, \"land.step\", \"2026-11-08T16:44:00.000Z\", item=\"ST-aaaaaaaa\", step=\"verify\"),\n        row(3, \"land.end\", T, item=\"ST-aaaaaaaa\", exit=0),\n        row(4, \"land.step\", T, item=\"ST-aaaaaaaa\", step=\"verify\"),\n        row(5, \"land.step\", \"2026-11-08T16:41:00.000Z\", item=\"ST-bbbbbbbb\", step=\"verify\"),\n        row(6, \"land.end\", \"2026-11-08T16:42:00.000Z\", item=\"ST-bbbbbbbb\", exit=1),\n        row(7, \"land.step\", \"2026-11-08T16:50:00.000Z\", item=\"ST-bbbbbbbb\", step=\"rebase\")]\nbl = SimpleNamespace(items={i: {\"status\": \"doing\", \"title\": f\"Title {i}\"} for i in (\"ST-aaaaaaaa\", \"ST-bbbbbbbb\")})\nbl_stall.ops_rows = lambda root: list(rows)\nfound = {x[\"item\"]: x[\"step\"] for x in mon_sprint.landings(tempfile.mkdtemp(), bl)}\nprint(found)\nsys.exit(not not found != {\"ST-bbbbbbbb\": \"rebase\"})\n"
     ]
   },
   "checks": [
