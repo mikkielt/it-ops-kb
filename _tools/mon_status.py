@@ -295,8 +295,9 @@ def cost(r):
     unpriced = [str(m) for m in u.get("unpriced") or []]
     facts = {"usd": number(u.get("usd"), 0.0), "rows": number(u.get("rows")), "tokens": number(u.get("tokens")),
              "unpriced": unpriced}
-    lines = [f"Cost today: ${number(u.get('usd'), 0.0):.2f} over {number(u.get('rows'))} usage rows, "
-             f"{short(u.get('tokens'))} tokens."]
+    lines = [f"Logged cost today: ${number(u.get('usd'), 0.0):.2f} over {number(u.get('rows'))} usage rows, "
+             f"{short(u.get('tokens'))} tokens.",
+             "  It sums the usage rows and sidecars the query log holds, not the day's total spend."]
     if unpriced:
         lines.append(f"No price for {', '.join(unpriced)}: {'its' if len(unpriced) == 1 else 'their'} cost is not in the dollars.")
     for noun, key, name in (("model", "by_model", str), ("session", "by_session", str),
