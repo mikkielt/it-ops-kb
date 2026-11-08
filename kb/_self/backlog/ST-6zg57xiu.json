@@ -39,9 +39,6 @@
   "depends_on": [
     "ST-wg27eqbp"
   ],
-  "relates_to": [
-    "ST-qqpcgqe7"
-  ],
   "gates": [
     {
       "id": "g1",
