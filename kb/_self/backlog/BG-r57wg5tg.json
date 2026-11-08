@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "A root's placeholder names reach no production path: redact and the tracked-file leak scan never pass a root",
   "status": "draft",
+  "sprint": "SP-n7zxspch",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "redact.py takes --root and the tracked-file leak scan (check.py, kbpublic.file_hits) passes each file's root to leak_hits, so a root's listed placeholder names are treated as placeholders in that root's files only, while the leak shapes stay the same for every root",
+  "goal": "redact.py takes --root DIR and applies that root's placeholders in its rules and in --scan; check.py's log-row scan passes the log's root to leak_hits, so a root's listed placeholder names pass in that root's log rows only while every leak shape stays the same for every root",
   "repro": {
     "run": [
       "python3",
@@ -14,6 +15,13 @@
       "import subprocess, sys\np = subprocess.run([sys.executable, '_tools/redact.py', '--help'], capture_output=True, text=True)\nassert '--root' in p.stdout, 'redact.py takes no --root, so no pipeline can pass a root'"
     ]
   },
+  "touches": [
+    "_tools/redact.py",
+    "_tools/check.py",
+    "kb/_self/querylog.md",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md"
+  ],
   "links": [
     "parked: SP-iir3d2tu review"
   ],
