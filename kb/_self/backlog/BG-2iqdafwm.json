@@ -77,6 +77,22 @@
       "operator": "op-f618a13e",
       "role": "interactive",
       "agent_session": true
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Which roots and pointers does the sync range gate read for secrets only?",
+      "options": [
+        "Those tree_hits reads so: every root or pointer that does not say visibility: public (none counts as internal)",
+        "Only roots whose _root.md says visibility: internal, as the tree refusal names them"
+      ],
+      "recommendation": "Those tree_hits reads so: every root or pointer that does not say visibility: public (none counts as internal)",
+      "reason": "because the goal says the gate reads them as tree_hits does",
+      "do": {
+        "Those tree_hits reads so: every root or pointer that does not say visibility: public (none counts as internal)": "BG-2iqdafwm",
+        "Only roots whose _root.md says visibility: internal, as the tree refusal names them": "BG-2iqdafwm"
+      },
+      "class": "secrets"
     }
   ],
   "links": [
