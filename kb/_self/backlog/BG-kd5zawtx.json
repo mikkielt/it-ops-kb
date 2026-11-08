@@ -2,7 +2,7 @@
   "id": "BG-kd5zawtx",
   "kind": "bug",
   "title": "kbmon lists an ask as needing the operator after its gate was answered and its item landed, since backlog.py answer never closes the ask",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-uh5h46fm",
   "priority": "P2",
@@ -49,5 +49,7 @@
     "BG-2n4csy5p"
   ],
   "notes": "Evidence 2026-11-08: mon_coord closes an ask only on a coord answer event (_tools/mon_coord.py CLOSED) and backlog.py answer posts none, so five asks of 2026-10-27 about gates of ST-zkhku3sg, ST-3j3wlgg4, BG-okrkeohe and ST-6zg57xiu, all answered and their items done, still read as needs you, each telling the reader to run answer --recommended on a gate already answered. The ask the repro names is one of them. Premise run 2026-11-08: the repro fails (exit 1), because `kbmon.py --status coord` still lists the ask A580958191e of an answered gate. Planted check 0 (a coord store in a temp dir given to mon_coord.collect as --store, a temp backlog root with one story holding an answered and an open gate, one done, one dropped and one missing item, six asks) fails on the base too: all six asks show, where A2 and A4 must. Reading settled in the goal: a worker's ask names its gate as `Gate gN ... of ITEM`, the form the five asks use, so the fix reads that and the backlog of the root the panel runs on.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-7064b8a6",
+  "operator": "op-f618a13e"
 }
