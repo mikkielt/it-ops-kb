@@ -24,6 +24,27 @@
     "kb/_self/querylog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does a coord read whose budget ends mid cold scan get redact.known saved?",
+      "options": [
+        "Detached warm-up process; the panel reads no ask text until the cache is kept",
+        "Keep the in-panel scan and let the process outlive the panel budget"
+      ],
+      "recommendation": "Detached warm-up process; the panel reads no ask text until the cache is kept",
+      "do": {
+        "Detached warm-up process; the panel reads no ask text until the cache is kept": "BG-na4qyo2c",
+        "Keep the in-panel scan and let the process outlive the panel budget": "BG-na4qyo2c"
+      },
+      "class": "querylog",
+      "answer": "Detached warm-up process; the panel reads no ask text until the cache is kept",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-7064b8a6",
   "operator": "op-f618a13e"
