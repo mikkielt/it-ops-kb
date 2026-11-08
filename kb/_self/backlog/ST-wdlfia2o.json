@@ -1,0 +1,27 @@
+{
+  "id": "ST-wdlfia2o",
+  "kind": "story",
+  "title": "Planning records a depends_on when another sprint's item rewrites a file a done item's check reads",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "peers and precheck name each item of another active or planned sprint whose touches hold a file a done or committed item's check reads, and the plan records the order as depends_on or a note before the start gate: SP-m5m67goe's review waited about 1.5 h on 2026-11-08 for ST-rodj5ltd of SP-wv3ob5vy (benchmarks.csv) with no recorded dependency, found only when its done refused.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self','does planning order an item of another sprint that rewrites a file a done check reads'],capture_output=True,text=True);sys.exit(r.returncode!=0 or 'another sprint' not in r.stdout or 'done check' not in r.stdout)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    "skills/sprint/SKILL.md",
+    "_tools/bl_peers.py"
+  ],
+  "links": [
+    "parked: SP-m5m67goe close"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

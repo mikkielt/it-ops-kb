@@ -1,0 +1,28 @@
+{
+  "id": "ST-gbz7ay3q",
+  "kind": "story",
+  "title": "A worker runs the sprint's sibling checks on its branch before it returns, so land does not stop at the siblings step",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The cause of ST-6zg57xiu's two landings stopped at step siblings (2026-10-27 22:42 and 22:56 UTC, about 5 min each, ops SP-m5m67goe) is named in the item's notes, and the worker's brief has it run the same sibling checks land runs (the done items' checks of its sprint) on its branch before it returns, reporting any failure instead of returning green.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self','does a worker run the sibling checks of done items before it returns'],capture_output=True,text=True);sys.exit(r.returncode!=0 or 'siblings' not in r.stdout)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "_tools/bl_land.py",
+    "agents/worker.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-m5m67goe close"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

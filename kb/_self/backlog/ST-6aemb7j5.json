@@ -1,0 +1,26 @@
+{
+  "id": "ST-6aemb7j5",
+  "kind": "story",
+  "title": "A planned check over records that name commits reads a commit on main, not a literal hash another item may rewrite",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Plan step 6 of the sprint skill and backlog.md's planning rules say a check that reads rows naming a commit (benchmarks.csv's commit column, a record's sha) asserts the commit is on the integration main or matches the record's own field, never a literal hash: SP-m5m67goe's review done failed because ST-nejgzptp's check read paid rows by cd23d59, which ST-rodj5ltd of SP-wv3ob5vy rewrote to 1f6011b, so the review waited until the rows were repointed.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self','may a done check name a literal commit hash in a record another item can rewrite'],capture_output=True,text=True);sys.exit(r.returncode!=0 or 'literal commit hash' not in r.stdout)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-m5m67goe close"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
