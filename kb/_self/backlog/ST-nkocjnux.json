@@ -2,7 +2,7 @@
   "id": "ST-nkocjnux",
   "kind": "story",
   "title": "kbmon's cost line says it counts only kb-logged usage rows, not the day's total spend",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-uh5h46fm",
   "priority": "P2",
@@ -36,5 +36,7 @@
     "BG-tybempcu"
   ],
   "notes": "Evidence 2026-11-08: ql_report.usage_today sums the usage rows and sidecars written only for prompts that used the kb or sit in a work window, never the running prompt: 'Cost today: $4.40 over 4 usage rows, 10.9M tokens' was printed while backlog.py cost gave ST-dmon53is about 11.6M and ST-rodj5ltd about 7.1M tokens, and 25 minutes later the same line read $8.46 and 27.1M with no matching jump in work. A true day total over every transcript is out of scope (ST-m6pyyyw6 attributes distilled usage). Premise run 2026-11-08: planted check 0 (mon_status.answer of a planted querylog panel, topics cost and all) fails on the base: both print 'Cost today: $4.40 over 4 usage rows, 10.9M tokens.' and the cost answer has no line naming sidecars. The earlier live check is replaced by it.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-7064b8a6",
+  "operator": "op-f618a13e"
 }
