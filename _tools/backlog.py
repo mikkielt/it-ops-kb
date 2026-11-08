@@ -519,7 +519,8 @@ def main(argv=None):
     argv = sys.argv[1:] if argv is None else list(argv)
     root = bl_cli.root_of(argv, bl_cli.default_root(ROOT))
     load_settings(root)  # the project's settings, before a parser offers its kinds: every reader follows this root
-    ap = bl_cli.build_parser(__doc__.split("\n\n")[0], root)
+    bl_cli.load_group_commands(root)  # a group's modules add or replace commands after the shipped ones, before the parser
+    ap =bl_cli.build_parser(__doc__.split("\n\n")[0], root)
     a = bl_cli.parse(ap, argv)
     if a.root != root:  # an abbreviated --root the pre-scan did not read
         load_settings(a.root)
