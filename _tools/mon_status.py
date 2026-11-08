@@ -234,7 +234,7 @@ def sessions(r):
     if data is None:
         return [f"Sessions: {why}."], {"state": "unread"}
     procs = [p for p in data.get("procs") or [] if isinstance(p, dict)]
-    orphans = sorted((p for p in procs if p.get("class") == "orphan"), key=lambda p: -number(p.get("age_s")))
+    orphans = mon_sessions.named_orphans(procs)
     claude = [p for p in procs if p.get("session")]
     headless = [p for p in claude if p["session"] == "headless"]
     stalled = [s for s in data.get("stalled") or [] if isinstance(s, dict)]
@@ -245,11 +245,11 @@ def sessions(r):
         facts["unreadable"] = True
         lines = [f"Sessions: the processes cannot be listed on this host ({unreadable})."]
     elif orphans:
-        lines = [f"Sessions: {len(orphans)} orphan process{'' if len(orphans) == 1 else 'es'} left running, nothing waits for them:"]
+        lines = [f"Sessions: {len(orphans)} orphan process{'' if len(orphans) == 1 else 'es'} left running:"]
     else:
         lines = [f"Sessions: no orphan; {len(headless)} headless and {len(claude) - len(headless)} interactive Claude "
                  f"session{'' if len(claude) == 1 else 's'}, {len(procs)} process{'' if len(procs) == 1 else 'es'} in the clone."]
-    lines += tag("orphans", [f"  orphan pid {p.get('pid')}, running {mon_sessions.age_text(number(p.get('age_s')))}, in {p.get('checkout') or '?'}"
+    lines += tag("orphans", [f"  orphan pid {p.get('pid')}, running {mon_sessions.age_text(number(p.get('age_s')))}{mon_sessions.child_note(p)}, in {p.get('checkout') or '?'}"
                              for p in orphans[:ROWS]] + [("  " + x) for x in more(len(orphans) - ROWS, "orphans")])
     rows = [s for s in data.get("sessions") or [] if isinstance(s, dict)]
     lines += tag("sessions", [("  " + mon_sessions.session_line(s, r.now)) for s in rows[:ROWS]]
