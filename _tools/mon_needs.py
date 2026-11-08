@@ -7,7 +7,8 @@ nothing at load, `mon_sessions` (its age text) and `mon_status` (`short_name`) w
                   the ids of its gates, `failed` or `refused`, with the step that stopped it, from the sprint panel's `runs`:
                   `ST-… blocked on gates g1, g2, 5m`, `ST-… run failed at step X, 5m`, `ST-… landing refused at step rebase,
                   5m`; a gate it names is left out of the `gate` entries), `ask` (each ask addressed to `operator` that no closing
-                  answer has ended, from the coord panel: `ask ID since DATE TIME: the first words of the question`, redacted;
+                  answer has ended and whose gate, if its question names one, the backlog has not answered, from the coord
+                  panel: `ask ID since DATE TIME: the first words of the question`, redacted;
                   an Alertmanager alert, a cleanup verdict or a session's question posted as an ask shows here), `prompt` (each
                   session of the sessions panel that carries `blocked`, the coord hook's record of a permission request or a
                   question that waits on the person, longest first: `s-… worker ST-… blocked on a permission prompt, 2m`; a

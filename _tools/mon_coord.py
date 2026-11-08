@@ -8,15 +8,19 @@ once, then `coord.py get` of the question of each of the first open asks to the 
 is `absent` and is not created. A server that cannot be reached, or that answers no command within `CHILD_SECONDS`, is
 `timeout`. A session id (a holder, a `session/` key, an event's session fields) shows as its label
 (`mon_view.session_label`). An ask is open when an `ask` event names `operator` and no `answer` event of its id has a
-closing state (`CLOSED`, the coord hook's); its question is redacted before it is cut to `ASK_CHARS`. The settings are
+closing state (`CLOSED`, the coord hook's); its question is redacted before it is cut to `ASK_CHARS`. A worker's gate ask (`Gate gN … of ITEM`,
+`GATE_ASK`) is not open either once the backlog of the clone at `--root` holds an answer for that gate or ITEM is done, dropped
+or not in it (`without_settled`, from the questions `coord.py list` already gives: `backlog.py answer` posts no answer event);
+an ask that names no gate, or a gate still open, stays open. The settings are
 `kbsettings.explain` of the clone at `--root` (its group, clone, user and the one `kb/NAME/settings.json` files when
 exactly one root has one): each key with its value, its layer and its source, `default` or the file relative to the
 clone (a group file outside the clone by its name); a settings file that cannot be read gives `settings_error` and no settings. Imports `mon_base` and `mon_view`; `coord` only to name
-the clone's store, `kbsettings` and `redact` where they are used.
+the clone's store, `kbsettings`, `redact` and `bl_base` (the backlog) where they are used.
 """
 import atexit
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -41,6 +45,7 @@ ASKS_KEPT = 20  # open asks in the data, the oldest first
 ASKS_READ = 3  # open asks whose question is read (the needs-you line names three of a kind)
 ASK_CHARS = 60  # characters of a question in the data, after redaction
 UNREACHABLE = "cannot reach"  # what coord.py prints when it cannot connect to a --url
+GATE_ASK = re.compile(r"\s*Gate\s+(\w+)\b.{0,100}?\sof\s+([A-Z]{2}-[a-z0-9]{8})\b", re.S)  # a worker's gate ask: its gate and item
 WAIT_KEYS = "wait/"  # the leases of a blocking `coord.py wait`: the sessions panel's waits, no claims
 
 _children = set()
@@ -142,6 +147,38 @@ def open_asks(events):
         found.append({"id": f["id"], "since": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(at)) if isinstance(at, (int, float)) else "",
                       "ref": f.get("ref")})
     return found
+
+
+def gate_settled(question, bl):
+    """True when QUESTION is a worker's gate ask (`Gate gN (class …) of ITEM, …`) and the backlog BL no longer waits on it: the
+    gate holds an answer, or ITEM is done, dropped or not in the backlog. A question that names no gate, a gate BL does not
+    hold on an item that is open, and a question that is not text are not settled."""
+    m = GATE_ASK.match(question) if isinstance(question, str) else None
+    if not m:
+        return False
+    item = bl.items.get(m.group(2))
+    if item is None or item.get("status") in ("done", "dropped"):
+        return True
+    return any(isinstance(g, dict) and g.get("id") == m.group(1) and "answer" in g for g in item.get("gates") or [])
+
+
+def without_settled(asks, rows, root):
+    """ASKS (`open_asks`) without the gate asks whose gate the backlog of the clone at ROOT has answered or whose item is closed
+    (`gate_settled`); a question is the value of the ask's `ref` key in ROWS (`coord.py list`). `backlog.py answer` posts
+    no answer event, so the backlog is the only record that ends such an ask. All of ASKS when none names a gate or the
+    backlog cannot be read."""
+    import bl_base
+    values = {r.get("key"): r.get("value") for r in rows if isinstance(r, dict)}
+    gated = [a for a in asks if isinstance(values.get(a.get("ref")), str) and GATE_ASK.match(values[a["ref"]])]
+    if not gated:
+        return asks
+    try:
+        bl_base.load_settings(root)
+        bl = bl_base.Backlog(root)
+    except (OSError, ValueError, KeyError, TypeError):
+        return asks
+    done = {a["id"] for a in gated if gate_settled(values[a["ref"]], bl)}
+    return [a for a in asks if a["id"] not in done]
 
 
 def ask_texts(conn, asks):
@@ -292,7 +329,7 @@ def collect(ctx):
     claims = [claim_of(r, now) for r in rows if r.get("holder") and not str(r.get("key")).startswith(WAIT_KEYS)]
     every = json.loads(out["wait"])["events"]
     events = every[-EVENTS_KEPT:]
-    asks = open_asks(every)
+    asks = without_settled(open_asks(every), rows, ctx.root)
     settings, bad = settings_of(ctx.root)
     data = {"source": source, "claims": claims, "runs": with_silence(runs_of(rows, every, now), rows, every, ctx.root, now, source == "local"),
             "events": [{"seq": e["seq"], "kind": e["kind"], "fields": event_fields(e)} for e in reversed(events)],

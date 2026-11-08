@@ -48,6 +48,25 @@
   "depends_on": [
     "BG-2n4csy5p"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the coord panel decide that a gate ask is settled?",
+      "options": [
+        "Read the question from the coord list rows, match a leading 'Gate gN ... of ITEM', and settle it when that gate holds an answer or the item is done, dropped or missing in the panel root's backlog; an ask that names no gate, or a gate the open item does not hold, stays open",
+        "Read each question with coord get and match the words anywhere in it"
+      ],
+      "recommendation": "Read the question from the coord list rows, match a leading 'Gate gN ... of ITEM', and settle it when that gate holds an answer or the item is done, dropped or missing in the panel root's backlog; an ask that names no gate, or a gate the open item does not hold, stays open",
+      "do": {
+        "Read the question from the coord list rows, match a leading 'Gate gN ... of ITEM', and settle it when that gate holds an answer or the item is done, dropped or missing in the panel root's backlog; an ask that names no gate, or a gate the open item does not hold, stays open": "BG-kd5zawtx",
+        "Read each question with coord get and match the words anywhere in it": "BG-kd5zawtx"
+      },
+      "class": "design",
+      "answer": "Read the question from the coord list rows, match a leading 'Gate gN ... of ITEM', and settle it when that gate holds an answer or the item is done, dropped or missing in the panel root's backlog; an ask that names no gate, or a gate the open item does not hold, stays open",
+      "by": "agent"
+    }
+  ],
   "notes": "Evidence 2026-11-08: mon_coord closes an ask only on a coord answer event (_tools/mon_coord.py CLOSED) and backlog.py answer posts none, so five asks of 2026-10-27 about gates of ST-zkhku3sg, ST-3j3wlgg4, BG-okrkeohe and ST-6zg57xiu, all answered and their items done, still read as needs you, each telling the reader to run answer --recommended on a gate already answered. The ask the repro names is one of them. Premise run 2026-11-08: the repro fails (exit 1), because `kbmon.py --status coord` still lists the ask A580958191e of an answered gate. Planted check 0 (a coord store in a temp dir given to mon_coord.collect as --store, a temp backlog root with one story holding an answered and an open gate, one done, one dropped and one missing item, six asks) fails on the base too: all six asks show, where A2 and A4 must. Reading settled in the goal: a worker's ask names its gate as `Gate gN ... of ITEM`, the form the five asks use, so the fix reads that and the backlog of the root the panel runs on.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-7064b8a6",
