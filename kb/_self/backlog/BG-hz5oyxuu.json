@@ -28,6 +28,26 @@
     "_tools/kj_follow.py",
     "kb/_self/coordination.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "When the job record holds no pid yet (cancel in the moment between the child start and the pid being written), what does cancel do?",
+      "options": [
+        "cancel the job with no group to end and say so",
+        "scan the executor's children as before"
+      ],
+      "recommendation": "cancel the job with no group to end and say so",
+      "reason": "the old scan is the bug, and the executor's own end of a cancelled job finds the child gone or ends it",
+      "do": {
+        "cancel the job with no group to end and say so": "BG-hz5oyxuu",
+        "scan the executor's children as before": "BG-hz5oyxuu"
+      },
+      "class": "design",
+      "answer": "cancel the job with no group to end and say so",
+      "by": "agent"
+    }
+  ],
   "notes": "Taken into SP-lwkdljxg 2026-11-09: ST-iw7pe3mc shipped parallel serve (3 slots) relying on this fix. The repro only matches group_of's source text; the worker adds a planted behaviour check (two running jobs, cancel one, the other's process group still alive) as the item's check, read from the job record's member pid, and runs it before done.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-61c966d6",
