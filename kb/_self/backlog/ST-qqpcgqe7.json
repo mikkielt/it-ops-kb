@@ -152,7 +152,7 @@
       "agent_session": true
     }
   ],
-  "notes": "Operator, 2026-10-26: lean switch decided now; kb_hook stays on tool calls in unwatched sessions (WebFetch deny, read nudge), only its prompt hook is person-only.",
+  "notes": "Operator, 2026-10-26: lean switch decided now; kb_hook stays on tool calls in unwatched sessions (WebFetch deny, read nudge), only its prompt hook is person-only. Reopened 2026-11-08: lease-measure re-answered 'Read the coord store after the replay' (option 2, under the operator's standing grant) because the in-process coord hook of ST-dmon53is starts no coord.py claim; fix lease_written to read session/<sid> from the replay's own coord store, and fix benchmarks.md:44 and the row note at bench_load.py:1181 that say 'a hook started coord.py claim'. Check 1 stays as it is.",
   "filed_in": "clone-0ea70e5c",
   "operator": "op-f618a13e",
   "evidence": {
