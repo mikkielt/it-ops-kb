@@ -183,10 +183,15 @@ def without_settled(asks, rows, root):
 
 def ask_texts(conn, asks):
     """ASKS ({id, since, ref}) as {id, since, text}: the question of each of the first ASKS_READ read with `coord.py
-    get`, redacted and cut to ASK_CHARS words-wise, "" for the rest and for a question that cannot be read."""
+    get`, redacted and cut to ASK_CHARS words-wise, "" for the rest and for a question that cannot be read. While
+    `redact.known()` is not warm its scan (some seconds) runs in a detached process that saves its file, and no
+    question is read: the panel does not wait for the scan, and the next read finds it warm."""
     import redact
     from mon_status import short_name
-    shown = asks[:ASKS_READ]
+    warm = redact.known_warm()
+    if not warm:
+        redact.warm_known()
+    shown = asks[:ASKS_READ] if warm else []
     got = run_all(conn, {a["id"]: ["get", a["ref"]] for a in shown if a.get("ref")}, strict=False) if shown else {}
     out = []
     for a in asks:

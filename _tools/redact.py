@@ -24,7 +24,7 @@ and DER S-h2cmbqvf, S-dcjdn73r).
 Answers: how a text is redacted to kb placeholders and whether it still leaks an identifier
 Use: python3 _tools/redact.py [--scan] [--root DIR] [FILE]
 """
-import collections, functools, hashlib, ipaddress, json, math, os, re, shutil, sys
+import collections, functools, hashlib, ipaddress, json, math, os, re, shutil, sys, time
 from pathlib import Path
 
 import kbcommon
@@ -190,6 +190,38 @@ def known(root=None):
         k = scan_known([p.read_text(encoding="utf-8", errors="replace") for p in _known_files(base)])
         _known_save(store, key, k)
     return k
+
+
+WARM_HOLD_S = 120  # how long a started warm-up keeps another from starting
+
+
+def known_warm():
+    """True when `known()` of the public root is held in this process or in its file for the current key, so it returns at once."""
+    return bool(known.cache_info().currsize) or _known_load(_known_store(Path(kbcommon.PUBLIC)), known_key()) is not None
+
+
+def warm_known():
+    """Start the scan of `known()` in a detached process that outlives this one, so it ends and saves its file though the
+    caller stops waiting: a caller bound by a time budget (kbmon's panels) asks for it and goes on without the scan. Nothing
+    when it is warm or a warm-up started in the last WARM_HOLD_S seconds; a failure to start is ignored. True if one started."""
+    import subprocess
+    try:
+        if known_warm():
+            return False
+        mark = _known_store(Path(kbcommon.PUBLIC)).with_suffix(".warming")
+        mark.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            if time.time() - mark.stat().st_mtime < WARM_HOLD_S:
+                return False
+        except OSError:
+            pass
+        mark.write_text(str(os.getpid()), encoding="utf-8", newline="\n")
+        flags = {"start_new_session": True} if os.name == "posix" else {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS}
+        subprocess.Popen([sys.executable, str(Path(__file__).resolve())], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                         stderr=subprocess.DEVNULL, **flags)  # no file and no rule: `redact("")` reads known() and saves it
+        return True
+    except (OSError, ValueError):
+        return False
 
 
 # --- the rules ------------------------------------------------------------------------------------------------------
