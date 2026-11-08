@@ -69,6 +69,29 @@
   "relates_to": [
     "BG-vywbweiu"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does rehearse let kbgit.py upstream take the second tag, which kbgit.py fetches only as main of the upstream remote?",
+      "options": [
+        "A bare copy of the upstream whose main is moved from the first tag to the second",
+        "Change kbgit.py upstream to take a --ref tag"
+      ],
+      "recommendation": "A bare copy of the upstream whose main is moved from the first tag to the second",
+      "reason": "the clone's own kbgit.py upstream runs unchanged, as a group runs it",
+      "do": {
+        "A bare copy of the upstream whose main is moved from the first tag to the second": "ST-axz2he4d",
+        "Change kbgit.py upstream to take a --ref tag": "ST-axz2he4d"
+      },
+      "class": "push",
+      "answer": "A bare copy of the upstream whose main is moved from the first tag to the second",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-a796fc75",
   "operator": "op-f618a13e"
