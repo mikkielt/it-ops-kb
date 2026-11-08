@@ -36,9 +36,8 @@ TRIPLE_KEYS = "jobkey/"  # the key of one clone, operation and subject: its valu
 ID_PREFIX = "JB-"
 TERMINAL = frozenset(state for state, moves in coord.JOB_TRANSITIONS.items() if not moves)
 LIVE = frozenset(coord.JOB_STATES) - TERMINAL  # a job in one of these still has a move out: a second submit joins it
-LOG_DIR = "job-logs"  # beside the store: <job id>.log, where an executor writes a job's output
-LOG_TAIL = 8192  # bytes of the log's end `status` returns
-FOLLOW_SECONDS = 60
+LOG_DIR = "kb-jobs"  # in the clone's common git directory: <job id>/output.log, where an executor writes a job's output
+LOG_NAME = "output.log"
 
 
 def resolve_store(root, store):
@@ -152,18 +151,20 @@ def submit(root, op, subject, by, options=None, store=None):
         queue(store, job, have or record)
         have = read_record(store, job) or {}
     seq = latest_seq(store, job)
-    follow = f"python3 _tools/coord.py{' --store ' + store if store != coord.store_of(root) else ''} wait --kind job --item {job} --since {seq} --timeout {FOLLOW_SECONDS}"
+    follow = f"python3 _tools/kbjob.py follow {job}"
     return {"job": job, "state": have.get("state", "none"), "deduped": deduped, "seq": seq, "follow": follow}
 
 
-def log_path(store, job):
-    return Path(store).parent / LOG_DIR / f"{job}.log"
+def log_path(root, job):
+    """The job's output file, kb-jobs/<job id>/output.log under the clone's common git directory (None where ROOT is in no clone)."""
+    store = coord.store_of(root)
+    return Path(store).parent.parent / LOG_DIR / job / LOG_NAME if store else None
 
 
 def status(root, job, since=0, store=None):
-    """{job, state, exit, step, log, events, last} of JOB: the record's state, exit and step (null when it has none), the end of
-    its log file (empty before an executor writes one), its `job` events after sequence SINCE and the newest sequence the
-    store holds (the next SINCE)."""
+    """{job, state, exit, step, log, events, last} of JOB: the record's state, exit and step (null when it has none), the path
+    of its output file (null before the job has run and written it), its `job` events after sequence SINCE and the newest
+    sequence the store holds (the next SINCE)."""
     store = resolve_store(root, store)
     if not coord.FIELD_VALUE.fullmatch(str(job)) or "/" in str(job):
         raise kj_ops.Refusal(f"a job is the id JB- and 8 characters, not {str(job)[:40]!r}")
@@ -177,12 +178,7 @@ def status(root, job, since=0, store=None):
     finally:
         con.close()
     events = [coord.event_json(r) for r in rows if r["kind"] == "job" and json.loads(r["fields"]).get("job") == job]
-    try:
-        with open(log_path(store, job), "rb") as handle:
-            handle.seek(0, os.SEEK_END)
-            handle.seek(max(0, handle.tell() - LOG_TAIL))
-            log = handle.read().decode("utf-8", "replace")
-    except OSError:
-        log = ""
+    path = log_path(root, job)
+    log = str(path) if path is not None and path.is_file() else None
     return {"job": job, "state": record.get("state", "none"), "exit": record.get("exit"), "step": record.get("step"),
             "log": log, "events": events, "last": rows[-1]["seq"] if rows else int(since)}

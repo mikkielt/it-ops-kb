@@ -4,7 +4,7 @@
   kbjob.py [--store PATH] submit OP [SUBJECT] [--by claude-<8 hex>] [--option KEY=VALUE]... [--name CHECK]
                                         queue the operation OP on SUBJECT for this clone and print one JSON object,
                                         {job, state, deduped, seq, follow}: the job is the key job/JB-<8 characters>, its
-                                        state queued, `follow` the `coord.py wait` command that returns on its next move.
+                                        state queued, `follow` the command line `python3 _tools/kbjob.py follow JOB`.
                                         A second submit of the same clone, operation and subject (options aside) while the
                                         job is queued, running, waiting-lock, waiting-merge or lost returns that job with
                                         deduped true, also when submits race (one job); after a terminal state (succeeded,
