@@ -66,7 +66,7 @@ asks and, unasked, for a source past its freshness lifetime):
              at most 25 lines, or with `panel` NAME that panel's JSON through redact.redact; each panel is bound by kbmon's --timeout (10 seconds), and no model is called
   kb_settings  (the team's own server only, as kb_monitor_status) the effective coordination settings of the host project
              (CLAUDE_PROJECT_DIR, else the cwd), like `kbsettings.py explain [KEY] [--kb-root NAME]`: each setting with its
-             value, the file that set it (or default), its meaning and the doc section and the key's bullet that state it; reads the settings
+             value, the layer and file that set it (or default), its meaning and the doc section and the key's bullet that state it; reads the settings
              files and the table of kbsettings.py only, and no model is called
   kb_backlog, kb_querylog, kb_docs  (the team's own server only, as kb_monitor_status) the read-only commands of backlog.py,
              querylog.py (digest, status, show) and selfdoc.py, check.py and rag.py eval (stale, section, map, check, eval) as
@@ -1301,12 +1301,12 @@ MONITOR_HANDLERS = {"kb_monitor_status": kb_monitor_status}
 SETTINGS_TOOL_LIST = [
     {"name": "kb_settings", "title": "Coordination settings",
      "description": "How coordination is set up here (kbsettings.py explain; not kb facts, not live device data): each "
-                    "setting with its value, the file that set it or default, its meaning and the doc section "
+                    "setting with its value, the layer (default, group, clone, root or user) and file that set it, its meaning and the doc section "
                     "and the key's bullet (kb/_self/coordination.md, no line number) that state the rule. Reads the project's settings files only; no "
                     "model call. Use for what a session announces or suggests when another item is working.",
      "inputSchema": {"type": "object", "properties": {
          "key": {"type": "string", "description": "one setting, e.g. strategy.working; left out: all of them"},
-         "kb_root": {"type": "string", "description": "a kb root's name: kb/NAME/settings.json overrides the workspace's"}},
+         "kb_root": {"type": "string", "description": "a kb root's name: kb/NAME/settings.json overrides the group and clone files"}},
          "additionalProperties": False},
      "annotations": {"title": "Coordination settings", **READ_ONLY}},
 ]
