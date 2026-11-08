@@ -54,7 +54,7 @@ and a topic by `<root>/<topic>`.
                               `private-id`, `private-host`, `private-path` kinds; leak_hits adds them)
 
 A remote root, one kept in another repository, is named by a pointer file kb/_roots/<name>.md (front matter `root`,
-`id_prefix`, `visibility`, `team`, `url`, `ref`, `pin`, `access`, `description`). Its root is served when it is on
+`id_prefix`, `visibility`, `team`, `group`, `url`, `ref`, `pin`, `access`, `description`). Its root is served when it is on
 disk (access `submodule`: kb/<name>/; `fetch`: _cache/roots/<name>/, or ${CLAUDE_PLUGIN_DATA}/roots/<name>/ when this
 copy runs as the plugin, filled by `kbroot.py fetch`) with a ROOT_FILE that agrees with the pointer;
 otherwise it is listed by missing_roots() and the tools go on with the roots they have, never failing for it.
@@ -117,6 +117,7 @@ REUSE = {
     "unknown": "the terms could not be read or determined: treated as paraphrase",
 }
 TEAM = re.compile(r"[a-z0-9][a-z0-9-]*")  # a root's optional `team`: a lowercase name, like a root's name
+GROUP_PATH = re.compile(r"(?:(?!\.+(?:/|$))[A-Za-z0-9_.-]+)(?:/(?!\.+(?:/|$))[A-Za-z0-9_.-]+)*")  # a pointer's `group`: the owning group's path of ids G1/.../GN
 PREFIX = re.compile(r"[A-Z]{1,4}")  # a root's source id prefix: its ids are <prefix>-<8 base32 chars>
 RESERVED_PREFIXES = {"DOC", "CODE", "DER", "UNK", "QK", "EV", "PL", "D", "L"}  # tag kinds, answer, eval, decision and log ids, placeholders
 RESERVED_FOR = {"D": "decision ids", "L": "log row ids"}  # the one-letter reserved prefixes and whose ids they are
@@ -466,6 +467,7 @@ class Root(NamedTuple):
     languages: tuple = DEFAULT_LANGUAGES  # the language codes of its text (`languages` in ROOT_FILE), the first one primary
     evidence: Optional[dict] = None  # {'answer': [...], 'lead': [...]} tag kinds of its `evidence` policy; None: sets none
     placeholders: tuple = ()  # user names its files and redact take as placeholders (`placeholders` in ROOT_FILE)
+    group: str = ""  # the owning group's path G1/.../GN: its pointer's `group`, else its `team` read as a group one level deep; '' when it names none
 
 
 class RootError(Exception):
@@ -600,7 +602,7 @@ def load_root(path):
     if team and not TEAM.fullmatch(team):
         raise RootError(f"{path}/{ROOT_FILE}: `team` must be a lowercase name (a-z, 0-9, -), got {team!r}")
     return Root(name, path, prefix, vis, meta.get("description", ""), team, _languages(path, meta.get("languages", "")),
-                _evidence(path, meta.get("evidence", "")), _placeholders(path, meta.get("placeholders", "")))
+                _evidence(path, meta.get("evidence", "")), _placeholders(path, meta.get("placeholders", "")), team)
 
 
 class Pointer(NamedTuple):
@@ -610,6 +612,7 @@ class Pointer(NamedTuple):
     id_prefix: str
     visibility: str
     team: str
+    group: str  # the owning group's path as written ('' when the pointer names none; pointer_group reads a bare `team` as one)
     url: str
     ref: str  # a branch ('' follows the remote's default branch)
     pin: str  # a commit ('' follows ref)
@@ -627,6 +630,7 @@ class MissingRoot(NamedTuple):
     path: str  # the pointer file
     reason: str
     defect: bool  # the pointer or the root is wrong (check.py reports it), not just absent on disk
+    group: str = ""  # the pointer's owning group path (pointer_group); '' when it names none
 
 
 def _pointer_files():
@@ -650,10 +654,15 @@ def url_holds_credential(url):
     return ":" in userinfo or (m.group(1).lower() in ("http", "https") and bool(userinfo))
 
 
+def pointer_group(p):
+    """The owning group path of Pointer `p`: its `group`, else its `team` read as a group one level deep, '' when it names neither."""
+    return p.group or p.team
+
+
 def pointer_problems(path):
     """What is wrong with the pointer file at `path`, one message each ([] when it is sound; it never raises):
     unreadable, no front matter, a `root` that is not the file's name, a bad or reserved `id_prefix`, a `visibility`
-    other than public or internal, a `team` that is no lowercase name, a `url` missing or holding a credential
+    other than public or internal, a `team` that is no lowercase name, a `group` that is no path of ids (GROUP_PATH), a `url` missing or holding a credential
     (url_holds_credential; the message never repeats the url), an `access` other than submodule or fetch, a `pin`
     that is no commit hash."""
     try:
@@ -686,6 +695,8 @@ def pointer_problems(path):
         out.append(f"`access` must be {' or '.join(ACCESS)}, got {access!r}")
     if meta.get("team") and not TEAM.fullmatch(meta["team"]):
         out.append(f"malformed pointer: `team` must be a lowercase name (a-z, 0-9, -), got {meta['team']!r}")
+    if meta.get("group") and not GROUP_PATH.fullmatch(meta["group"]):
+        out.append(f"malformed pointer: `group` must be a path of ids, G1/.../GN with letters, digits, `_`, `.` and `-` in each, got {meta['group']!r}")
     if meta.get("pin") and not re.fullmatch(r"[0-9a-f]{7,40}", meta["pin"]):
         out.append(f"malformed pointer: `pin` must be a commit hash (7-40 hex digits) or empty, got {meta['pin']!r}")
     return out
@@ -698,7 +709,7 @@ def read_pointer(path):
         raise RootError(f"{os.path.relpath(path, HOME)}: {'; '.join(problems)}")
     with open(path, encoding="utf-8") as f:
         m = _meta(f.read())
-    return Pointer(m["root"], m["id_prefix"], m.get("visibility", "internal"), m.get("team", ""), m["url"],
+    return Pointer(m["root"], m["id_prefix"], m.get("visibility", "internal"), m.get("team", ""), m.get("group", ""), m["url"],
                    m.get("ref", ""), m.get("pin", ""), m["access"], m.get("description", ""), path)
 
 
@@ -764,7 +775,7 @@ def _resolve_pointer(p):
         diff.append(f"team {r.team!r} in the root, {p.team!r} in the pointer")
     if diff:
         return None, f"the pointer and the root at {where} disagree: {'; '.join(diff)}", True
-    return r._replace(team=r.team or p.team), "", False
+    return r._replace(team=r.team or p.team, group=p.group or r.group or p.team), "", False
 
 
 _ROOTS = []  # every root, loaded once
@@ -812,13 +823,13 @@ def _load():
         clash = [f"{what} {key!r} is already the {what} of root {holder[what, key]}"
                  for seen, key, what in ((names, p.name, "name"), (prefixes, p.id_prefix, "id_prefix")) if key in seen]
         if clash:
-            missing.append(MissingRoot(p.name, p.id_prefix, p.visibility, p.access, p.path, "; ".join(clash), True))
+            missing.append(MissingRoot(p.name, p.id_prefix, p.visibility, p.access, p.path, "; ".join(clash), True, pointer_group(p)))
             continue
         names[p.name] = prefixes[p.id_prefix] = p.path
         holder["name", p.name] = holder["id_prefix", p.id_prefix] = p.name
         r, reason, defect = _resolve_pointer(p)
         if r is None:
-            missing.append(MissingRoot(p.name, p.id_prefix, p.visibility, p.access, p.path, reason, defect))
+            missing.append(MissingRoot(p.name, p.id_prefix, p.visibility, p.access, p.path, reason, defect, pointer_group(p)))
         else:
             out.append(r)
     _MISSING[:] = sorted(missing, key=lambda m: m.name)

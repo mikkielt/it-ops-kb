@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """The kb's roots (stdlib only): list them, add one beside kb/public, or keep one from another repository.
 
-  kbroot.py list                         name, id prefix, visibility, team (when it names one), articles, sources and path of every root, then a
+  kbroot.py list                         name, id prefix, visibility, team and group (when it names one; a bare team is read as the group of that name), articles, sources and path of every root, then a
                                          row `missing` with its reason for each pointer whose root is not here
-  kbroot.py add-remote NAME --url URL --prefix P --team T [--visibility internal|public] [--ref BRANCH]
+  kbroot.py add-remote NAME --url URL --prefix P --team T [--group G1/.../GN] [--visibility internal|public] [--ref BRANCH]
                         [--access fetch|submodule] [--description TEXT]
-                                         write the pointer file kb/_roots/NAME.md (no `pin`; `ref` empty follows the
+                                         write the pointer file kb/_roots/NAME.md (`group` only when given; no `pin`; `ref` empty follows the
                                          remote's default branch); `submodule` access also runs `git submodule add` at
                                          kb/NAME (a failure removes the pointer again, exit 1)
   kbroot.py fetch [--pin] [NAME ...]     clone or update each fetch root (all, or those named) into _cache/roots/NAME/
@@ -98,11 +98,12 @@ def cmd_list():
         except kbcommon.CsvError:
             n_src = 0
         where = os.path.relpath(r.path, kbcommon.HOME) if r.path.startswith(kbcommon.HOME + os.sep) else r.path
-        team = f"\tteam={r.team}" if r.team else ""
+        team = (f"\tteam={r.team}" if r.team else "") + (f"\tgroup={r.group}" if r.group else "")
         print(f"{r.name}\tprefix={r.id_prefix}\t{r.visibility}{team}\tarticles={n_art}\tsources={n_src}\t{where}")
     missing = kbcommon.missing_roots()
     for m in missing:
-        print(f"{m.name}\tprefix={m.id_prefix or '?'}\t{m.visibility or '?'}\tmissing\t{m.reason}\t{os.path.relpath(m.path, kbcommon.HOME)}")
+        grp = f"group={m.group}\t" if m.group else ""
+        print(f"{m.name}\tprefix={m.id_prefix or '?'}\t{m.visibility or '?'}\t{grp}missing\t{m.reason}\t{os.path.relpath(m.path, kbcommon.HOME)}")
     print(f"roots={len(roots)}" + (f" missing={len(missing)}" if missing else ""))
     return 0
 
@@ -155,8 +156,9 @@ def cmd_add(a):
     return 0
 
 
-def pointer_md(name, prefix, visibility, team, url, ref, access, description):
-    return (f"---\nroot: {name}\nid_prefix: {prefix}\nvisibility: {visibility}\nteam: {team}\nurl: {url}\nref: {ref}\n"
+def pointer_md(name, prefix, visibility, team, url, ref, access, description, group=""):
+    return (f"---\nroot: {name}\nid_prefix: {prefix}\nvisibility: {visibility}\nteam: {team}\n" + (f"group: {group}\n" if group else "")
+            + f"url: {url}\nref: {ref}\n"
             f"pin: \naccess: {access}\ndescription: {description}\n---\n\n"
             f"# {name}\n\n{description or 'A root kept in its own repository.'}\n")
 
@@ -172,6 +174,11 @@ def cmd_add_remote(a):
     if not kbcommon.PREFIX.fullmatch(prefix) or prefix in kbcommon.RESERVED_PREFIXES:
         print(f"refused: id prefix {prefix!r} must be 1-4 capital letters, not one of "
               f"{', '.join(sorted(kbcommon.RESERVED_PREFIXES))}")
+        return 2
+    group = (a.group or "").strip()
+    if group and not kbcommon.GROUP_PATH.fullmatch(group):
+        print(f"refused: pointer kb/{kbcommon.POINTERS_DIR}/{name}.md: group {group!r} must be a path of ids, G1/.../GN with "
+              f"letters, digits, `_`, `.` and `-` in each")
         return 2
     for what, v, required in (("url", a.url, True), ("team", a.team, True), ("ref", a.ref, False),
                               ("description", a.description, False)):
@@ -200,7 +207,7 @@ def cmd_add_remote(a):
     os.makedirs(d, exist_ok=True)
     with open(path, "w", encoding="utf-8", newline="\n") as f:
         f.write(pointer_md(name, prefix, a.visibility, a.team.strip(), a.url.strip(), a.ref.strip(), a.access,
-                           " ".join(a.description.split())))
+                           " ".join(a.description.split()), group))
     problems = kbcommon.pointer_problems(path)
     if problems:
         os.remove(path)
@@ -601,6 +608,8 @@ def main():
     ar.add_argument("--url", required=True, help="the root's repository")
     ar.add_argument("--prefix", required=True, help="the root's source id prefix: 1-4 capital letters")
     ar.add_argument("--team", required=True, help="the team that owns the root")
+    ar.add_argument("--group", default="", help="the owning group's path G1/.../GN (letters, digits, `_ . -` per level); "
+                    "a pointer with only --team is read as the group of that name, one level deep")
     ar.add_argument("--visibility", choices=("internal", "public"), default="internal")
     ar.add_argument("--ref", default="", help="a branch (default: the remote's default branch)")
     ar.add_argument("--access", choices=kbcommon.ACCESS, default="fetch")
