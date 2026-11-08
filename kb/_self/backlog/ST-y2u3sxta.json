@@ -2,7 +2,7 @@
   "id": "ST-y2u3sxta",
   "kind": "story",
   "title": "kbext.py surface prints the versioned extension API from code, and selfdoc check fails when extending.md's table and the code disagree",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-y7fe7qqx",
   "sprint": "SP-ep7ck2ab",
   "priority": "P2",
@@ -62,5 +62,7 @@
     "ST-xdircstf"
   ],
   "notes": "Everything not in kbext.SURFACE is internal: extending.md says so in its first lines. The registry names every planned point up front, so the point stories implement a contract that already exists.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-a796fc75",
+  "operator": "op-f618a13e"
 }
