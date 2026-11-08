@@ -1,0 +1,26 @@
+{
+  "id": "BG-v55f3dlq",
+  "kind": "bug",
+  "title": "The leak_scan extension point still declares file_hits without the root parameter that kbpublic now passes",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kbext's leak_scan point declares file_hits(path, text, allow, pinned=(), root=None) and its sample takes the root, matching kbpublic.file_hits",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,inspect;sys.path.insert(0,'_tools');import kbpublic;t=open('_tools/kbext.py').read();p=list(inspect.signature(kbpublic.file_hits).parameters);assert 'root' not in p or 'root' in t[t.find('leak_scan'):t.find('leak_scan')+800],'kbext leak_scan point declares no root while file_hits takes %s'%p"
+    ]
+  },
+  "repro_reason": "nothing wires the extension point yet, so the declared signature can only be compared with the function's",
+  "touches": [
+    "_tools/kbext.py"
+  ],
+  "links": [
+    "parked: SP-n7zxspch review"
+  ],
+  "notes": "Review note (S4) of SP-n7zxspch. kbext.py:130 declares file_hits(path, text, allow, pinned=()); BG-r57wg5tg added root=None, and kbpublic passes it positionally at :644, :713 and :762. Nothing wires the point yet.",
+  "filed_in": "clone-0ea70e5c"
+}

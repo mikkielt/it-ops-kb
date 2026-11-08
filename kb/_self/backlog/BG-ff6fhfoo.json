@@ -1,0 +1,27 @@
+{
+  "id": "BG-ff6fhfoo",
+  "kind": "bug",
+  "title": "kbgit.py contribute holds back only roots that say visibility: internal while publish refuses every root that does not say public",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kg_contrib.internal_dirs holds back every root and pointer that does not say visibility: public, as publish's tree refusal does; its docstring and the git.md contribute paragraph state that rule; its leak scan passes each file's root to file_hits",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('_tools/kg_contrib.py').read();sys.exit('contribute holds back only visibility == internal' if chr(61)*2+' '+chr(34)+'internal'+chr(34) in t else 0)"
+    ]
+  },
+  "repro_reason": "internal_dirs needs a scratch repository with a contribute upstream; the comparison it makes is the literal == internal test in its source",
+  "touches": [
+    "_tools/kg_contrib.py",
+    "kb/_self/git.md"
+  ],
+  "links": [
+    "parked: SP-n7zxspch review"
+  ],
+  "notes": "Review gap G3 of SP-n7zxspch. kg_contrib.py:69 and :71 test == internal; the docstring at :51-53 claims it reads them as tree_refusals does, which is false since BG-2iqdafwm. git.md:116 repeats visibility: internal. kg_contrib.py:95 calls file_hits(x, added, allow, pinned) with no root, so a listed placeholder still refuses there (S4, stricter only). Fix: kbpublic.not_public in both lines.",
+  "filed_in": "clone-0ea70e5c"
+}

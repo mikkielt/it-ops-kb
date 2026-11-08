@@ -1,0 +1,26 @@
+{
+  "id": "BG-dt5kyiui",
+  "kind": "bug",
+  "title": "kbingest's pattern-row guard accepts overlapping quantifiers split by a fixed atom or over classes outside its probe alphabet, and the file timeout cannot stop one slow line",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The pattern-row guard refuses a rules row whose variable-width atoms overlap across a fixed atom and over any Unicode class (not only chr(0) to chr(0x2ff)); one pattern-mapped line cannot run past PATTERN_FILE_TIMEOUT_S, or tools.md states the bound as per line",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kbingest as k;rows=[r'\\w+.\\w+.\\w+(?P<name>y)',chr(91)+chr(0x430)+'-'+chr(0x44f)+chr(93)+'+'+chr(91)+chr(0x430)+'-'+chr(0x44f)+chr(93)+'+(?P<name>y)'];bad=[p for p in rows if k.rule_row({'language':'lua','role':'def','kind':'function','pattern':p},1,'sensitive')[0] is not None];assert not bad,'guard accepts %r'%bad"
+    ]
+  },
+  "touches": [
+    "_tools/kbingest.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-n7zxspch review"
+  ],
+  "notes": "Review gap G4 of SP-n7zxspch. kbingest.py:1759 PATTERN_PROBE spans chr(0) to chr(0x2ff), so a class outside it compares as empty: [a-ya Cyrillic]+[same]+ passes the guard and takes about 0.4 s on 990 letters. kbingest.py:1764 adjacent_overlap stops at a fixed atom: \\w+.\\w+.\\w+ is accepted, is cubic, and takes 7 s on a 400-letter line. kbingest.py:2009 reads the clock once per line (gate g1 of BG-76mclha4), so the file timeout does not bound a slow line, while tools.md says a file stops after 10 seconds. Never run these regexes on 1000 characters in a check.",
+  "filed_in": "clone-0ea70e5c"
+}

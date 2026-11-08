@@ -1,0 +1,25 @@
+{
+  "id": "BG-v6h6rhfk",
+  "kind": "bug",
+  "title": "A _root.md or pointer that is not valid UTF-8 passes publish's tree refusal and the sync range gate, since blobs() drops undecodable files",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "An unreadable _root.md or pointer counts as not public in tree_refusals, history_refusals and internal_prefixes, and the tree cause says it could not be read",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,os,subprocess as s,tempfile;sys.path.insert(0,'_tools');import kbpublic as k;d=tempfile.mkdtemp();g=lambda *a:s.run(['git','-C',d,*a],check=True,capture_output=True);g('init','-q');os.makedirs(d+'/kb/team');open(d+'/kb/team/_root.md','wb').write(b'---\\nroot: team\\nid_prefix: T\\nvisibility: internal\\ndescription: x\\xb3\\n---\\n');open(d+'/kb/team/a.md','w').write('x\\n');g('add','-A');g('-c','user.name=t','-c','user.email=t'+chr(64)+'example.com','commit','-qm','t');assert k.tree_refusals('HEAD',k.tree_files('HEAD',d),d),'a _root.md that is not UTF-8 passes publish tree refusal'"
+    ]
+  },
+  "touches": [
+    "_tools/kbpublic.py"
+  ],
+  "links": [
+    "parked: SP-n7zxspch review"
+  ],
+  "notes": "Review gap G2 of SP-n7zxspch. kbpublic.py:510-512 and :515-518 read through blobs()/texts() (:454-457), which drop undecodable blobs; history_refusals :860-866 and :879-882 and internal_prefixes :620-623 do the same. A cp1250 byte in a Polish description is enough. kbcommon.load_root raises UnicodeDecodeError on such a file (not RootError), so other tools fail on it while publish and sync pass it.",
+  "filed_in": "clone-0ea70e5c"
+}

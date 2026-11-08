@@ -1,0 +1,26 @@
+{
+  "id": "BG-thhbfbx4",
+  "kind": "bug",
+  "title": "Publish refuses the tracked fixture roots under _tools/fixtures for good while sync never checks tree causes, so three commits since the last publish block it",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "Sync and publish agree on tree causes: the fixture roots under _tools/fixtures that say visibility: internal either leave publish's projection or stop counting as internal roots, sync reports any tree cause publish would give, and publish passes the range since refs/kb/published",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kbpublic as k;n=len(k.tree_refusals('HEAD',k.tree_files('HEAD','.'),'.'));assert n==0,'publish tree refusal holds %d cause(s) at HEAD that sync never reports'%n"
+    ]
+  },
+  "touches": [
+    "_tools/kbpublic.py",
+    "_tools/kg_sync.py"
+  ],
+  "links": [
+    "parked: SP-n7zxspch review"
+  ],
+  "notes": "Review gap G1 of SP-n7zxspch (S2). Not introduced by the sprint: the old == internal test already refused these roots. Eleven tracked _tools/fixtures/{evidence,lang,placeholders}/*/_root.md say visibility: internal. Commits e184c36f0b, bf104a9dfc and 120bfd99fc (2026-10-28) write under them after refs/kb/published (2026-10-27), so publish refuses that range for good whatever HEAD holds. kg_sync.py:842 runs range_leaks only (leak causes), never the tree check, so sync passes them. Code: kbpublic.py:500-524 tree_refusals, :894-905 the under causes. Fix options: drop _tools/fixtures from the projection, or make sync report tree causes too. The operator decides how publish handles the existing range.",
+  "filed_in": "clone-0ea70e5c"
+}
