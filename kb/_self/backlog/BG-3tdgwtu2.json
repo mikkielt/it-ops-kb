@@ -2,7 +2,8 @@
   "id": "BG-3tdgwtu2",
   "kind": "bug",
   "title": "kbjob.py serve stops with a refusal when a running job was cancelled meanwhile, since run_job's final move finds a terminal job",
-  "status": "draft",
+  "status": "todo",
+  "sprint": "SP-lwkdljxg",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -14,5 +15,9 @@
       "import sys,os,tempfile,time,subprocess,threading,io; sys.path.insert(0,\"_tools\"); from argparse import Namespace; from pathlib import Path; import coord,kj_store,kj_exec; d=tempfile.mkdtemp(); s=os.path.join(d,\"c.sqlite\"); j=kj_store.submit(\".\",\"check\",\"\",None,{\"name\":\"backlog-check\"},store=s)[\"job\"]; mv=lambda to: coord.job_transition(Namespace(key=\"job/\"+j,to=to,field=[],store=s),time.time); mv(\"running\"); log=Path(d)/\"output.log\"; log.write_bytes(b\"\"); kj_exec.start_child=lambda r,c,p: (subprocess.Popen([sys.executable,\"-c\",\"import time; time.sleep(1)\"]),0); threading.Timer(0.3,lambda: mv(\"cancelled\")).start(); kj_exec.run_job(s,j,kj_store.read_record(s,j),\".\",log,\"t\",io.StringIO())"
     ]
   },
+  "touches": [
+    "_tools/kj_exec.py",
+    "kb/_self/coordination.md"
+  ],
   "filed_in": "clone-0ea70e5c"
 }
