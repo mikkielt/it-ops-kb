@@ -131,7 +131,12 @@
         "Keep the words 'internal root' and add the value found or 'has no visibility line' in the parenthesis": "BG-2iqdafwm",
         "Reword the cause to 'non-public root' (the publish end-to-end test reads the old words and would need an edit outside the touches)": "BG-2iqdafwm"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "Keep the words 'internal root' and add the value found or 'has no visibility line' in the parenthesis",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "links": [
