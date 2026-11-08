@@ -7,13 +7,20 @@
   "sprint": "SP-ep7ck2ab",
   "priority": "P2",
   "rank": 0,
-  "goal": "When the settings layers name extensions.ranker, kbfacts.pack calls it as rank(question, candidates) with the candidate articles' qualified paths and fuses the list it returns as one more expert through kbfacts.rrf; a path it returns that is no candidate is dropped, and an exception or a non-list answer leaves the pack as without it and prints one stderr line naming the point. With no ranker set the pack's bytes and rag.py eval's results do not change. extending.md gives the ranker point's signature and the fusion rule.",
+  "goal": "kbfacts.pack calls the ranker extensions.ranker names as rank(question, candidates) with the candidate articles' qualified paths; kbfacts.rrf fuses the list it returns as one more expert so an article it puts first ranks no lower than without it; a path it returns that is no candidate is dropped; an exception or an answer that is no list leaves the pack as without a ranker and prints one stderr line naming the point; with no ranker set rag.py eval's held-out results are unchanged",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "\nimport json,os,subprocess,sys,tempfile,pathlib\nd=pathlib.Path(tempfile.mkdtemp()); e=d/\"ext\"; e.mkdir(); m=d/\"seen.json\"\n(e/\"grp_rank.py\").write_text(\"import json, os\\nKBEXT_REQUIRES = \\\">=1.0,<2\\\"\\ndef rank(question, candidates):\\n    open(os.environ[\\\"GRP_SEEN\\\"], \\\"w\\\", encoding=\\\"utf-8\\\").write(json.dumps(list(candidates)))\\n    return list(reversed(list(candidates)))\\ndef broken(question, candidates):\\n    raise RuntimeError(\\\"planted\\\")\\n\",encoding=\"utf-8\")\ng=d/\"group.json\"; q=\"plugin marketplace install scope settings precedence\"\ns=lambda f: g.write_text(json.dumps({\"extensions\":{\"ranker\":f},\"extension_paths\":[str(e)]}),encoding=\"utf-8\")\np=lambda env: subprocess.run([sys.executable,\"_tools/rag.py\",\"pack\",q],capture_output=True,text=True,env=dict(os.environ,GRP_SEEN=str(m),**env))\nbase=p({}); s(\"grp_rank:rank\"); a=p({\"KB_GROUP_SETTINGS\":str(g)})\nassert a.returncode==0 and m.exists() and any(c.startswith(\"public/\") for c in json.loads(m.read_text(encoding=\"utf-8\"))), (a.stderr,m.exists())\ns(\"grp_rank:broken\"); b=p({\"KB_GROUP_SETTINGS\":str(g)})\nstrip=lambda t: [l for l in t.splitlines() if not l.startswith((\"pack: \",\"revalidate\"))]\nassert b.returncode==0 and strip(b.stdout)==strip(base.stdout) and \"ranker\" in b.stderr, (b.stderr,)\n"
+        "import json,os,subprocess,sys,tempfile,pathlib,inspect\nT=pathlib.Path(tempfile.mkdtemp())\ndef W(p,v):\n    p=pathlib.Path(p); p.parent.mkdir(parents=True,exist_ok=True); p.write_text(v if isinstance(v,str) else json.dumps(v),encoding=\"utf-8\"); return p\ndef R(*a,env=None,cwd=None,inp=None):\n    return subprocess.run([sys.executable,*a],capture_output=True,text=True,env=dict(os.environ,**(env or {})),cwd=cwd,input=inp,timeout=900)\ndef need(c,m):\n    if not c: sys.exit(\"not yet: \"+str(m)[:1500])\ndef git(d,*a):\n    return subprocess.run([\"git\",\"-C\",str(d),*a],capture_output=True,text=True,check=True)\ndef repo(d):\n    d=pathlib.Path(d); d.mkdir(parents=True,exist_ok=True); git(d,\"init\",\"-q\",\"-b\",\"main\"); git(d,\"config\",\"user.name\",\"t\"); git(d,\"config\",\"user.email\",\"t@corp.example.com\"); return d\ndef mod(name):\n    sys.path.insert(0,\"_tools\")\n    try: return __import__(name)\n    except ImportError as x: sys.exit(\"not yet: \"+str(x))\ndef EXT(body):\n    return 'KBEXT_REQUIRES = \">=1.0,<2\"\\n'+body\n\ne=T/\"ext\"; m=T/\"seen.json\"\nW(e/\"grp_rank.py\",EXT(\"import json, os\\ndef rank(question, candidates):\\n    c = list(candidates)\\n    open(os.environ['GRP_SEEN'], 'w', encoding='utf-8').write(json.dumps(c))\\n    return [c[-1], 'public/none/missing.md'] + c[:-1] if c else c\\ndef broken(question, candidates):\\n    raise RuntimeError('planted')\\ndef odd(question, candidates):\\n    return 5\\n\"))\ng=T/\"g.json\"; q=\"plugin marketplace install scope settings precedence\"\ns=lambda f: W(g,{\"extensions\":{\"ranker\":f},\"extension_paths\":[str(e)]})\np=lambda env: R(\"_tools/rag.py\",\"pack\",q,env=dict(env,GRP_SEEN=str(m)))\nbase=p({})\n\ns(\"grp_rank:rank\"); a=p({\"KB_GROUP_SETTINGS\":str(g)})\nneed(a.returncode==0 and m.exists(), (a.stderr,m.exists()))\nc=json.loads(m.read_text(encoding=\"utf-8\")); need(c and all(\"/\" in x for x in c), c)\nheads=lambda out: [l.split()[1] for l in out.splitlines() if l.startswith(\"## \")]\nhb,ha=heads(base.stdout),heads(a.stdout)\nneed(\"public/none/missing.md\" not in a.stdout, \"an unknown path was printed\")\nlast=c[-1]; need(last not in hb or (last in ha and ha.index(last)<=hb.index(last)), (last,hb,ha))\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess,sys,tempfile,pathlib,inspect\nT=pathlib.Path(tempfile.mkdtemp())\ndef W(p,v):\n    p=pathlib.Path(p); p.parent.mkdir(parents=True,exist_ok=True); p.write_text(v if isinstance(v,str) else json.dumps(v),encoding=\"utf-8\"); return p\ndef R(*a,env=None,cwd=None,inp=None):\n    return subprocess.run([sys.executable,*a],capture_output=True,text=True,env=dict(os.environ,**(env or {})),cwd=cwd,input=inp,timeout=900)\ndef need(c,m):\n    if not c: sys.exit(\"not yet: \"+str(m)[:1500])\ndef git(d,*a):\n    return subprocess.run([\"git\",\"-C\",str(d),*a],capture_output=True,text=True,check=True)\ndef repo(d):\n    d=pathlib.Path(d); d.mkdir(parents=True,exist_ok=True); git(d,\"init\",\"-q\",\"-b\",\"main\"); git(d,\"config\",\"user.name\",\"t\"); git(d,\"config\",\"user.email\",\"t@corp.example.com\"); return d\ndef mod(name):\n    sys.path.insert(0,\"_tools\")\n    try: return __import__(name)\n    except ImportError as x: sys.exit(\"not yet: \"+str(x))\ndef EXT(body):\n    return 'KBEXT_REQUIRES = \">=1.0,<2\"\\n'+body\n\ne=T/\"ext\"; m=T/\"seen.json\"\nW(e/\"grp_rank.py\",EXT(\"import json, os\\ndef rank(question, candidates):\\n    c = list(candidates)\\n    open(os.environ['GRP_SEEN'], 'w', encoding='utf-8').write(json.dumps(c))\\n    return [c[-1], 'public/none/missing.md'] + c[:-1] if c else c\\ndef broken(question, candidates):\\n    raise RuntimeError('planted')\\ndef odd(question, candidates):\\n    return 5\\n\"))\ng=T/\"g.json\"; q=\"plugin marketplace install scope settings precedence\"\ns=lambda f: W(g,{\"extensions\":{\"ranker\":f},\"extension_paths\":[str(e)]})\np=lambda env: R(\"_tools/rag.py\",\"pack\",q,env=dict(env,GRP_SEEN=str(m)))\nbase=p({})\n\nstrip=lambda t: [l for l in t.splitlines() if not l.startswith((\"pack: \",\"revalidate\"))]\nfor f in (\"grp_rank:broken\",\"grp_rank:odd\"):\n    s(f); b=p({\"KB_GROUP_SETTINGS\":str(g)})\n    need(b.returncode==0 and strip(b.stdout)==strip(base.stdout) and \"ranker\" in b.stderr, (f,b.stderr))\n"
       ]
     },
     {
@@ -32,15 +39,41 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "kbfacts.pack calls the ranker extensions.ranker names as rank(question, candidates) with the candidate articles' qualified paths",
+      "check": 0
+    },
+    {
+      "clause": "kbfacts.rrf fuses the list it returns as one more expert so an article it puts first ranks no lower than without it",
+      "check": 0
+    },
+    {
+      "clause": "a path it returns that is no candidate is dropped",
+      "check": 0
+    },
+    {
+      "clause": "an exception or an answer that is no list leaves the pack as without a ranker and prints one stderr line naming the point",
+      "check": 1
+    },
+    {
+      "clause": "with no ranker set rag.py eval's held-out results are unchanged",
+      "check": 2
+    }
+  ],
   "touches": [
     "_tools/kf_index.py",
     "_tools/kbfacts.py",
     "kb/_self/tools.md",
-    "kb/_self/extending.md"
+    "kb/_self/extending.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/token-efficiency.md",
+    "_tools/kf_route.py"
   ],
   "depends_on": [
     "ST-xdircstf",
     "ST-y2u3sxta"
   ],
+  "notes": "Check 2 (the held-out eval) passes before the work: with no ranker set the pack must rank as it does now.",
   "filed_in": "clone-0ea70e5c"
 }

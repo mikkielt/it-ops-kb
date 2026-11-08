@@ -7,14 +7,66 @@
   "sprint": "SP-ep7ck2ab",
   "priority": "P2",
   "rank": 0,
-  "goal": "_tools/kbext.py (standard library only) holds API_VERSION and load(point, root): it reads extensions.<point> as module:attr from kbsettings.effective, puts each extension_paths directory (relative to the file that named it) on sys.path, and else takes the one entry point of group it_ops_kb.<point> from importlib.metadata.entry_points(group=...); a module's KBEXT_REQUIRES (a comma list of >=, <, == bounds on MAJOR.MINOR) must hold API_VERSION. kbext.py resolve POINT --root WS prints the point, module:attr, the layer and file that named it, exit 0; a missing module or attribute, two entry points for one point, or a version outside KBEXT_REQUIRES exits 2 with one line naming the point, the module and the layer. kbext.py call POINT --root WS --json ARGS calls the extender and prints its result as JSON.",
+  "goal": "_tools/kbext.py holds API_VERSION and load(point, root) with the standard library only; load reads extensions.<point> from kbsettings.layered as module:attr or as a module; each extension_paths directory is taken relative to the file that names it and put on sys.path; with no setting load takes the one entry point of group it_ops_kb.<point> from importlib.metadata.entry_points; a module's KBEXT_REQUIRES holds lower and upper bounds on MAJOR.MINOR that API_VERSION must meet; kbext.py resolve POINT --root WS prints the point, the module:attr, the layer and its file, exit 0; kbext.py call POINT --root WS --json ARGS calls the extender with the JSON list as its arguments and prints its answer as JSON; a missing module, a missing attribute or a version outside KBEXT_REQUIRES exits 2 with one line naming the point, the module and the layer; two entry points for one point exit 2 naming both distributions",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "\nimport json,subprocess,sys,tempfile,pathlib\nd=pathlib.Path(tempfile.mkdtemp()); e=d/\"ext\"; e.mkdir()\n(e/\"grp_lane.py\").write_text(\"KBEXT_REQUIRES = \\\">=1.0,<2\\\"\\ndef path_lane(path):\\n    return \\\"code\\\" if path.endswith(\\\".py\\\") else \\\"content\\\"\\n\",encoding=\"utf-8\")\n(e/\"grp_bad.py\").write_text(\"KBEXT_REQUIRES = \\\">=99\\\"\\ndef path_lane(path):\\n    return \\\"content\\\"\\n\",encoding=\"utf-8\")\ns=lambda m: (d/\"settings.json\").write_text(json.dumps({\"extensions\":{\"lane\":m},\"extension_paths\":[\"ext\"]}),encoding=\"utf-8\")\nk=lambda *a: subprocess.run([sys.executable,\"_tools/kbext.py\",*a,\"--root\",str(d)],capture_output=True,text=True)\ns(\"grp_lane:path_lane\"); r=k(\"resolve\",\"lane\"); assert r.returncode==0 and \"grp_lane:path_lane\" in r.stdout and \"clone\" in r.stdout, (r.stdout,r.stderr)\nr=k(\"call\",\"lane\",\"--json\",json.dumps([\"_tools/x.py\"])); assert r.returncode==0 and json.loads(r.stdout)==\"code\", (r.stdout,r.stderr)\ns(\"grp_bad:path_lane\"); r=k(\"resolve\",\"lane\"); assert r.returncode==2 and \"lane\" in r.stderr and \"grp_bad\" in r.stderr, (r.returncode,r.stderr)\ns(\"grp_none:path_lane\"); r=k(\"resolve\",\"lane\"); assert r.returncode==2 and \"grp_none\" in r.stderr, (r.returncode,r.stderr)\n"
+        "import json,os,subprocess,sys,tempfile,pathlib,inspect\nT=pathlib.Path(tempfile.mkdtemp())\ndef W(p,v):\n    p=pathlib.Path(p); p.parent.mkdir(parents=True,exist_ok=True); p.write_text(v if isinstance(v,str) else json.dumps(v),encoding=\"utf-8\"); return p\ndef R(*a,env=None,cwd=None,inp=None):\n    return subprocess.run([sys.executable,*a],capture_output=True,text=True,env=dict(os.environ,**(env or {})),cwd=cwd,input=inp,timeout=900)\ndef need(c,m):\n    if not c: sys.exit(\"not yet: \"+str(m)[:1500])\ndef git(d,*a):\n    return subprocess.run([\"git\",\"-C\",str(d),*a],capture_output=True,text=True,check=True)\ndef repo(d):\n    d=pathlib.Path(d); d.mkdir(parents=True,exist_ok=True); git(d,\"init\",\"-q\",\"-b\",\"main\"); git(d,\"config\",\"user.name\",\"t\"); git(d,\"config\",\"user.email\",\"t@corp.example.com\"); return d\ndef mod(name):\n    sys.path.insert(0,\"_tools\")\n    try: return __import__(name)\n    except ImportError as x: sys.exit(\"not yet: \"+str(x))\ndef EXT(body):\n    return 'KBEXT_REQUIRES = \">=1.0,<2\"\\n'+body\ndef PY(code,*a,env=None,flags=()):\n    w=\"import sys\\ntry:\\n\"+\"\".join(\"    \"+l+\"\\n\" for l in code.splitlines())+\"except Exception as x:\\n    print('failed: '+type(x).__name__+': '+str(x),file=sys.stderr); sys.exit(3)\\n\"\n    return R(*flags,\"-c\",w,*a,env=env)\n\ne=T/\"ext\"\nW(e/\"grp_rank.py\",EXT(\"def rank(question, candidates):\\n    return list(reversed(candidates))\\n\"))\nW(e/\"grp_old.py\",'KBEXT_REQUIRES = \">=99.0\"\\ndef rank(question, candidates):\\n    return candidates\\n')\ns=lambda m: W(T/\"settings.json\",{\"extensions\":{\"ranker\":m},\"extension_paths\":[\"ext\"]})\nk=lambda *a: R(\"_tools/kbext.py\",*a,\"--root\",str(T))\ns(\"grp_rank:rank\"); r=k(\"resolve\",\"ranker\"); need(r.returncode==0 and \"grp_rank:rank\" in r.stdout and \"clone\" in r.stdout and \"settings.json\" in r.stdout, (r.stdout,r.stderr))\nr=k(\"call\",\"ranker\",\"--json\",json.dumps([\"q\",[\"a\",\"b\"]])); need(r.returncode==0 and json.loads(r.stdout or \"null\")==[\"b\",\"a\"], (r.stdout,r.stderr))\nfor bad in (\"grp_old:rank\",\"grp_none:rank\",\"grp_rank:nothing\"):\n    s(bad); r=k(\"resolve\",\"ranker\"); need(r.returncode==2 and \"ranker\" in r.stderr and bad.split(\":\")[0] in r.stderr and \"clone\" in r.stderr, (bad,r.returncode,r.stderr))\n"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess,sys,tempfile,pathlib,inspect\nT=pathlib.Path(tempfile.mkdtemp())\ndef W(p,v):\n    p=pathlib.Path(p); p.parent.mkdir(parents=True,exist_ok=True); p.write_text(v if isinstance(v,str) else json.dumps(v),encoding=\"utf-8\"); return p\ndef R(*a,env=None,cwd=None,inp=None):\n    return subprocess.run([sys.executable,*a],capture_output=True,text=True,env=dict(os.environ,**(env or {})),cwd=cwd,input=inp,timeout=900)\ndef need(c,m):\n    if not c: sys.exit(\"not yet: \"+str(m)[:1500])\ndef git(d,*a):\n    return subprocess.run([\"git\",\"-C\",str(d),*a],capture_output=True,text=True,check=True)\ndef repo(d):\n    d=pathlib.Path(d); d.mkdir(parents=True,exist_ok=True); git(d,\"init\",\"-q\",\"-b\",\"main\"); git(d,\"config\",\"user.name\",\"t\"); git(d,\"config\",\"user.email\",\"t@corp.example.com\"); return d\ndef mod(name):\n    sys.path.insert(0,\"_tools\")\n    try: return __import__(name)\n    except ImportError as x: sys.exit(\"not yet: \"+str(x))\ndef EXT(body):\n    return 'KBEXT_REQUIRES = \">=1.0,<2\"\\n'+body\ndef PY(code,*a,env=None,flags=()):\n    w=\"import sys\\ntry:\\n\"+\"\".join(\"    \"+l+\"\\n\" for l in code.splitlines())+\"except Exception as x:\\n    print('failed: '+type(x).__name__+': '+str(x),file=sys.stderr); sys.exit(3)\\n\"\n    return R(*flags,\"-c\",w,*a,env=env)\n\nsp=T/\"site\"\ndef dist(name,line):\n    d=sp/(name+\"-1.0.dist-info\"); W(d/\"METADATA\",\"Metadata-Version: 2.1\\nName: \"+name+\"\\nVersion: 1.0\\n\"); W(d/\"entry_points.txt\",\"[it_ops_kb.ranker]\\n\"+line+\"\\n\")\nW(sp/\"grp_rank.py\",EXT(\"def rank(question, candidates):\\n    return candidates\\n\"))\ndist(\"grp_pkg\",\"grp = grp_rank:rank\")\nenv={\"PYTHONPATH\":str(sp)}\nr=R(\"_tools/kbext.py\",\"resolve\",\"ranker\",\"--root\",str(T),env=env); need(r.returncode==0 and \"grp_rank:rank\" in r.stdout and \"entry point\" in r.stdout, (r.stdout,r.stderr))\ndist(\"other_pkg\",\"other = grp_rank:rank\")\nr=R(\"_tools/kbext.py\",\"resolve\",\"ranker\",\"--root\",str(T),env=env); need(r.returncode==2 and \"grp_pkg\" in r.stderr and \"other_pkg\" in r.stderr, (r.returncode,r.stderr))\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess,sys,tempfile,pathlib,inspect\nT=pathlib.Path(tempfile.mkdtemp())\ndef W(p,v):\n    p=pathlib.Path(p); p.parent.mkdir(parents=True,exist_ok=True); p.write_text(v if isinstance(v,str) else json.dumps(v),encoding=\"utf-8\"); return p\ndef R(*a,env=None,cwd=None,inp=None):\n    return subprocess.run([sys.executable,*a],capture_output=True,text=True,env=dict(os.environ,**(env or {})),cwd=cwd,input=inp,timeout=900)\ndef need(c,m):\n    if not c: sys.exit(\"not yet: \"+str(m)[:1500])\ndef git(d,*a):\n    return subprocess.run([\"git\",\"-C\",str(d),*a],capture_output=True,text=True,check=True)\ndef repo(d):\n    d=pathlib.Path(d); d.mkdir(parents=True,exist_ok=True); git(d,\"init\",\"-q\",\"-b\",\"main\"); git(d,\"config\",\"user.name\",\"t\"); git(d,\"config\",\"user.email\",\"t@corp.example.com\"); return d\ndef mod(name):\n    sys.path.insert(0,\"_tools\")\n    try: return __import__(name)\n    except ImportError as x: sys.exit(\"not yet: \"+str(x))\ndef EXT(body):\n    return 'KBEXT_REQUIRES = \">=1.0,<2\"\\n'+body\ndef PY(code,*a,env=None,flags=()):\n    w=\"import sys\\ntry:\\n\"+\"\".join(\"    \"+l+\"\\n\" for l in code.splitlines())+\"except Exception as x:\\n    print('failed: '+type(x).__name__+': '+str(x),file=sys.stderr); sys.exit(3)\\n\"\n    return R(*flags,\"-c\",w,*a,env=env)\n\nr=PY(\"import sys; sys.path.insert(0,'_tools'); import kbext; print(kbext.API_VERSION)\",flags=(\"-S\",))\nneed(r.returncode==0 and r.stdout.strip().count(\".\")>=1, (r.stdout,r.stderr))\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "_tools/kbext.py holds API_VERSION and load(point, root) with the standard library only",
+      "check": 2
+    },
+    {
+      "clause": "load reads extensions.<point> from kbsettings.layered as module:attr or as a module",
+      "check": 0
+    },
+    {
+      "clause": "each extension_paths directory is taken relative to the file that names it and put on sys.path",
+      "check": 0
+    },
+    {
+      "clause": "with no setting load takes the one entry point of group it_ops_kb.<point> from importlib.metadata.entry_points",
+      "check": 1
+    },
+    {
+      "clause": "a module's KBEXT_REQUIRES holds lower and upper bounds on MAJOR.MINOR that API_VERSION must meet",
+      "check": 0
+    },
+    {
+      "clause": "kbext.py resolve POINT --root WS prints the point, the module:attr, the layer and its file, exit 0",
+      "check": 0
+    },
+    {
+      "clause": "kbext.py call POINT --root WS --json ARGS calls the extender with the JSON list as its arguments and prints its answer as JSON",
+      "check": 0
+    },
+    {
+      "clause": "a missing module, a missing attribute or a version outside KBEXT_REQUIRES exits 2 with one line naming the point, the module and the layer",
+      "check": 0
+    },
+    {
+      "clause": "two entry points for one point exit 2 naming both distributions",
+      "check": 1
     }
   ],
   "touches": [
@@ -27,5 +79,6 @@
   "depends_on": [
     "ST-ed7utpmg"
   ],
+  "notes": "Shared files with SP-lwkdljxg (kbcommon.py, kbpublic.py, bl_land.py, map.csv): agreed with its manager on 2026-11-08 that the first claim lands first and the other rebases; its items reach these files late. SP-uh5h46fm (mon_coord.py, mon_status.py) was asked the same and has not answered: the same rule applies.",
   "filed_in": "clone-0ea70e5c"
 }
