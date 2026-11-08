@@ -24,7 +24,8 @@
     "kb/_self/backlog.md"
   ],
   "depends_on": [
-    "ST-p2wmi3hq"
+    "ST-p2wmi3hq",
+    "ST-nwwcf3kk"
   ],
   "gates": [
     {
@@ -41,5 +42,6 @@
       "class": "delete"
     }
   ],
+  "notes": "Interface (orchestrator, 2026-11-08): the job submit and follow interface is the ops-service half's, kj_store.submit(root, op, subject, by, options=None, store=None) -> {job, state, deduped, seq, follow} and kj_store.status(root, job, since=0, store=None) -> {job, state, exit, step, log, events, last} (ST-nwwcf3kk), followed with kbjob.py follow (ST-5h2kx2ri); the ops_service.submit name in this item's notes is replaced by it.",
   "filed_in": "clone-0ea70e5c"
 }
