@@ -1,0 +1,22 @@
+{
+  "id": "SP-n7zxspch",
+  "kind": "sprint",
+  "title": "Leak gate honesty, contained paid sessions and safe pattern rules",
+  "status": "planned",
+  "goal": "kbpublic.range_leaks counts a value as already public only when a file that publish's projection keeps holds it, so a value only kb/_querylog or a _logs.csv holds is refused by the sync leak gate; kbpublic.range_leaks reads the files of an internal root and of a pointer for secrets only, as tree_hits does, so a team clone's sync leak gate passes the internal-root facts the tracked-file scan passes; bench_load.paid_argv passes --tools Read,Bash and --permission-mode dontAsk beside its allow list of Read, git status and rag.py; redact.py takes --root DIR and applies that root's placeholders in its rules and in --scan; check.py's log-row scan passes the log's root to leak_hits, so a root's listed placeholder names pass in that root's log rows only while every leak shape stays the same for every root; kbingest's pattern-row guard refuses a rules row whose adjacent quantifiers overlap; the shipped Lua def rule takes under 0.5 ms on a 990-letter hostile line and still names the function of function f(, function M.f( and function M:f(; PatternMapper stops reading a file after PATTERN_FILE_TIMEOUT_S seconds and notes it; session-load --intake-real's spawns row note and the benchmarks doc state that the real row is the intake hook cut at its INTAKE_HOOK_BUDGET_S wait, so its spawns are not comparable with the pinned row's",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e",
+  "filed_in": "clone-0ea70e5c"
+}
