@@ -12,17 +12,29 @@
     "run": [
       "python3",
       "-c",
-      "import csv\nr={x['case'] for x in csv.DictReader(open('kb/_self/reports/benchmarks.csv',encoding='utf-8')) if x['scenario']=='session-load'}\nassert 'idle hook intake' in r, 'the case the intake-real check compares with has no row'"
+      "import re, sys\nsys.path.insert(0, '_tools')\nimport bench_load as b, bl_ci\nrows = []\nclass FakeBench:\n    reps = 1\n    def clone(self, *a): return 'x'\n    def row(self, scenario, case, arm, metric, value, n, note=''): rows.append((case, arm, metric, value, note))\nb.hook_commands = lambda clone: ['x']\nb.intake_hooks = lambda cmds: ['x']\nb.replay = lambda *a, **k: {'hooks': [{'rc': 0, 'cpu_s': 1.0, 'wall_s': 2.0, 'children': [1, 2]}], 'load': 0.5}\nb.intake_real_rows(FakeBench())\nsp = [r for r in rows if r[0] == b.INTAKE_REAL_CASE and r[2] == 'spawns']\nassert len(sp) == 1 and sp[0][3] == 3, ('the intake real spawns row is not the planted 3 processes', sp)\nnote = sp[0][4].lower()\nassert getattr(b, 'INTAKE_REAL_SPAWNS_NOTE', None) == sp[0][4], 'intake_real_rows does not write bench_load.INTAKE_REAL_SPAWNS_NOTE as the spawns note'\nfor word in ('cut', str(bl_ci.INTAKE_HOOK_BUDGET_S), 'pinned', 'not comparable'):\n    assert word in note, ('the spawns note does not say the real row is the hook cut at its wait, not comparable with the pinned row', word, sp[0][4])\ntext = open('kb/_self/benchmarks.md', encoding='utf-8').read()\nseg = text[text.index('`--intake-real` (with'):text.index('`--fs-usage FILE` (with')]\nfor word in ('cut', 'pinned', 'not comparable'):\n    assert word in seg, ('the benchmarks doc paragraph of --intake-real does not say the real row is not comparable with the pinned row', word)\n"
     ]
   },
-  "repro_reason": "the defect is a check comparing against a case name no row carries; the record rows are the evidence, and a behaviour run takes about 3 minutes per arm (the reviewer's repro in the notes)",
+  "clauses": [
+    {
+      "clause": "session-load --intake-real's spawns row note and the benchmarks doc state that the real row is the intake hook cut at its INTAKE_HOOK_BUDGET_S wait, so its spawns are not comparable with the pinned row's",
+      "check": 0
+    },
+    {
+      "clause": "intake_real_rows writes its spawns note from the module constant INTAKE_REAL_SPAWNS_NOTE",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/bench_load.py",
     "kb/_self/benchmarks.md"
   ],
+  "depends_on": [
+    "BG-qm623dvn"
+  ],
   "links": [
     "parked: SP-m5m67goe review"
   ],
-  "notes": "Review G1: the check compares with ('idle hook intake','A','spawns'), which no row has, so it reads real > 0. Measured: real 634-644 spawns, wall 50.1 s (= INTAKE_HOOK_BUDGET_S), pinned 936-950; nothing shows an item check ran (bench_load.py:667-682). Behaviour repro: run session-load --arms A --reps 1 with and without --intake-real (a claude that exits 1 first on PATH) and compare spawns.",
+  "notes": "Review G1: the check compares with ('idle hook intake','A','spawns'), which no row has, so it reads real > 0. Measured: real 634-644 spawns, wall 50.1 s (= INTAKE_HOOK_BUDGET_S), pinned 936-950; nothing shows an item check ran (bench_load.py:667-682). Behaviour repro: run session-load --arms A --reps 1 with and without --intake-real (a claude that exits 1 first on PATH) and compare spawns. Order: after BG-qm623dvn (both edit bench_load.py and the same paragraph of kb/_self/benchmarks.md, whose paid sentence and --intake-real sentence share one line, so a parallel landing conflicts at the rebase).",
   "filed_in": "clone-0ea70e5c"
 }
