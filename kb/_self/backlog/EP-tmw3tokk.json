@@ -1,0 +1,10 @@
+{
+  "id": "EP-tmw3tokk",
+  "kind": "epic",
+  "title": "Long operations run in a workstation service while sessions go on, and the kb MCP server can write",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Long operations (land, done, stage-back, sync, check runs, benchmark runs) are submitted to a service on the workstation, or a central one a clone subscribes to as a thin client, and watched through Claude Code's background monitoring, so a session goes on with its next step instead of waiting; and the kb MCP server offers the backlog's write and orchestration commands with the same refusals as the CLI, submitting the long ones to that service",
+  "filed_in": "clone-0ea70e5c"
+}
