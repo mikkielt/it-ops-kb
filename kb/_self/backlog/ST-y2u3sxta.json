@@ -61,6 +61,25 @@
   "depends_on": [
     "ST-xdircstf"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does kb/_self/extending.md hold the registry so selfdoc.extending_problems can compare it with kbext.SURFACE?",
+      "options": [
+        "Two tables under the headings Extension points and Settings keys, one row per entry with the columns name, signature, added, deprecated, removed, the name and signature in backticks",
+        "One table with a kind column"
+      ],
+      "recommendation": "Two tables under the headings Extension points and Settings keys, one row per entry with the columns name, signature, added, deprecated, removed, the name and signature in backticks",
+      "do": {
+        "Two tables under the headings Extension points and Settings keys, one row per entry with the columns name, signature, added, deprecated, removed, the name and signature in backticks": "ST-y2u3sxta",
+        "One table with a kind column": "ST-y2u3sxta"
+      },
+      "class": "design",
+      "answer": "Two tables under the headings Extension points and Settings keys, one row per entry with the columns name, signature, added, deprecated, removed, the name and signature in backticks",
+      "by": "agent"
+    }
+  ],
   "notes": "Everything not in kbext.SURFACE is internal: extending.md says so in its first lines. The registry names every planned point up front, so the point stories implement a contract that already exists.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-a796fc75",
