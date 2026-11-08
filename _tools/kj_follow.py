@@ -15,9 +15,7 @@ A line is `JOB STATE OP SUBJECT [step=NAME] [exit=N]` and never a line of the co
 """
 import os
 import platform
-import re
 import signal
-import subprocess
 import sys
 import time
 from argparse import Namespace
@@ -34,7 +32,6 @@ FOLLOW_EXIT = {"succeeded": 0, "failed": 1, "refused": 1, "cancelled": 3}
 STILL_RUNNING_EXIT = 4
 TERM_GRACE_S = 10
 KILL_GRACE_S = 5
-HOLDER = re.compile(r"serve-([0-9]+)")
 
 
 def record_of(store, job):
@@ -118,8 +115,10 @@ def tail_of(root, store, job, count, out):
 
 
 def group_of(store, job):
-    """The leader pid of the process group the executor runs JOB in, None when it has none to find: the holder of the lease
-    jobrun/JOB is `serve-PID` and runs one job at a time, so its child that leads a group of its own is the job's."""
+    """The leader pid of the process group the executor runs JOB in, None when it has none to find: the child of this job is the
+    pid in the job's record (the member `pid`), never another job's child of the same executor, and it counts while the lease
+    jobrun/JOB is held and unexpired (the executor still runs the job, so the pid is not one the host has reused) and the
+    process leads a group of its own."""
     if os.name != "posix":
         return None
     con = coord.connect(store)
@@ -128,20 +127,15 @@ def group_of(store, job):
         row = con.execute("SELECT holder, expires FROM entries WHERE key = ?", ("jobrun/" + job,)).fetchone()
     finally:
         con.close()
-    found = HOLDER.fullmatch(row["holder"] or "") if row is not None and (row["expires"] or 0) > time.time() else None
-    if found is None:
+    if row is None or not row["holder"] or (row["expires"] or 0) <= time.time():
+        return None
+    pid = record_of(store, job).get("pid")
+    if not isinstance(pid, int) or isinstance(pid, bool) or pid <= 0:
         return None
     try:
-        text = subprocess.run(["ps", "-A", "-o", "pid=,ppid=,pgid="], capture_output=True, text=True, timeout=10).stdout
-    except (OSError, subprocess.SubprocessError):
+        return pid if os.getpgid(pid) == pid else None
+    except OSError:
         return None
-    for line in text.splitlines():
-        numbers = line.split()
-        if len(numbers) == 3 and all(n.isdigit() for n in numbers):
-            pid, ppid, pgid = (int(n) for n in numbers)
-            if ppid == int(found.group(1)) and pgid == pid:
-                return pid
-    return None
 
 
 def group_runs(pgid):

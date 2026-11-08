@@ -15,6 +15,15 @@
       "import sys; sys.path.insert(0,\"_tools\"); import kj_follow, inspect; assert \"serve-PID\" not in inspect.getsource(kj_follow.group_of)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "exec(\"import io, os, platform, subprocess, sys, tempfile, threading, time\\nfrom argparse import Namespace\\nfrom pathlib import Path\\nsys.path.insert(0, \\\"_tools\\\")\\nimport coord, kj_exec, kj_follow, kj_store\\ntmp = tempfile.mkdtemp(prefix=\\\"plant-\\\")\\nstore = str(Path(tmp) / \\\"coord.sqlite\\\")\\nprocs, jobs = [], []\\ntry:\\n    for n in range(2):\\n        job = kj_store.new_id()\\n        rec = {\\\"job\\\": job, \\\"op\\\": \\\"check\\\", \\\"subject\\\": \\\"\\\", \\\"host\\\": platform.node(), \\\"clone\\\": tmp, \\\"operator\\\": kj_store.operator_id(), \\\"attempt\\\": 1, \\\"submitted_ts\\\": time.time() + n}\\n        kj_store.enqueue(store, kj_store.triple_key(tmp, \\\"check\\\", str(n)), rec)\\n        kj_store.queue(store, job, rec)\\n        coord.job_transition(Namespace(key=\\\"job/\\\" + job, to=\\\"running\\\", field=[], store=store), time.time)\\n        coord.claim(Namespace(key=\\\"jobrun/\\\" + job, holder=\\\"serve-%d\\\" % os.getpid(), ttl=60, store=store, budget=None), time.time)\\n        proc = subprocess.Popen([\\\"sleep\\\", \\\"60\\\"], start_new_session=True)\\n        kj_exec.amend(store, job, pid=proc.pid)\\n        threading.Thread(target=proc.wait, daemon=True).start()\\n        procs.append(proc)\\n        jobs.append(job)\\n    assert kj_follow.cancel(tmp, store, jobs[1], io.StringIO()) == 0\\n    time.sleep(0.5)\\n    assert procs[1].poll() is not None, \\\"the cancelled job process still runs\\\"\\n    assert procs[0].poll() is None and kj_follow.group_runs(procs[0].pid), \\\"another job group was ended\\\"\\nfinally:\\n    [p.kill() for p in procs if p.poll() is None]\\n\")"
+      ]
+    }
+  ],
   "touches": [
     "_tools/kj_follow.py",
     "kb/_self/coordination.md"
