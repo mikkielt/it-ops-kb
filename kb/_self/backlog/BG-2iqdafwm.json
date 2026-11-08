@@ -71,7 +71,12 @@
         "Apply tree_hits' secret-only rule to them, as test_leaks does, so a team clone's sync passes the internal-root facts AGENTS.md allows": "BG-2iqdafwm",
         "Keep refusing them and state the refusal in git.md and in the gate's answer": "BG-2iqdafwm"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "Apply tree_hits' secret-only rule to them, as test_leaks does, so a team clone's sync passes the internal-root facts AGENTS.md allows",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "links": [
