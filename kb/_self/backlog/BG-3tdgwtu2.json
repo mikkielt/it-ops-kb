@@ -2,7 +2,7 @@
   "id": "BG-3tdgwtu2",
   "kind": "bug",
   "title": "kbjob.py serve stops with a refusal when a running job was cancelled meanwhile, since run_job's final move finds a terminal job",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",
   "rank": 0,
@@ -19,5 +19,7 @@
     "_tools/kj_exec.py",
     "kb/_self/coordination.md"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-61c966d6",
+  "operator": "op-f618a13e"
 }
