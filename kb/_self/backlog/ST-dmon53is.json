@@ -47,6 +47,28 @@
     "kb/_self/tools.md",
     "kb/_self/monitoring.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the coord hook cut a Bash call to 80 ms or less?",
+      "options": [
+        "Run coord commands in the hook's own process, read the workspace and branch from the .git files, load coord's http modules only for serve",
+        "Keep a coord.py process per call and cache its answers in the state file"
+      ],
+      "recommendation": "Run coord commands in the hook's own process, read the workspace and branch from the .git files, load coord's http modules only for serve",
+      "reason": "it removes the processes (a Python start and up to six git starts per call) instead of caching around them, and an ask is still read at every poll",
+      "do": {
+        "Run coord commands in the hook's own process, read the workspace and branch from the .git files, load coord's http modules only for serve": "ST-dmon53is",
+        "Keep a coord.py process per call and cache its answers in the state file": "ST-dmon53is"
+      },
+      "class": "agents-rule",
+      "answer": "Run coord commands in the hook's own process, read the workspace and branch from the .git files, load coord's http modules only for serve",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "notes": "Check 1 passes before the work by design: it pins ask delivery from a planted coord store. The session lease, intents and overlap notices stay as they are (the sprint review reads the diff). The worker measures the sync_ms figure's run-to-run spread before relying on the 80 ms bound.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-557596e3",
