@@ -1,0 +1,32 @@
+{
+  "id": "ST-nwwcf3kk",
+  "kind": "story",
+  "title": "kbjob.py submit queues one job per clone, operation and subject, and a second submit returns the live job",
+  "status": "draft",
+  "parent": "EP-tmw3tokk",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "python3 _tools/kbjob.py [--store PATH] submit OP [SUBJECT] [--by claude-<8 hex>] [--option KEY=VALUE]... queues a job and prints one JSON object {job, state, deduped, seq, follow}: the key job/JB-<8 chars> holds {job, op, subject, host, clone, operator, by, options, state, attempt, submitted_ts}, moved none to queued by ST-hojylkmb's table; OP is one of the closed table kj_ops.OPS (land with the options wait_merge and trailer, done with commit and trailer, stage-back with check, self_reviewed and trailer, sync-push, check with --name one of backlog-check, tests-full, tests-changed), a backlog id is the SUBJECT of the first three and sync-push and check take none; an unknown operation (publish, answer), a subject that is no item of the clone, an option outside the operation's list or a --by that is no claude-<8 hex> exits 2 naming what is allowed; a second submit of the same clone, operation and subject (options aside) while the job is queued, running, waiting-lock, waiting-merge or lost returns the same job with deduped true, also when four submits race (one job), and after a terminal state a submit makes a new job with attempt raised by one; kj_store.submit(root, op, subject, by, options=None, store=None) returns that object and kj_store.status(root, job, since=0, store=None) returns {job, state, exit, step, log, events, last}, the one interface the MCP server calls",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,tempfile,subprocess; sys.path.insert(0,\"_tools\"); import kj_store; s=os.path.join(tempfile.mkdtemp(),\"c.sqlite\"); a=kj_store.submit(\".\",\"land\",\"ST-hojylkmb\",\"claude-0123abcd\",{\"wait_merge\":60},store=s); b=kj_store.submit(\".\",\"land\",\"ST-hojylkmb\",\"claude-0123abcd\",None,store=s); assert a[\"state\"]==\"queued\" and a[\"deduped\"] is False and b[\"job\"]==a[\"job\"] and b[\"deduped\"] is True, (a,b); run=lambda *x: subprocess.run([sys.executable,\"_tools/kbjob.py\",\"--store\",s,\"submit\",*x],capture_output=True,text=True); assert run(\"publish\",\"ST-hojylkmb\").returncode==2; assert run(\"land\",\"ST-nosuchit\").returncode==2; assert run(\"land\",\"ST-hojylkmb\",\"--by\",\"0123456789abcdef0123456789abcdef\").returncode==2; assert run(\"land\",\"ST-hojylkmb\",\"--option\",\"force=1\").returncode==2"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbjob.py",
+    "_tools/kj_store.py",
+    "_tools/kj_ops.py",
+    "_tools/kbtools.py",
+    "kb/_self/tools.md",
+    "kb/_self/coordination.md",
+    "kb/_self/map.csv"
+  ],
+  "depends_on": [
+    "ST-hojylkmb"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
