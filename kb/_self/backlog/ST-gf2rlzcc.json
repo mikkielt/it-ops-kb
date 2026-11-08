@@ -41,12 +41,7 @@
         "central executor for every operation, landings included"
       ],
       "recommendation": "queue-only: the central coord holds job states and events, and every operation runs on the workstation that holds the clone",
-      "class": "secrets",
-      "answer": "queue-only: the central coord holds job states and events, and every operation runs on the workstation that holds the clone",
-      "by": "operator",
-      "operator": "op-f618a13e",
-      "role": "interactive",
-      "agent_session": true
+      "class": "secrets"
     }
   ],
   "notes": "Design: the central service is a coord serve (coord.py serve, POST /v1/run with {argv}, bearer token per operator, one key file each, team scopes, plain-http refusal beyond loopback: kb/_self/coordination.md:71-77), so a thin client needs no new network surface: submit, follow and status are coord operations on job/ID keys over the same /v1/run. The operator's words 'subscribing to such centrally while serving as thin client' are read as: sessions are thin (they only write and read the queue), executors subscribe to the central queue for their own host and operator; code never moves, because land, done and stage-back need the clone's worktrees, hooks and locks. A central executor that runs operations would need its own clone and credentials, hence the gate (class secrets, operator-only). Authority: the executor runs a job only when the job's operator equals the operator of its own key file and the operation is in the closed table (ST-nwwcf3kk), so a job submitted by one operator never runs on another's workstation, and the coord server's team rule (a key under another team's prefix is refused, coordination.md:75) is unchanged. The central deployment host is not decided here (the target is an unknown self-hosted GitLab, memory git-platform-roles); this story proves the mode on a loopback coord serve. Complement stance: no Agent Mail or Beads piece does this (kb public/agents/coordination-tools.md:54: they answer which files or tasks an agent holds, not which command runs), so nothing is rebuilt; kb/_self/coordination.md's own coord is what is extended. Related: EP-fxrzbuza (standard-library claim, lease and event service) overlaps only where it also extends coord serve.",
