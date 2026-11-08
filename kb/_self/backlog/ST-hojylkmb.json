@@ -1,0 +1,24 @@
+{
+  "id": "ST-hojylkmb",
+  "kind": "story",
+  "title": "coord keeps an operation job as the key job/ID with a state table of its own, and every move posts a job event",
+  "status": "draft",
+  "parent": "EP-tmw3tokk",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "coord.py transition accepts a key job/ID with a table of its own (none to queued; queued to running or cancelled; running to waiting-lock, waiting-merge, succeeded, failed, refused, cancelled or lost; waiting-lock and waiting-merge back to running or on to cancelled; lost to queued or failed; succeeded, failed, refused and cancelled move nowhere), posts a job event of job, state, op, item, exit, step, by and attempt on every move, and a move the table refuses exits 1 naming the state the key holds, while an unknown state exits 2; coord.py wait --kind job returns on such an event; the table of run/ITEM keys is unchanged (queued is no run state, exit 2)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,subprocess,sys,tempfile,os; s=os.path.join(tempfile.mkdtemp(),\"c.sqlite\"); co=lambda *a: subprocess.run([sys.executable,\"_tools/coord.py\",\"--store\",s,*a],capture_output=True,text=True); t=lambda k,to,*f: co(\"transition\",k,\"--to\",to,*f).returncode; k=\"job/JB-aaaaaaaa\"; assert t(k,\"queued\")==0 and t(k,\"running\")==0; assert t(k,\"queued\")==1; assert t(k,\"succeeded\",\"--field\",\"exit=0\")==0; assert t(k,\"running\")==1; assert t(k,\"bogus\")==2; assert t(\"run/ST-aaaaaaaa\",\"queued\")==2; ev=json.loads(co(\"wait\",\"--since\",\"0\",\"--timeout\",\"0\",\"--kind\",\"job\").stdout)[\"events\"]; assert [e[\"fields\"][\"state\"] for e in ev]==[\"queued\",\"running\",\"succeeded\"], ev"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/coord.py",
+    "kb/_self/coordination.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
