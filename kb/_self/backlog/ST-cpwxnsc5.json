@@ -1,0 +1,45 @@
+{
+  "id": "ST-cpwxnsc5",
+  "kind": "story",
+  "title": "backlog_close lists a sprint's close summary inline and deletes the finished sprint as a job of the operations service, annotated destructive",
+  "status": "draft",
+  "parent": "EP-tmw3tokk",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "With KB_BACKLOG_WRITE_TOOLS=1 the kb MCP server lists backlog_close (sprint, summary, commit, trailer); a call with summary true runs backlog.main close --summary in-process, prints the CLI's text and submits no job (close --summary with commit is refused as the CLI refuses it); any other call parses its argv and submits ops_service.submit('close', argv, item=SPRINT), returning the job record, so the CLI's refusal of an unfinished sprint, its ops row and its worker cleanup all run in the job and none is reimplemented; annotations: readOnlyHint false, destructiveHint true, idempotentHint false, openWorldHint false",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,subprocess,tempfile,importlib;sys.path.insert(0,\"_tools\");os.environ[\"KB_BACKLOG_WRITE_TOOLS\"]=\"1\";[os.environ.pop(k,None) for k in (\"CLAUDECODE\",\"CLAUDE_CODE_CHILD_SESSION\")];R=os.getcwd();d=tempfile.mkdtemp();open(d+\"/ops_service.py\",\"w\").write(\"CALLS=[];submit=lambda verb,argv,item=None,session=None:(CALLS.append((verb,argv,item)),{\\\"job\\\":\\\"J-test0003\\\",\\\"verb\\\":verb,\\\"item\\\":item,\\\"state\\\":\\\"queued\\\"})[1]\");sys.path.insert(0,d);importlib.invalidate_caches();import kb_mcp,ops_service;a=tempfile.mkdtemp();g=lambda *x:subprocess.run([\"git\",\"-C\",a,*x],check=True,capture_output=True);g(\"init\",\"-q\");g(\"config\",\"user.email\",\"a@example.com\");g(\"config\",\"user.name\",\"n\");sp=subprocess.run([sys.executable,R+\"/_tools/backlog.py\",\"--root\",a,\"new\",\"sprint\",\"--title\",\"Planted sprint\"],capture_output=True,text=True).stdout.split()[2];g(\"add\",\"-A\");g(\"commit\",\"-qm\",\"plant\");os.chdir(a);call=lambda n,**k:kb_mcp.handle({\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":n,\"arguments\":k}})[\"result\"];tools={t[\"name\"]:t for t in kb_mcp.tool_list()};assert tools[\"backlog_close\"][\"annotations\"][\"destructiveHint\"] is True,\"annotations\";call(\"backlog_close\",sprint=sp,summary=True);assert not ops_service.CALLS,\"summary submitted a job\";assert call(\"backlog_close\",sprint=sp,summary=True,commit=True)[\"isError\"],\"summary with commit accepted\";r=call(\"backlog_close\",sprint=sp);assert not r[\"isError\"] and ops_service.CALLS and ops_service.CALLS[0][0]==\"close\" and ops_service.CALLS[0][1][:2]==[\"close\",sp],(r,ops_service.CALLS)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_mcp.py",
+    "_tools/test_redact.py",
+    "kb/_self/plugin.md",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "ST-p2wmi3hq"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Serve backlog_close, which deletes a finished sprint with its items, as a kb MCP job tool?",
+      "options": [
+        "Serve it as a destructive job tool, with close --summary inline",
+        "Serve only close --summary inline and keep the deleting close on Bash",
+        "Serve neither"
+      ],
+      "recommendation": "Serve it as a destructive job tool, with close --summary inline",
+      "reason": "because the CLI refuses an unfinished sprint, git keeps the deleted files and the Bash route allows the same command",
+      "class": "delete"
+    }
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

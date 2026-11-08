@@ -1,0 +1,39 @@
+{
+  "id": "ST-p2wmi3hq",
+  "kind": "story",
+  "title": "backlog_land, backlog_done and backlog_stage_back submit a job to the operations service and return its job record at once, so the session goes on",
+  "status": "draft",
+  "parent": "EP-tmw3tokk",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "With KB_BACKLOG_WRITE_TOOLS=1 the kb MCP server lists backlog_land (id, branch, trailer), backlog_done (id, dry_run, commit, trailer) and backlog_stage_back (id, check, self_reviewed, trailer); a call parses its argv with the backlog.py parser (a usage error or unknown argument comes back at once as a rejected outcome), then calls ops_service.submit(verb, argv, item=ID, session=SESSION) and returns the record it gives, {job, verb, item, state, ...}, as structuredContent in under 3 seconds, running no backlog.py command in the server; with no ops_service importable the tool is a tool error naming the operations service and the command line to run instead, and never runs the command inline, since this server answers one request at a time and a land takes 46 s at the median and 13 minutes at the 95th percentile; annotations: readOnlyHint false, destructiveHint false, idempotentHint true for land and stage-back (their re-runs are defined), openWorldHint true for land",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,subprocess,tempfile,importlib,time;sys.path.insert(0,\"_tools\");os.environ[\"KB_BACKLOG_WRITE_TOOLS\"]=\"1\";[os.environ.pop(k,None) for k in (\"CLAUDECODE\",\"CLAUDE_CODE_CHILD_SESSION\")];R=os.getcwd();d=tempfile.mkdtemp();open(d+\"/ops_service.py\",\"w\").write(\"CALLS=[];submit=lambda verb,argv,item=None,session=None:(CALLS.append((verb,argv,item)),{\\\"job\\\":\\\"J-test0001\\\",\\\"verb\\\":verb,\\\"item\\\":item,\\\"state\\\":\\\"queued\\\"})[1]\");import kb_mcp;a=tempfile.mkdtemp();g=lambda *x:subprocess.run([\"git\",\"-C\",a,*x],check=True,capture_output=True);g(\"init\",\"-q\");g(\"config\",\"user.email\",\"a@example.com\");g(\"config\",\"user.name\",\"n\");iid=subprocess.run([sys.executable,R+\"/_tools/backlog.py\",\"--root\",a,\"new\",\"story\",\"--title\",\"Planted\",\"--goal\",\"g\",\"--touch\",\"x/*\",\"--check\",\"true\"],capture_output=True,text=True).stdout.split()[2];g(\"add\",\"-A\");g(\"commit\",\"-qm\",\"plant\");os.chdir(a);call=lambda n,**k:kb_mcp.handle({\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":n,\"arguments\":k}})[\"result\"];sys.path.insert(0,d);importlib.invalidate_caches();import ops_service;t=time.time();r=call(\"backlog_land\",id=iid);s=r.get(\"structuredContent\") or {};assert not r[\"isError\"] and s.get(\"job\")==\"J-test0001\" and s.get(\"state\")==\"queued\",r;assert time.time()-t<3,\"slow\";assert ops_service.CALLS and ops_service.CALLS[0][0]==\"land\" and ops_service.CALLS[0][1][:2]==[\"land\",iid],ops_service.CALLS;assert call(\"backlog_land\",id=iid,bogus=\"1\")[\"isError\"],\"unknown argument accepted\";assert not call(\"backlog_done\",id=iid)[\"isError\"] and not call(\"backlog_stage_back\",id=iid)[\"isError\"];sys.path.remove(d);sys.modules.pop(\"ops_service\");importlib.invalidate_caches();n=call(\"backlog_land\",id=iid);assert n[\"isError\"] and \"operations service\" in n[\"content\"][0][\"text\"],n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_mcp.py",
+    "_tools/test_redact.py",
+    "kb/_self/plugin.md",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "ST-xpvfqfo6"
+  ],
+  "relates_to": [
+    "EP-nij36lt7",
+    "ST-qeespjim",
+    "ST-dbjwje2n"
+  ],
+  "links": [
+    "https://code.claude.com/docs/en/mcp#automatic-backgrounding-of-long-tool-calls (read 2026-11-08)"
+  ],
+  "notes": "Evidence. Ops rows 2026-10-05..11-08 (2,926 sidecars): land.end content lane ok 2,785 runs median 46.1 s p95 774 s; steps kbgit.py-sync-push median 9.1 s p95 102 s, rag.py-eval 5.8 s, wait-merge p95 570 s; tests.py 2,899 Bash runs median 20.9 s p95 48.7 s. Census Bash calls: land 1135, dispatch 652, close 391, done 223, stage-back 79, begin 73. Why a job, not an inline call: kb_mcp.serve reads one request at a time (kb_mcp.py:1842), so a 13-minute land would hold every kb tool; Claude Code backgrounds an MCP call after 2 minutes only in the main interactive conversation, never in a subagent or a non-interactive claude -p unless CLAUDE_AUTO_BACKGROUND_TASKS=1, and a one-shot claude -p gets no MCP tasks (docs read 2026-11-08), and sprint runners are headless; so submit-and-follow by job id works in every mode. INTERFACE NEEDED from plan/ops-service (module name ops_service, its choice to rename): submit(verb, argv, item=None, session=None) -> {job: 'J-'+8 base32, verb, item, state: 'queued', submitted: UTC, log: path}; status(job) -> {job, verb, item, state: queued|running|succeeded|failed|cancelled|refused, exit: int|None, step: str|None, started, ended, pid, result: {ok, exit, outcome, text, refusal, items}}; tail(job, lines=20) -> [str]; list(item=None, state=None) -> [status]; cancel(job) -> status; wire POST /v1/jobs, GET /v1/jobs/ID, GET /v1/jobs/ID/log?lines=N, POST /v1/jobs/ID/cancel, key-file auth as coord.py serve. The service runs python3 _tools/backlog.py VERB ARGS itself as an agent session (CLAUDECODE=1 set by the service, never read from the caller; no env or cwd from the caller), only for the closed verbs land, done, stage-back, dispatch, begin, close, and posts a coord progress event (item, step) per step so coord_wait follows it. A server without ops_service refuses, it never runs the verb inline.",
+  "filed_in": "clone-0ea70e5c"
+}

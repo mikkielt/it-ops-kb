@@ -1,0 +1,29 @@
+{
+  "id": "ST-gf22gyzt",
+  "kind": "story",
+  "title": "A claim made through the kb MCP tool posts the backlog-claim intent and returns the overlaps the Bash hook would print",
+  "status": "draft",
+  "parent": "EP-tmw3tokk",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog_claim posts the same intent a Bash backlog.py claim posts through the coord hook (topic backlog-claim, the item, its item file's touches, the session) before it runs the command, and its structuredContent holds overlaps: the digest lines of other live sessions' intents and held claims that meet the item's touches (empty when none), so the notice kb/_self/backlog.md says the tool path skips reaches the agent in the result; with no coord store reachable the claim still runs and overlaps is empty (the policy is fail open for announcements)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,subprocess,tempfile,json;sys.path.insert(0,\"_tools\");os.environ[\"KB_BACKLOG_WRITE_TOOLS\"]=\"1\";[os.environ.pop(k,None) for k in (\"CLAUDECODE\",\"CLAUDE_CODE_CHILD_SESSION\")];R=os.getcwd();E=dict(os.environ,KB_COORD_STORE=tempfile.mkdtemp()+\"/c.sqlite\");os.environ[\"KB_COORD_STORE\"]=E[\"KB_COORD_STORE\"];import kb_mcp;a=tempfile.mkdtemp();g=lambda *x:subprocess.run([\"git\",\"-C\",a,*x],check=True,capture_output=True);g(\"init\",\"-q\");g(\"config\",\"user.email\",\"a@example.com\");g(\"config\",\"user.name\",\"n\");iid=subprocess.run([sys.executable,R+\"/_tools/backlog.py\",\"--root\",a,\"new\",\"story\",\"--title\",\"Planted\",\"--goal\",\"g\",\"--touch\",\"x/*\",\"--check\",\"true\"],capture_output=True,text=True).stdout.split()[2];g(\"add\",\"-A\");g(\"commit\",\"-qm\",\"plant\");co=lambda *x:subprocess.run([sys.executable,R+\"/_tools/coord.py\",*x],capture_output=True,text=True,env=E);co(\"claim\",\"session/other\",\"--ttl\",\"600\",\"--holder\",\"other\");co(\"post\",\"--kind\",\"intent\",\"--field\",\"session=other\",\"--field\",\"touch=x/*\");os.chdir(a);r=kb_mcp.handle({\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":\"backlog_claim\",\"arguments\":{\"id\":iid,\"by\":\"worker\"}}})[\"result\"];s=r[\"structuredContent\"];assert s[\"overlaps\"],(\"no overlap line\",s);ev=co(\"wait\",\"--since\",\"0\",\"--timeout\",\"0\",\"--kind\",\"intent\").stdout;assert \"backlog-claim\" in ev and iid in ev,(\"no claim intent\",ev[-300:])"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_mcp.py",
+    "kb/_self/backlog.md",
+    "kb/_self/coordination.md",
+    "kb/_self/plugin.md"
+  ],
+  "depends_on": [
+    "ST-xpvfqfo6"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

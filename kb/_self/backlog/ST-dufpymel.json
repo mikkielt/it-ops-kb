@@ -1,0 +1,32 @@
+{
+  "id": "ST-dufpymel",
+  "kind": "story",
+  "title": "The kb MCP server's new and gate add tools file an item and a gate with the CLI's class and repro refusals",
+  "status": "draft",
+  "parent": "EP-tmw3tokk",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "With KB_BACKLOG_WRITE_TOOLS=1 the kb MCP server lists backlog_new (kind, title, parent, sprint, priority, rank, goal, severity, repro, repro_reason, commit and trailer, with check, touch, depends and external as arrays) and backlog_gate_add (id, question, option and do as arrays, recommendation, kind, gate_id, host_check), each run in-process like the claim tool; gate add through the tool prints the same text as the command line, class and disposition lines included, and writes the same item file on a copy; new bug without a failing repro and new of an unknown kind are tool errors that write nothing, and a successful new returns the new item's id and title in its text",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,subprocess,tempfile,shutil,json,glob;sys.path.insert(0,\"_tools\");os.environ[\"KB_BACKLOG_WRITE_TOOLS\"]=\"1\";[os.environ.pop(k,None) for k in (\"CLAUDECODE\",\"CLAUDE_CODE_CHILD_SESSION\")];import kb_mcp;R=os.getcwd();a=tempfile.mkdtemp();b=a+\"-twin\";g=lambda *x:subprocess.run([\"git\",\"-C\",a,*x],check=True,capture_output=True);g(\"init\",\"-q\");g(\"config\",\"user.email\",\"a@example.com\");g(\"config\",\"user.name\",\"n\");cli=lambda r,*x:subprocess.run([sys.executable,R+\"/_tools/backlog.py\",\"--root\",r,*x],capture_output=True,text=True,env=dict(os.environ,CLAUDECODE=\"1\"));iid=cli(a,\"new\",\"story\",\"--title\",\"Planted\",\"--goal\",\"g\",\"--touch\",\"x/*\",\"--check\",\"true\").stdout.split()[2];g(\"add\",\"-A\");g(\"commit\",\"-qm\",\"plant\");shutil.copytree(a,b);call=lambda n,**k:kb_mcp.handle({\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":n,\"arguments\":k}})[\"result\"];files=lambda r:[open(f).read() for f in sorted(glob.glob(r+\"/_backlog/*.json\"))];c1=cli(a,\"gate\",\"add\",iid,\"--question\",\"Pick the format?\",\"--option\",\"A\",\"--option\",\"B\",\"--recommendation\",\"A\");os.chdir(b);t1=call(\"backlog_gate_add\",id=iid,question=\"Pick the format?\",option=[\"A\",\"B\"],recommendation=\"A\");assert (c1.returncode==0)==(not t1[\"isError\"]),(\"gate parity\",c1,t1);assert files(a)==files(b),\"gate add wrote different item files\";assert c1.stdout.strip()==t1[\"content\"][0][\"text\"].strip(),(c1.stdout,t1);n=call(\"backlog_new\",kind=\"story\",title=\"Second planted\",goal=\"g\");assert not n[\"isError\"] and \"new story ST-\" in n[\"content\"][0][\"text\"],n;before=files(b);bad=[call(\"backlog_new\",kind=\"bug\",title=\"No repro\",severity=\"S3\"),call(\"backlog_new\",kind=\"saga\",title=\"x\")];assert all(x[\"isError\"] for x in bad),bad;assert files(b)==before,\"a refused new wrote\""
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_mcp.py",
+    "_tools/test_redact.py",
+    "_tools/backlog.py",
+    "kb/_self/plugin.md",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md",
+    "kb/_self/embedding.md"
+  ],
+  "depends_on": [
+    "ST-xm7y7dag"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

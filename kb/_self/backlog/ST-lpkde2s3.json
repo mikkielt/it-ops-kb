@@ -1,0 +1,53 @@
+{
+  "id": "ST-lpkde2s3",
+  "kind": "story",
+  "title": "Each kb MCP write tool carries the annotation of one documented table, sets no force-prompt flag, and a Bash deny rule of the clone's or the user's settings refuses its command line",
+  "status": "draft",
+  "parent": "EP-tmw3tokk",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/_self/plugin.md holds one table of every backlog write and job tool with its readOnlyHint (false), destructiveHint (true for set, drop, close and kb_job_cancel, which replace or delete; false for the rest), idempotentHint and openWorldHint (true for land, dispatch and begin, which reach a git remote or start a model session), and tools/list carries exactly those annotations; no tool sets _meta anthropic/requiresUserInteraction, which would deny the call in an unattended headless run; the Bash deny-rule mirror that kb_backlog_write applies (bash_denied) applies to every write and job tool for the command line python3 _tools/backlog.py VERB ARGS and also reads the user's own ~/.claude/settings.json deny rules, so a Bash(python3 _tools/backlog.py drop *) rule refuses backlog_drop; the docs say what the mirror still misses (a managed policy's rules)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,tempfile,json;sys.path.insert(0,\"_tools\");os.environ[\"KB_BACKLOG_WRITE_TOOLS\"]=\"1\";h=tempfile.mkdtemp();os.makedirs(h+\"/.claude\");open(h+\"/.claude/settings.json\",\"w\").write(json.dumps({\"permissions\":{\"deny\":[\"Bash(python3 _tools/backlog.py drop *)\"]}}));os.environ[\"HOME\"]=h;import kb_mcp;want={\"backlog_claim\":(0,1),\"backlog_release\":(0,0),\"backlog_answer\":(0,0),\"backlog_set\":(1,1),\"backlog_move\":(0,1),\"backlog_reopen\":(0,0),\"backlog_drop\":(1,0),\"backlog_new\":(0,0),\"backlog_gate_add\":(0,1),\"backlog_land\":(0,1),\"backlog_done\":(0,0),\"backlog_stage_back\":(0,1),\"backlog_dispatch\":(0,0),\"backlog_begin\":(0,0),\"backlog_close\":(1,0),\"kb_job_cancel\":(1,1)};tools={t[\"name\"]:t for t in kb_mcp.tool_list()};missing=[n for n in want if n not in tools];assert not missing,missing;bad=[n for n,(d,i) in want.items() if tools[n][\"annotations\"].get(\"readOnlyHint\") is not False or bool(tools[n][\"annotations\"].get(\"destructiveHint\"))!=bool(d) or bool(tools[n][\"annotations\"].get(\"idempotentHint\"))!=bool(i)];assert not bad,bad;assert tools[\"kb_job\"][\"annotations\"][\"readOnlyHint\"] is True;assert not [n for n,t in tools.items() if \"anthropic/requiresUserInteraction\" in (t.get(\"_meta\") or {})],\"force-prompt flag set\";r=kb_mcp.handle({\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":\"backlog_drop\",\"arguments\":{\"id\":\"ST-abcdefgh\",\"why\":\"x\"}}})[\"result\"];assert r[\"isError\"] and \"deny\" in r[\"content\"][0][\"text\"].lower(),r"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_mcp.py",
+    "_tools/test_redact.py",
+    "kb/_self/plugin.md",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "ST-cpwxnsc5",
+    "ST-ye5dxzmq",
+    "ST-icdowdj6",
+    "ST-dufpymel"
+  ],
+  "relates_to": [
+    "ST-wqbibuy6",
+    "ST-dbjwje2n"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which permission rule do the kb MCP write tools run under in this clone, where settings.json allows the whole mcp__kb server?",
+      "options": [
+        "Keep the blanket allow",
+        "Add an ask rule for backlog_drop, backlog_close and kb_job_cancel",
+        "Replace the blanket allow with a list of read tools and ask for every write tool"
+      ],
+      "recommendation": "Keep the blanket allow",
+      "reason": "because Bash(python3 _tools/backlog.py *) is already allowed without a prompt and an ask rule denies the same call in an unattended headless run",
+      "class": "agents-rule"
+    }
+  ],
+  "notes": "Evidence 2026-11-08. Claude Code (docs mcp.md and permissions.md): allow/ask/deny take mcp__server__tool, evaluated deny, ask, allow; settings files skip mcp__ rules with parentheses, so no argument-level rule exists. The annotations the docs name: readOnlyHint (calls run in parallel with other read-only calls) and idempotentHint (a pending call may be repeated once after a closed connection, HTTP servers only); destructiveHint is not named, so it informs a person and no rule. _meta anthropic/requiresUserInteraction true forces a prompt on every call even in bypassPermissions and with an allow rule, and in dontAsk or non-interactive mode it denies: unusable for the unattended runners that land and close, so none sets it. This clone's .claude/settings.json allows the whole mcp__kb server (so coord_claim and the write tools run without a prompt: ST-wqbibuy6 holds that decision for the coord tools) and Bash(python3 _tools/backlog.py *); its deny list names no backlog command, so bash_denied (kb_mcp.py:1504) mirrors nothing today for the backlog; 211 bash permission.request rows against 35,919 Bash calls, so the Bash route prompts rarely too. The mirror reads only the clone's two settings files (backlog.md:85); a managed policy's deny stays unread. destructiveHint true marks calls that replace or delete (set replaces whole lists, drop deletes an item outside a sprint, close deletes a sprint, cancel stops work); land and stage-back are idempotent by their documented re-runs. The settings.json change an answer to the gate may need is its own follow-up, not in this story's touches. test_redact.py:255-259 must move to this table.",
+  "filed_in": "clone-0ea70e5c"
+}

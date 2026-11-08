@@ -1,0 +1,41 @@
+{
+  "id": "ST-xm7y7dag",
+  "kind": "story",
+  "title": "The kb MCP server's claim, release and answer tools are typed, run in the session's backlog and keep the CLI's gate and authority refusals",
+  "status": "draft",
+  "parent": "EP-tmw3tokk",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "With KB_BACKLOG_WRITE_TOOLS=1 the kb MCP server lists backlog_claim, backlog_release and backlog_answer in place of kb_backlog_write, and none of them without it; each takes typed arguments (id, by, gate, and for answer one of answer, option, recommended, provisional or confirm, plus free, commit, trailer) and runs backlog.main inside the server process on the backlog of the git top level of the server's working directory, as kb_backlog reads it, with CLAUDECODE=1 forced whatever the server's own environment holds and put back after the call; the item files a call writes are byte-identical to the same command line run through backlog.py on a copy; a refusal of the command (exit 1 or 2) is a tool error holding its message that writes nothing, so answer by agent on a secrets-class gate and answer by operator on a ceiling-class gate are refused; root, record and confirm_held are no arguments",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,subprocess,tempfile,shutil,json,glob;sys.path.insert(0,\"_tools\");os.environ[\"KB_BACKLOG_WRITE_TOOLS\"]=\"1\";[os.environ.pop(k,None) for k in (\"CLAUDECODE\",\"CLAUDE_CODE_CHILD_SESSION\")];import kb_mcp;R=os.getcwd();a=tempfile.mkdtemp();b=a+\"-twin\";g=lambda *x:subprocess.run([\"git\",\"-C\",a,*x],check=True,capture_output=True);g(\"init\",\"-q\");g(\"config\",\"user.email\",\"a@example.com\");g(\"config\",\"user.name\",\"n\");cli=lambda r,*x:subprocess.run([sys.executable,R+\"/_tools/backlog.py\",\"--root\",r,*x],capture_output=True,text=True,env=dict(os.environ,CLAUDECODE=\"1\"));iid=cli(a,\"new\",\"story\",\"--title\",\"Planted\",\"--goal\",\"g\",\"--touch\",\"x/*\",\"--check\",\"true\").stdout.split()[2];cli(a,\"gate\",\"add\",iid,\"--question\",\"Which credential file holds the token?\",\"--option\",\"A\",\"--option\",\"B\",\"--recommendation\",\"A\");cli(a,\"gate\",\"add\",iid,\"--question\",\"Raise the test suite ceiling, tests-ceiling ids=120?\",\"--option\",\"A\",\"--option\",\"B\",\"--recommendation\",\"A\");g(\"add\",\"-A\");g(\"commit\",\"-qm\",\"plant\");shutil.copytree(a,b);call=lambda n,**k:kb_mcp.handle({\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":n,\"arguments\":k}})[\"result\"];files=lambda r:[open(f).read() for f in sorted(glob.glob(r+\"/_backlog/*.json\"))];c1=cli(a,\"claim\",iid,\"--by\",\"worker\");os.chdir(b);t1=call(\"backlog_claim\",id=iid,by=\"worker\");assert (c1.returncode==0)==(not t1[\"isError\"]),(\"claim parity\",c1.returncode,t1);assert files(a)==files(b),\"claim wrote different item files\";before=files(b);s=call(\"backlog_answer\",id=iid,gate=\"g1\",answer=\"A\",by=\"agent\");o=call(\"backlog_answer\",id=iid,gate=\"g2\",answer=\"A\",by=\"operator\");assert s[\"isError\"] and o[\"isError\"],(s,o);assert files(b)==before,\"a refused answer wrote\";names={t[\"name\"] for t in kb_mcp.tool_list()};assert {\"backlog_claim\",\"backlog_release\",\"backlog_answer\"}<=names and \"kb_backlog_write\" not in names,names"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_mcp.py",
+    "_tools/test_redact.py",
+    "_tools/backlog.py",
+    "kb/_self/plugin.md",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md",
+    "kb/_self/embedding.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "relates_to": [
+    "ST-dbjwje2n",
+    "ST-rafmets7",
+    "ST-wqbibuy6",
+    "ST-qeespjim",
+    "EP-fgtlhyo4"
+  ],
+  "links": [
+    "https://code.claude.com/docs/en/mcp#automatic-backgrounding-of-long-tool-calls (read 2026-11-08)"
+  ],
+  "notes": "Evidence 2026-11-08. Now: kb_mcp.py:1479-1563 kb_backlog_write, one generic tool (command+args), a backlog.py child with cwd kbcommon.HOME and CLAUDECODE=1, only with KB_BACKLOG_WRITE_TOOLS=1 (team server; not under --roots or kb_http.py); plugin.json registers kb with no env and --register-local has no switch, so it is never served by default. Census of 229 main-checkout transcripts (kbusage.py tree, no model): 12,246 Bash backlog.py calls (set 1845, new 1082, claim 756, answer 494, gate 229, drop 61, move 46, release 9, reopen 5); kb_backlog 10 calls, kb_backlog_write 0. Per call measured here (779 items): CLI 86-101 ms (python 9 + import backlog 48 + load 22-36), in-process backlog.main 22-36 ms; the Bash route also runs PreToolUse kb_hook.py 22 ms and coord_hook.py 42 ms, an mcp__kb__ call none. Prompts are no saving: settings.json allows Bash(python3 _tools/backlog.py *); 211 bash permission.request rows in 35,919 Bash calls. Choices: (1) one typed tool per verb: settings rules match an MCP tool by name only (permissions-mcp:12), so per-verb rules and annotations need per-verb tools; (2) in-process like kb_backlog, root = git top level of the server's cwd, so a check plants a root with os.chdir (the old child uses kbcommon.HOME, in a plugin install the plugin root: lead, not reproduced, verify first); (3) CLAUDECODE=1 forced and restored, so a server started outside Claude Code still cannot answer a ceiling gate (bl_authority.in_agent_session, bl_items.py:556; agent_session flag :607); (4) record and confirm_held stay on Bash (operator relay path); (5) bash_denied mirror unchanged. test_redact.py:255-259 asserts every non-coord tool but kb_feedback is read-only with the env unset (ST-dbjwje2n).",
+  "filed_in": "clone-0ea70e5c"
+}

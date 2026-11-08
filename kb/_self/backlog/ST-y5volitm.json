@@ -1,0 +1,49 @@
+{
+  "id": "ST-y5volitm",
+  "kind": "story",
+  "title": "backlog_dispatch and backlog_begin start a worker's headless session as a job of the operations service, with the CLI's own caps",
+  "status": "draft",
+  "parent": "EP-tmw3tokk",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "With KB_BACKLOG_WRITE_TOOLS=1 the kb MCP server lists backlog_dispatch (id, model, max_turns, known, known_suite, probe, dry_run, and resume with message) and backlog_begin (ids up to four, by, trailer, dry_run, model, max_turns, max_budget_usd, known, known_suite, probe), each parsing its argv with the backlog.py parser and submitting it through ops_service.submit like the land tool; begin with more than four ids is a rejected outcome before any submit, as the CLI refuses it; a dry_run call prints the plan inline through backlog.main and starts nothing and no job; the tools pass only the caps the caller gave (the CLI's own per-kind --max-turns stays), openWorldHint is true (each starts a model session), readOnlyHint false and destructiveHint false",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,subprocess,tempfile,importlib;sys.path.insert(0,\"_tools\");os.environ[\"KB_BACKLOG_WRITE_TOOLS\"]=\"1\";[os.environ.pop(k,None) for k in (\"CLAUDECODE\",\"CLAUDE_CODE_CHILD_SESSION\")];R=os.getcwd();d=tempfile.mkdtemp();open(d+\"/ops_service.py\",\"w\").write(\"CALLS=[];submit=lambda verb,argv,item=None,session=None:(CALLS.append((verb,argv,item)),{\\\"job\\\":\\\"J-test0002\\\",\\\"verb\\\":verb,\\\"item\\\":item,\\\"state\\\":\\\"queued\\\"})[1]\");sys.path.insert(0,d);importlib.invalidate_caches();import kb_mcp,ops_service;a=tempfile.mkdtemp();g=lambda *x:subprocess.run([\"git\",\"-C\",a,*x],check=True,capture_output=True);g(\"init\",\"-q\");g(\"config\",\"user.email\",\"a@example.com\");g(\"config\",\"user.name\",\"n\");iid=subprocess.run([sys.executable,R+\"/_tools/backlog.py\",\"--root\",a,\"new\",\"story\",\"--title\",\"Planted\",\"--goal\",\"g\",\"--touch\",\"x/*\",\"--check\",\"true\"],capture_output=True,text=True).stdout.split()[2];g(\"add\",\"-A\");g(\"commit\",\"-qm\",\"plant\");os.chdir(a);call=lambda n,**k:kb_mcp.handle({\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":n,\"arguments\":k}})[\"result\"];r=call(\"backlog_dispatch\",id=iid,max_turns=5);assert not r[\"isError\"] and r[\"structuredContent\"][\"job\"]==\"J-test0002\",r;assert ops_service.CALLS[-1][0]==\"dispatch\" and ops_service.CALLS[-1][1][:2]==[\"dispatch\",iid] and \"--max-turns\" in ops_service.CALLS[-1][1],ops_service.CALLS;n=len(ops_service.CALLS);five=call(\"backlog_begin\",ids=[iid]*5,by=\"orch\");assert five[\"isError\"] and len(ops_service.CALLS)==n,\"more than four ids submitted\";assert not call(\"backlog_begin\",ids=[iid],by=\"orch\")[\"isError\"] and ops_service.CALLS[-1][0]==\"begin\",ops_service.CALLS;m=len(ops_service.CALLS);call(\"backlog_begin\",ids=[iid],by=\"orch\",dry_run=True);assert len(ops_service.CALLS)==m,\"a dry run submitted a job\""
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_mcp.py",
+    "_tools/test_redact.py",
+    "kb/_self/plugin.md",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "ST-p2wmi3hq"
+  ],
+  "relates_to": [
+    "ST-lpkde2s3"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Serve backlog_dispatch and backlog_begin, which each start paid headless worker sessions, as kb MCP tools, and under which cap rule?",
+      "options": [
+        "Serve both with the CLI's own caps",
+        "Serve both and require max_budget_usd on every call",
+        "Serve neither"
+      ],
+      "recommendation": "Serve both with the CLI's own caps",
+      "reason": "since the Bash route is allowed the same way and the tool adds no spend path (per-kind max-turns stays; max-budget-usd only when the caller gives it)",
+      "class": "design"
+    }
+  ],
+  "notes": "Evidence 2026-11-08. dispatch 652 and begin 73 Bash calls in the census; backlog.py usage: dispatch runs claude -p --model sonnet --max-turns N (60 task, 100 story, 200 research) in the foreground until the worker exits, --detach starts it detached; begin claims up to four items, pushes the claims once and dispatches each detached, refusing a fifth id. In the job model the service process is the detach: the job runs dispatch in the foreground and its state is the worker's lifetime, and begin returns after its claims, push and detached dispatches. Pairing: ops_service.submit(verb 'dispatch'|'begin', argv, item=ID) as in ST-p2wmi3hq. Gate g1 (money): each call starts a paid session; the recommendation keeps the CLI's caps and adds no new spend path. A dry_run runs inline because backlog.py dispatch --dry-run and begin --dry-run write and start nothing.",
+  "filed_in": "clone-0ea70e5c"
+}

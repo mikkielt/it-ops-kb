@@ -1,0 +1,33 @@
+{
+  "id": "ST-db2s222i",
+  "kind": "story",
+  "title": "The sprint, item and backlog skills and the worker role name the kb MCP write and job tools first, with one tool search for their names and backlog.py as the fallback",
+  "status": "draft",
+  "parent": "EP-tmw3tokk",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "skills/sprint/SKILL.md, skills/item/SKILL.md, skills/backlog/SKILL.md and agents/worker.md tell a session that lists the backlog tools to load them with one ToolSearch select of the names it needs in its first call (a deferred tool has no schema until searched; no session ran such a search for kb_backlog in the 2026-10-24 census), then call backlog_claim, backlog_release, backlog_answer, backlog_set, backlog_move, backlog_new, backlog_gate_add, backlog_reopen and backlog_drop for the short steps and backlog_land, backlog_done, backlog_stage_back, backlog_dispatch, backlog_begin and backlog_close for the long ones, follow a returned job with coord_wait kind progress for the item or kb_job, and run the same command line of backlog.py only when those tools are not listed or the call is refused for being absent; record and confirm_held and the operator-only commands keep their Bash lines; kbtools.py answers a need such as claim a backlog item with the backlog_claim tool",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;out=subprocess.run([sys.executable,\"_tools/kbtools.py\",\"claim a backlog item\"],capture_output=True,text=True).stdout;assert \"backlog_claim\" in out,out[:300];need=[\"ToolSearch\",\"backlog_claim\",\"backlog_land\",\"kb_job\"];bad=[(f,w) for f in (\"skills/sprint/SKILL.md\",\"skills/item/SKILL.md\") for w in need if w not in open(f,encoding=\"utf-8\").read()];assert not bad,bad;assert \"ToolSearch\" in open(\"skills/backlog/SKILL.md\",encoding=\"utf-8\").read() and \"backlog_new\" in open(\"skills/backlog/SKILL.md\",encoding=\"utf-8\").read(),\"backlog skill\""
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "skills/item/SKILL.md",
+    "skills/backlog/SKILL.md",
+    "agents/worker.md"
+  ],
+  "depends_on": [
+    "ST-xm7y7dag",
+    "ST-icdowdj6",
+    "ST-dufpymel",
+    "ST-p2wmi3hq",
+    "ST-ye5dxzmq"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

@@ -1,0 +1,35 @@
+{
+  "id": "ST-ye5dxzmq",
+  "kind": "story",
+  "title": "kb_job reads a submitted job's state and log without blocking and kb_job_cancel stops it, so a session follows a land, done or stage-back with the tools it already has",
+  "status": "draft",
+  "parent": "EP-tmw3tokk",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The kb MCP server lists kb_job (job or item or state to list; lines for the log tail; readOnlyHint true) and kb_job_cancel (job; readOnlyHint false, destructiveHint true, idempotentHint true) with KB_BACKLOG_WRITE_TOOLS=1; kb_job returns ops_service.status(job) (or ops_service.list(item, state)) as structuredContent with state, exit, step, started, ended and, when the job has ended, its result envelope, plus the log's last lines from ops_service.tail(job, lines), and a follow hint naming coord_wait with kind progress and the job's item; it never blocks on the job (this server answers one request at a time: coord_wait holds it for at most 60 s, so a long wait is the Bash route, coord.py wait --kind progress --item ID in a background shell); an unknown job is a tool error; kb_job_cancel calls ops_service.cancel(job) and returns the new state",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,tempfile,importlib;sys.path.insert(0,\"_tools\");os.environ[\"KB_BACKLOG_WRITE_TOOLS\"]=\"1\";d=tempfile.mkdtemp();open(d+\"/ops_service.py\",\"w\").write(\"S={\\\"J-test0001\\\":{\\\"job\\\":\\\"J-test0001\\\",\\\"verb\\\":\\\"land\\\",\\\"item\\\":\\\"ST-abcdefgh\\\",\\\"state\\\":\\\"running\\\",\\\"exit\\\":None,\\\"step\\\":\\\"rebase\\\"}};status=lambda j:S[j];list=lambda item=None,state=None:[v for v in S.values()];tail=lambda j,lines=20:[\\\"step rebase\\\"];cancel=lambda j:dict(S[j],state=\\\"cancelled\\\")\");sys.path.insert(0,d);importlib.invalidate_caches();import kb_mcp;call=lambda n,**k:kb_mcp.handle({\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":n,\"arguments\":k}})[\"result\"];tools={t[\"name\"]:t for t in kb_mcp.tool_list()};assert tools[\"kb_job\"][\"annotations\"][\"readOnlyHint\"] is True and tools[\"kb_job_cancel\"][\"annotations\"][\"readOnlyHint\"] is False,\"annotations\";r=call(\"kb_job\",job=\"J-test0001\",lines=5);s=r.get(\"structuredContent\") or {};assert not r[\"isError\"] and s.get(\"state\")==\"running\" and s.get(\"step\")==\"rebase\",\"kb_job\",r;assert \"coord_wait\" in str(s.get(\"follow\")),s;assert call(\"kb_job\",job=\"J-nope0000\")[\"isError\"],\"unknown job\";c=call(\"kb_job_cancel\",job=\"J-test0001\");assert (c.get(\"structuredContent\") or {}).get(\"state\")==\"cancelled\",c"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_mcp.py",
+    "_tools/test_redact.py",
+    "kb/_self/plugin.md",
+    "kb/_self/tools.md",
+    "kb/_self/coordination.md"
+  ],
+  "depends_on": [
+    "ST-p2wmi3hq"
+  ],
+  "relates_to": [
+    "EP-nij36lt7",
+    "ST-qeespjim"
+  ],
+  "notes": "Evidence 2026-11-08. coord_wait tool caps a hold at 60 s because this server answers one request at a time (kb_mcp.py:1003), so kb_job reads state and returns at once; a long follow is coord.py wait --kind progress --item ID (a Bash run_in_background shell or the Monitor tool, whose task notification wakes an idle session; docs: Bash run_in_background and background tasks, code.claude.com tools-reference, read 2026-11-08). Claude Code per-server timeout is wall-clock and progress notifications do not extend it; stdio idle window 30 minutes (docs mcp#time-limits-on-mcp-tool-calls, 2026-11-08). MCP spec options for later (kb/public/mcp/tasks-extension.md:12-26, DOC S718): a server may answer tools/call with CreateTaskResult (resultType task, taskId, ttlMs, pollIntervalMs) when the client declares io.modelcontextprotocol/tasks, polled with tasks/get, cancelled with tasks/cancel; progress notifications need a progressToken from the client (progress.mdx). Claude Code supports MCP tasks in public beta from v2.1.304, terminal CLI sessions, Agent SDK and stream-json sessions only, not subagents, not VS Code or desktop (docs read 2026-11-08). The job record this story reads is the durable handle the spec's task needs, and a stdio server's tasks survive its exit only when the work lives outside it, which the service gives: a tasks adapter (the server advertising the extension in server/discover and mapping tasks/get and tasks/cancel to status and cancel) is a later story, not filed here, because it helps interactive sessions only. Pairing: reads ops_service.status, tail, list, cancel from plan/ops-service's half.",
+  "filed_in": "clone-0ea70e5c"
+}

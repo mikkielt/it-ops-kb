@@ -1,0 +1,29 @@
+{
+  "id": "ST-xpvfqfo6",
+  "kind": "story",
+  "title": "Every kb MCP backlog write tool answers with structuredContent and an outputSchema: ok, exit, outcome, the items it changed and the CLI's text",
+  "status": "draft",
+  "parent": "EP-tmw3tokk",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Each backlog write and job tool of the kb MCP server lists an outputSchema and returns structuredContent {ok, exit, outcome (done, refused for exit 1, rejected for exit 2), text (what the command printed, redacted), refusal (what it printed on stderr, else null), items (one entry for each item file the call changed, read back after the call: id, status, claimed_by, sprint, priority, and its gates with id, kind, class and answered)} and, as the spec asks, the same JSON in its text block; isError is true exactly when ok is false; the item list comes from comparing the item directory before and after the call, so no bl_ module changes, and an exit 1 with output is a refused outcome, not a transport error",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,subprocess,tempfile,json;sys.path.insert(0,\"_tools\");os.environ[\"KB_BACKLOG_WRITE_TOOLS\"]=\"1\";[os.environ.pop(k,None) for k in (\"CLAUDECODE\",\"CLAUDE_CODE_CHILD_SESSION\")];import kb_mcp;R=os.getcwd();a=tempfile.mkdtemp();g=lambda *x:subprocess.run([\"git\",\"-C\",a,*x],check=True,capture_output=True);g(\"init\",\"-q\");g(\"config\",\"user.email\",\"a@example.com\");g(\"config\",\"user.name\",\"n\");iid=subprocess.run([sys.executable,R+\"/_tools/backlog.py\",\"--root\",a,\"new\",\"story\",\"--title\",\"Planted\",\"--goal\",\"g\",\"--touch\",\"x/*\",\"--check\",\"true\"],capture_output=True,text=True).stdout.split()[2];g(\"add\",\"-A\");g(\"commit\",\"-qm\",\"plant\");os.chdir(a);call=lambda n,**k:kb_mcp.handle({\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":n,\"arguments\":k}})[\"result\"];tools={t[\"name\"]:t for t in kb_mcp.tool_list()};assert tools[\"backlog_claim\"].get(\"outputSchema\"),\"no outputSchema\";r=call(\"backlog_claim\",id=iid,by=\"worker\");s=r.get(\"structuredContent\");assert s and set((\"ok\",\"exit\",\"outcome\",\"text\",\"refusal\",\"items\"))<=set(s),r;assert s[\"ok\"]==(not r[\"isError\"]) and s[\"outcome\"] in (\"done\",\"refused\",\"rejected\"),s;assert json.loads(r[\"content\"][0][\"text\"])==s,\"text block differs from structuredContent\";assert (s[\"ok\"] and s[\"items\"] and s[\"items\"][0][\"id\"]==iid) or (not s[\"ok\"] and s[\"refusal\"]),s;m=call(\"backlog_claim\",id=\"ST-zzzzzzzz\",by=\"worker\")[\"structuredContent\"];assert not m[\"ok\"] and m[\"exit\"]==2 and m[\"outcome\"]==\"rejected\" and m[\"items\"]==[],m"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_mcp.py",
+    "_tools/test_redact.py",
+    "kb/_self/plugin.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-xm7y7dag"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

@@ -1,0 +1,29 @@
+{
+  "id": "ST-xko6xdix",
+  "kind": "story",
+  "title": "kb_mcp.py --register-local --backlog-write on|off registers the local kb server with the write tools served or not, beside the coord switch",
+  "status": "draft",
+  "parent": "EP-tmw3tokk",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "python3 _tools/kb_mcp.py --register-local --backlog-write on registers the local kb server with KB_BACKLOG_WRITE_TOOLS=1 in its env and off with none of it, a run with --coord-tools off too keeps both variables in the one registration, and --dry-run prints the claude mcp add-json command with the env without running it; kb_mcp.py --status names whether the registered server serves the write tools; plugin.md says the plugin's own kb server serves none of them (plugin.json sets no env) and how a host adds them",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;p=subprocess.run([sys.executable,\"_tools/kb_mcp.py\",\"--register-local\",\"--backlog-write\",\"on\",\"--coord-tools\",\"off\",\"--dry-run\"],capture_output=True,text=True);o=p.stdout+p.stderr;assert p.returncode==0,(p.returncode,o[-300:]);assert \"KB_BACKLOG_WRITE_TOOLS\" in o and \"KB_COORD_TOOLS\" in o,o[-400:];q=subprocess.run([sys.executable,\"_tools/kb_mcp.py\",\"--register-local\",\"--backlog-write\",\"off\",\"--dry-run\"],capture_output=True,text=True);assert q.returncode==0 and \"KB_BACKLOG_WRITE_TOOLS\" not in q.stdout,q.stdout[-300:]"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_mcp.py",
+    "kb/_self/plugin.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-rafmets7",
+    "ST-xm7y7dag"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
