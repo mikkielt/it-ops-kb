@@ -2,7 +2,7 @@
   "id": "ST-a73x2hvh",
   "kind": "story",
   "title": "kbjob.py ensure starts the executor when none runs, ping tells, and submit never queues for nobody",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-tmw3tokk",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",
@@ -169,6 +169,28 @@
   ],
   "notes": "Choice: a session starts the executor (ensure, called by submit) and a login item is only printed, because writing a LaunchAgent or a systemd unit changes the operator's host outside the clone (the operator names 'started by a session or a login item'; the print leaves the install to them, so no host-setup gate). The executor then outlives the session that started it, as dispatch --detach does for a worker (bl_dispatch.py:1051 spawn_detached, start_new_session): a background shell would die with Claude Code (https://code.claude.com/docs/en/interactive-mode#how-backgrounding-works, read 2026-11-08), so ensure starts it with its own session and never as a Bash background task. One executor per host holds an exclusive file in the host lock directory (KB_HOST_LOCK_DIR, kg_lock's mechanism, git.md:62) so two sessions' ensure never start two. Claude Code's own supervisor (claude daemon, background sessions restarted when their process exits: kb public/claude/parallel-sessions.md:84, DOC https://code.claude.com/docs/en/agent-view, kb retrieved 2026-10-26) hosts model sessions, not shell commands; it does not replace this executor and is not rebuilt here.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-61c966d6",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "36928cfca5b1fefe4abb86517ac655f25adc1ac1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,tempfile,subprocess,signal,time; d=tempfile.mkdtemp(); h=tempfile.mkdtemp(); env=dict(os.environ,KB_HOST_LOCK_DIR=d,HOME=h,KB_OPERATOR=\"op-00000000\"); s=os.path.join(d,\"c.sqlite\"); kb=lambda *x: subprocess.run([sys.executable,\"_tools/kbjob.py\",\"--store\",s,*x],env=env,capture_output=True,text=True,timeout=60); r=kb(\"ensure\"); assert r.returncode==0, r; pid=int(r.stdout.split(\"pid\")[1].split()[0]); assert kb(\"ping\").returncode==0; e=kb(\"ensure\"); assert e.returncode==0 and str(pid) in e.stdout, e; os.kill(pid,signal.SIGTERM); time.sleep(2); assert kb(\"ping\").returncode==1; p=kb(\"login-item\",\"--print\"); assert p.returncode==0 and \"RunAtLoad\" in p.stdout and \"serve\" in p.stdout and os.listdir(h)==[], (p, os.listdir(h))"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,tempfile,subprocess,signal,time\nd=tempfile.mkdtemp(); h=tempfile.mkdtemp(); env=dict(os.environ,KB_HOST_LOCK_DIR=d,HOME=h,KB_OPERATOR=\"op-00000000\"); s=os.path.join(d,\"c.sqlite\")\nkb=lambda *x: subprocess.run([sys.executable,\"_tools/kbjob.py\",\"--store\",s,*x],env=env,capture_output=True,text=True,timeout=60)\nr=kb(\"submit\",\"check\",\"--name\",\"backlog-check\"); o=r.stdout+r.stderr; assert r.returncode==0 and \"no executor, started pid\" in o, r\nos.kill(int(o.split(\"started pid\")[1].split()[0]),signal.SIGTERM)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
