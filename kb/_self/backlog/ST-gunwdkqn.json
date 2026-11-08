@@ -25,7 +25,6 @@
     }
   ],
   "touches": [
-    ".claude/skills/kb-sprint/SKILL.md",
     "skills/sprint/SKILL.md",
     ".claude/settings.json",
     "kb/_self/backlog.md",
