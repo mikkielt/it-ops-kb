@@ -12,7 +12,7 @@
       "run": [
         "python3",
         "-c",
-        "import sys,os,tempfile,subprocess,json; d=tempfile.mkdtemp(); kd=os.path.join(d,\"keys\"); os.mkdir(kd); k1=os.path.join(kd,\"jan.kowalski\"); k2=os.path.join(kd,\"anna.nowak\"); open(k1,\"w\").write(\"k1key-placeholder\"); open(k2,\"w\").write(\"k2key-placeholder\"); os.chmod(k1,0o600); os.chmod(k2,0o600); sv=subprocess.Popen([sys.executable,\"_tools/coord.py\",\"--store\",os.path.join(d,\"c.sqlite\"),\"serve\",\"--bind\",\"127.0.0.1:0\",\"--keys\",kd],stdout=subprocess.PIPE,text=True); url=sv.stdout.readline().split(\"serving\")[1].strip(); kb=lambda key,*x: subprocess.run([sys.executable,\"_tools/kbjob.py\",\"--url\",url,\"--key-file\",key,*x],capture_output=True,text=True,timeout=300); j=json.loads(kb(k1,\"submit\",\"check\",\"--name\",\"backlog-check\",\"--no-ensure\").stdout)[\"job\"]; kb(k2,\"serve\",\"--once\"); s1=json.loads(kb(k1,\"status\",j).stdout)[\"state\"]; kb(k1,\"serve\",\"--once\"); s2=json.loads(kb(k1,\"status\",j).stdout)[\"state\"]; sv.terminate(); assert s1==\"queued\" and s2 in (\"succeeded\",\"failed\"), (s1,s2)"
+        "import sys,os,tempfile,subprocess,json; d=tempfile.mkdtemp(); kd=os.path.join(d,\"keys\"); os.mkdir(kd); k1=os.path.join(kd,\"jan.kowalski\"); k2=os.path.join(kd,\"anna.nowak\"); open(k1,\"w\").write(\"k1key-placeholder\"); open(k2,\"w\").write(\"k2key-placeholder\"); os.chmod(k1,0o600); os.chmod(k2,0o600); sv=subprocess.Popen([sys.executable,\"_tools/coord.py\",\"--store\",os.path.join(d,\"c.sqlite\"),\"serve\",\"--bind\",\"127.0.0.1:0\",\"--keys\",kd],stdout=subprocess.PIPE,text=True); url=sv.stdout.readline().split(\"serving\")[1].strip(); kb=lambda key,*x: subprocess.run([sys.executable,\"_tools/kbjob.py\",\"--url\",url,\"--key-file\",key,*x],capture_output=True,text=True,timeout=300); r=kb(k1,\"submit\",\"check\",\"--name\",\"backlog-check\",\"--no-ensure\"); assert r.returncode==0, r; j=json.loads(r.stdout)[\"job\"]; assert kb(k2,\"serve\",\"--once\").returncode in (0,1); s1=json.loads(kb(k1,\"status\",j).stdout)[\"state\"]; assert kb(k1,\"serve\",\"--once\").returncode in (0,1); s2=json.loads(kb(k1,\"status\",j).stdout)[\"state\"]; sv.terminate(); assert s1==\"queued\" and s2 in (\"succeeded\",\"failed\"), (s1,s2)"
       ]
     }
   ],
@@ -27,5 +27,20 @@
     "ST-5h2kx2ri",
     "ST-rmv67pks"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Does a central service only queue jobs for workstation executors, or does a central executor also run operations?",
+      "options": [
+        "queue-only: the central coord holds job states and events, and every operation runs on the workstation that holds the clone",
+        "central executor for check and benchmark runs only: it keeps a clone of its own and a credential for it",
+        "central executor for every operation, landings included"
+      ],
+      "recommendation": "queue-only: the central coord holds job states and events, and every operation runs on the workstation that holds the clone",
+      "class": "secrets"
+    }
+  ],
+  "notes": "Design: the central service is a coord serve (coord.py serve, POST /v1/run with {argv}, bearer token per operator, one key file each, team scopes, plain-http refusal beyond loopback: kb/_self/coordination.md:71-77), so a thin client needs no new network surface: submit, follow and status are coord operations on job/ID keys over the same /v1/run. The operator's words 'subscribing to such centrally while serving as thin client' are read as: sessions are thin (they only write and read the queue), executors subscribe to the central queue for their own host and operator; code never moves, because land, done and stage-back need the clone's worktrees, hooks and locks. A central executor that runs operations would need its own clone and credentials, hence the gate (class secrets, operator-only). Authority: the executor runs a job only when the job's operator equals the operator of its own key file and the operation is in the closed table (ST-nwwcf3kk), so a job submitted by one operator never runs on another's workstation, and the coord server's team rule (a key under another team's prefix is refused, coordination.md:75) is unchanged. The central deployment host is not decided here (the target is an unknown self-hosted GitLab, memory git-platform-roles); this story proves the mode on a loopback coord serve. Complement stance: no Agent Mail or Beads piece does this (kb public/agents/coordination-tools.md:54: they answer which files or tasks an agent holds, not which command runs), so nothing is rebuilt; kb/_self/coordination.md's own coord is what is extended. Related: EP-fxrzbuza (standard-library claim, lease and event service) overlaps only where it also extends coord serve.",
   "filed_in": "clone-0ea70e5c"
 }
