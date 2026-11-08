@@ -1,0 +1,18 @@
+{
+  "id": "BG-tlwnkrd3",
+  "kind": "bug",
+  "title": "The query-log spool keeps the rows of sessions whose end marker is over a day old, with no entry undelivered",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "A spool file whose session ended over a day ago is delivered and removed, or kept with a stated reason; the clone's spool holds no ended session of days ago with rows while no entry waits for delivery",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys,time;from pathlib import Path;g=Path(subprocess.check_output(['git','rev-parse','--path-format=absolute','--git-common-dir'],text=True).strip());sp=g.parent/'_cache'/'querylog'/'spool';sys.exit(any(e.stat().st_mtime<time.time()-86400 and e.with_suffix('.jsonl').exists() and e.with_suffix('.jsonl').stat().st_size for e in sp.glob('*.end')))"
+    ]
+  },
+  "filed_in": "clone-0ea70e5c"
+}
