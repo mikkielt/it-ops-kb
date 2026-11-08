@@ -3,6 +3,7 @@
 
   redact.py [FILE]        the rules pass over FILE (default stdin), printed to stdout as UTF-8, newlines kept
   redact.py --scan [FILE] the leak scan over FILE: one `kind<TAB>value` line per hit, exit 1 when there is any
+  --root DIR              with either: the root in DIR also keeps the user names its `_root.md` lists as `placeholders`
 
 The design is kb/_self/querylog.md (Redaction). Three stages per batch of entries:
   1. redact(text)         stdlib rules: each identifier shape becomes the kb placeholder for its kind (PLACEHOLDERS)
@@ -21,7 +22,7 @@ suffix allowlist: an explicit UPN suffix need not be the DNS domain (reuse/pseud
 and DER S-h2cmbqvf, S-dcjdn73r).
 
 Answers: how a text is redacted to kb placeholders and whether it still leaks an identifier
-Use: python3 _tools/redact.py [--scan] [FILE]
+Use: python3 _tools/redact.py [--scan] [--root DIR] [FILE]
 """
 import collections, functools, hashlib, ipaddress, json, math, os, re, shutil, sys
 from pathlib import Path
@@ -437,19 +438,34 @@ def main(argv=None):
     if argv[:1] in (["-h"], ["--help"]):
         print(__doc__.strip())
         return 0
-    do_scan = argv[:1] == ["--scan"]
-    args = argv[1:] if do_scan else argv
+    do_scan, root_dir, args, i = False, None, [], 0
+    while i < len(argv):
+        if argv[i] == "--scan" and not do_scan:
+            do_scan = True
+        elif argv[i] == "--root" and root_dir is None and i + 1 < len(argv):
+            i += 1
+            root_dir = argv[i]
+        else:
+            args.append(argv[i])
+        i += 1
     if len(args) > 1 or (args and args[0].startswith("-")):
         print(__doc__.strip(), file=sys.stderr)
         return 2
+    root = None
+    if root_dir is not None:
+        try:
+            root = kbcommon.load_root(root_dir)
+        except kbcommon.RootError as e:
+            print(e, file=sys.stderr)
+            return 2
     raw = Path(args[0]).read_bytes() if args else sys.stdin.buffer.read()
     text = raw.decode("utf-8", errors="replace")
     if do_scan:
-        found = scan(text)
+        found = scan(text, root=root)
         for kind, value in found:
             print(f"{kind}\t{value}")
         return 1 if found else 0
-    sys.stdout.buffer.write(redact(text).encode("utf-8"))
+    sys.stdout.buffer.write(redact(text, root=root).encode("utf-8"))
     sys.stdout.buffer.flush()
     return 0
 

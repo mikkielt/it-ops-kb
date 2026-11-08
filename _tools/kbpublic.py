@@ -67,7 +67,7 @@ Answers: which paths never reach the public home, and whether a revision carries
 Answers: how the history is published to the public home and bridged
 Use: python3 _tools/kbgit.py publish | check-public | bridge BRANCH
 """
-import csv, hashlib, io, json, os, re, subprocess, sys, tempfile, urllib.parse, urllib.request
+import csv, hashlib, io, json, os, re, subprocess, sys, tempfile, types, urllib.parse, urllib.request
 from pathlib import Path
 
 PRIVATE = ("kb/_querylog",)  # repository paths kept on the integration remote only (kb/_self/git.md, Public home)
@@ -563,19 +563,45 @@ def structured_kinds(path, vendored):
     return kbcommon.PROSE_STRUCTURED if path.endswith(PROSE_SUFFIXES) or path == ITEM_TEXT else kbcommon.STRUCTURED
 
 
-def file_hits(path, text, allow, pinned=()):
+def root_placeholders(rev, files, cwd):
+    """{root directory: user names} of every root in REV's tree (FILES, its paths): the `placeholders` its `_root.md`
+    lists, () for none or for a list that kbcommon refuses (then no name passes). An unreadable `_root.md` is left out."""
+    import kbcommon
+    res = {}
+    for x, text in sorted(blobs(rev, [f for f in files if f.rsplit("/", 1)[-1] == kbcommon.ROOT_FILE], cwd).items()):
+        try:
+            res[root_dir(x)] = kbcommon._placeholders(root_dir(x), kbcommon._meta(text).get("placeholders", ""))
+        except kbcommon.RootError:
+            res[root_dir(x)] = ()
+    return res
+
+
+def root_of(path, table):
+    """What leak_hits reads as a file's root: an object whose `placeholders` are the user names the nearest enclosing
+    `_root.md` of PATH lists (TABLE: root_placeholders), None when that root lists none or no root holds PATH."""
+    d = root_dir(path)
+    while True:
+        if d in table:
+            return types.SimpleNamespace(placeholders=table[d]) if table[d] else None
+        if not d:
+            return None
+        d = root_dir(d)
+
+
+def file_hits(path, text, allow, pinned=(), root=None):
     """[(kind, value)] of the leak scan of the file PATH with TEXT, as the tracked-file scan reads a file: urls are
     stripped except for secrets and the registry's private names (an internal root's qualified path, id, pointer host
     and path, read in each url and after each `/` of it); vendor exports, snapshots (`/artifacts/`, `/_snapshots/`) and
     the pinned artifacts PINNED lists are scanned for secrets only, the plain shapes (no structured secret: a header
     credential, a url password, an assignment, which a vendor's example would trip); a prose file (`.md`, `.txt`) and an
-    item's text (ITEM_TEXT) also have an unquoted secret assignment flagged; a GUID counts in every other text file."""
+    item's text (ITEM_TEXT) also have an unquoted secret assignment flagged; a GUID counts in every other text file.
+    ROOT: the Root of the file (root_of reads it from the tree), whose listed `placeholders` pass as a home path's user."""
     import kbcommon
     vendored = "/artifacts/" in path or f"/{kbcommon.SNAPSHOTS}/" in path or path in pinned
     kinds = structured_kinds(path, vendored)
-    hits = kbcommon.leak_hits(URL_RX.sub("", text), allow, kinds)
+    hits = kbcommon.leak_hits(URL_RX.sub("", text), allow, kinds, root=root)
     whole = tuple(k for k in kinds if k != "assign")  # a header credential and a url password stand in a url too
-    hits += [h for h in kbcommon.leak_hits(text, allow, whole) if h[0] == "secret" and h not in hits]
+    hits += [h for h in kbcommon.leak_hits(text, allow, whole, root=root) if h[0] == "secret" and h not in hits]
     if not vendored:
         for m in URL_RX.finditer(text):
             url = m.group(0)
@@ -611,10 +637,11 @@ def tree_hits(rev, paths, cwd):
         return []
     allow, pins = allowlist(rev, cwd), pinned_paths(rev, files, cwd)
     internal = internal_prefixes(rev, files, cwd)
+    table = root_placeholders(rev, files, cwd)
     out = []
     for path, text in sorted(blobs(rev, held, cwd).items()):
         secret_only = path.startswith(internal) or any(path.startswith(f"{p}/") for p in PRIVATE)
-        for kind, value in file_hits(path, text, allow, pins):
+        for kind, value in file_hits(path, text, allow, pins, root_of(path, table)):
             if kind == "secret" or not secret_only:
                 at = text.find(value)
                 out.append((path, text.count("\n", 0, at) + 1 if at >= 0 else 0, kind))
@@ -681,8 +708,9 @@ def public_values(tip, cwd, projected=True):
     files = tree_files(tip, cwd)
     if files is None:
         raise RuntimeError(f"git ls-tree {tip[:12]} failed")
+    table = root_placeholders(tip, files, cwd)  # a name a root lists is no value its files hold
     files = [x for x in files if projected or not kept_off(x)]
-    res = {hit_key(h) for x, text in blobs(tip, files, cwd).items() for h in file_hits(x, text, {})}
+    res = {hit_key(h) for x, text in blobs(tip, files, cwd).items() for h in file_hits(x, text, {}, root=root_of(x, table))}
     cache_save(cwd, name, sorted(res), f"public-{mode}-")
     return res
 
@@ -720,17 +748,18 @@ class LongRange(Exception):
         self.n = n
 
 
-def leak_verdicts(written, proj, tip, final, cwd, pinned=frozenset(), projected=True, secret_only=()):
+def leak_verdicts(written, proj, tip, final, cwd, pinned=frozenset(), projected=True, secret_only=(), roots=None):
     """{commit: [(path, kinds)]} of the leak check of WRITTEN [(commit, old blob, new blob, path)], the files the
     commits write: a hit in the lines a commit adds that the public tip holds in no file the projection keeps (public_values; with PROJECTED False the tip's files it removes hold nothing), and neither
     the parent's nor TIP's version of the file holds, allowing FINAL (PROJ's allowlist) and the commit's own, and reading PINNED (pinned_paths) and the files under a prefix of SECRET_ONLY (the
-    directory of an internal root or pointer, as tree_hits reads them) for secrets only. A commit with no hit is left out."""
+    directory of an internal root or pointer, as tree_hits reads them) for secrets only. ROOTS (root_placeholders of PROJ's
+    tree) gives each file the user names its nearest enclosing root lists. A commit with no hit is left out."""
     # scan only the lines a commit adds (the new version's lines its parent's version lacks), a chunk of writes at a
     # time; the whole versions are read only for the files whose added lines hit
     memo = []
 
     def hits_in(x, text, allow):  # the files of an internal root or pointer are read for secrets only, as tree_hits does
-        got = file_hits(x, text, allow, pinned)
+        got = file_hits(x, text, allow, pinned, root_of(x, roots or {}))
         return [h for h in got if h[0] == "secret"] if x.startswith(secret_only) else got
 
     def public():  # scanned on first use: a range with no hit never reads the tip's whole tree
@@ -807,7 +836,9 @@ def history_refusals(proj, tip, files, cwd, sources=None, bound=None, projected=
     changes = history_changes(proj, tip, cwd)
     final = blobs(proj, [ALLOWLIST_PATH], cwd).get(ALLOWLIST_PATH, "")
     pinned = pinned_paths(proj, files, cwd)
-    inputs = "\0".join([f"scan-form {scan_form()}", f"projected {projected}", final, *sorted(pinned)])
+    table = root_placeholders(proj, files, cwd)
+    listed = "\0".join(f"{d}\0{','.join(names)}" for d, names in sorted(table.items()) if names)
+    inputs = "\0".join([f"scan-form {scan_form()}", f"projected {projected}", final, *sorted(pinned), f"placeholders {listed}"])
     vname = f"verdicts-{tip or 'none'}-{hashlib.sha256(inputs.encode('utf-8')).hexdigest()[:16]}.json"
     got = cache_load(cwd, vname)
     verdicts = {c: v for c, v in (got.items() if isinstance(got, dict) else ())
@@ -874,7 +905,7 @@ def history_refusals(proj, tip, files, cwd, sources=None, bound=None, projected=
                     f"({says[r]}), e.g. {xs[0]}")
     if todo:
         found = leak_verdicts([w for w in written if w[0] in todo and (projected or not kept_off(w[3]))],
-                              proj, tip, parse_allowlist(final), cwd, pinned, projected, tuple(sorted(secret_only)))
+                              proj, tip, parse_allowlist(final), cwd, pinned, projected, tuple(sorted(secret_only)), table)
         verdicts.update({c: found.get(c, []) for c in todo})
         cache_save(cwd, vname, verdicts, "verdicts-")
     leak = [f"commit {name(c)}: {x} has a leak-scan hit ({', '.join(kinds)})" for c, _ in changes for x, kinds in verdicts[c]]

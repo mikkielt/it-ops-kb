@@ -905,7 +905,7 @@ def check_logs(root, owner, known):
                 bad.append(f"{col} is longer than {LOG_TEXT_MAX} characters: a row holds an aggregate, not raw event text")
             bad.extend(f"{col} holds {what}: a row never carries raw event text" for rx, what in RAW_EVENT if rx.search(text))
             bad.extend(f"{col} has a leak-scan hit ({kind}): a row never carries raw event text"
-                       for kind in sorted({k for k, _ in kbcommon.leak_hits(text, allow)}))
+                       for kind in sorted({k for k, _ in kbcommon.leak_hits(text, allow, root=root)}))
         runs = kbcommon.split_list(r.get("source_run_ids"))
         if not runs:
             bad.append("no source_run_ids: a row names the runs of the query log's store it was derived from")
