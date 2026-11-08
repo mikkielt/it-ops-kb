@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts through the kb skills: (1) How does OPA sign, hash and verify a bundle, and which configuration gives it a bearer token_path and HS256 keys? (2) Which groups may own CODEOWNERS paths, and how deep do GitLab subgroups nest? (3) How does a pipeline trigger token start a pipeline with variables or inputs, and what does the minimum role for pipeline variables refuse? (4) How does a headless claude -p choose between ANTHROPIC_API_KEY, apiKeyHelper and the subscription token? (5) What ends a Claude Code background command or a Monitor call, so a job must outlive the session that started it?",
   "checks": [
     {
       "run": [
@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: the research landed before this story was filed, in commit 7d191fe8f (docs(kb): research OPA bundle signing, CODEOWNERS groups and pipeline triggers) and the kb's existing claude/ci-and-headless.md and claude/hooks.md facts; QK-operations-placement-stories-need-opa-bundles summarises it.",
   "filed_in": "clone-0ea70e5c"
 }
