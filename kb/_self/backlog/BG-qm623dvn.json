@@ -15,13 +15,50 @@
       "import sys\nsys.path.insert(0, '_tools')\nimport bench_load as b\na = b.paid_argv('A')\nassert '--tools' in a or ('--permission-mode' in a and 'dontAsk' in a), ('a paid session is not limited to its tools', [x for x in a if x.startswith('--')])"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport bench_load as b\nrules = [\"Read\", \"Bash(git status:*)\", \"Bash(python3 _tools/rag.py:*)\"]\nassert b.PAID_TOOLS.split(\",\") == rules, (\"the allow list is not Read, git status and rag.py\", b.PAID_TOOLS)\nfor arm in (\"A\", \"C\", \"D\", \"worker\"):\n    a = b.paid_argv(arm)\n    val = lambda flag: a[a.index(flag) + 1] if flag in a else None\n    assert val(\"--tools\") == \"Read,Bash\", (\"arm \" + arm + \" passes no --tools Read,Bash\", val(\"--tools\"))\n    assert val(\"--permission-mode\") == \"dontAsk\", (\"arm \" + arm + \" passes no --permission-mode dontAsk\", val(\"--permission-mode\"))\n    assert val(\"--allowedTools\") == b.PAID_TOOLS, (\"arm \" + arm + \" lost its allow list\", val(\"--allowedTools\"))\n    assert arm != \"D\" or all(x in a for x in b.NO_HOOKS), \"arm D lost its hooks-off flags\"\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "bench_load.paid_argv passes --tools Read,Bash and --permission-mode dontAsk beside its allow list of Read, git status and rag.py",
+      "check": 0
+    },
+    {
+      "clause": "bench_load.paid_argv passes --tools Read,Bash and --permission-mode dontAsk beside its allow list of Read, git status and rag.py",
+      "check": 1
+    }
+  ],
   "touches": [
     "_tools/bench_load.py",
     "kb/_self/benchmarks.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How far does a paid session's tool limit go?",
+      "options": [
+        "--tools Read,Bash and --permission-mode dontAsk beside the allow list: Edit, Write and Agent are gone, and a Bash command the clone's own .claude/settings.json allows still runs",
+        "The same, and the throwaway clone's settings.json of a paid session has its permissions.allow replaced by the allow list, so Bash runs only git status and rag.py"
+      ],
+      "recommendation": "--tools Read,Bash and --permission-mode dontAsk beside the allow list: Edit, Write and Agent are gone, and a Bash command the clone's own .claude/settings.json allows still runs",
+      "reason": "because the filed defect is the built-in tools, the clone is throwaway under a budget cap, and the second option changes what arm A means in the record",
+      "do": {
+        "--tools Read,Bash and --permission-mode dontAsk beside the allow list: Edit, Write and Agent are gone, and a Bash command the clone's own .claude/settings.json allows still runs": "BG-qm623dvn",
+        "The same, and the throwaway clone's settings.json of a paid session has its permissions.allow replaced by the allow list, so Bash runs only git status and rag.py": "BG-qm623dvn"
+      },
+      "class": "design"
+    }
+  ],
   "links": [
     "parked: SP-wv3ob5vy review"
   ],
-  "notes": "Review gap 1 of SP-wv3ob5vy: bench_load.py:871-876 paid_argv, :57 PAID_TOOLS; --allowedTools lists tools that run without a prompt and does not restrict which exist (kb public/claude/cli-flags.csv:10); .claude/settings.json allows Agent, Edit, Write, SendMessage. ST-i5az334d g3 (operator) chose 'tools Read, git status and rag.py only'. Sessions run in a throwaway clone.",
+  "notes": "Review gap 1 of SP-wv3ob5vy: bench_load.py:871-876 paid_argv, :57 PAID_TOOLS; --allowedTools lists tools that run without a prompt and does not restrict which exist (kb public/claude/cli-flags.csv:10); .claude/settings.json allows Agent, Edit, Write, SendMessage. ST-i5az334d g3 (operator) chose 'tools Read, git status and rag.py only'. Sessions run in a throwaway clone. Planning, repro run once on the base: exit 1, paid_argv has no --tools and no --permission-mode. Check 0 reads paid_argv for all four arms (A, C, D, worker): the --tools value is Read,Bash, the mode dontAsk, the allow list exactly Read, Bash(git status:*) and Bash(python3 _tools/rag.py:*), arm D keeps its hooks-off flags; it fails on the base at arm A. No paid call proves the claude side: the documented limit is kb/public/claude/cli-flags.csv:24 (--tools restricts the built-in tools, not MCP tools) and kb/public/claude/settings-and-scopes.md:102 (the three layers). Gate g1: with its second option the planner adds a clause and a check on arm_settings (the clone's permissions.allow equals the allow list) before the start.",
   "filed_in": "clone-0ea70e5c"
 }
