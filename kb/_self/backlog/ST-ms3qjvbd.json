@@ -2,7 +2,7 @@
   "id": "ST-ms3qjvbd",
   "kind": "story",
   "title": "A root pointer names its owning group path, and a pointer that names only a team is read as a group one level deep",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-p4guu2ip",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",
@@ -89,6 +89,19 @@
   ],
   "notes": "Order agreed 2026-11-08 with SP-ep7ck2ab's manager (ask A1e21b0d155): shared files (_tools/kbpublic.py, _tools/kbcommon.py, _tools/bl_land.py, kb/_self/map.csv) land by first claim; the later item rebases. No hard dependency. Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: KB-Teams trailers are unchanged",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-61c966d6",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "5abec21c56fc556b6cea13e2d4bd4c0e0fc4a180",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,tempfile,subprocess\nd=tempfile.mkdtemp(); w=os.path.join(d,\"w\"); subprocess.run([\"git\",\"clone\",\"-q\",\"--local\",\".\",w],check=True)\nrun=lambda *x: subprocess.run([sys.executable,\"_tools/kbroot.py\",*x],cwd=w,capture_output=True,text=True,timeout=120)\nr1=run(\"add-remote\",\"team-ops\",\"--url\",\"https://gitlab.corp.example.com/corp/ops/kb.git\",\"--prefix\",\"TOX\",\"--team\",\"ops\",\"--group\",\"corp/ops\",\"--access\",\"fetch\")\nr2=run(\"add-remote\",\"team-dev\",\"--url\",\"https://gitlab.corp.example.com/corp/dev/kb.git\",\"--prefix\",\"TDX\",\"--team\",\"dev\",\"--access\",\"fetch\")\nr3=run(\"add-remote\",\"team-bad\",\"--url\",\"https://gitlab.corp.example.com/x/kb.git\",\"--prefix\",\"TBX\",\"--team\",\"x\",\"--group\",\"corp//ops\",\"--access\",\"fetch\")\nls=run(\"list\").stdout\nassert r1.returncode==0 and r2.returncode==0 and r3.returncode==2, (r1,r2,r3)\nassert \"group=corp/ops\" in ls and \"group=dev\" in ls, ls\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
