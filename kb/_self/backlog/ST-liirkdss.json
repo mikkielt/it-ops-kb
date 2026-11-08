@@ -21,7 +21,8 @@
     "_tools/kbjob.py",
     "_tools/ql_capture.py",
     "kb/_self/querylog.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/test_redact.py"
   ],
   "depends_on": [
     "ST-rmv67pks"
