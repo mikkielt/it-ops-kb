@@ -27,6 +27,9 @@
     "ST-5h2kx2ri",
     "ST-rmv67pks"
   ],
+  "relates_to": [
+    "EP-fxrzbuza"
+  ],
   "gates": [
     {
       "id": "g1",
