@@ -82,7 +82,12 @@
         "source text LAYER, FILE (clone, settings.json) using kbsettings.layered for values and kbsettings._layers and _shown for the file": "ST-xx5yzpky",
         "source text LAYER alone, using kbsettings.layered only": "ST-xx5yzpky"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "source text LAYER, FILE (clone, settings.json), but through public names: rename kbsettings._layers and _shown to public layer_files and shown_path (kbsettings.py is now in this item's touches) and read them from bl_base; code.md forbids another module calling a name that starts with an underscore",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "notes": "Check 3 (backlog.py config on this clone) passes before the work: the kb's own backlog.json must keep loading as it does.",
