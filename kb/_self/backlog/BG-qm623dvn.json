@@ -7,7 +7,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "bench_load.paid_argv passes --tools Read,Bash and --permission-mode dontAsk beside its allow list of Read, git status and rag.py",
+  "goal": "bench_load.paid_argv passes --tools Read,Bash and --permission-mode dontAsk beside its allow list of Read, git status and rag.py; the throwaway clone of every paid session has its .claude/settings.json permissions.allow replaced by that allow list; a paid clone's settings.json differs from the arm's own file in nothing but permissions.allow",
   "repro": {
     "run": [
       "python3",
@@ -22,6 +22,13 @@
         "-c",
         "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport sys\nsys.path.insert(0, '_tools')\nimport bench_load as b\nrules = [\"Read\", \"Bash(git status:*)\", \"Bash(python3 _tools/rag.py:*)\"]\nassert b.PAID_TOOLS.split(\",\") == rules, (\"the allow list is not Read, git status and rag.py\", b.PAID_TOOLS)\nfor arm in (\"A\", \"C\", \"D\", \"worker\"):\n    a = b.paid_argv(arm)\n    val = lambda flag: a[a.index(flag) + 1] if flag in a else None\n    assert val(\"--tools\") == \"Read,Bash\", (\"arm \" + arm + \" passes no --tools Read,Bash\", val(\"--tools\"))\n    assert val(\"--permission-mode\") == \"dontAsk\", (\"arm \" + arm + \" passes no --permission-mode dontAsk\", val(\"--permission-mode\"))\n    assert val(\"--allowedTools\") == b.PAID_TOOLS, (\"arm \" + arm + \" lost its allow list\", val(\"--allowedTools\"))\n    assert arm != \"D\" or all(x in a for x in b.NO_HOOKS), \"arm D lost its hooks-off flags\"\n"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print('check failed:', e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport json, os, pathlib, shutil, subprocess, sys, tempfile\nsys.path.insert(0, '_tools')\nimport bench_load as b\nT = pathlib.Path(tempfile.mkdtemp())\nbin_ = T / 'bin'; bin_.mkdir()\nseen = T / 'seen'; seen.mkdir()\nfake = bin_ / 'claude'\nfake.write_text('#!/bin/sh\\ncp .claude/settings.json %s/$$.json\\necho \\'{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"total_cost_usd\":0,\"session_id\":\"x\"}\\'\\n' % seen)\nfake.chmod(0o755)\nos.environ['PATH'] = str(bin_) + os.pathsep + os.environ['PATH']\nreal = json.load(open('.claude/settings.json'))\nrules = ['Read', 'Bash(git status:*)', 'Bash(python3 _tools/rag.py:*)']\ndef clone_for(name):\n    c = T / name; (c / '.claude').mkdir(parents=True)\n    (c / '.claude' / 'settings.json').write_text(json.dumps(real, indent=2) + '\\n')\n    for a in (('init', '-q'), ('add', '-A'), ('-c', 'user.name=t', '-c', 'user.email=t', 'commit', '-q', '-m', 'x')):\n        subprocess.run(['git', *a], cwd=c, check=True, capture_output=True)\n    return c\nclass FB:\n    scratch = T / 'scratch'; cc = '?'\nFB.scratch.mkdir()\ndef hooks_of(arm):\n    left = ('coord_hook.py', 'querylog.py') if arm == 'C' else ()\n    out = {}\n    for ev, groups in real.get('hooks', {}).items():\n        kept = [dict(g, hooks=[h for h in g['hooks'] if not any(x in h.get('command', '') for x in left)]) for g in groups]\n        kept = [g for g in kept if g['hooks']]\n        if kept:\n            out[ev] = kept\n    return out\ntry:\n    for arm in ('A', 'C', 'D', 'worker'):\n        for f in seen.glob('*.json'):\n            f.unlink()\n        b.paid_group(FB, [clone_for('c-' + arm)], arm, 'idle', 0)\n        got = [json.loads(f.read_text()) for f in seen.glob('*.json')]\n        assert len(got) == 1, ('arm ' + arm + ': the planted claude ran %d times' % len(got))\n        s = got[0]\n        assert s.get('permissions', {}).get('allow') == rules, ('arm ' + arm + ': the clone keeps allow rules beyond the paid allow list', len(s.get('permissions', {}).get('allow', [])))\n        rest = lambda d: {k: v for k, v in d.items() if k not in ('hooks', 'permissions')}\n        assert rest(s) == rest(real) and s.get('permissions', {}).get('deny') == real['permissions'].get('deny'), ('arm ' + arm + ': the clone settings differ from the arm file beyond permissions.allow',)\n        assert s.get('hooks', {}) == hooks_of(arm), ('arm ' + arm + ': the clone hooks are not the arm hooks',)\nfinally:\n    shutil.rmtree(T, ignore_errors=True)\n"
+      ]
     }
   ],
   "clauses": [
@@ -31,6 +38,14 @@
     },
     {
       "clause": "bench_load.paid_argv passes --tools Read,Bash and --permission-mode dontAsk beside its allow list of Read, git status and rag.py",
+      "check": 2
+    },
+    {
+      "clause": "the throwaway clone of every paid session has its .claude/settings.json permissions.allow replaced by that allow list",
+      "check": 1
+    },
+    {
+      "clause": "a paid clone's settings.json differs from the arm's own file in nothing but permissions.allow",
       "check": 1
     }
   ],
@@ -64,6 +79,6 @@
   "links": [
     "parked: SP-wv3ob5vy review"
   ],
-  "notes": "Review gap 1 of SP-wv3ob5vy: bench_load.py:871-876 paid_argv, :57 PAID_TOOLS; --allowedTools lists tools that run without a prompt and does not restrict which exist (kb public/claude/cli-flags.csv:10); .claude/settings.json allows Agent, Edit, Write, SendMessage. ST-i5az334d g3 (operator) chose 'tools Read, git status and rag.py only'. Sessions run in a throwaway clone. Planning, repro run once on the base: exit 1, paid_argv has no --tools and no --permission-mode. Check 0 reads paid_argv for all four arms (A, C, D, worker): the --tools value is Read,Bash, the mode dontAsk, the allow list exactly Read, Bash(git status:*) and Bash(python3 _tools/rag.py:*), arm D keeps its hooks-off flags; it fails on the base at arm A. No paid call proves the claude side: the documented limit is kb/public/claude/cli-flags.csv:24 (--tools restricts the built-in tools, not MCP tools) and kb/public/claude/settings-and-scopes.md:102 (the three layers). Gate g1: with its second option the planner adds a clause and a check on arm_settings (the clone's permissions.allow equals the allow list) before the start. kb/_self/tools.md is in the touches because the docs map names it for bench_load.py; the four items that may edit it run one after another (BG-qm623dvn, BG-lgiwfs64, BG-r57wg5tg, BG-76mclha4).",
+  "notes": "Operator answered g1: option 2 (a paid clone has permissions.allow replaced by the allow list); re-planned. Planning, repro run on the base: exit 1, paid_argv has no --tools and no --permission-mode. Check 0 reads paid_argv for arms A, C, D and worker (--tools Read,Bash, mode dontAsk, the allow list exactly Read, Bash(git status:*) and Bash(python3 _tools/rag.py:*), arm D keeps its hooks-off flags); it fails on the base at arm A. Check 1 runs paid_group per arm on a planted clone with a planted claude first on PATH (no paid call and no model: it copies the clone's .claude/settings.json and prints a result event): permissions.allow must equal the allow list, permissions.deny and every key but hooks and permissions stay the project's, and the hooks are the arm's (arm C less the coord_hook.py and querylog.py commands); it fails on the base (118 allow rules). The repro is index 2. No paid call proves the claude side: kb/public/claude/cli-flags.csv:24 (--tools restricts the built-in tools, not MCP tools) and kb/public/claude/settings-and-scopes.md:102. kb/_self/tools.md is in the touches because the docs map names it for bench_load.py; the four items that may edit it run one after another (BG-qm623dvn, BG-lgiwfs64, BG-r57wg5tg, BG-76mclha4). The benchmarks doc says arm A is the clone's settings.json: it then says so with the allow list replaced. Re-planned after the answer.",
   "filed_in": "clone-0ea70e5c"
 }
