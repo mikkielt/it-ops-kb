@@ -1,0 +1,30 @@
+{
+  "id": "ST-liirkdss",
+  "kind": "story",
+  "title": "Each finished job writes one operations row with its queue wait, lock wait and run time, and kbjob.py stats prints their medians per operation",
+  "status": "draft",
+  "parent": "EP-tmw3tokk",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the executor records one ops row job.run per finished job in the query log's ops store (closed keys: op, exit class, attempt, queued_ms, wait_ms of waiting-lock and waiting-merge, run_ms), through ql_capture as land.step rows are, and kbjob.py stats prints for each operation one line op n=N queued_ms=MEDIAN wait_ms=MEDIAN run_ms=MEDIAN (nearest-rank p95 beside it), so the wait the service removes from a session is measured the same way backlog.py landings measures a landing",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,tempfile,subprocess; d=tempfile.mkdtemp(); env=dict(os.environ,CLAUDE_PLUGIN_DATA=d,CLAUDE_PLUGIN_ROOT=os.getcwd(),KB_HOST_LOCK_DIR=d); s=os.path.join(d,\"c.sqlite\"); kb=lambda *x: subprocess.run([sys.executable,\"_tools/kbjob.py\",\"--store\",s,*x],env=env,capture_output=True,text=True,timeout=300); assert kb(\"submit\",\"check\",\"--name\",\"backlog-check\",\"--no-ensure\").returncode==0; assert kb(\"serve\",\"--once\").returncode in (0,1); r=kb(\"stats\"); assert r.returncode==0 and r.stdout.split()[0]==\"check\" and \"run_ms\" in r.stdout and \"queued_ms\" in r.stdout, r"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kj_exec.py",
+    "_tools/kbjob.py",
+    "_tools/ql_capture.py",
+    "kb/_self/querylog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-rmv67pks"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
