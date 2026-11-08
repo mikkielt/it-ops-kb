@@ -1,0 +1,42 @@
+{
+  "id": "ST-bbfdim4v",
+  "kind": "story",
+  "title": "Review sprint: Operations run as jobs a central queue places on workstation, server or CI executors",
+  "status": "draft",
+  "sprint": "SP-lwkdljxg",
+  "review": true,
+  "priority": "P1",
+  "rank": 999999,
+  "goal": "Every committed item is done or dropped, provisional answers are confirmed by the operator, and a fresh-context review of the sprint's diff found no unfiled defect.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval",
+        "--file",
+        "kb/public/_retrieval/lookup_heldout.csv",
+        "--root",
+        "public",
+        "--min",
+        "86",
+        "--max-false-good",
+        "8"
+      ]
+    }
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
