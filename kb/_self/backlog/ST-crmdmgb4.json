@@ -2,7 +2,7 @@
   "id": "ST-crmdmgb4",
   "kind": "story",
   "title": "kbmon names an orphan process only after a minute and says when it has a live child, never that nothing waits for it",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-uh5h46fm",
   "priority": "P3",
@@ -44,5 +44,7 @@
     "ST-drlo365l"
   ],
   "notes": "Evidence 2026-11-08: orphan sh loops around sleep (pids 46638 and 88109 that day) have a live child, and the code cannot know that nothing waits for an orphan (mon_status prints the claim today and listed 'orphan pid 86144, running 1s'). Premise run 2026-11-08: planted check 0 (bl_procs.process_table, cwd_map and leads_group replaced by a planted table: an orphan sh 5 s old, one 120 s old with a sleep child, one 300 s old with none; mon_sessions.collect, mon_status.answer and mon_needs.line) fails on the base: the headline counts 3 orphans, says 'nothing waits for them' and names the 5 s one, and no line says 'with a live child'. The earlier live check (the claim absent from the live sessions answer) is replaced: it passes whenever no orphan runs.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-7064b8a6",
+  "operator": "op-f618a13e"
 }
