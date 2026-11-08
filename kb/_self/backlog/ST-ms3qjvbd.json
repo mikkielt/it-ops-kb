@@ -41,10 +41,47 @@
     "kb/_self/design.md",
     "kb/_self/plugin.md",
     "kb/_self/content-rules.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/kb_mcp.py"
   ],
   "depends_on": [
     "ST-nzcbf2ms"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where is a bare team read as a group: at the Root and pointer_group level (Root.group, list row), keeping the stored team and the pointer file unchanged?",
+      "options": [
+        "read at load time, nothing rewritten",
+        "write group: into every pointer that names only a team"
+      ],
+      "recommendation": "read at load time, nothing rewritten",
+      "reason": "existing pointers stay as committed and KB-Teams trailers read the same team",
+      "do": {
+        "read at load time, nothing rewritten": "ST-ms3qjvbd",
+        "write group: into every pointer that names only a team": "ST-ms3qjvbd"
+      },
+      "class": "design",
+      "answer": "read at load time, nothing rewritten",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "kb_status's roots line (kb_mcp.py) is outside this item's touches: leave it showing team= only here, or widen the touches to kb_mcp.py?",
+      "options": [
+        "leave kb_mcp.py unchanged, widen touches and finish it",
+        "leave kb_status showing team only"
+      ],
+      "recommendation": "leave kb_mcp.py unchanged, widen touches and finish it",
+      "reason": "the goal names kb_status, one line at kb_mcp.py:619 prints group=PATH from Root.group",
+      "do": {
+        "leave kb_mcp.py unchanged, widen touches and finish it": "ST-ms3qjvbd",
+        "leave kb_status showing team only": "ST-ms3qjvbd"
+      },
+      "class": "design"
+    }
   ],
   "notes": "Order agreed 2026-11-08 with SP-ep7ck2ab's manager (ask A1e21b0d155): shared files (_tools/kbpublic.py, _tools/kbcommon.py, _tools/bl_land.py, kb/_self/map.csv) land by first claim; the later item rebases. No hard dependency. Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: KB-Teams trailers are unchanged",
   "filed_in": "clone-0ea70e5c",
