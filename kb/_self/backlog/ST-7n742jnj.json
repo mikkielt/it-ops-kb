@@ -56,11 +56,73 @@
     ".claude/skills/kb-ingest/SKILL.md",
     "AGENTS.md",
     "kb/_self/maintaining.md",
-    "kb/_self/plugin.md"
+    "kb/_self/plugin.md",
+    "_tools/kbext.py"
   ],
   "depends_on": [
     "ST-xdircstf",
     "ST-y2u3sxta"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does kbingest.py load a group mapper named in extensions.ingest_mappers (an object, language to module:attr), since kbext.load takes one string setting per point?",
+      "options": [
+        "own loader in kbingest.py",
+        "new public loader in kbext.py"
+      ],
+      "recommendation": "own loader in kbingest.py",
+      "reason": "it uses public names only (kbsettings.layered and layer_files, kbext.API_VERSION and BOUND_RE) with the KBEXT_REQUIRES rule of kbext, because kbext.py is outside the touches and another item changes it",
+      "do": {
+        "own loader in kbingest.py": "ST-7n742jnj",
+        "new public loader in kbext.py": "ST-7n742jnj"
+      },
+      "class": "agents-rule",
+      "answer": "a public loader in kbext.py, not a copy: kbext.py is now in this item's touches. ST-k2jjwnew (landing now) splits kbext.resolve into _find and _import and adds public load_all; after it lands, rebase onto origin/main and add one public kbext.load_spec(point, spec, root) that loads one module:attr with load's sys.path, KBEXT_REQUIRES and refusals (load_all may call it), then call it per language. Until the rebase, code against kbext.load_spec",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which kept files does a group mapper receive: every file whose suffix its SUFFIXES lists, or only those no earlier language of the run maps?",
+      "options": [
+        "files no earlier language maps",
+        "every file with a listed suffix"
+      ],
+      "recommendation": "files no earlier language maps",
+      "reason": "a new language such as foo then never takes the shipped Python mapper's .py files, which the item's own check requires, while a group mapper that replaces a language still gets all of that language's files",
+      "do": {
+        "files no earlier language maps": "ST-7n742jnj",
+        "every file with a listed suffix": "ST-7n742jnj"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "files no earlier language maps",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "What does a group mapper get as rev, and what happens to a language whose named mapper cannot be loaded?",
+      "options": [
+        "the commit hash, and a note with nothing mapped",
+        "the rev as typed, and the shipped mapper runs instead"
+      ],
+      "recommendation": "the commit hash, and a note with nothing mapped",
+      "reason": "the hash is what a mapper's own git reads need and a named mapper that cannot load is a refusal, never a silent fall back (as kbext.configured says for every point)",
+      "do": {
+        "the commit hash, and a note with nothing mapped": "ST-7n742jnj",
+        "the rev as typed, and the shipped mapper runs instead": "ST-7n742jnj"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "the commit hash, and a note with nothing mapped",
+      "by": "agent"
+    }
   ],
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-a796fc75",

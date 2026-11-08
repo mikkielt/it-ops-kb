@@ -17,7 +17,9 @@ extender of an extension point, found in this order:
      written `module:attr` (the attribute, dotted when nested) or `module` alone (the module is the extender);
   2. with no such setting, the one entry point of group `it_ops_kb.<point>` that `importlib.metadata.entry_points` finds.
 `load_all(point, root, kb_root=None)` is the same for a point whose setting may be a list of `module:attr`, as `mcp_tools`'s:
-it returns the extenders in order, with the refusals of `load`.
+it returns the extenders in order, with the refusals of `load`. `load_spec(point, spec, root, kb_root=None)` loads one
+`module:attr` a tool read from its own object-valued setting (`ingest_mappers`: language to `module:attr`), with the
+same `extension_paths`, `KBEXT_REQUIRES` and refusals, and returns the dict `resolve` does.
 Each directory a settings file lists under `extension_paths` is read relative to the directory of the file that names it
 (an absolute path stays) and put on `sys.path` before the module is imported; the later layer's comes first.
 
@@ -228,6 +230,20 @@ def load_all(point, root, kb_root=None):
 def load(point, root, kb_root=None):
     """The extender of POINT (the attribute `module:attr` names, or the module); see `resolve` for the refusals."""
     return resolve(point, root, kb_root)["extender"]
+
+
+def load_spec(point, spec, root, kb_root=None):
+    """The dict `resolve` returns (`module`, `extender`, `where`...) for the one SPEC (`module:attr`, or a module name) that a
+    caller read from its own setting of POINT: a point whose value is an object (`ingest_mappers`: language to `module:attr`)
+    is read by the tool, which loads each entry here. The `extension_paths` of the settings layers are put on `sys.path`
+    first and the module is checked as `resolve` checks it (KBEXT_REQUIRES, an attribute that is there); it raises
+    ExtensionError with its layer shown as `settings`."""
+    if not POINT_RE.fullmatch(str(point)):
+        raise ExtensionError(f"point {point!r}: a name of lower-case letters, digits and underscores is expected")
+    if not isinstance(spec, str) or not spec:
+        raise ExtensionError(f"point {point}: extensions.{point} must name module:attr or a module name")
+    _add_paths(root, kb_root)
+    return _import(point, spec, "settings", f"extensions.{point}")
 
 
 def configured(point, root, kb_root=None):
