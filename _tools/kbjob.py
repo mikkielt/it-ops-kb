@@ -10,6 +10,14 @@
                                         deduped true, also when submits race (one job); after a terminal state (succeeded,
                                         failed, refused, cancelled) a submit makes a new job with its attempt raised by one
 
+  kbjob.py [--store PATH] serve [--once]
+                                        run the queued jobs of this host, clone and operator in submit order, one at a time
+                                        (`kj_exec`): each is leased as jobrun/JOB, moved queued to running, run as the leader of a
+                                        process group of its own in the clone with its output appended to the job's output.log,
+                                        and moved to succeeded (exit 0), refused (exit 1 and a line `... stopped at step NAME:`)
+                                        or failed. --once drains the queue and exits 0 (1 when a job failed); without it serve
+                                        keeps polling. A second serve on the host exits 0 naming the running one's pid.
+
 OP is one of the closed table `kj_ops.OPS`, so `publish`, `answer` and any operator-only command are no operation:
   land SUBJECT          options wait_merge=SECONDS, trailer='Key: value' (repeatable)
   done SUBJECT          options commit=true, trailer='Key: value' (repeatable)
@@ -31,6 +39,7 @@ import sys
 from pathlib import Path
 
 import coord
+import kj_exec
 import kj_ops
 import kj_store
 
@@ -47,6 +56,8 @@ def build_parser():
     p.add_argument("--by", default=None, help="claude- and 8 lowercase hex digits")
     p.add_argument("--option", action="append", default=[], metavar="KEY=VALUE", help="an option of the operation, repeatable")
     p.add_argument("--name", default=None, help="the check of the operation check")
+    s = sub.add_parser("serve", help="run the queued jobs of this host, clone and operator, one at a time")
+    s.add_argument("--once", action="store_true", help="drain the queue and exit (1 when a job failed)")
     return parser
 
 
@@ -68,8 +79,14 @@ def main(argv=None):
         if hasattr(stream, "reconfigure"):
             stream.reconfigure(encoding="utf-8", newline="\n")
     args = build_parser().parse_args(argv)
+    if args.command == "serve":
+        try:
+            return kj_exec.serve(str(ROOT), kj_store.resolve_store(ROOT, args.store), once=args.once)
+        except (kj_ops.Refusal, coord.Refused, sqlite3.Error) as error:
+            print(f"kbjob.py: {error}", file=sys.stderr)
+            return 2
     try:
-        body = kj_store.submit(str(ROOT), args.op, args.subject, args.by, options_of(args), store=args.store)
+        body =kj_store.submit(str(ROOT), args.op, args.subject, args.by, options_of(args), store=args.store)
     except kj_ops.Refusal as refusal:
         print(f"kbjob.py: {refusal}", file=sys.stderr)
         return 2

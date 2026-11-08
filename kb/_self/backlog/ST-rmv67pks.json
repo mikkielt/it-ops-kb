@@ -111,7 +111,27 @@
         "poll every 5 s (KB_JOB_POLL) and run until a signal; a signal ends the child's group and moves the job to lost": "ST-rmv67pks",
         "exit when the queue is empty; a signal leaves the job running": "ST-rmv67pks"
       },
-      "class": "design"
+      "class": "design",
+      "answer": "poll every 5 s (KB_JOB_POLL) and run until a signal; a signal ends the child's group and moves the job to lost",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Which name does the host lock file of serve take, and where does serve print a failed job's last output line?",
+      "options": [
+        "kb-jobs-serve.lock in the host lock directory; the last line goes to serve's own output, the log keeps all",
+        "a name per clone; the last line goes into the job record"
+      ],
+      "recommendation": "kb-jobs-serve.lock in the host lock directory; the last line goes to serve's own output, the log keeps all",
+      "reason": "because a job event takes no free text",
+      "do": {
+        "kb-jobs-serve.lock in the host lock directory; the last line goes to serve's own output, the log keeps all": "ST-rmv67pks",
+        "a name per clone; the last line goes into the job record": "ST-rmv67pks"
+      },
+      "class": "design",
+      "answer": "kb-jobs-serve.lock in the host lock directory; the last line goes to serve's own output, the log keeps all",
+      "by": "agent"
     }
   ],
   "notes": "Choices: the executor is a plain loop in the clone's own python, not a new daemon framework; it reads the same store as every session (coord.project_store, coord.py:1561), so a clone's sessions and its executor meet in one file with no network (coordination.md:8). The child is started as dispatch starts a detached worker (bl_dispatch.py:1051 spawn_detached: start_new_session, stdin DEVNULL, log file) and killed as kg_lock.end_group does (TERM, then KILL of the group). One job at a time here; ordering across classes and the parallel slots are ST-serialisation. Exit rule reuses bl_land.land_refused_step (bl_land.py:2372). An output log is kept per job under kb-jobs/ in the git common directory (outside the tree, never committed). Evidence: backlog.py landings over the query log, 2026-11-08: kbgit.py sync --push step median 29.8 s p95 176 s (n=2977, real items); checks step p95 38 s; so a single job runs from seconds to minutes. No test added (ceiling). Order agreed 2026-11-08 with SP-ep7ck2ab's manager (ask A1e21b0d155): shared kb/_self/map.csv rows land by first claim, the later item rebases; no hard dependency.",
