@@ -1,0 +1,31 @@
+{
+  "id": "ST-gf2rlzcc",
+  "kind": "story",
+  "title": "A clone with no executor submits to a central coord service, and a workstation executor takes only its own operator's jobs for its own clones from it",
+  "status": "draft",
+  "parent": "EP-tmw3tokk",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kbjob.py takes the global --url URL --key-file PATH of coord.py, with the same plain-http refusal and key file mode rule, for submit, follow, status, log and cancel, which reach the job table of a central coord serve through POST /v1/run; kbjob.py serve --url URL --key-file PATH on a workstation takes from the central queue only the queued jobs whose host id is its own and whose operator is the operator of its key file, runs each in the local clone whose integration remote url equals the one the job names (a job names its clone by that url, not a path; no such clone leaves the job queued with the reason) and posts every move back to the central store, so a job of another operator or another host stays queued and a central coord runs no operation of its own; the central store keeps states and events only, the output log stays in the executor's kb-jobs and log JOB names the host that has it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,tempfile,subprocess,json; d=tempfile.mkdtemp(); kd=os.path.join(d,\"keys\"); os.mkdir(kd); k1=os.path.join(kd,\"jan.kowalski\"); k2=os.path.join(kd,\"anna.nowak\"); open(k1,\"w\").write(\"k1key-placeholder\"); open(k2,\"w\").write(\"k2key-placeholder\"); os.chmod(k1,0o600); os.chmod(k2,0o600); sv=subprocess.Popen([sys.executable,\"_tools/coord.py\",\"--store\",os.path.join(d,\"c.sqlite\"),\"serve\",\"--bind\",\"127.0.0.1:0\",\"--keys\",kd],stdout=subprocess.PIPE,text=True); url=sv.stdout.readline().split(\"serving\")[1].strip(); kb=lambda key,*x: subprocess.run([sys.executable,\"_tools/kbjob.py\",\"--url\",url,\"--key-file\",key,*x],capture_output=True,text=True,timeout=300); j=json.loads(kb(k1,\"submit\",\"check\",\"--name\",\"backlog-check\",\"--no-ensure\").stdout)[\"job\"]; kb(k2,\"serve\",\"--once\"); s1=json.loads(kb(k1,\"status\",j).stdout)[\"state\"]; kb(k1,\"serve\",\"--once\"); s2=json.loads(kb(k1,\"status\",j).stdout)[\"state\"]; sv.terminate(); assert s1==\"queued\" and s2 in (\"succeeded\",\"failed\"), (s1,s2)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbjob.py",
+    "_tools/kj_store.py",
+    "_tools/kj_exec.py",
+    "kb/_self/coordination.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-5h2kx2ri",
+    "ST-rmv67pks"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
