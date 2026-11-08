@@ -42,7 +42,11 @@
       ],
       "recommendation": "Serve both with the CLI's own caps",
       "reason": "since the Bash route is allowed the same way and the tool adds no spend path (per-kind max-turns stays; max-budget-usd only when the caller gives it)",
-      "class": "design"
+      "class": "design",
+      "answer": "Serve both with the CLI's own caps",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Evidence 2026-11-08. dispatch 652 and begin 73 Bash calls in the census; backlog.py usage: dispatch runs claude -p --model sonnet --max-turns N (60 task, 100 story, 200 research) in the foreground until the worker exits, --detach starts it detached; begin claims up to four items, pushes the claims once and dispatches each detached, refusing a fifth id. In the job model the service process is the detach: the job runs dispatch in the foreground and its state is the worker's lifetime, and begin returns after its claims, push and detached dispatches. Pairing: ops_service.submit(verb 'dispatch'|'begin', argv, item=ID) as in ST-p2wmi3hq. Gate g1 (money): each call starts a paid session; the recommendation keeps the CLI's caps and adds no new spend path. A dry_run runs inline because backlog.py dispatch --dry-run and begin --dry-run write and start nothing. Interface (orchestrator, 2026-11-08): the job submit and follow interface is the ops-service half's, kj_store.submit(root, op, subject, by, options=None, store=None) -> {job, state, deduped, seq, follow} and kj_store.status(root, job, since=0, store=None) -> {job, state, exit, step, log, events, last} (ST-nwwcf3kk), followed with kbjob.py follow (ST-5h2kx2ri); the ops_service.submit name in this item's notes is replaced by it.",
