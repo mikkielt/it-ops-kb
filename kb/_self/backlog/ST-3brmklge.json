@@ -110,7 +110,12 @@
         "only a push of the range to the integration main, not a code branch push": "ST-3brmklge",
         "a code branch push too": "ST-3brmklge"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "only a push of the range to the integration main, not a code branch push",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "notes": "Sending ext-v tags to the public home through kbgit.py publish is left to a later item (a public-push gate class); plugin.md section 4 names ext-v tags beside census tags as the channel a group pins. Shared files with SP-lwkdljxg (kbcommon.py, kbpublic.py, bl_land.py, map.csv): agreed with its manager on 2026-11-08 that the first claim lands first and the other rebases; its items reach these files late. SP-uh5h46fm (mon_coord.py, mon_status.py) was asked the same and has not answered: the same rule applies.",
