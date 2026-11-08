@@ -2,7 +2,7 @@
   "id": "BG-na4qyo2c",
   "kind": "bug",
   "title": "A kbmon run whose budget ends mid-scan never saves redact.known's cache, so after any kb/public edit every short-budget coord read times out again",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-uh5h46fm",
   "priority": "P2",
@@ -24,5 +24,7 @@
     "kb/_self/querylog.md",
     "kb/_self/tools.md"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-7064b8a6",
+  "operator": "op-f618a13e"
 }
