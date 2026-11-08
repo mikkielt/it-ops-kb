@@ -2,7 +2,7 @@
   "id": "ST-bd4upki3",
   "kind": "story",
   "title": "Review sprint: Lighter sessions: one shared monitor, quicker hooks, lean unwatched runs",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-wpttdu7u",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,27 @@
       ]
     }
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "evidence": {
+    "commit": "7d191fe8fbbd96e93ee917f1d7984ce5f1c8d084",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "8722f29d36e50a23"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "4cc78f1fbe9d0ce6"
+      }
+    ]
+  }
 }
