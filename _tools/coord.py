@@ -156,7 +156,7 @@ beyond loopback through a TLS front end (an https URL is accepted): a plain http
 before the command (`coord.py --plain-http serve ...`; `--plain-http --url ... --key-file ...`).
 
 Two OPA bundles are served with GET behind the same bearer check (401 for a token no file holds): `/v1/bundles/kbjobs.tar.gz`
-holds the `.rego` and `data.json`/`data.yaml`/`data.yml` files under --policy-dir (manifest roots kbjobs/placement and
+holds the `.rego` and `data.json`/`data.yaml` files under --policy-dir (manifest roots kbjobs/placement and
 kbjobs/groups; 404 where serve has no --policy-dir), and `/v1/bundles/kbjobs-overrides.tar.gz` holds `kbjobs/overrides/data.json`,
 which maps each group path to the JSON object its key `group/G1/.../GN/policy/placement` holds (manifest root kbjobs/overrides).
 Each reply carries an `ETag` that is a digest of the bundle's bytes, so it changes only with the content, and a request whose
@@ -273,7 +273,7 @@ BUNDLE_POLICY = "/v1/bundles/kbjobs.tar.gz"  # the committed placement policy, a
 BUNDLE_OVERRIDES = "/v1/bundles/kbjobs-overrides.tar.gz"  # the groups' placement overrides, an OPA bundle of the store's keys
 POLICY_ROOTS = ("kbjobs/placement", "kbjobs/groups")  # the manifest roots of the policy bundle
 OVERRIDES_ROOT = "kbjobs/overrides"  # the manifest root of the overrides bundle, which holds data.json there
-POLICY_DATA_FILES = ("data.json", "data.yaml", "data.yml")  # the data files of --policy-dir a bundle carries, besides *.rego
+POLICY_DATA_FILES = ("data.json", "data.yaml")  # the data files of --policy-dir a bundle carries, besides *.rego
 LIVE = "(expires IS NULL OR expires > :now OR value IS NOT NULL)"  # a row with a value outlives its lease
 PUBLIC = ("key, value, revision, CASE WHEN expires > :now THEN holder END AS holder, "
           "CASE WHEN expires > :now THEN expires END AS expires")
