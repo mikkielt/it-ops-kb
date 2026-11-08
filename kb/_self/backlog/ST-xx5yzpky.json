@@ -2,7 +2,7 @@
   "id": "ST-xx5yzpky",
   "kind": "story",
   "title": "The backlog section of the settings layers overrides backlog.json key by key, and backlog.py config names the layer and file of each value",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-y7fe7qqx",
   "sprint": "SP-ep7ck2ab",
   "priority": "P2",
@@ -67,5 +67,7 @@
     "ST-ed7utpmg"
   ],
   "notes": "Check 3 (backlog.py config on this clone) passes before the work: the kb's own backlog.json must keep loading as it does.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-a796fc75",
+  "operator": "op-f618a13e"
 }
