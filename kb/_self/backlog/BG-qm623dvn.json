@@ -36,7 +36,8 @@
   ],
   "touches": [
     "_tools/bench_load.py",
-    "kb/_self/benchmarks.md"
+    "kb/_self/benchmarks.md",
+    "kb/_self/tools.md"
   ],
   "gates": [
     {
@@ -59,6 +60,6 @@
   "links": [
     "parked: SP-wv3ob5vy review"
   ],
-  "notes": "Review gap 1 of SP-wv3ob5vy: bench_load.py:871-876 paid_argv, :57 PAID_TOOLS; --allowedTools lists tools that run without a prompt and does not restrict which exist (kb public/claude/cli-flags.csv:10); .claude/settings.json allows Agent, Edit, Write, SendMessage. ST-i5az334d g3 (operator) chose 'tools Read, git status and rag.py only'. Sessions run in a throwaway clone. Planning, repro run once on the base: exit 1, paid_argv has no --tools and no --permission-mode. Check 0 reads paid_argv for all four arms (A, C, D, worker): the --tools value is Read,Bash, the mode dontAsk, the allow list exactly Read, Bash(git status:*) and Bash(python3 _tools/rag.py:*), arm D keeps its hooks-off flags; it fails on the base at arm A. No paid call proves the claude side: the documented limit is kb/public/claude/cli-flags.csv:24 (--tools restricts the built-in tools, not MCP tools) and kb/public/claude/settings-and-scopes.md:102 (the three layers). Gate g1: with its second option the planner adds a clause and a check on arm_settings (the clone's permissions.allow equals the allow list) before the start.",
+  "notes": "Review gap 1 of SP-wv3ob5vy: bench_load.py:871-876 paid_argv, :57 PAID_TOOLS; --allowedTools lists tools that run without a prompt and does not restrict which exist (kb public/claude/cli-flags.csv:10); .claude/settings.json allows Agent, Edit, Write, SendMessage. ST-i5az334d g3 (operator) chose 'tools Read, git status and rag.py only'. Sessions run in a throwaway clone. Planning, repro run once on the base: exit 1, paid_argv has no --tools and no --permission-mode. Check 0 reads paid_argv for all four arms (A, C, D, worker): the --tools value is Read,Bash, the mode dontAsk, the allow list exactly Read, Bash(git status:*) and Bash(python3 _tools/rag.py:*), arm D keeps its hooks-off flags; it fails on the base at arm A. No paid call proves the claude side: the documented limit is kb/public/claude/cli-flags.csv:24 (--tools restricts the built-in tools, not MCP tools) and kb/public/claude/settings-and-scopes.md:102 (the three layers). Gate g1: with its second option the planner adds a clause and a check on arm_settings (the clone's permissions.allow equals the allow list) before the start. kb/_self/tools.md is in the touches because the docs map names it for bench_load.py; the four items that may edit it run one after another (BG-qm623dvn, BG-lgiwfs64, BG-r57wg5tg, BG-76mclha4).",
   "filed_in": "clone-0ea70e5c"
 }
