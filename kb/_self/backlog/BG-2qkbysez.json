@@ -2,7 +2,7 @@
   "id": "BG-2qkbysez",
   "kind": "bug",
   "title": "kbmon's sessions.orphan alert names an orphan of any age, so the receipt's ALERT line and kbask name a 1-second orphan the panel hides",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-uh5h46fm",
   "priority": "P2",
@@ -21,5 +21,7 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-7064b8a6",
+  "operator": "op-f618a13e"
 }
