@@ -2,7 +2,7 @@
   "id": "ST-mbxr44ne",
   "kind": "story",
   "title": "kbmon's ask and claim times show in local time or say UTC",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-uh5h46fm",
   "priority": "P3",
@@ -33,5 +33,7 @@
     "BG-kd5zawtx"
   ],
   "notes": "Evidence 2026-11-08: 'since 2026-10-27 22:39' is UTC (mon_coord builds the ask's time with time.gmtime, mon_needs.ask_entries prints its first 16 characters) and was read as local 22:39 when it was 23:39 local. Premise run 2026-11-08: the earlier live check PASSED on the base, because `--status coord` prints an ask's id only, so no `since` text reached its regex: it proved nothing and is replaced. Planted check 0 (mon_needs.line over a planted coord panel with one ask) fails on the base: 'ask A1 since 2026-10-27 22:39:' carries no UTC suffix. Scope settled: no panel prints a claim's wall-clock time (the sprint panel's `claimed` is data only, ISO with Z). The landing row's time (`since` in mon_sprint.lines, which prints it with a Z suffix and seconds) is left out: _tools/mon_sprint.py is in BG-cmevtnpk's touches and the two items have no order, so the landing row is a follow-up for the operator to file or fold into BG-cmevtnpk. Other times a panel prints (the delivery's `when`, the snapshot's taken time) are not changed here.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-7064b8a6",
+  "operator": "op-f618a13e"
 }
