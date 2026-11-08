@@ -2,7 +2,7 @@
   "id": "BG-r57wg5tg",
   "kind": "bug",
   "title": "A root's placeholder names reach no production path: redact and the tracked-file leak scan never pass a root",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-n7zxspch",
   "priority": "P2",
   "rank": 0,
@@ -130,5 +130,7 @@
     "parked: SP-iir3d2tu review"
   ],
   "notes": "Operator answered g1: option 2 (the push-time scans pass each file's root, read from the root's _root.md in the scanned tree, caches keyed on the placeholders); re-planned. Order: after BG-2iqdafwm (same kbpublic functions; it follows BG-o6fbskv5) and after BG-lgiwfs64 (tools.md). Peers: kbpublic.py is also in ST-qtypcthx (SP-ep7ck2ab: file_hits defers to a group's leak_scan, leak_hits gains data shapes: file_hits is the shared function, this item adds an optional root parameter and theirs rebases on it), ST-3brmklge and ST-ugkw5mt3 (SP-lwkdljxg); BG-2n4csy5p (SP-uh5h46fm) may touch redact.known, not main. Planning: repro on the base: exit 1, redact.py takes no --root. Checks 0 (redact CLI on the fixture root ok), 1 (check_logs on two roots), 2 (push scans on a planted tree: public root team-p lists anna.nowak, team-q lists none, the public tip holds the name in team-p/x.md; tree_hits and range_leaks must accept it in team-p, flag it in team-q, and flag another user and a GUID in team-p) and 3 (the same commit judged again after the root drops its placeholders gets a fresh verdict; a range scan reads REV's roots as it reads REV's allowlist) fail on the base. Check 4 reads test_leaks.scan's syntax tree for root= on file_hits (a source read: scan walks the tracked tree and cannot run in a planted clone, which has no pytest). Check 5 (the test_leaks selection, a critical component) passes before the work and pins it. The repro is index 6. No real root lists placeholders yet, so no tracked file changes verdict. Re-planned after the answer. Ask Aec94bb1a6a to ST-qtypcthx on file_hits is open; test_leaks.py is also in session s-b2c9c7's plan (SP-ep7ck2ab): this item changes only scan(), ours first.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-557596e3",
+  "operator": "op-f618a13e"
 }
