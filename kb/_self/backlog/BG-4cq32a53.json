@@ -1,0 +1,22 @@
+{
+  "id": "BG-4cq32a53",
+  "kind": "bug",
+  "title": "session-load --live with a window shorter than one ps listing divides by zero and writes no live row",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "bench_load.live_rows gives per-minute figures over at least one listing's time (or refuses a window under one listing with exit 2), so a short --window never raises ZeroDivisionError",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os, sys\nsys.path.insert(0, '_tools')\nimport bench_load as b\nclass B:\n    window = 0.01\n    live_pids = [os.getppid()]\n    def row(self, *a, **k):\n        pass\nb.live_snapshot = lambda *a: '/nonexistent'\ntry:\n    b.live_rows(B())\nexcept ZeroDivisionError:\n    raise AssertionError('live_rows divides by zero on a short window')"
+    ]
+  },
+  "links": [
+    "parked: SP-wv3ob5vy review"
+  ],
+  "notes": "Review gap 4 of SP-wv3ob5vy: bench_load.py:830 divides by elapsed/60; benchmarks.py accepts any --window above 0.",
+  "filed_in": "clone-0ea70e5c"
+}
