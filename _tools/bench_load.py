@@ -12,7 +12,7 @@ With `--paid` (paid_rows) it starts, per arm, phase, session count and rep, `cla
 throwaway clones with the arm's settings, and samples their process trees into the same rows with the model column set.
 This module imports no facade; `mon_host` is imported where a process is given its class.
 """
-import json, os, re, shutil, signal, statistics, subprocess, sys, tempfile, threading, time, uuid
+import json, os, re, shutil, signal, sqlite3, statistics, subprocess, sys, tempfile, threading, time, uuid
 from pathlib import Path
 
 from bench_core import (HOME, PRICE, RAW, RESULTS, Bench, Skip, git, need_sh, no_plugin_env, read_rows, shim_dir, spent, spent_usd,
@@ -28,6 +28,7 @@ CLASSES = ("kbmon", "fseventsd", "tests", "kb-tools", "claude", "other", "git", 
 CHILD_CLASSES = ("git", "lsof")  # classes whose processes only hook (or pane) commands start, so wait4 charges them to the parent
 PANE_ARMS = ("B",)  # the arms that run the kbmon pane's commands
 WORKER_ARMS = ("worker",)  # the arms whose hooks run in the environment bl_dispatch.worker_env gives a worker
+SESSION_LEASE = "session/"  # coord.py's key prefix of a session's presence lease
 WORKER_KEYS = ("KB_OPERATOR", "KB_ROLE", "KB_UNWATCHED")  # what that environment sets on top of the host's own
 PANE_MOD = ".claude/skills/kbmon-pane/hooks/register.tsx"  # the mod whose FIRST_MS and REFRESH_MS the pane commands follow
 PANE_COMMANDS = (("--once",), ("--status", "all"))  # what the mod's refresh runs, in order, as `python3 _tools/kbmon.py ...`
@@ -279,6 +280,7 @@ class Replay:
         self.roots, self.threads = [], []  # one dict per hook command run
         self.panes = []  # one dict per pane command run (a pane run is each of PANE_COMMANDS once)
         self.pane_runs = 0
+        self.lease = 0  # lease_written, read just before the SessionEnd event
 
     def start(self, name, target, payload, command, is_async, sampler):
         cmd = command.replace("${CLAUDE_PROJECT_DIR}", str(self.clone))
@@ -346,6 +348,8 @@ class Replay:
             pane.start()
             self.threads.append(pane)
         for name, target, payload in events(phase, self.clone, sid):
+            if name == "SessionEnd":  # the end hook releases the lease, which leaves nothing to read after it
+                self.lease = lease_written(self.env["KB_COORD_STORE"], sid)
             for ev, matcher, is_async, command in self.hooks:
                 if ev == name and matches(matcher, target):
                     self.start(name, target, payload, command, is_async, sampler)
@@ -358,7 +362,7 @@ class Replay:
         if self.hooks:
             sampler.join()
         settle(self.clone)
-        return self.summary(sampler, wall)
+        return {**self.summary(sampler, wall), "lease_written": self.lease}
 
     def started(self, rec):
         """The command line of each process a Python program of one hook command's tree started (the sitecustomize's log)."""
@@ -471,9 +475,22 @@ def work_rows(data):
     return n
 
 
-def lease_written(out, sid):
-    """1 when a hook of the replay started `coord.py claim session/SID`, the presence lease of the session, else 0."""
-    return int(any("coord.py" in c and " claim " in c and f"session/{sid}" in c for h in out["hooks"] for c in h["children"]))
+def lease_written(store, sid):
+    """1 when the replay's own coord store (`store`, read without writing) holds the presence lease `session/SID` of the
+    session now, else 0. The hook takes the lease in its own process, so no `coord.py claim` shows in the processes the
+    replay logged; and the SessionEnd hook releases it, which leaves no row or event, so Replay.run reads it just before
+    that event."""
+    try:
+        con = sqlite3.connect(Path(store).resolve().as_uri() + "?mode=ro", uri=True, timeout=5)
+    except sqlite3.Error:
+        return 0
+    try:
+        return int(con.execute("SELECT 1 FROM entries WHERE key = ? AND holder IS NOT NULL AND expires > ?",
+                               (SESSION_LEASE + sid, time.time())).fetchone() is not None)
+    except sqlite3.Error:  # no store yet: a replay whose hooks never opened it
+        return 0
+    finally:
+        con.close()
 
 
 class LoadPeak(threading.Thread):
@@ -511,7 +528,7 @@ def replay(b, clone, hooks, arm, phase, name, pane=None, gate=None, pause=SAMPLE
         gate.wait(GATE_WAIT_S)
     out = Replay(clone, env, arm_hooks(hooks, arm), pane if arm in PANE_ARMS else None, pause).run(phase, sid)
     out["load"] = load
-    out["lease_written"], out["work_rows"] = lease_written(out, sid), work_rows(env["CLAUDE_PLUGIN_DATA"])
+    out["work_rows"] = work_rows(env["CLAUDE_PLUGIN_DATA"])
     return out
 
 
@@ -1109,8 +1126,8 @@ def s_session_load(b):
     WORKING between them). Arm B runs, over a window of `b.window` seconds per phase, the pane's commands the mod's way:
     the first after its FIRST_MS and then one every `b.pane_every` seconds (default its REFRESH_MS). Per phase, arm and
     process class: the CPU seconds, peak and mean resident memory in MiB and the starts per minute of a session of
-    NOMINAL_S (the pane's own starts per minute of the window), `lease_written` (1 when a hook started the claim of the
-    session's coord presence lease) and `work_rows` (the query log work rows the hooks wrote); per synchronous hook command its median milliseconds (a
+    NOMINAL_S (the pane's own starts per minute of the window), `lease_written` (1 when the replay's coord store held the
+    session's presence lease just before SessionEnd) and `work_rows` (the query log work rows the hooks wrote); per synchronous hook command its median milliseconds (a
     run of an async hook is `async_ms`: Claude Code does not wait for it). Each rep runs every arm and phase once, the
     medians of the reps are the rows. With `b.capture` (run --fs-usage FILE) it only writes the file reads of that capture;
     otherwise it prints the `sudo fs_usage` command the operator runs by hand, which this tool never runs. With
@@ -1178,7 +1195,7 @@ def s_session_load(b):
               note=f"the longest of {n} sessions that ran at once" if n > 1 else "")
         b.row("session-load", f"{phase} replay{sfx}", arm, "hook_failures", statistics.median(len(r["failed"]) for r in reps),
               len(reps), note="hook commands that exited non-zero")
-        for metric, note in (("lease_written", "1 when a hook started coord.py claim session/ID, the presence lease"),
+        for metric, note in (("lease_written", "1 when the replay's coord store held session/ID, the presence lease, just before SessionEnd"),
                              ("work_rows", "work rows in the replay's query log spool")):
             b.row("session-load", f"{phase} all{sfx}", arm, metric, statistics.median(r[metric] for r in reps), len(reps),
                   note=note + (f"; the sum of {n} sessions" if n > 1 else ""))
