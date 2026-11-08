@@ -2,7 +2,7 @@
   "id": "ST-drlo365l",
   "kind": "story",
   "title": "kbmon's sessions panel counts a detached headless claude session as headless, never interactive, and names detached processes",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-uh5h46fm",
   "priority": "P2",
@@ -41,5 +41,7 @@
     "kb/_self/tools.md"
   ],
   "notes": "Evidence 2026-11-08: mon_sessions treats only a work/<id> branch as headless (session_of), so the detached claude pid 87971 in the plan-ops worktree showed as 's-6dc3ca interactive up 17m' and the headline said '0 headless'; no status line names procs' detached processes (a 19-day-old tmux among them). Detached means parent pid 1 as `backlog.py procs` classes it: a dispatch --detach worker, a reviewer, a headless runner or plan session. Premise run 2026-11-08: planted check 0 (bl_procs.process_table, cwd_map and leads_group replaced by a planted table of a detached claude with a child, a detached sh with a sleep child, a claude under a live shell and that shell; mon_sessions.collect, mon_status.answer and mon_sessions.lines, in a temp query-log home with no coord store) fails on the base: the detached claude is session `interactive` in its process row and its sessions row, the answer counts 0 headless and 2 interactive, and no panel line names detached processes. The earlier live check (procs' detached claude count against the panel's headless count) is replaced: it read the defect only while a detached claude runs. Settled in the goal: a sessions row holds no checkout (only the processes table does), so the row says headless and not its checkout; the count is named in the panel's text (mon_sessions.lines), not in the status answer, whose file mon_status.py six items already touch; the goal covers class detached, and a `claude` of class orphan (parent gone, no record, no recent transcript) is not changed here.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-7064b8a6",
+  "operator": "op-f618a13e"
 }
