@@ -74,6 +74,44 @@
     "ST-xdircstf",
     "ST-y2u3sxta"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which articles does the ranker see and reorder, and for which packs?",
+      "options": [
+        "The pool of candidate articles before the max_articles cut, kb roots only (not --root _self, not an item brief)",
+        "Only the max_articles printed articles, for every pack"
+      ],
+      "recommendation": "The pool of candidate articles before the max_articles cut, kb roots only (not --root _self, not an item brief)",
+      "reason": "the ranker can lift an article the BM25 order left below the cut, and the rule docs and item briefs keep their tested passages",
+      "do": {
+        "The pool of candidate articles before the max_articles cut, kb roots only (not --root _self, not an item brief)": "ST-rid77c4m",
+        "Only the max_articles printed articles, for every pack": "ST-rid77c4m"
+      },
+      "class": "design",
+      "answer": "The pool of candidate articles before the max_articles cut, kb roots only (not --root _self, not an item brief)",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "A ranker that is set but cannot be loaded (bad module, version outside KBEXT_REQUIRES, bad settings): what does the pack do?",
+      "options": [
+        "Print one kbext stderr line naming the point and rank without it, retried at the next pack",
+        "Exit 2 with the refusal"
+      ],
+      "recommendation": "Print one kbext stderr line naming the point and rank without it, retried at the next pack",
+      "reason": "the goal says a failing ranker leaves the pack as without one, and a lookup never fails for a group's extender",
+      "do": {
+        "Print one kbext stderr line naming the point and rank without it, retried at the next pack": "ST-rid77c4m",
+        "Exit 2 with the refusal": "ST-rid77c4m"
+      },
+      "class": "design",
+      "answer": "Print one kbext stderr line naming the point and rank without it, retried at the next pack",
+      "by": "agent"
+    }
+  ],
   "notes": "Check 2 (the held-out eval) passes before the work: with no ranker set the pack must rank as it does now.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-a796fc75",

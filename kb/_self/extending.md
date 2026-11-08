@@ -60,6 +60,11 @@ The keys of a settings file (`kb/_self/coordination.md`, Coordination settings) 
 - **A module declares what it takes.** `KBEXT_REQUIRES` is a string of comma-separated bounds on `MAJOR.MINOR`, such as `>=0.1,<2.0`, with the operators `>=`, `>`, `<=`, `<` and `==`. `API_VERSION`'s `MAJOR.MINOR` must meet every bound. A module with none, or one that is no such string, is refused: an extender that does not say which API it was written for is not loaded.
 - **A refusal is one line.** A missing module, a missing attribute, an import that raises, a version outside `KBEXT_REQUIRES`, a malformed bound and a bad setting exit 2 with one line on stderr that starts `kbext: point POINT: module MODULE, layer LAYER (FILE)`, the layer being `clone`, `group`, `root`, `user` or `entry point`, and FILE the settings file relative to the workspace or, for an entry point, the distribution.
 
+## The ranker point
+
+- **`rank(question, candidates)` adds one ranked list to the pack.** `kf_index.pack` calls the extender of `ranker` with the question and the qualified paths (`public/intune/x.md`) of the candidate articles, best first, and `kbfacts.rrf` fuses the list it returns with the pack's own order as one more expert, so an article it puts first ranks no lower than without it. A path it returns that is no candidate is dropped; a candidate it leaves out keeps only its own rank. The verdict, the route and the `check:` lines are decided before and do not change; only which articles print, and in what order, can.
+- **A failing ranker leaves the pack as it was.** An exception, an answer that is no list, an extender that is no callable and a refusal of `kbext` print one line on stderr that starts `kbext:` and names point `ranker`; the pack then ranks as without one. With no ranker set nothing is read and every pack is byte for byte as before. The extender is resolved once per process and settings file.
+
 ## Commands
 
 - **`kbext.py resolve POINT --root WS [--kb-root NAME]`** imports the module, checks its version and prints `POINT module:attr (layer LAYER, file FILE)`, or `POINT module:attr (entry point of distribution NAME)`; exit 0, or 2 for a refusal above.
