@@ -23,7 +23,7 @@ and DER S-h2cmbqvf, S-dcjdn73r).
 Answers: how a text is redacted to kb placeholders and whether it still leaks an identifier
 Use: python3 _tools/redact.py [--scan] [FILE]
 """
-import collections, functools, ipaddress, json, math, re, shutil, sys
+import collections, functools, hashlib, ipaddress, json, math, os, re, shutil, sys
 from pathlib import Path
 
 import kbcommon
@@ -126,16 +126,69 @@ def scan_known(texts):
     return k
 
 
+def _known_files(base):
+    return [p for p in sorted(base.rglob("*")) if p.suffix.lower() in TEXT_SUFFIXES and p.is_file()]
+
+
+def known_key(root=None):
+    """What a stored `known(root)` is valid for: the SHA-256 of this file (a rule change changes what a scan finds), then a
+    digest of the path, size and modification time of every text file under the root, so a changed, added or removed file
+    gives another key."""
+    base = Path(root or kbcommon.PUBLIC)
+    code = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+    files = hashlib.sha256()
+    for p in _known_files(base):
+        try:
+            st = p.stat()
+        except OSError:
+            continue
+        files.update(f"{p.relative_to(base).as_posix()}\0{st.st_size}\0{st.st_mtime_ns}\n".encode("utf-8"))
+    return f"{code}-{files.hexdigest()}"
+
+
+def _known_store(base):
+    """The file that keeps the scan of BASE across processes: under ${CLAUDE_PLUGIN_DATA} when this copy is the plugin, else
+    _cache of this repository; one file per root, so a changed root replaces its own."""
+    home = Path(os.environ["CLAUDE_PLUGIN_DATA"]) if kbcommon.plugin_hosted() else Path(kbcommon.HOME) / "_cache"
+    return home / "redact-known" / (hashlib.sha256(str(base.resolve()).encode("utf-8")).hexdigest()[:16] + ".json")
+
+
+def _known_load(store, key):
+    try:
+        data = json.loads(store.read_text(encoding="utf-8"))
+        if data.get("key") == key:
+            return Known(*(set(data["known"][f]) for f in Known._fields))
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        pass
+    return None
+
+
+def _known_save(store, key, k):
+    tmp = store.with_name(f"{store.name}.{os.getpid()}.tmp")
+    try:
+        store.parent.mkdir(parents=True, exist_ok=True)
+        tmp.write_text(json.dumps({"key": key, "known": {f: sorted(getattr(k, f)) for f in Known._fields}}, separators=(",", ":")),
+                       encoding="utf-8", newline="\n")
+        os.replace(tmp, store)
+    except OSError:
+        try:
+            tmp.unlink()
+        except OSError:
+            pass
+
+
 @functools.lru_cache(maxsize=None)
 def known(root=None):
     """scan_known over every text file of the public root (never an internal one: those name real tenants), read once
-    per process. Deriving it at run time keeps one owner: an id an article adds is kept from its next run on."""
+    per process, and kept in a file keyed by known_key(root) so another process reads it back until a root file or this
+    file changes. Deriving it at run time keeps one owner: an id an article adds is kept from its next run on."""
     base = Path(root or kbcommon.PUBLIC)
-    texts = []
-    for p in sorted(base.rglob("*")):
-        if p.suffix.lower() in TEXT_SUFFIXES and p.is_file():
-            texts.append(p.read_text(encoding="utf-8", errors="replace"))
-    return scan_known(texts)
+    key, store = known_key(base), _known_store(base)
+    k = _known_load(store, key)
+    if k is None:
+        k = scan_known([p.read_text(encoding="utf-8", errors="replace") for p in _known_files(base)])
+        _known_save(store, key, k)
+    return k
 
 
 # --- the rules ------------------------------------------------------------------------------------------------------
