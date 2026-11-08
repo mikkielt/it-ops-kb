@@ -2,7 +2,7 @@
   "id": "ST-czmclv6j",
   "kind": "story",
   "title": "kbext.py init-team writes a group overlay repository: a marketplace pinning it-ops-kb by ext tag beside the group's plugin, its settings file and a verified sample extender",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-y7fe7qqx",
   "sprint": "SP-ep7ck2ab",
   "priority": "P2",
@@ -89,5 +89,7 @@
       "role": "interactive"
     }
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-a796fc75",
+  "operator": "op-f618a13e"
 }
