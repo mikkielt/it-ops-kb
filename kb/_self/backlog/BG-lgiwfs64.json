@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "session-load --intake-real's check compares against a case no row has, and its real row starts fewer processes than the pinned hook",
   "status": "draft",
+  "sprint": "SP-n7zxspch",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "ST-6zg57xiu's intake-real comparison reads a case that exists (the pinned row 'idle hook _tools/backlog.py intake --file --hook') and a count that item checks ran, or the docs say the real row is the hook cut at its 50 s cap",
+  "goal": "session-load --intake-real's spawns row note and the benchmarks doc state that the real row is the intake hook cut at its INTAKE_HOOK_BUDGET_S wait, so its spawns are not comparable with the pinned row's; intake_real_rows writes its spawns note from the module constant INTAKE_REAL_SPAWNS_NOTE",
   "repro": {
     "run": [
       "python3",
@@ -15,6 +16,10 @@
     ]
   },
   "repro_reason": "the defect is a check comparing against a case name no row carries; the record rows are the evidence, and a behaviour run takes about 3 minutes per arm (the reviewer's repro in the notes)",
+  "touches": [
+    "_tools/bench_load.py",
+    "kb/_self/benchmarks.md"
+  ],
   "links": [
     "parked: SP-m5m67goe review"
   ],
