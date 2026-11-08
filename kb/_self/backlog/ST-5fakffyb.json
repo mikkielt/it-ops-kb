@@ -74,7 +74,9 @@
       },
       "class": "design",
       "answer": "case '<phase> all xN', polled every 0.5 s from the common start to the end of the sessions, median over the reps",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
