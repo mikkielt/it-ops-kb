@@ -2,7 +2,7 @@
 topic: arch/lua-modules-and-functions
 priority: P3
 applies_to: "Lua 5.4: require and package.loaded, function definitions and local function, call syntax"
-retrieved_utc: 2026-10-27
+retrieved_utc: 2026-11-08
 sources: [S-ztiy5c7d]
 status: complete
 ---
@@ -21,9 +21,10 @@ a Lua interpreter. What `require` loads is decided at run time.
 - `require` raises an error when it cannot load or find a loader for the module. [DOC S-ztiy5c7d]
 - A call written `f'string'`, `f"string"` or `f[[string]]` is sugar for `f('string')`, so `require 'util'` and `require('util')` are the same call. [DOC S-ztiy5c7d]
 - `function f () body end` is sugar for an assignment to the global `f`, and `function t.a.b.c.f () body end` for `t.a.b.c.f = function () body end`; a function name is a `Name`, optional `.Name` parts and an optional `:Name`. [DOC S-ztiy5c7d]
+- A function name ending in `:Name` defines a method: `function t.a.b.c:f (params) body end` is sugar for `t.a.b.c.f = function (self, params) body end`, an implicit extra parameter `self`. So `function f(`, `function M.f(` and `function M:f(` are all definitions of the function named `f`, whose full name is `f`, `M.f` and `M:f`. [DOC S-ztiy5c7d]
 - `local function f () body end` translates to `local f; f = function () body end`, not to `local f = function () body end`, which matters only when the body refers to `f`. [DOC S-ztiy5c7d]
 - Any variable name is global unless declared `local`. [DOC S-ztiy5c7d]
-- A text-pattern mapper therefore reads a definition from a line that starts with `function Name` or `local function Name`, an import from `require` followed by a quoted constant (both call forms), and cannot resolve a module name built at run time. [DER S-ztiy5c7d: the grammar and the string-call sugar; a computed name is a value, not text]
+- A text-pattern mapper therefore reads a definition from a line that starts with `function` or `local function` followed by a name, which for `function` may be dotted (`M.f`) or end in a method part (`M:f`), an import from `require` followed by a quoted constant (both call forms), and cannot resolve a module name built at run time. [DER S-ztiy5c7d: the grammar and the string-call sugar; a computed name is a value, not text]
 
 ## Reference
 - Lua 5.4 Reference Manual: https://www.lua.org/manual/5.4/manual.html

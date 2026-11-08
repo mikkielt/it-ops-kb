@@ -4517,13 +4517,13 @@ d1eb884252d5,arch/kerberos-linux-containers.md,S1606,unlocated:no-match,,,,,2026
 e25743944a42,arch/kerberos-linux-containers.md,S1604,unlocated:no-match,,,,,2026-10-10
 fb34585ef252,arch/kerberos-linux-containers.md,S1604,unlocated:no-match,,,,,2026-10-10
 0424af185ed5,arch/lua-modules-and-functions.md,S-ztiy5c7d,located,6 – The Standard Libraries > 6.3 – Modules > require (modname),package.searcher;searcher;requir;packag,a65eeaf9e6ef884d,require is guided by the table package.searchers.,2026-10-27
+0be83e059c7b,arch/lua-modules-and-functions.md,S-ztiy5c7d,located,3 – The Language > 3.4 – Expressions > 3.4.11 – Function Definitions,param;self;t.a.b.c.f;body;end;function,e49b1a8c0e9bef6f,"t.a.b.c.f = function (self, params) body end",2026-11-08
 765f172ceb6f,arch/lua-modules-and-functions.md,S-ztiy5c7d,located,3 – The Language > 3.4 – Expressions > 3.4.10 – Function Calls,sugar;string,d0de4c64b0673f61,is syntactic sugar for f('string');,2026-10-27
 9119db6e5fa1,arch/lua-modules-and-functions.md,S-ztiy5c7d,located,3 – The Language > 3.2 – Variables,unless;declar;global;name;variabl,81c602a7bbe11d91,Any variable name is assumed to be global unless explicitly declared,2026-10-27
 917e8c576cb8,arch/lua-modules-and-functions.md,S-ztiy5c7d,located,3 – The Language > 3.4 – Expressions > 3.4.11 – Function Definitions,t.a.b.c.f;body;end;function,db2a31d5c7259f24,t.a.b.c.f = function () body end,2026-10-27
 956a4addddbc,arch/lua-modules-and-functions.md,S-ztiy5c7d,located,6 – The Standard Libraries > 6.3 – Modules > require (modname),package.preload;preload;modnam;requir;packag;first,b11c5f0da944c5e1,First require queries package.preload[modname].,2026-10-27
 a70f9324ffc4,arch/lua-modules-and-functions.md,S-ztiy5c7d,unlocated:no-match,,,,,2026-10-27
 b8a649d85cde,arch/lua-modules-and-functions.md,S-ztiy5c7d,located,6 – The Standard Libraries > 6.3 – Modules > require (modname),non-nil;loader;non;nil;return;valu,c24b9a03da8d4b80,If the loader does not return a non-nil value and,2026-10-27
-bb51cc554aa3,arch/lua-modules-and-functions.md,S-ztiy5c7d,unlocated:no-match,,,,,2026-10-27
 c3f5ac13fb14,arch/lua-modules-and-functions.md,S-ztiy5c7d,located,6 – The Standard Libraries > 6.3 – Modules > require (modname),find;loader;modul;cannot,85f52ad30949b8be,"or if it cannot find any loader for the module,",2026-10-27
 fae3754561e6,arch/lua-modules-and-functions.md,S-ztiy5c7d,located,3 – The Language > 3.4 – Expressions > 3.4.11 – Function Definitions,body;end;local;function,c3622574b6436879,local function f () body end,2026-10-27
 0eae7f2f62b2,arch/oxigraph-embedded-rdf.md,S-goatdkoj,located,Milestones > List view > 1.0,automat;between;forward;migration;safe;stability;storag;oxigraph,663e105cb0726050,storage stability (guaranteed safe and fast automated migration between Oxigraph versions in the forward direction),2026-10-21
@@ -14762,6 +14762,20 @@ cd9221fcfe72,python/stdlib-datetime-iso-week.md,S-gaeidf4e,unlocated:no-match,,,
 81743e041561,python/stdlib-os-loadavg.md,S-7bno7nz5,located,,fscal;doubl;loadavg,635b25a960e23a0c,loadavg[i] = (double) loadinfo.ldavg[i] / loadinfo.fscale;,2026-10-21
 d5c467cae540,python/stdlib-os-loadavg.md,S-itsqgyii,located,,total;calculation;sampl;run;averag;thread;load,15b6c50ba82fe681,Sample total running threads for the load average calculation.,2026-10-21
 dc5551876f2c,python/stdlib-os-loadavg.md,S-pfq6vvwq,located,,last;minut;over;sampl;system;averag,638e2b3909c456b6,"The system imposes a maximum of 3 samples, representing averages over the last 1, 5, and 15 minutes, respectively.",2026-10-21
+13635b3542cc,python/stdlib-re-backtracking.md,S-allbto7m,located,"re — Regular expression operations¶ > Regular expression syntax¶ > Special characters¶ > *+, ++, ?+¶",back-track;track;back;fail;quantifier;allow;follow;expression,01b1106119ab02ef,these do not allow back-tracking when the expression following it fails to match.,2026-11-08
+2407c472b79a,python/stdlib-re-backtracking.md,S-allbto7m,unlocated:no-match,,,,,2026-11-08
+26c27394062c,python/stdlib-re-backtracking.md,S-allbto7m,unlocated:no-match,,,,,2026-11-08
+2a99469f20a4,python/stdlib-re-backtracking.md,S-allbto7m,located,re — Regular expression operations¶ > Regular expression syntax¶ > Special characters¶ > (?>...)¶,away;thrown;itself;atomic;stack;within;point;group,c51d54f19719eecb,has thrown away all stack points within itself.,2026-11-08
+37acc364015c,python/stdlib-re-backtracking.md,S-allbto7m,unlocated:no-match,,,,,2026-11-08
+56f157750ce6,python/stdlib-re-backtracking.md,S-allbto7m,unlocated:no-match,,,,,2026-11-08
+8cff118fc9fb,python/stdlib-re-backtracking.md,S-ysz5zha6,located,"define MARK_TRACE(label, lastmark)",pyerr_checksignal;err;sigcount;signal;check,f47861636676ed0d,if ((0 == (++sigcount & 0xfff)) && PyErrCheckSignals()) { \,2026-11-08
+940d0b40768b,python/stdlib-re-backtracking.md,S-rr7gtgt5,located,signal — Set handlers for asynchronous events¶ > General rules¶ > Signals and threads¶,new;interpreter;main;thread;handler;signal,3541273d43ef66ae,"Besides, only the main thread of the main interpreter is allowed to set a new signal handler.",2026-11-08
+9646e4d5844b,python/stdlib-re-backtracking.md,S-allbto7m,located,"re — Regular expression operations¶ > Regular expression syntax¶ > Special characters¶ > *+, ++, ?+¶",backtrack;final;match,ce3e7725749edae0,the expression is backtracked so that in the end the a ends up matching 3 'a's total,2026-11-08
+a2734e7b0807,python/stdlib-re-backtracking.md,S-allbto7m,unlocated:no-match,,,,,2026-11-08
+a2734e7b0807,python/stdlib-re-backtracking.md,S-rr7gtgt5,unlocated:no-match,,,,,2026-11-08
+a72ac9a97ee5,python/stdlib-re-backtracking.md,S-allbto7m,unlocated:no-match,,,,,2026-11-08
+a72ac9a97ee5,python/stdlib-re-backtracking.md,S-rr7gtgt5,located,signal — Set handlers for asynchronous events¶ > Module contents¶,signal.setitimer;itimer_real;setitimer;signal.itimer_real;real;itimer;second;signal,8bd1f0602d45bb73,"signal.setitimer(which, seconds, interval=0)¶ Sets given interval timer (one of signal.ITIMERREAL,",2026-11-08
+a72ac9a97ee5,python/stdlib-re-backtracking.md,S-ysz5zha6,unlocated:no-match,,,,,2026-11-08
 09e1bead9ecd,python/stdlib-sqlite3-csv.md,S-232dvyc5,located,1. Overview,filesystem;network;over;work;wal,3250e306d1a90083,WAL does not work over a network filesystem.,2026-10-21
 10a3a57b1e6c,python/stdlib-sqlite3-csv.md,S-nnljaqtm,unlocated:no-match,,,,,2026-10-10
 10a3a57b1e6c,python/stdlib-sqlite3-csv.md,S-rle6nqpc,unlocated:no-match,,,,,2026-10-10

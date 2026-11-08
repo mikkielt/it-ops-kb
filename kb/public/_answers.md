@@ -4710,3 +4710,13 @@ _Agent: kb-research_
 - See python/imports-and-modules.md, python/extension-api-versioning.md, gitlab/git-trailers-and-hooks.md, claude/plugins.md.
 
 _Agent: kb-research_
+
+## QK-regex-match-s-time-bounded-python. How is a regex match's time bounded in Python, and what makes a failing search slow?
+- The `re` module backtracks: greedy quantifiers give characters back, and possessive quantifiers and atomic groups (Python 3.11+) forbid it. [DOC S-allbto7m]
+- The `re` page documents no timeout and no way to stop a match; signal handlers run in the main thread and `signal.setitimer` is Unix-only. [DER S-allbto7m, S-rr7gtgt5: absence on the page; the signal page's availability notes]
+- The matcher checks for signals every 4096 opcodes in its dispatch step (CPython 3.14.7). [CODE S-ysz5zha6: Modules/_sre/sre_lib.h#_MAYBE_CHECK_SIGNALS]
+- Conclusion: a failing search over adjacent quantifiers that take the same characters grew about as `n` to the power k + 1 in one run on Python 3.13.2, so the pattern's shape bounds a match better than a deadline read between matches; a main-thread Unix timer that raises stopped one slow search, and there is no stdlib form of it on Windows. [DER S-allbto7m, S-rr7gtgt5, S-ysz5zha6: probes of 2026-11-08 and the documented forms]
+- Open: which `re` entry points reach the signal check, and whether it holds on other versions and on Windows. [UNK]
+- See python/stdlib-re-backtracking.md, privacy/presidio-recognizer-yaml.md.
+
+_Agent: kb-research_

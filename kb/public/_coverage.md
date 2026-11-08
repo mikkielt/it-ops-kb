@@ -354,6 +354,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `python/stdlib-cprofile-pstats` | P3 | partial | `python/stdlib-cprofile-pstats.md` | 4 |
 | `python/stdlib-datetime-iso-week` | P3 | complete | `python/stdlib-datetime-iso-week.md` | 2 |
 | `python/stdlib-os-loadavg` | P3 | partial | `python/stdlib-os-loadavg.md` | 7 |
+| `python/stdlib-re-backtracking` | P3 | partial | `python/stdlib-re-backtracking.md` | 3 |
 | `python/stdlib-unicode-normalization` | P3 | partial | `python/stdlib-unicode-normalization.md` | 2 |
 | `python/stdlib-urllib-errors` | P3 | partial | `python/stdlib-urllib-errors.md` | 6 |
 | `python/stdlib-windows-portability` | P3 | partial | `python/stdlib-windows-portability.md` | 44 |

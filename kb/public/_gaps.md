@@ -2561,3 +2561,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## gitlab/github-branch-rules-and-auto-merge
 
 - **The GitHub REST reads that tell a pull request's merged state and a commit's check state** (what an adapter for a group's forge calls to answer "is this change merged" and "is its pipeline red"): `gitlab/github-branch-rules-and-auto-merge.md` states rules and merge conditions, and `gitlab/automated-merge-requests.md` the GitLab reads, but no kb article holds the GitHub pull request, check run and combined status endpoints. Looked 2026-11-08 with `kb_pack` on the question as asked. Needs the GitHub REST reference pages for pull requests, check runs and commit statuses read in full. [UNK] (topic: gitlab/github-branch-rules-and-auto-merge)
+
+## python/stdlib-re-backtracking
+
+- **Which `re` entry points reach the matcher's signal check (`fullmatch`, `findall`, `sub`, `split`; `search` was probed) and whether it holds on other CPython versions and on Windows.** Looked 2026-11-08 at the matcher function of `sre_lib.h` at v3.14.7 (S-ysz5zha6) and one `search` probe on Python 3.13.2, macOS: the check runs every 4096 opcodes in the dispatch step, but the entry points' calls into the matcher were not traced. Needs the call sites of the matcher read in `Modules/_sre/_sre.c` at the pinned commit, or a probe per function. [UNK] (topic: python/stdlib-re-backtracking)
