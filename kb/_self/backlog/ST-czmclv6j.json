@@ -2,7 +2,7 @@
   "id": "ST-czmclv6j",
   "kind": "story",
   "title": "kbext.py init-team writes a group overlay repository: a marketplace pinning it-ops-kb by ext tag beside the group's plugin, its settings file and a verified sample extender",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-y7fe7qqx",
   "sprint": "SP-ep7ck2ab",
   "priority": "P2",
@@ -162,6 +162,37 @@
     }
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-a796fc75",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "8093f1a2e221a993b1ecb59b38e8d97befc2ff85",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess,sys,tempfile,pathlib,inspect\nT=pathlib.Path(tempfile.mkdtemp())\ndef W(p,v):\n    p=pathlib.Path(p); p.parent.mkdir(parents=True,exist_ok=True); p.write_text(v if isinstance(v,str) else json.dumps(v),encoding=\"utf-8\"); return p\ndef R(*a,env=None,cwd=None,inp=None):\n    return subprocess.run([sys.executable,*a],capture_output=True,text=True,env=dict(os.environ,**(env or {})),cwd=cwd,input=inp,timeout=900)\ndef need(c,m):\n    if not c: sys.exit(\"not yet: \"+str(m)[:1500])\ndef git(d,*a):\n    return subprocess.run([\"git\",\"-C\",str(d),*a],capture_output=True,text=True,check=True)\ndef repo(d):\n    d=pathlib.Path(d); d.mkdir(parents=True,exist_ok=True); git(d,\"init\",\"-q\",\"-b\",\"main\"); git(d,\"config\",\"user.name\",\"t\"); git(d,\"config\",\"user.email\",\"t@corp.example.com\"); return d\ndef mod(name):\n    sys.path.insert(0,\"_tools\")\n    try: return __import__(name)\n    except ImportError as x: sys.exit(\"not yet: \"+str(x))\ndef EXT(body):\n    return 'KBEXT_REQUIRES = \">=0.1\"\\n'+body\ndef PY(code,*a,env=None,flags=()):\n    w=\"import sys\\ntry:\\n\"+\"\".join(\"    \"+l+\"\\n\" for l in code.splitlines())+\"except Exception as x:\\n    print('failed: '+type(x).__name__+': '+str(x),file=sys.stderr); sys.exit(3)\\n\"\n    return R(*flags,\"-c\",w,*a,env=env)\n\nd=T/\"grp-kb\"\ni=lambda: R(\"_tools/kbext.py\",\"init-team\",str(d),\"--group\",\"grp\",\"--upstream\",\"git@corp.example.com:kb/it-ops-kb.git\",\"--ref\",\"ext-v1.0.0\")\n\nr=i(); need(r.returncode==0, r.stderr)\nm=json.loads((d/\".claude-plugin\"/\"marketplace.json\").read_text(encoding=\"utf-8\")); srcs={p[\"name\"]:p[\"source\"] for p in m[\"plugins\"]}\nup=srcs.get(\"it-ops-kb\",{}); need(isinstance(up,dict) and up.get(\"url\",\"\").endswith(\"it-ops-kb.git\") and up.get(\"ref\")==\"ext-v1.0.0\" and \"grp\" in srcs, srcs)\npj=json.loads((d/\".claude-plugin\"/\"plugin.json\").read_text(encoding=\"utf-8\")); need(pj.get(\"name\")==\"grp\" and all((d/x).is_dir() for x in (\"skills\",\"agents\",\"hooks\")), pj)\nsnap=lambda: sorted((str(p),p.read_bytes()) for p in d.rglob(\"*\") if p.is_file())\na=snap(); r=i(); need(r.returncode==0 and snap()==a, \"a second run changed files\")\ng=d/\"settings\"/\"group.json\"; gs=json.loads(g.read_text(encoding=\"utf-8\")); need(gs.get(\"group\")==\"grp\" and \"ranker\" in gs.get(\"extensions\",{}), gs)\nr=R(\"_tools/kbext.py\",\"verify\",\"--root\",str(T/\"ws\"),env={\"KB_GROUP_SETTINGS\":str(g)}); need(r.returncode==0 and \"ranker\" in r.stdout, (r.stdout,r.stderr))\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess,sys,tempfile,pathlib,inspect\nT=pathlib.Path(tempfile.mkdtemp())\ndef W(p,v):\n    p=pathlib.Path(p); p.parent.mkdir(parents=True,exist_ok=True); p.write_text(v if isinstance(v,str) else json.dumps(v),encoding=\"utf-8\"); return p\ndef R(*a,env=None,cwd=None,inp=None):\n    return subprocess.run([sys.executable,*a],capture_output=True,text=True,env=dict(os.environ,**(env or {})),cwd=cwd,input=inp,timeout=900)\ndef need(c,m):\n    if not c: sys.exit(\"not yet: \"+str(m)[:1500])\ndef git(d,*a):\n    return subprocess.run([\"git\",\"-C\",str(d),*a],capture_output=True,text=True,check=True)\ndef repo(d):\n    d=pathlib.Path(d); d.mkdir(parents=True,exist_ok=True); git(d,\"init\",\"-q\",\"-b\",\"main\"); git(d,\"config\",\"user.name\",\"t\"); git(d,\"config\",\"user.email\",\"t@corp.example.com\"); return d\ndef mod(name):\n    sys.path.insert(0,\"_tools\")\n    try: return __import__(name)\n    except ImportError as x: sys.exit(\"not yet: \"+str(x))\ndef EXT(body):\n    return 'KBEXT_REQUIRES = \">=0.1\"\\n'+body\ndef PY(code,*a,env=None,flags=()):\n    w=\"import sys\\ntry:\\n\"+\"\".join(\"    \"+l+\"\\n\" for l in code.splitlines())+\"except Exception as x:\\n    print('failed: '+type(x).__name__+': '+str(x),file=sys.stderr); sys.exit(3)\\n\"\n    return R(*flags,\"-c\",w,*a,env=env)\n\nd=T/\"grp-kb\"\ni=lambda: R(\"_tools/kbext.py\",\"init-team\",str(d),\"--group\",\"grp\",\"--upstream\",\"git@corp.example.com:kb/it-ops-kb.git\",\"--ref\",\"ext-v1.0.0\")\n\nr=i(); need(r.returncode==0, r.stderr)\ng=d/\"settings\"/\"group.json\"; g.write_text('{\"group\": \"mine\"}\\n',encoding=\"utf-8\")\nr=i(); need(r.returncode==2 and \"group.json\" in r.stderr and g.read_text(encoding=\"utf-8\")=='{\"group\": \"mine\"}\\n', (r.returncode,r.stderr))\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess,sys,tempfile,pathlib,inspect\nT=pathlib.Path(tempfile.mkdtemp())\ndef W(p,v):\n    p=pathlib.Path(p); p.parent.mkdir(parents=True,exist_ok=True); p.write_text(v if isinstance(v,str) else json.dumps(v),encoding=\"utf-8\"); return p\ndef R(*a,env=None,cwd=None,inp=None):\n    return subprocess.run([sys.executable,*a],capture_output=True,text=True,env=dict(os.environ,**(env or {})),cwd=cwd,input=inp,timeout=900)\ndef need(c,m):\n    if not c: sys.exit(\"not yet: \"+str(m)[:1500])\ndef git(d,*a):\n    return subprocess.run([\"git\",\"-C\",str(d),*a],capture_output=True,text=True,check=True)\ndef repo(d):\n    d=pathlib.Path(d); d.mkdir(parents=True,exist_ok=True); git(d,\"init\",\"-q\",\"-b\",\"main\"); git(d,\"config\",\"user.name\",\"t\"); git(d,\"config\",\"user.email\",\"t@corp.example.com\"); return d\ndef mod(name):\n    sys.path.insert(0,\"_tools\")\n    try: return __import__(name)\n    except ImportError as x: sys.exit(\"not yet: \"+str(x))\ndef EXT(body):\n    return 'KBEXT_REQUIRES = \">=0.1\"\\n'+body\ndef PY(code,*a,env=None,flags=()):\n    w=\"import sys\\ntry:\\n\"+\"\".join(\"    \"+l+\"\\n\" for l in code.splitlines())+\"except Exception as x:\\n    print('failed: '+type(x).__name__+': '+str(x),file=sys.stderr); sys.exit(3)\\n\"\n    return R(*flags,\"-c\",w,*a,env=env)\n\np=pathlib.Path(\"kb/_self/plugin.md\").read_text(encoding=\"utf-8\"); h=[l for l in p.splitlines() if l.startswith(\"## \") and \"overlay\" in l.lower()]\nneed(h, \"plugin.md has no overlay section\")\ndz=pathlib.Path(\"kb/_self/design.md\").read_text(encoding=\"utf-8\"); i=dz.find(\"## Teams and organizations\"); need(i>=0 and \"plugin.md\" in dz[i:i+8000] and \"overlay\" in dz[i:i+8000], \"design.md does not link it\")\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
