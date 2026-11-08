@@ -33,5 +33,6 @@
   "depends_on": [
     "ST-3lzsy3rj"
   ],
+  "notes": "Research 2026-11-08 (kb public/gitlab/codeowners.md): a group owner is written by its full path (@group/subgroup) and contributes only its direct members; the group must be the project's group or an ancestor, or invited to or shared with the project; sections take each section's last matching entry, ^ makes one optional and [Section][N] requires N approvals. CODEOWNERS and Require Code Owner approval are Premium/Ultimate; on Free only the dropped auto-merge protects a policy change.",
   "filed_in": "clone-0ea70e5c"
 }

@@ -25,5 +25,6 @@
     "ST-mbnpveyw",
     "EP-fxrzbuza"
   ],
+  "notes": "Research 2026-11-08 (kb public/gitlab/codeowners.md, Groups and subgroups): GitLab nests groups up to 20 levels on every tier and advises five or fewer; members inherit into subgroups. A coord group path deeper than 20 levels matches no GitLab group, so refusing it is consistent with the forge.",
   "filed_in": "clone-0ea70e5c"
 }

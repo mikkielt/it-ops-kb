@@ -28,5 +28,6 @@
     "ST-kcdeil4w",
     "ST-nmrcazp2"
   ],
+  "notes": "Research 2026-11-08 (kb public/gitlab/variables.md, multi-project-pipelines.md): a trigger token impersonates its creator, who needs the Maintainer or Owner role; variables[KEY] are pipeline variables, held by the project's Minimum role to use pipeline variables (no_one_allowed by default for new projects in new namespaces on GitLab.com since 17.7, then only an Owner can change it). GitLab recommends inputs[name] validated against spec:inputs; whether inputs alone escape the minimum-role setting is not documented (UNK). Before the claim: check the integration project's ci_pipeline_variables_minimum_override_role, and prefer inputs[job] with a spec:inputs header in .gitlab-ci.yml if variables are refused.",
   "filed_in": "clone-0ea70e5c"
 }
