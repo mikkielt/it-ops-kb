@@ -2,7 +2,7 @@
   "id": "ST-xtq3vogq",
   "kind": "story",
   "title": "Review sprint: Session-load figures you can trust, and the housekeeping they need",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-m5m67goe",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,27 @@
       ]
     }
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "evidence": {
+    "commit": "23ab3f9cc0f5ebb9284f2ec5680a40a3f87744af",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "ac2148b54b36ae26"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "47bdba957857e8c5"
+      }
+    ]
+  }
 }
