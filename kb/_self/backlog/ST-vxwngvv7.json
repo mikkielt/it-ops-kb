@@ -1,0 +1,27 @@
+{
+  "id": "ST-vxwngvv7",
+  "kind": "story",
+  "title": "The bundles coord serve hands out are signed with an HS256 key file, so OPA refuses a bundle changed on the way",
+  "status": "draft",
+  "parent": "EP-p4guu2ip",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "coord.py serve --bundle-key FILE (mode 0600, else exit 2 naming chmod 0600) adds /.signatures.json to each bundle: one HS256 JWT whose payload lists every file with its SHA-256 hash and the keyid kbjobs, as OPA's bundle signing format has it; the token verifies with the key file's bytes by the standard library's hmac, and a bundle whose file differs from its listed hash fails that verification; no --bundle-key serves unsigned bundles as before",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,json,time,tempfile,subprocess\nd=tempfile.mkdtemp()\nkd=os.path.join(d,\"keys\")\ndef key(p,t):\n    f=os.path.join(kd,*p.split(\"/\")); os.makedirs(os.path.dirname(f),exist_ok=True); open(f,\"w\").write(t); os.chmod(f,0o600); return f\nimport urllib.request,tarfile,io,hmac,hashlib,base64\na=key(\"corp/ops/jan.kowalski\",\"ka-placeholder\"); kf=os.path.join(d,\"bundle.key\"); open(kf,\"w\").write(\"bundle-key-placeholder\"); os.chmod(kf,0o644)\npd=os.path.join(d,\"pol\"); os.makedirs(pd); open(os.path.join(pd,\"placement.rego\"),\"w\").write(\"package kbjobs.placement\\n\")\nbad=subprocess.run([sys.executable,\"_tools/coord.py\",\"--store\",os.path.join(d,\"c.sqlite\"),\"serve\",\"--bind\",\"127.0.0.1:0\",\"--keys\",kd,\"--bundle-key\",kf],capture_output=True,text=True,timeout=30)\nassert bad.returncode==2 and \"chmod 0600\" in bad.stderr, bad\nos.chmod(kf,0o600); EXTRA=[\"--policy-dir\",pd,\"--bundle-key\",kf]\nsv=subprocess.Popen([sys.executable,\"_tools/coord.py\",\"--store\",os.path.join(d,\"c.sqlite\"),\"serve\",\"--bind\",\"127.0.0.1:0\",\"--keys\",kd]+EXTRA,stdout=subprocess.PIPE,text=True)\nurl=sv.stdout.readline().split(\"serving\")[1].strip()\nb=urllib.request.urlopen(urllib.request.Request(url+\"/v1/bundles/kbjobs.tar.gz\",headers={\"Authorization\":\" \".join([\"Bearer\",open(a).read()])}),timeout=30).read(); sv.terminate()\nt=tarfile.open(fileobj=io.BytesIO(b)); files={m.name.lstrip(\"./\"):t.extractfile(m).read() for m in t.getmembers() if m.isfile()}\njwt=json.loads(files.pop(\".signatures.json\"))[\"signatures\"][0]; h,p,sg=jwt.split(\".\")\npad=lambda s: base64.urlsafe_b64decode(s+\"=\"*(-len(s)%4))\nassert hmac.compare_digest(pad(sg),hmac.new(open(kf,\"rb\").read(),f\"{h}.{p}\".encode(),hashlib.sha256).digest())\nlisted={f[\"name\"].lstrip(\"/\"):f[\"hash\"] for f in json.loads(pad(p))[\"files\"]}\nassert all(hashlib.sha256(v).hexdigest()==listed[k] for k,v in files.items() if k in listed) and listed, listed\nassert hashlib.sha256(files[[k for k in files if k.endswith(\".rego\")][0]]+b\"x\").hexdigest() not in listed.values()\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/coord.py",
+    "kb/_self/coordination.md"
+  ],
+  "depends_on": [
+    "ST-mpbq7lyz"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

@@ -1,0 +1,28 @@
+{
+  "id": "ST-liejtnnc",
+  "kind": "story",
+  "title": "kbjob.py opa-config --print prints the OPA configuration and service unit that pull both bundles from coord, and writes nothing",
+  "status": "draft",
+  "parent": "EP-p4guu2ip",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbjob.py opa-config --print --url URL --token-file PATH --key-env NAME prints an OPA configuration (one service at URL with bearer token_path PATH, the bundles kbjobs and kbjobs-overrides with polling and persist: true, signing keyid kbjobs, the key read from ${NAME} by OPA's environment substitution) and a systemd unit running opa run --server with it; no file is written, and the token's and the key's text never appear in the output",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,tempfile,subprocess\nd=tempfile.mkdtemp(); h=os.path.join(d,\"home\"); os.mkdir(h); tf=os.path.join(d,\"tok\"); open(tf,\"w\").write(\"tok-placeholder\"); os.chmod(tf,0o600)\nr=subprocess.run([sys.executable,\"_tools/kbjob.py\",\"opa-config\",\"--print\",\"--url\",\"https://kb.corp.example.com\",\"--token-file\",tf,\"--key-env\",\"KB_BUNDLE_KEY\"],capture_output=True,text=True,timeout=60,env=dict(os.environ,HOME=h,KB_BUNDLE_KEY=\"bundle-key-placeholder\"))\no=r.stdout\nassert r.returncode==0 and \"kbjobs-overrides\" in o and \"persist: true\" in o and \"${KB_BUNDLE_KEY}\" in o and \"opa run --server\" in o, o\nassert \"tok-placeholder\" not in o and \"bundle-key-placeholder\" not in o and os.listdir(h)==[], o\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbjob.py",
+    "_tools/kj_place.py",
+    "kb/_self/coordination.md"
+  ],
+  "depends_on": [
+    "ST-vxwngvv7"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

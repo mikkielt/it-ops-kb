@@ -1,0 +1,37 @@
+{
+  "id": "ST-ny55msio",
+  "kind": "story",
+  "title": "CODEOWNERS names an owning group for every policy path, and a code push that changes policy leaves its merge to a code owner",
+  "status": "draft",
+  "parent": "EP-p4guu2ip",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The integration repository's .gitlab/CODEOWNERS has a section owning policy/kbjobs/ and one per group directory under policy/kbjobs/groups/ naming that GitLab group; check.py exits 1 naming each policy/ file no CODEOWNERS line covers; kg_sync.push_options(target, paths) leaves out merge_request.auto_merge when a path is under policy/, so a code owner merges the request (GitLab enforces the approval on a protected branch with Require Code Owner approval, Premium or Ultimate); other code pushes keep auto-merge",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0,\"_tools\"); import kg_sync\na=kg_sync.push_options(\"main\",[\"policy/kbjobs/groups/corp/ops/data.json\"]); b=kg_sync.push_options(\"main\",[\"_tools/coord.py\"])\nassert \"merge_request.auto_merge\" not in a and \"merge_request.create\" in a and \"merge_request.auto_merge\" in b, (a,b)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,tempfile,subprocess\nd=tempfile.mkdtemp(); w=os.path.join(d,\"w\"); subprocess.run([\"git\",\"clone\",\"-q\",\"--local\",\".\",w],check=True)\np=os.path.join(w,\"policy\",\"kbjobs\",\"groups\",\"nosuch\",\"grp\"); os.makedirs(p); open(os.path.join(p,\"data.json\"),\"w\").write(\"{}\")\nsubprocess.run([\"git\",\"add\",\"-A\"],cwd=w,check=True)\nr=subprocess.run([sys.executable,\"_tools/check.py\"],cwd=w,capture_output=True,text=True,timeout=600)\nassert r.returncode==1 and \"policy/kbjobs/groups/nosuch/grp/data.json\" in r.stdout+r.stderr and \"CODEOWNERS\" in r.stdout+r.stderr, r.stdout[-2000:]\n"
+      ]
+    }
+  ],
+  "touches": [
+    ".gitlab/CODEOWNERS",
+    "_tools/check.py",
+    "_tools/kg_sync.py",
+    "kb/_self/git.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-3lzsy3rj"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

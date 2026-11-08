@@ -1,0 +1,29 @@
+{
+  "id": "ST-p7oslxrl",
+  "kind": "story",
+  "title": "A commit a job makes names the operator who submitted it and the job, whichever identity authors it",
+  "status": "draft",
+  "parent": "EP-p4guu2ip",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kg_trailers.job_trailers(environ) reads KB_JOB and KB_JOB_OPERATOR, which the executor sets for a job's process, and apply_trailers(message, computed, operator=..., job=...) sets KB-Operator to the submitter and adds KB-Job: JB-..., whatever git author the job's identity gives; an operator value that is an email address or a session GUID, or a job value that is no job id, is dropped with a line on stderr; commits made outside a job are unchanged",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,tempfile,subprocess\nsys.path.insert(0,os.path.abspath(\"_tools\")); import kg_trailers\nd=tempfile.mkdtemp(); subprocess.run([\"git\",\"init\",\"-q\",d],check=True); os.chdir(d)\nop,job=kg_trailers.job_trailers({\"KB_JOB\":\"JB-abcdefgh\",\"KB_JOB_OPERATOR\":\"corp/ops/jan.kowalski\"})\nm=kg_trailers.apply_trailers(\"subject\\n\\nbody\\n\",{},operator=op,job=job)\nbad=kg_trailers.job_trailers({\"KB_JOB\":\"nojob\",\"KB_JOB_OPERATOR\":\"jan.kowalski@corp.example.com\"})\nnone=kg_trailers.job_trailers({})\nassert \"KB-Operator: corp/ops/jan.kowalski\" in m and \"KB-Job: JB-abcdefgh\" in m, m\nassert bad==(None,None) and none==(None,None), (bad,none)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kg_trailers.py",
+    "_tools/kbwho.py",
+    ".githooks/**",
+    "kb/_self/git.md"
+  ],
+  "depends_on": [
+    "ST-pea36fje"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

@@ -1,0 +1,31 @@
+{
+  "id": "ST-iz6u7rem",
+  "kind": "story",
+  "title": "A central executor keeps its own query-log spool and the follower writes its row too, and the job is counted once",
+  "status": "draft",
+  "parent": "EP-p4guu2ip",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A server executor writes one ops row per finished job, carrying the job id and origin server, to its own query-log spool and delivers it to the integration remote as a clone does (never the publish remote); kbjob.py follow writes the same row with origin follower in the submitter's clone; kbjob.py stats and the digest count each job id once, preferring the executor's row; a CI job writes none",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,json,time,tempfile,subprocess,threading,http.server\nclass H(http.server.BaseHTTPRequestHandler):\n    seen=[]; out={}\n    def do_POST(s):\n        n=int(s.headers.get(\"Content-Length\") or 0); H.seen.append((s.path,json.loads(s.rfile.read(n) or b\"{}\")))\n        b=json.dumps(H.out).encode(); s.send_response(200); s.send_header(\"Content-Length\",str(len(b))); s.end_headers(); s.wfile.write(b)\n    def log_message(s,*a): pass\nsrv=http.server.HTTPServer((\"127.0.0.1\",0),H); threading.Thread(target=srv.serve_forever,daemon=True).start()\nOPA=f\"http://127.0.0.1:{srv.server_port}\"\ndec=lambda **k: {\"result\":dict({\"executor\":\"workstation\",\"identity\":\"none\",\"fallback\":None,\"fallback_after_s\":0,\"budget_cap_usd\":None,\"decided_by\":\"default\"},**k)}\nd=tempfile.mkdtemp(); env=dict(os.environ,KB_COORD_STORE=os.path.join(d,\"c.sqlite\"))\nkj=lambda *x,e=None: subprocess.run([sys.executable,\"_tools/kbjob.py\",*x],capture_output=True,text=True,timeout=300,env=e or env)\no=os.path.join(d,\"o.git\"); subprocess.run([\"git\",\"clone\",\"-q\",\"--bare\",\"--local\",\".\",o],check=True)\nqa=os.path.join(d,\"qa\"); qb=os.path.join(d,\"qb\")\nea=dict(env,CLAUDE_PLUGIN_DATA=qa,CLAUDE_PLUGIN_ROOT=os.getcwd()); eb=dict(env,CLAUDE_PLUGIN_DATA=qb,CLAUDE_PLUGIN_ROOT=os.getcwd())\nH.out=dec(executor=\"server\")\nj=json.loads(kj(\"submit\",\"check\",\"--name\",\"backlog-check\",\"--no-ensure\",\"--opa\",OPA,\"--clone-url\",\"file://\"+o).stdout)[\"job\"]\nkj(\"serve\",\"--kind\",\"server\",\"--data\",os.path.join(d,\"srv\"),\"--once\",e=ea); kj(\"follow\",j,e=eb)\nst=json.loads(kj(\"stats\",\"--format\",\"json\",\"--home\",qa,\"--home\",qb).stdout)\nassert st[\"check\"][\"n\"]==1, st\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kj_store.py",
+    "_tools/kj_exec.py",
+    "_tools/kbjob.py",
+    "kb/_self/querylog.md",
+    "kb/_self/coordination.md"
+  ],
+  "depends_on": [
+    "ST-liirkdss",
+    "ST-vst4vom3"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

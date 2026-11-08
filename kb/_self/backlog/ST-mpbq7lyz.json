@@ -1,0 +1,27 @@
+{
+  "id": "ST-mpbq7lyz",
+  "kind": "story",
+  "title": "coord serve serves the committed policy and the group overrides as two OPA bundles that answer 304 when unchanged",
+  "status": "draft",
+  "parent": "EP-p4guu2ip",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "coord.py serve --policy-dir DIR answers GET /v1/bundles/kbjobs.tar.gz (DIR's .rego and data files, manifest roots kbjobs/placement and kbjobs/groups) and GET /v1/bundles/kbjobs-overrides.tar.gz (data.json under kbjobs/overrides, mapping each group path to its override, manifest root kbjobs/overrides), both behind the same bearer check as POST /v1/run, each with an ETag that changes only with its content and 304 for a matching If-None-Match; a missing --policy-dir answers 404 for the first bundle only",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,json,time,tempfile,subprocess\nd=tempfile.mkdtemp()\nkd=os.path.join(d,\"keys\")\ndef key(p,t):\n    f=os.path.join(kd,*p.split(\"/\")); os.makedirs(os.path.dirname(f),exist_ok=True); open(f,\"w\").write(t); os.chmod(f,0o600); return f\nimport urllib.request,urllib.error,tarfile,io\na=key(\"corp/ops/jan.kowalski\",\"ka-placeholder\"); pd=os.path.join(d,\"pol\"); os.makedirs(pd); open(os.path.join(pd,\"placement.rego\"),\"w\").write(\"package kbjobs.placement\\n\")\nEXTRA=[\"--policy-dir\",pd]\nsv=subprocess.Popen([sys.executable,\"_tools/coord.py\",\"--store\",os.path.join(d,\"c.sqlite\"),\"serve\",\"--bind\",\"127.0.0.1:0\",\"--keys\",kd]+EXTRA,stdout=subprocess.PIPE,text=True)\nurl=sv.stdout.readline().split(\"serving\")[1].strip()\nsubprocess.run([sys.executable,\"_tools/coord.py\",\"--url\",url,\"--key-file\",a,\"put\",\"group/corp/ops/policy/placement\",\"--value\",json.dumps({\"check\":{\"executor\":\"server\"}}),\"--revision\",\"0\"],check=True,capture_output=True,timeout=60)\ndef get(p,h={}):\n    try:\n        r=urllib.request.urlopen(urllib.request.Request(url+p,headers=h),timeout=30); return r.status,r.headers.get(\"ETag\"),r.read()\n    except urllib.error.HTTPError as e: return e.code,None,b\"\"\nau={\"Authorization\":\" \".join([\"Bearer\",open(a).read()])}\ns0,_,_=get(\"/v1/bundles/kbjobs-overrides.tar.gz\")\ns1,e1,b1=get(\"/v1/bundles/kbjobs-overrides.tar.gz\",au); s2,_,_=get(\"/v1/bundles/kbjobs-overrides.tar.gz\",dict(au,**{\"If-None-Match\":e1}))\ns3,_,b3=get(\"/v1/bundles/kbjobs.tar.gz\",au); sv.terminate()\nt=tarfile.open(fileobj=io.BytesIO(b1)); names=t.getnames(); data=json.loads(t.extractfile([n for n in names if n.endswith(\"kbjobs/overrides/data.json\")][0]).read())\nassert (s0,s1,s2,s3)==(401,200,304,200), (s0,s1,s2,s3)\nassert data[\"corp/ops\"][\"check\"][\"executor\"]==\"server\", data\nassert any(n.endswith(\"placement.rego\") for n in tarfile.open(fileobj=io.BytesIO(b3)).getnames())\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/coord.py",
+    "kb/_self/coordination.md"
+  ],
+  "depends_on": [
+    "ST-j6n6u6or"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "EP-p4guu2ip",
+  "kind": "epic",
+  "title": "Each operation runs where its group's placement policy puts it, on the workstation, a central server or GitLab CI, as the identity the policy names",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A job's placement (executor workstation, server or ci; identity none, group-bot or operator; fallback; daily cost cap) is decided by an OPA/Rego policy, package kbjobs.placement, from the committed policy/ files and per-group overrides that coord serve publishes as signed bundles; groups nest as GitLab's do, in coord's key directory and in root pointers; CODEOWNERS owns each policy path; a server kbjob.py serve and a GitLab CI job run the jobs placed on them, landings and worker sessions included, from worker branches pushed on demand, with a push credential only where the decision names one, KB-Operator naming the submitter, paid runs refused past their budget or the group's cap; without a decision every job runs on the workstation as today.",
+  "relates_to": [
+    "EP-tmw3tokk",
+    "EP-fxrzbuza",
+    "EP-eocmyqdx"
+  ],
+  "links": [
+    "kb: public/agents/policy-as-code.md (OPA structured decisions :19, undefined result :22, bundles :23-27)",
+    "kb: public/gitlab/codeowners.md (CODEOWNERS approval is Premium/Ultimate :15,18)",
+    "kb: public/gitlab/commit-signing-and-provenance.md (bot users of access tokens)",
+    "kb/_self/coordination.md (coord serve, key files, team scopes)",
+    "kb/_self/git.md (lanes, code merge requests, manual CI jobs on the project's runners)"
+  ],
+  "notes": "Planned with the operator on 2026-11-08 (interview: goals load off the workstation, landings with the laptop closed, one team queue, fit for the self-hosted GitLab, granular per group, kb root and capability). Decisions: policy as OPA/Rego plus CODEOWNERS; committed policy plus server-side overrides; nested 'group' as the one entity (no department level); identities none, group-bot and operator; every operation may be placed centrally (checks, landing chain, paid benchmarks, worker sessions); paid runs need a budget per job and meet a daily cap per group; fallback from an offline workstation is set by policy; records are written both by a central executor's own spool and by the follower, counted once by job id; worker branches are pushed to the integration remote at stage-back only when the landing is placed off the workstation. Tools stay standard library: kbjob.py reaches OPA over its REST API with urllib, and OPA (Apache-2.0, an outside server, as EP-fxrzbuza allows) is optional: unreachable or undefined means workstation. Open: the self-hosted GitLab's tier decides whether CODEOWNERS approval is enforced (Premium/Ultimate, kb public/gitlab/codeowners.md:15,18); the opa binary is needed on the host of the policy story's check. The queue half is EP-tmw3tokk (ST-gf2rlzcc holds the central queue and executor kinds).",
+  "filed_in": "clone-0ea70e5c"
+}

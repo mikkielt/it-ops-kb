@@ -1,0 +1,37 @@
+{
+  "id": "ST-3lzsy3rj",
+  "kind": "story",
+  "title": "The committed placement policy resolves a job by capability, then root, then its nearest group, then the default of the workstation",
+  "status": "draft",
+  "parent": "EP-p4guu2ip",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "policy/kbjobs/placement.rego (package kbjobs.placement) returns the decision object kbjob.py place reads, with `default` values executor workstation and identity none; it takes, first match wins, a capability rule (data.kbjobs.capabilities), the subject's root (data.kbjobs.roots), the operator's nearest group with a server override (data.kbjobs.overrides) before its committed group file (policy/kbjobs/groups/<group path>/data.json), then the default, and names the level in decided_by; policy/kbjobs/placement_test.rego covers each level, the nearest group winning over an ancestor, an override over a committed group file and the default; opa test passes",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,shutil\no=shutil.which(\"opa\"); assert o, \"opa is not on PATH\"\nr=subprocess.run([o,\"test\",\"policy/kbjobs\",\"-v\"],capture_output=True,text=True,timeout=120); print(r.stdout[-3000:])\nassert r.returncode==0 and \"placement_test\" in r.stdout, r.stderr\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,shutil,json,tempfile,os\no=shutil.which(\"opa\"); assert o, \"opa is not on PATH\"\nd=tempfile.mkdtemp(); f=lambda n,v: (open(os.path.join(d,n),\"w\").write(json.dumps(v)), os.path.join(d,n))[1]\ndata=f(\"data.json\",{\"kbjobs\":{\"overrides\":{\"corp\":{\"check\":{\"executor\":\"server\"}},\"corp/ops\":{\"check\":{\"executor\":\"ci\",\"identity\":\"none\"}}}}})\nev=lambda inp: json.loads(subprocess.run([o,\"eval\",\"-f\",\"json\",\"-d\",\"policy/kbjobs\",\"-d\",data,\"-i\",f(\"i.json\",inp),\"data.kbjobs.placement\"],capture_output=True,text=True,timeout=60).stdout)[\"result\"][0][\"expressions\"][0][\"value\"]\na=ev({\"op\":\"check\",\"subject\":\"backlog-check\",\"groups\":[\"corp\",\"corp/ops\"],\"operator\":\"corp/ops/jan.kowalski\",\"roots\":[],\"root_groups\":[],\"host\":\"PL-LT-00123\",\"capabilities\":{\"paid\":False,\"push\":False}})\nb=ev({\"op\":\"land\",\"subject\":\"ST-aaaaaaaa\",\"groups\":[\"corp\",\"corp/dev\"],\"operator\":\"corp/dev/anna.nowak\",\"roots\":[],\"root_groups\":[],\"host\":\"PL-LT-00123\",\"capabilities\":{\"paid\":False,\"push\":True}})\nassert a[\"executor\"]==\"ci\" and a[\"decided_by\"].endswith(\"corp/ops\"), a\nassert b[\"executor\"]==\"workstation\" and b[\"identity\"]==\"none\", b\n"
+      ]
+    }
+  ],
+  "touches": [
+    "policy/kbjobs/placement.rego",
+    "policy/kbjobs/placement_test.rego",
+    "policy/kbjobs/groups/**",
+    "kb/_self/coordination.md",
+    "kb/_self/map.csv"
+  ],
+  "depends_on": [
+    "ST-zom563hs"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

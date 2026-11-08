@@ -1,0 +1,29 @@
+{
+  "id": "ST-zom563hs",
+  "kind": "story",
+  "title": "kbjob.py place asks the OPA placement policy where and as whom a job runs, and any failure to answer means the workstation",
+  "status": "draft",
+  "parent": "EP-p4guu2ip",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbjob.py place OP [SUBJECT] --opa URL builds the input {op, subject, roots, root_groups, operator, groups, host, capabilities: {paid, push}} and sends it as POST URL/v1/data/kbjobs/placement with urllib; it prints one JSON decision {executor, identity, fallback, fallback_after_s, budget_cap_usd, decided_by, reason}; an unreachable OPA, a reply with no result, or an executor, identity or fallback outside the tables (workstation|server|ci, none|group-bot|operator) gives executor workstation, identity none and a reason naming the cause, exit 0; without --opa it reads KB_OPA_URL, and with neither it decides workstation with the reason no policy",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,json,time,tempfile,subprocess,threading,http.server\nclass H(http.server.BaseHTTPRequestHandler):\n    seen=[]; out={}\n    def do_POST(s):\n        n=int(s.headers.get(\"Content-Length\") or 0); H.seen.append((s.path,json.loads(s.rfile.read(n) or b\"{}\")))\n        b=json.dumps(H.out).encode(); s.send_response(200); s.send_header(\"Content-Length\",str(len(b))); s.end_headers(); s.wfile.write(b)\n    def log_message(s,*a): pass\nsrv=http.server.HTTPServer((\"127.0.0.1\",0),H); threading.Thread(target=srv.serve_forever,daemon=True).start()\nOPA=f\"http://127.0.0.1:{srv.server_port}\"\ndec=lambda **k: {\"result\":dict({\"executor\":\"workstation\",\"identity\":\"none\",\"fallback\":None,\"fallback_after_s\":0,\"budget_cap_usd\":None,\"decided_by\":\"default\"},**k)}\nd=tempfile.mkdtemp(); env=dict(os.environ,KB_COORD_STORE=os.path.join(d,\"c.sqlite\"))\nkj=lambda *x,e=None: subprocess.run([sys.executable,\"_tools/kbjob.py\",*x],capture_output=True,text=True,timeout=300,env=e or env)\np=lambda u: json.loads(kj(\"place\",\"check\",\"backlog-check\",\"--opa\",u).stdout)\nH.out=dec(executor=\"server\",identity=\"group-bot\",decided_by=\"group:corp/ops\"); d1=p(OPA)\nH.out={}; d2=p(OPA)\nH.out=dec(executor=\"moon\"); d3=p(OPA)\nd4=p(\"http://127.0.0.1:9\")\nassert d1[\"executor\"]==\"server\" and d1[\"identity\"]==\"group-bot\" and d1[\"decided_by\"]==\"group:corp/ops\", d1\nfor x in (d2,d3,d4): assert x[\"executor\"]==\"workstation\" and x[\"identity\"]==\"none\" and x[\"reason\"], x\npath,body=H.seen[0]; assert path==\"/v1/data/kbjobs/placement\" and {\"op\",\"subject\",\"operator\",\"groups\",\"host\",\"capabilities\"}<=set(body[\"input\"]), H.seen[0]\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbjob.py",
+    "_tools/kj_place.py",
+    "kb/_self/coordination.md",
+    "kb/_self/map.csv"
+  ],
+  "depends_on": [
+    "ST-nwwcf3kk"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

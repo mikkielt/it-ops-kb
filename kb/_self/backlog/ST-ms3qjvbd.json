@@ -1,0 +1,30 @@
+{
+  "id": "ST-ms3qjvbd",
+  "kind": "story",
+  "title": "A root pointer names its owning group path, and a pointer that names only a team is read as a group one level deep",
+  "status": "draft",
+  "parent": "EP-p4guu2ip",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbroot.py add-remote takes --group G1/.../GN (letters, digits, `_ . -` per level) beside --team, writes `group:` into the pointer, and kbroot.py list and kb_status show group=PATH for a root that names one; a pointer with only `team: NAME` is read as group NAME; a group that is no path of ids is refused, exit 2, naming the pointer; KB-Teams trailers are unchanged",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,tempfile,subprocess\nd=tempfile.mkdtemp(); w=os.path.join(d,\"w\"); subprocess.run([\"git\",\"clone\",\"-q\",\"--local\",\".\",w],check=True)\nrun=lambda *x: subprocess.run([sys.executable,\"_tools/kbroot.py\",*x],cwd=w,capture_output=True,text=True,timeout=120)\nr1=run(\"add-remote\",\"team-ops\",\"--url\",\"https://gitlab.corp.example.com/corp/ops/kb.git\",\"--prefix\",\"TOX\",\"--team\",\"ops\",\"--group\",\"corp/ops\",\"--access\",\"fetch\")\nr2=run(\"add-remote\",\"team-dev\",\"--url\",\"https://gitlab.corp.example.com/corp/dev/kb.git\",\"--prefix\",\"TDX\",\"--team\",\"dev\",\"--access\",\"fetch\")\nr3=run(\"add-remote\",\"team-bad\",\"--url\",\"https://gitlab.corp.example.com/x/kb.git\",\"--prefix\",\"TBX\",\"--team\",\"x\",\"--group\",\"corp//ops\",\"--access\",\"fetch\")\nls=run(\"list\").stdout\nassert r1.returncode==0 and r2.returncode==0 and r3.returncode==2, (r1,r2,r3)\nassert \"group=corp/ops\" in ls and \"group=dev\" in ls, ls\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbroot.py",
+    "_tools/kbcommon.py",
+    "kb/_self/design.md",
+    "kb/_self/plugin.md",
+    "kb/_self/content-rules.md"
+  ],
+  "depends_on": [
+    "ST-nzcbf2ms"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

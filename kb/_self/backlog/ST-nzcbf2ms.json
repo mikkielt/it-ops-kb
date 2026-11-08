@@ -1,0 +1,29 @@
+{
+  "id": "ST-nzcbf2ms",
+  "kind": "story",
+  "title": "coord's key directory nests groups as deep as GitLab's, and a group's keys are written by its own operators and those of the groups above it",
+  "status": "draft",
+  "parent": "EP-p4guu2ip",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "coord.py serve reads a key file at any depth of --keys: DIR/G1/.../OPERATOR is the operator G1/.../OPERATOR, whose groups are G1, G1/G2 and so on; a claim or put of a key under group/G1/.../GN/ is accepted from an operator whose group path is that path or one of its ancestors and exits 1 for any other caller; a key under team/NAME/ keeps its rule, NAME read as a group one level deep; flat operators and keys outside group/ and team/ behave as before; every event a served caller leaves names the full operator path",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,json,time,tempfile,subprocess\nd=tempfile.mkdtemp()\nkd=os.path.join(d,\"keys\")\ndef key(p,t):\n    f=os.path.join(kd,*p.split(\"/\")); os.makedirs(os.path.dirname(f),exist_ok=True); open(f,\"w\").write(t); os.chmod(f,0o600); return f\na=key(\"corp/ops/jan.kowalski\",\"ka-placeholder\"); b=key(\"corp/dev/anna.nowak\",\"kb-placeholder\"); c=key(\"corp/ops/edge/piotr.nowak\",\"kc-placeholder\"); t=key(\"ops/ewa.nowak\",\"kd-placeholder\")\nEXTRA=[]\nsv=subprocess.Popen([sys.executable,\"_tools/coord.py\",\"--store\",os.path.join(d,\"c.sqlite\"),\"serve\",\"--bind\",\"127.0.0.1:0\",\"--keys\",kd]+EXTRA,stdout=subprocess.PIPE,text=True)\nurl=sv.stdout.readline().split(\"serving\")[1].strip()\nput=lambda k,kk: subprocess.run([sys.executable,\"_tools/coord.py\",\"--url\",url,\"--key-file\",k,\"put\",kk,\"--value\",\"{}\",\"--revision\",\"0\"],capture_output=True,text=True,timeout=60).returncode\nr=[put(a,\"group/corp/ops/x\"),put(a,\"group/corp/ops/edge/y\"),put(c,\"group/corp/ops/z\"),put(b,\"group/corp/ops/w\"),put(t,\"team/ops/v\"),put(b,\"team/ops/u\")]\nsv.terminate(); assert r==[0,0,1,1,0,1], r\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/coord.py",
+    "kb/_self/coordination.md",
+    "kb/_self/design.md"
+  ],
+  "relates_to": [
+    "ST-mbnpveyw",
+    "EP-fxrzbuza"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

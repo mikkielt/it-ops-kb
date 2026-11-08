@@ -1,0 +1,33 @@
+{
+  "id": "ST-ugkw5mt3",
+  "kind": "story",
+  "title": "A worker branch is pushed to the integration remote at stage-back when its landing is placed off the workstation, and land deletes it after",
+  "status": "draft",
+  "parent": "EP-p4guu2ip",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "bl_dispatch.push_work_branch(root, item) pushes work/<item> to the integration remote with --force-with-lease against the remote tip it last saw (none for a first push), and stage-back calls it when kbjob.py place land ITEM gives an executor other than workstation; a lease that no longer holds exits 1 naming the branch; bl_land.delete_remote_work_branch(root, item) removes it once the item landed; nothing ever pushes work/* to the publish remote, and the pre-push guard refuses such a push",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,tempfile,subprocess\nsys.path.insert(0,os.path.abspath(\"_tools\")); import bl_dispatch,bl_land\nd=tempfile.mkdtemp(); o=os.path.join(d,\"o.git\"); w=os.path.join(d,\"w\"); g=lambda *x,cwd=w: subprocess.run([\"git\",*x],cwd=cwd,capture_output=True,text=True)\nsubprocess.run([\"git\",\"init\",\"-q\",\"--bare\",o],check=True); subprocess.run([\"git\",\"clone\",\"-q\",o,w],check=True)\ng(\"config\",\"user.email\",\"jan.kowalski@corp.example.com\"); g(\"config\",\"user.name\",\"jan.kowalski\"); g(\"commit\",\"-q\",\"--allow-empty\",\"-m\",\"base\"); g(\"push\",\"-q\",\"origin\",\"HEAD:main\")\ng(\"checkout\",\"-q\",\"-b\",\"work/ST-aaaaaaaa\"); g(\"commit\",\"-q\",\"--allow-empty\",\"-m\",\"work\")\nr1=bl_dispatch.push_work_branch(w,\"ST-aaaaaaaa\"); on=g(\"ls-remote\",\"origin\",\"refs/heads/work/ST-aaaaaaaa\").stdout\nw2=os.path.join(d,\"w2\"); subprocess.run([\"git\",\"clone\",\"-q\",o,w2],check=True); g(\"config\",\"user.email\",\"a@corp.example.com\",cwd=w2); g(\"config\",\"user.name\",\"a\",cwd=w2)\ng(\"checkout\",\"-q\",\"work/ST-aaaaaaaa\",cwd=w2); g(\"commit\",\"-q\",\"--allow-empty\",\"-m\",\"other\",cwd=w2); g(\"push\",\"-q\",\"origin\",\"work/ST-aaaaaaaa\",cwd=w2)\ng(\"commit\",\"-q\",\"--allow-empty\",\"-m\",\"more\"); r2=bl_dispatch.push_work_branch(w,\"ST-aaaaaaaa\")\nbl_land.delete_remote_work_branch(w,\"ST-aaaaaaaa\"); off=g(\"ls-remote\",\"origin\",\"refs/heads/work/ST-aaaaaaaa\").stdout\nassert r1==0 and on.strip() and r2==1 and not off.strip(), (r1,r2,on,off)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "_tools/bl_land.py",
+    "_tools/kbpublic.py",
+    "kb/_self/backlog.md",
+    "kb/_self/git.md"
+  ],
+  "depends_on": [
+    "ST-nmrcazp2"
+  ],
+  "relates_to": [
+    "ST-c6ao5unb"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
