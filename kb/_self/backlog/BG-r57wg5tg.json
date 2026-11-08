@@ -70,7 +70,12 @@
         "Only redact.py (--root) and check.py's log-row scan pass a root; the push-time scans keep passing none, as g4 of ST-eimj36y3 chose": "BG-r57wg5tg",
         "The push-time scans pass each file's root as well, read from the root's _root.md in the scanned tree, with the verdict caches keyed on the roots' placeholders": "BG-r57wg5tg"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "The push-time scans pass each file's root as well, read from the root's _root.md in the scanned tree, with the verdict caches keyed on the roots' placeholders",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "links": [
