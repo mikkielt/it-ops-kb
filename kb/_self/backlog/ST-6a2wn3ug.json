@@ -61,6 +61,27 @@
     "ST-xdircstf",
     "ST-y2u3sxta"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does bl_base.lane decide between extensions.lane and lane_module when the named extender fails to load?",
+      "options": [
+        "A named extender that cannot be loaded raises kbext.ExtensionError and never falls back to lane_module",
+        "A named extender that cannot be loaded falls back to lane_module"
+      ],
+      "recommendation": "A named extender that cannot be loaded raises kbext.ExtensionError and never falls back to lane_module",
+      "reason": "a silent fall back would classify commits by the wrong lane",
+      "do": {
+        "A named extender that cannot be loaded raises kbext.ExtensionError and never falls back to lane_module": "ST-6a2wn3ug",
+        "A named extender that cannot be loaded falls back to lane_module": "ST-6a2wn3ug"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "A named extender that cannot be loaded raises kbext.ExtensionError and never falls back to lane_module",
+      "by": "agent"
+    }
+  ],
   "notes": "Shared files with SP-lwkdljxg (kbcommon.py, kbpublic.py, bl_land.py, map.csv): agreed with its manager on 2026-11-08 that the first claim lands first and the other rebases; its items reach these files late. SP-uh5h46fm (mon_coord.py, mon_status.py) was asked the same and has not answered: the same rule applies.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-a796fc75",
