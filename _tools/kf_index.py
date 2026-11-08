@@ -839,6 +839,58 @@ def valid_on(text, as_of):
     return True
 
 
+_RANKER = {}  # (workspace, group settings file) -> (extender, where) of extension point `ranker`, or None when none is set
+
+
+def _ranker():
+    """(extender, where) of the group's extension point `ranker` (`extensions.ranker` of a settings layer, else the one
+    entry point of group `it_ops_kb.ranker`), or None when none is set: the pack then never reads an extender. One
+    that is set and cannot be used prints one stderr line naming the point and the pack ranks without it. Read once
+    per process and settings file."""
+    import kbext, kbsettings
+    from importlib import metadata
+    root = kbcommon.HOME
+    key = (root, os.environ.get(kbsettings.GROUP_ENV, ""))
+    if key not in _RANKER:
+        found = None
+        try:
+            named = "ranker" in kbsettings.layered(root, "extensions")[0] or bool(
+                metadata.entry_points(group=f"{kbext.GROUP}.ranker"))
+            found = kbext.resolve("ranker", root) if named else None
+        except (kbext.ExtensionError, kbsettings.SettingsError) as e:
+            print(f"kbext: {e}; the pack ranks without it", file=sys.stderr)
+            return None  # not cached: a settings file mended meanwhile is read at the next pack
+        if found is not None and not callable(found["extender"]):
+            print(f"kbext: {found['where']}: {found['spec']} is not callable, the pack ranks without it", file=sys.stderr)
+            return None
+        _RANKER[key] = found and (found["extender"], found["where"])
+    return _RANKER[key]
+
+
+def ranked_articles(question, pool):
+    """The articles POOL (qualified paths, best first) in the order the group's ranker gives them: `rank(question,
+    candidates)` is called with the pool, and the list it returns is fused with the pool's own order as one more expert
+    (`kbfacts.rrf`), so an article it puts first ranks no lower than before. A path it returns that is no candidate is
+    dropped. With no ranker set, an exception or an answer that is no list, the pool comes back as it was (the last two
+    print one stderr line naming the point)."""
+    ext = _ranker()
+    if ext is None:
+        return pool
+    extender, where = ext
+    try:
+        got = extender(question, list(pool))
+    except Exception as e:
+        print(f"kbext: {where}: the extender raised {type(e).__name__}: {e}; the pack ranks without it", file=sys.stderr)
+        return pool
+    if not isinstance(got, (list, tuple)):
+        print(f"kbext: {where}: the extender returned {type(got).__name__}, not a list of candidate paths; the pack "
+              "ranks without it", file=sys.stderr)
+        return pool
+    import kbfacts
+    wanted = set(pool)
+    return [a for a, _ in kbfacts.rrf([pool, [a for a in got if isinstance(a, str) and a in wanted]])]
+
+
 def evidence_note(st, policies, held_back):
     """The `evidence:` line of a pack: the policy of the roots it searched (one line when they agree, else one per policy
     with the roots it holds for), `answer DOC, CODE, DER; lead COMMUNITY, UNK` for a root that sets none; and, when a
@@ -1016,7 +1068,8 @@ def _pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", fo
     held = {a: max(sum(1 for t in informative if has(u, t)) for s, u in by_art[a] if s >= 0.4 * best) for a in order}
     if order:
         lead = max(order, key=lambda a: held[a])
-        order = ([lead] + [a for a in order if a != lead])[:max_articles]
+        order = [lead] + [a for a in order if a != lead]
+    pool, order = order, order[:max_articles]
     # an off-domain question (VMware Horizon, SAP GUI): its product is a rare name the kb mentions in passing, and no
     # line the pack could print holds it, whatever the other words match; a line holds it as a word of its own, not
     # as the part of a hyphenated common word (Horizon in "long-horizon tasks")
@@ -1077,6 +1130,8 @@ def _pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", fo
             used = dused
         order = list(taken)
     else:
+        if not item and pool:  # the group's ranker: one more ranked list over the articles, fused with this order
+            order = ranked_articles(question, pool)[:max_articles]
         for art in order:
             taken[art] = sorted((x for x in by_art[art] if x[0] >= 0.4 * best), key=lambda x: -x[0])[:6]
             if not art.endswith(".csv"):  # facts read in article order; rows of a table go by score, so the budget cuts the weakest
