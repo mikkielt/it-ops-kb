@@ -12,9 +12,65 @@
     "run": [
       "python3",
       "-c",
-      "import re, time\nrx = re.compile(r'^\\s*function\\s+[\\w.:]*?(?P<name>\\w+)\\s*\\(')\nline = 'function ' + 'a' * 990\nt = time.perf_counter()\nfor _ in range(50):\n    rx.search(line)\nper = (time.perf_counter() - t) / 50 * 1000\nassert per < 0.5, ('the Lua def rule takes %.2f ms on one hostile line' % per)"
+      "import sys, time\nsys.path.insert(0, '_tools')\nimport kbingest as k\nmaps, bad = k.load_patterns()\nrules = [rx for m in maps if m.language == 'lua' for role, kind, rx in m.rules if role == 'def']\nassert rules and not bad, ('the shipped Lua table has no def rule', bad)\nline = 'function ' + 'a' * 990\nworst = 0.0\nfor rx in rules:\n    t = time.perf_counter()\n    for _ in range(50):\n        rx.search(line)\n    worst = max(worst, (time.perf_counter() - t) / 50 * 1000)\nassert worst < 0.5, ('a shipped Lua def rule takes %.2f ms on one hostile line' % worst)\n"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport kbingest as k\nrow = {'language': 'lua', 'role': 'def', 'kind': 'function'}\nfor p in (r'^\\s*function\\s+[\\w.:]*?(?P<name>\\w+)\\s*\\(', r'^x\\w+\\w*(?P<name>y)', r'^x\\s*\\s+(?P<name>y)', r'^x[a-z]*[a-c]+(?P<name>y)'):\n    rule, why = k.rule_row(dict(row, pattern=p), 1, 'sensitive')\n    assert rule is None, ('a rules row whose adjacent quantifiers overlap is accepted', p)\nfor p in (r'^x\\w+\\s*(?P<name>y)', r'^x\\s+\\w*(?P<name>y)'):\n    rule, why = k.rule_row(dict(row, pattern=p), 1, 'sensitive')\n    assert rule is not None, ('a rules row whose adjacent quantifiers are disjoint is refused', p, why)\nmaps, bad = k.load_patterns()\nassert not bad and all(not m.skipped for m in maps), ('a shipped rules row is refused by the guard', [m.skipped for m in maps if m.skipped], bad)\nassert sum(len(m.rules) for m in maps) == 12, ('the shipped rules table does not load its 12 rules', sum(len(m.rules) for m in maps))\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport kbingest as k\nmaps, bad = k.load_patterns()\nrules = [rx for m in maps if m.language == 'lua' for role, kind, rx in m.rules if role == 'def']\nnames = lambda line: {m.group('name') for m in (rx.search(line) for rx in rules) if m}\nfor line, name in (('function f(', 'f'), ('function M.f(x)', 'f'), ('  function M:f (x)', 'f'), ('function a.b.c(', 'c'), ('local function g(', 'g')):\n    assert names(line) == {name}, ('the shipped Lua def rules do not name the function', line, names(line))\nfor line in ('local x = function(', '-- function f(', 'x = 1'):\n    assert not names(line), ('a shipped Lua def rule names a function on a line that defines none', line, names(line))\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib, sys, tempfile\nsys.path.insert(0, '_tools')\nimport kbingest as k\nd = pathlib.Path(tempfile.mkdtemp())\n(d / 'a.lua').write_text('function one()\\nend\\nfunction two()\\nend\\nfunction three()\\nend\\n')\nnotes, syms = [], []\nclass Ctx:\n    def readable(self, rel): return d / rel\n    def note(self, t): notes.append(t)\n    def add_imports(self, rel, mods): pass\n    def add_entry_point(self, rel, kind): pass\n    def add_symbol(self, name, kind, rel, line, uses): syms.append(name)\nm = [x for x in k.PATTERN_MAPPERS if x.language == 'lua'][0]\nm.map(Ctx(), ['a.lua'])\nassert syms == ['one', 'two', 'three'] and not notes, ('a normal file no longer maps whole and quietly', syms, notes)\nassert getattr(k, 'PATTERN_FILE_TIMEOUT_S', None) == 10, ('PATTERN_FILE_TIMEOUT_S is not 10', getattr(k, 'PATTERN_FILE_TIMEOUT_S', None))\nk.PATTERN_FILE_TIMEOUT_S = 0\nsyms.clear(); notes.clear()\nm.map(Ctx(), ['a.lua'])\nassert len(syms) < 3 and any('a.lua' in n for n in notes), ('PatternMapper reads a file past PATTERN_FILE_TIMEOUT_S with no note', syms, notes)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_kbingest_guards.py"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbingest's pattern-row guard refuses a rules row whose adjacent quantifiers overlap",
+      "check": 0
+    },
+    {
+      "clause": "kbingest's pattern-row guard refuses a rules row whose adjacent quantifiers overlap",
+      "check": 3
+    },
+    {
+      "clause": "the shipped Lua def rule takes under 0.5 ms on a 990-letter hostile line and still names the function of function f(, function M.f( and function M:f(",
+      "check": 1
+    },
+    {
+      "clause": "the shipped Lua def rule takes under 0.5 ms on a 990-letter hostile line and still names the function of function f(, function M.f( and function M:f(",
+      "check": 4
+    },
+    {
+      "clause": "PatternMapper stops reading a file after PATTERN_FILE_TIMEOUT_S seconds and notes it",
+      "check": 2
+    },
+    {
+      "clause": "PATTERN_FILE_TIMEOUT_S is 10 and PatternMapper reads it when it maps a file",
+      "check": 2
+    }
+  ],
   "touches": [
     "_tools/kbingest.py",
     "_tools/kbingest_rules.csv",
@@ -22,9 +78,12 @@
     "kb/_self/tools.md",
     ".claude/skills/kb-ingest/SKILL.md"
   ],
+  "depends_on": [
+    "BG-r57wg5tg"
+  ],
   "links": [
     "parked: SP-iir3d2tu review"
   ],
-  "notes": "Review G2 of SP-iir3d2tu: _tools/kbingest_rules.csv row 11, run by kbingest.py:1893-1905; nested_quantifier (kbingest.py:1721) misses adjacent quantifiers; MAP_TIMEOUT applies to processes only. ~4.5 ms per 990-letter line, ~2.5 h for MAP_MAX_FILES such 1 MB files. The repro uses the row's pattern literally; the fix may change the row.",
+  "notes": "Review G2 of SP-iir3d2tu: _tools/kbingest_rules.csv row 11, run by kbingest.py:1893-1905; nested_quantifier (kbingest.py:1721) misses adjacent quantifiers; MAP_TIMEOUT applies to processes only. ~4.5 ms per 990-letter line, ~2.5 h for MAP_MAX_FILES such 1 MB files. The repro uses the row's pattern literally; the fix may change the row. Order: after BG-r57wg5tg (kb/_self/tools.md lines 55 and 56 are adjacent, so a parallel landing conflicts at the rebase).",
   "filed_in": "clone-0ea70e5c"
 }
