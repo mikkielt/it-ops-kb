@@ -418,7 +418,7 @@ def gate_needs(paths):
     known paths (None) every check runs."""
     if paths is None:
         return {k: "no base to compare with" for k in ("check", "fetch", "doc2query", "selfdoc", "backlog", "querylog",
-                                                       "dropped", "selectors", "pool")}
+                                                       "dropped", "selectors", "pool", "kbext")}
     ps = {p.replace("\\", "/") for p in paths}
     kb = {p for p in ps if p.startswith("kb/")}
     tools = {p for p in ps if p.startswith("_tools/")}
@@ -443,7 +443,8 @@ def gate_needs(paths):
             "querylog": why(store | public, "the query log store or the public root, which the store gates read"),
             "dropped": why(ps & {"_tools/test_ids_dropped.txt", "_tools/perfcheck.py"}, "the dropped test ids"),
             "selectors": why({p for p in tools if TEST_FILE.fullmatch(p)}, "a test file"),  # a deleted or renamed one too
-            "pool": why(pool, "a pool input")}
+            "pool": why(pool, "a pool input"),
+            "kbext": why(tools, "a tool")}  # kbext.py lint: the extension API may not break since the last ext-v tag
 
 
 EVAL_SETS = ("lookup_eval.csv", "lookup_heldout.csv")  # the tuned eval set and the held-out one beside it
@@ -753,7 +754,8 @@ def gate(r, up, host, fix_check=False, since=None):
     article or its expansions, selfdoc.py stale --since UP for a file kb/_self describes (a `Self-Reviewed:` trailer
     clears a doc), backlog.py check for backlog items or a deleted or renamed tracked file, backlog.py selectors for a changed, deleted or renamed
     _tools/test_*.py file (selector_gate: refused for a done item whose check selects no test), querylog.py check for the
-    query log store or a file of the public root (redact.known reads it), benchmarks.py pool check for a bench_pool.csv, bench_scenarios.csv or _gaps.md (pool_gate: refused
+    query log store or a file of the public root (redact.known reads it), kbext.py lint for a path under _tools/ (a break of
+    the public extension API since the newest ext-v tag), benchmarks.py pool check for a bench_pool.csv, bench_scenarios.csv or _gaps.md (pool_gate: refused
     only for a defect line the base lacks, the pool's old defects being printed), rag.py eval --file on the
     lookup_heldout.csv beside a changed lookup_eval.csv, lookup_heldout.csv or doc2query/expansions.csv, or of the root of a changed article (heldout_checks: refused for a REWORD line), and tests.py
     --changed UP (KB_TESTS_FAST=1: nothing for backlog items and the query log store, the suite without the git
@@ -780,7 +782,8 @@ def gate(r, up, host, fix_check=False, since=None):
                ("backlog.py check", "backlog.py", ["check"], None, need["backlog"]),
                ("backlog.py selectors", "backlog.py", ["selectors"], None, need["selectors"]),
                ("querylog.py check", "querylog.py", ["check"], None, need["querylog"]),
-               ("benchmarks.py pool check", "benchmarks.py", ["pool", "check"], None, need["pool"])]
+               ("benchmarks.py pool check", "benchmarks.py", ["pool", "check"], None, need["pool"]),
+               ("kbext.py lint", "kbext.py", ["lint"], None, need["kbext"])]
     base_rev = (git("merge-base", up, "HEAD") or "").strip() if up else None  # what the pool check is judged against, on a retry too
     heldout = heldout_checks(paths)
     for rel, why in heldout or [(None, None)]:  # --min 1: a held-out row that fails to answer is the measurement, not a refusal

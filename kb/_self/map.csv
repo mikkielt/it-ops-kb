@@ -176,6 +176,7 @@ kb/_self/coordination.md,.claude/hooks/coord_hook.py
 kb/_self/tools.md,_tools/kbsettings.py
 kb/_self/coordination.md,_tools/kbsettings.py
 kb/_self/extending.md,_tools/kbext.py
+kb/_self/extension-changelog.md,_tools/kbext.py
 kb/_self/tools.md,_tools/kbext.py
 kb/_self/tools.md,_tools/kbjob.py
 kb/_self/coordination.md,_tools/kbjob.py

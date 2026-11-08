@@ -8,6 +8,8 @@
   kbext.py surface [--json]                                         print API_VERSION and `SURFACE`, the public
                                                                     extension API: each point and settings key with its
                                                                     signature and the version that added it; exit 0
+  kbext.py lint [--root REPO]                                       compare `SURFACE` at the newest `ext-v` tag with the
+                                                                    working tree's: exit 1 naming each break, 0 when none
 
 `API_VERSION` is the version of the extension API (MAJOR.MINOR.PATCH). `SURFACE` is the one registry of the public API (a
 literal: dicts with `name`, `signature`, `added`, and `deprecated` / `removed` for a deprecated one); anything not in it
@@ -31,13 +33,21 @@ without it is refused.
 the layer (`entry point` for an entry point), for a missing module, a missing attribute, a version outside
 `KBEXT_REQUIRES`, a missing or malformed `KBEXT_REQUIRES`, a bad setting, an extender that is no callable (for `call`) and
 an extender that raises. Two entry points for one point exit 2 naming both distributions; no setting and no entry point
-exit 2 naming the point. A bad argument exits 2 too; the commands never exit 1.
+exit 2 naming the point. A bad argument exits 2 too; `resolve`, `call` and `surface` never exit 1.
+
+`lint` is the gate on the API's compatibility. A repository with no tag `ext-vMAJOR.MINOR.PATCH` prints one line and exits 0.
+Otherwise it reads `API_VERSION` and `SURFACE` of `_tools/kbext.py` at the newest such tag (`git show`) and of the working
+tree with `ast`, never importing either file, and exits 1 with one line per problem: an entry removed or with a changed
+signature that `surface_breaks` does not let pass, an `API_VERSION` lower than the tag's, and a changed `API_VERSION` with no
+entry in `kb/_self/extension-changelog.md` (`changelog_problems`). `deprecated(name, since, removed_in)` is what a deprecated
+entry calls when it is used.
 
 Answers: how a group's extender for an extension point is found, loaded and checked against the API version
 Answers: which extension points and settings keys are the public extension API, and its version
-Use: python3 _tools/kbext.py resolve|call POINT --root WS | surface [--json]
+Answers: whether a change removes or changes a public extension entry without a major API version, a deprecation and a changelog entry
+Use: python3 _tools/kbext.py resolve|call POINT --root WS | surface [--json] | lint [--root REPO]
 """
-import argparse, importlib, json, re, sys
+import argparse, ast, importlib, json, re, subprocess, sys
 from importlib import metadata
 from pathlib import Path
 
@@ -96,6 +106,153 @@ def _surface_text(info):
             note = "".join(f", {k} {e[k]}" for k in ("deprecated", "removed") if e.get(k))
             out.append(f"  {e['name']}  {e['signature']}  (added {e['added']}{note})")
     return "\n".join(out)
+
+
+_WARNED = set()
+
+
+def deprecated(name, since, removed_in):
+    """Warn once per process, on stderr, that the public entry NAME is deprecated since API version SINCE and goes in the
+    major API version REMOVED_IN. An entry marked `deprecated` in `SURFACE` calls it where it is used."""
+    if name in _WARNED:
+        return
+    _WARNED.add(name)
+    print(f"kbext: deprecated since API {since}, removed in API {removed_in}: {name}", file=sys.stderr)
+
+
+def _numbers(text):
+    """(major, minor, patch) of a MAJOR.MINOR[.PATCH] string; ValueError for anything else."""
+    m = re.fullmatch(r"\s*(\d+)\.(\d+)(?:\.(\d+))?\s*", str(text))
+    if not m:
+        raise ValueError(f"{text!r} is not a MAJOR.MINOR.PATCH version")
+    return int(m.group(1)), int(m.group(2)), int(m.group(3) or 0)
+
+
+def _generation(text):
+    """The compatibility generation of an API version: its major, and while the major is 0 its minor too, since a 0.x
+    version promises no compatibility before 1.0 (a higher minor counts as a higher major)."""
+    major, minor, _ = _numbers(text)
+    return (major, minor if major == 0 else 0)
+
+
+def _entries(info):
+    """{(section, name): entry} of a surface dict: every key whose value is a list of dicts with a `name`."""
+    return {(key, e["name"]): e for key, value in sorted(info.items()) if isinstance(value, list)
+            for e in value if isinstance(e, dict) and "name" in e}
+
+
+def surface_breaks(old, new):
+    """The breaks between two surfaces (dicts with `api_version` and lists of entries: `points`, `settings`...), one line
+    each: a public entry of OLD that NEW lacks or gives another signature. A break passes only when NEW's API version is of
+    a higher generation than OLD's (a higher major; while the major is 0, a higher minor) and OLD already marked the entry
+    `deprecated`, so a group saw the warning in a release before the one that breaks it. An entry that NEW only adds, or
+    changes in `added`, `deprecated` or `removed`, is no break."""
+    try:
+        later = _generation(new["api_version"]) > _generation(old["api_version"])
+    except (KeyError, ValueError) as e:
+        return [f"api_version of the surfaces cannot be compared: {e}"]
+    now = _entries(new)
+    out = []
+    for (section, name), entry in _entries(old).items():
+        found = now.get((section, name))
+        if found is None:
+            what = f"{section} entry {name} is removed"
+        elif found.get("signature") != entry.get("signature"):
+            what = f"{section} entry {name} changes its signature from {entry.get('signature')!r} to {found.get('signature')!r}"
+        else:
+            continue
+        if not later:
+            out.append(f"{what} without a higher API version (old {old['api_version']}, new {new['api_version']})")
+        elif not entry.get("deprecated"):
+            out.append(f"{what} but the old surface never marked it deprecated")
+    return out
+
+
+def changelog_problems(version, text):
+    """[] when TEXT (kb/_self/extension-changelog.md) has an entry for API version VERSION, a heading `## VERSION` (a
+    leading `v` and text after the version are allowed); else one line naming the version."""
+    if re.search(rf"^##\s+v?{re.escape(str(version))}(?:\s|$)", text, re.M):
+        return []
+    return [f"API_VERSION {version} has no entry in kb/_self/extension-changelog.md (a heading `## {version}`)"]
+
+
+TAG_RE = re.compile(r"ext-v(\d+)\.(\d+)\.(\d+)")
+SOURCE = "_tools/kbext.py"
+CHANGELOG = "kb/_self/extension-changelog.md"
+
+
+def _literals(text):
+    """{name: value} of the top-level `API_VERSION` and `SURFACE` assignments of the module source TEXT, read with `ast`
+    and never run; a value that is no literal is left out."""
+    found = {}
+    for node in ast.parse(text).body:
+        if isinstance(node, ast.Assign):
+            for target in node.targets:
+                if isinstance(target, ast.Name) and target.id in ("API_VERSION", "SURFACE"):
+                    try:
+                        found[target.id] = ast.literal_eval(node.value)
+                    except ValueError:
+                        pass
+    return found
+
+
+def _read_surface(text, where):
+    """The surface dict (`api_version` and the entry lists) of the kbext.py source TEXT; ValueError names WHERE."""
+    try:
+        found = _literals(text)
+    except SyntaxError as e:
+        raise ValueError(f"{where}: cannot be parsed: {e.msg} (line {e.lineno})")
+    if not isinstance(found.get("API_VERSION"), str) or not isinstance(found.get("SURFACE"), dict):
+        raise ValueError(f"{where}: no literal API_VERSION and SURFACE")
+    return {"api_version": found["API_VERSION"], **found["SURFACE"]}
+
+
+def _git(root, *args):
+    """(exit code, stdout) of git in ROOT; (127, "") when git cannot be run."""
+    try:
+        p = subprocess.run(["git", "-C", str(root), *args], capture_output=True, text=True, encoding="utf-8",
+                           errors="replace")
+    except OSError:
+        return 127, ""
+    return p.returncode, p.stdout
+
+
+def newest_tag(root):
+    """The newest tag `ext-vMAJOR.MINOR.PATCH` of the repository ROOT by version, or None."""
+    code, out = _git(root, "tag", "--list", "ext-v*")
+    tags = [(tuple(int(n) for n in m.groups()), m.group(0)) for m in map(TAG_RE.fullmatch, out.split()) if m] if not code else []
+    return max(tags)[1] if tags else None
+
+
+def lint(root):
+    """(exit code, lines) of the compatibility check of the repository ROOT: 0 with one line when it has no `ext-v` tag
+    or nothing breaks; 1 with a line per break, per lowered API_VERSION and per changed API_VERSION that has no changelog
+    entry. The two surfaces are read from the source text of `_tools/kbext.py` at the tag and in the working tree."""
+    root = Path(root)
+    tag = newest_tag(root)
+    if tag is None:
+        return 0, [f"kbext lint: no ext-v tag in {root}, nothing to compare"]
+    code, text = _git(root, "show", f"{tag}:{SOURCE}")
+    if code:
+        return 1, [f"kbext lint: {SOURCE} cannot be read at {tag}"]
+    try:
+        old = _read_surface(text, f"{SOURCE} at {tag}")
+        path = root / SOURCE
+        new = _read_surface(path.read_text(encoding="utf-8"), SOURCE)
+    except (ValueError, OSError) as e:
+        return 1, [f"kbext lint: {e}"]
+    problems = surface_breaks(old, new)
+    try:
+        if _numbers(new["api_version"]) < _numbers(old["api_version"]):
+            problems.append(f"API_VERSION {new['api_version']} is lower than {old['api_version']} of {tag}")
+        elif new["api_version"] != old["api_version"]:
+            log = root / CHANGELOG
+            problems += changelog_problems(new["api_version"], log.read_text(encoding="utf-8") if log.is_file() else "")
+    except (ValueError, OSError) as e:
+        problems.append(f"API_VERSION cannot be compared: {e}")
+    if problems:
+        return 1, [f"kbext lint: {p}" for p in problems]
+    return 0, [f"kbext lint: ok, no break since {tag}"]
 
 
 class ExtensionError(ValueError):
@@ -271,6 +428,8 @@ def main(argv=None):
     sub = ap.add_subparsers(dest="cmd", required=True)
     sp = sub.add_parser("surface", help="print API_VERSION and the public extension API (points and settings keys)")
     sp.add_argument("--json", action="store_true", dest="as_json", help="print one JSON object")
+    sp = sub.add_parser("lint", help="refuse a break of the public extension API since the newest ext-v tag")
+    sp.add_argument("--root", default=".", help="the repository (default: the working directory)")
     for name, help_ in (("resolve", "print the extender of POINT, its layer and file"),
                         ("call", "call the extender of POINT with a JSON list and print its answer")):
         sp = sub.add_parser(name, help=help_)
@@ -284,6 +443,10 @@ def main(argv=None):
     if args.cmd == "surface":
         print(json.dumps(surface(), indent=2, sort_keys=True) if args.as_json else _surface_text(surface()))
         return 0
+    if args.cmd == "lint":
+        code, lines = lint(args.root)
+        print("\n".join(lines))
+        return code
     try:
         if args.cmd == "call":
             try:
