@@ -70,9 +70,12 @@ what it did); the asks add a heading and up to five lines, the coordinate events
 (Claude's context). Only a SessionStart prints with no other session overlapping, no ask open and no coordinate event (the INTRO line); any other event prints nothing then. No hook blocks or exits 2: an overlap
 informs; a missing store, an unreadable payload or any error ends in silence and exit 0.
 
-Every `coord.py` call has the limit CALL_SECONDS, and all the calls of one run together have DEADLINE_SECONDS from the
-hook's start: past it no call starts and one running is cut to the time left, so a locked store ends the hook under its 10 second
-kill (the calls that did not run count as a store that could not be reached). The state file is written whole to a temporary
+Every `coord.py` command runs in this process, on the `coord` module (`build_parser`, `run`), not in a Python process of its
+own, and the workspace and branch are read from the `.git` files (`where`), so a tool event starts no process: the module
+and its store are found once per run. Every call has the limit CALL_SECONDS (the store's busy wait), and all the calls of one
+run together have DEADLINE_SECONDS from the hook's start: past it no call starts and one running is cut to the time left,
+so a locked store ends the hook under its 10 second kill (the calls that did not run count as a store that could not be
+reached). The state file is written whole to a temporary
 file beside it and renamed over it (`os.replace`, mode 0600), so a hook running at the same time never reads half a file.
 
 The store is coord.py's own: `KB_COORD_STORE`, else `kb-coord/coord.sqlite` in the common git directory of the project
@@ -84,9 +87,13 @@ import hashlib, json, os, re, subprocess, sys, time
 
 STARTED = time.monotonic()  # the hook's clock for DEADLINE_SECONDS
 HOME =os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-COORD = os.path.join(HOME, "_tools", "coord.py")
 STATE = os.path.join(HOME, "_cache", "coord_hook")  # one file per session: its lease token and items
 FOREIGN = []  # [the state directory of a project that is not this clone], once looked up; [None] when the project is this clone
+MODULE = []  # [the coord module], once imported
+STORE = []  # [the store every coord command of this run uses], once looked up
+LOCATED = {}  # cwd -> (workspace, branch item), once looked up in this run
+SETTINGS = {}  # workspace -> (announce, strategy), once read in this run
+GIT_ENV = ("GIT_DIR", "GIT_COMMON_DIR", "GIT_WORK_TREE", "GIT_CEILING_DIRECTORIES")  # set: git's own answer, not the .git files, says where a workspace is
 CALL_SECONDS = 8  # the limit of one coord.py call
 DEADLINE_SECONDS = 8  # all coord.py calls of one hook run together: past it none starts and a running one is cut to the time left, under the 10 second kill
 LEASE_SECONDS = 6 * 3600  # a session that ends without SessionEnd (a crash) drops out of `list` after this
@@ -241,18 +248,44 @@ def claimed_item(text, depth=0):
     return None
 
 
+def coord_module():
+    """The coord module (tools/coord.py), imported once."""
+    if not MODULE:
+        tools_path()
+        import coord as module
+        MODULE.append(module)
+    return MODULE[0]
+
+
+def store_path():
+    """The store the coord commands use, as `coord.py` itself finds it: KB_COORD_STORE, else the project's or this clone's."""
+    if not STORE:
+        STORE.append(os.environ.get("KB_COORD_STORE") or coord_module().default_store())
+    return STORE[0]
+
+
 def coord(*args):
-    """(exit code, stdout) of one coord.py command; (None, "") when it cannot run or DEADLINE_SECONDS since the hook's start
-    have passed. The call's limit is CALL_SECONDS, cut to the time the deadline leaves."""
+    """(exit code, stdout) of one coord.py command, run on the coord module in this process; (None, "") when it cannot run,
+    the store fails or DEADLINE_SECONDS since the hook's start have passed; (2, "") for arguments it refuses. The call's
+    limit is CALL_SECONDS, cut to the time the deadline leaves."""
     left = min(CALL_SECONDS, DEADLINE_SECONDS - (time.monotonic() - STARTED))
     if left <= 0:
         return None, ""
     try:
-        p = subprocess.run([sys.executable, COORD, *args], capture_output=True, text=True, encoding="utf-8",
-                           errors="replace", timeout=left)
-    except (OSError, subprocess.TimeoutExpired):
+        module = coord_module()
+        store = store_path()
+        if not store:
+            return None, ""
+        try:
+            parsed = module.build_parser(module.QuietParser).parse_args(list(args))
+        except module.Refused:
+            return 2, ""
+        parsed.store = store
+        module.BUSY_SECONDS = left
+        body, code = module.run(parsed, time.time)
+    except Exception:
         return None, ""
-    return p.returncode, p.stdout
+    return code, (body if isinstance(body, str) else json.dumps(body, sort_keys=True, ensure_ascii=False))
 
 
 def state_dir():
@@ -261,9 +294,7 @@ def state_dir():
     if not FOREIGN:
         found = None
         try:
-            sys.path.insert(0, os.path.join(HOME, "_tools"))
-            import coord
-            store = coord.project_store()
+            store = coord_module().project_store()
             if store:
                 found = os.path.join(os.path.dirname(os.environ.get("KB_COORD_STORE") or store), "hook")
         except Exception:
@@ -308,9 +339,48 @@ def save(sid, state):
         raise
 
 
+def read_where(cwd):
+    """(the git top-level of cwd as a real path, its branch) read from the `.git` directory or file and the `HEAD` file
+    there, without git; None when they do not answer (a git environment variable is set, no directory up to the root holds a
+    `.git`, HEAD names a ref outside refs/heads or is unreadable)."""
+    if any(os.environ.get(name) for name in GIT_ENV):
+        return None
+    top = os.path.realpath(cwd)
+    while not os.path.lexists(os.path.join(top, ".git")):
+        up = os.path.dirname(top)
+        if up == top:
+            return None
+        top = up
+    try:
+        git_dir = os.path.join(top, ".git")
+        if os.path.isfile(git_dir):
+            with open(git_dir, encoding="utf-8") as f:
+                first = f.readline().strip()
+            if not first.startswith("gitdir:"):
+                return None
+            git_dir = os.path.join(top, first[len("gitdir:"):].strip())
+        with open(os.path.join(git_dir, "HEAD"), encoding="utf-8") as f:
+            head = f.readline().strip()
+    except (OSError, UnicodeError):
+        return None
+    if head.startswith("ref: refs/heads/"):
+        return top, head[len("ref: refs/heads/"):]
+    return (top, "HEAD") if re.fullmatch(r"[0-9a-f]{40,64}", head) else None
+
+
 def where(cwd):
     """(the workspace, the item id of its `work/<id>` branch) of cwd: the workspace is the git top-level as a real path;
-    either is None when git cannot say."""
+    either is None when git cannot say. Looked up once for each cwd of a run."""
+    if cwd not in LOCATED:
+        LOCATED[cwd] = locate(cwd)
+    return LOCATED[cwd]
+
+
+def locate(cwd):
+    read = read_where(cwd)
+    if read:
+        m = WORK_BRANCH.fullmatch(read[1])
+        return read[0], (m.group(1) if m else None)
     try:
         p = subprocess.run(["git", "-C", cwd, "rev-parse", "--show-toplevel", "--abbrev-ref", "HEAD"], capture_output=True,
                            text=True, encoding="utf-8", timeout=10)
@@ -343,7 +413,13 @@ def own_flag(ws):
 def settings(ws):
     """(announce, strategy) of the coordination settings for workspace ws, from `kbsettings.effective`: the defaults when
     ws is unknown or its settings files are bad (announce.to_other_sessions then as the workspace's settings.json has it
-    when that holds a boolean), no moment at all when kbsettings cannot load."""
+    when that holds a boolean), no moment at all when kbsettings cannot load. Read once for each workspace of a run."""
+    if ws not in SETTINGS:
+        SETTINGS[ws] = read_settings(ws)
+    return SETTINGS[ws]
+
+
+def read_settings(ws):
     try:
         tools_path()
         import kbsettings
