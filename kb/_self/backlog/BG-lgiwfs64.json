@@ -27,7 +27,8 @@
   ],
   "touches": [
     "_tools/bench_load.py",
-    "kb/_self/benchmarks.md"
+    "kb/_self/benchmarks.md",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "BG-qm623dvn"
@@ -35,6 +36,6 @@
   "links": [
     "parked: SP-m5m67goe review"
   ],
-  "notes": "Review G1: the check compares with ('idle hook intake','A','spawns'), which no row has, so it reads real > 0. Measured: real 634-644 spawns, wall 50.1 s (= INTAKE_HOOK_BUDGET_S), pinned 936-950; nothing shows an item check ran (bench_load.py:667-682). Behaviour repro: run session-load --arms A --reps 1 with and without --intake-real (a claude that exits 1 first on PATH) and compare spawns. Order: after BG-qm623dvn (both edit bench_load.py and the same paragraph of kb/_self/benchmarks.md, whose paid sentence and --intake-real sentence share one line, so a parallel landing conflicts at the rebase). Planning: the filed repro read a case name no row has and could not pass after a docs fix, so the repro now runs intake_real_rows on planted inputs (a stubbed replay and a fake bench object, no clone and no claude, about 0.1 s) and reads the --intake-real paragraph of kb/_self/benchmarks.md; run once on the base: exit 1 at the missing INTAKE_REAL_SPAWNS_NOTE. The comparison the title names lived in the check of ST-6zg57xiu, whose item file was deleted with its sprint, so nothing is repointed: the fix is the doc and the row note. The existing record keeps its old note until the next --intake-real run (a record is a measurement and is not rewritten). Facts to state: the real row (634 to 644 spawns, wall 50.1 s, the hook's wait INTAKE_HOOK_BUDGET_S) is the hook cut at its wait, the pinned row (936 to 950) a hook whose drift scan checks no item, so the two counts do not compare.",
+  "notes": "Review G1: the check compares with ('idle hook intake','A','spawns'), which no row has, so it reads real > 0. Measured: real 634-644 spawns, wall 50.1 s (= INTAKE_HOOK_BUDGET_S), pinned 936-950; nothing shows an item check ran (bench_load.py:667-682). Behaviour repro: run session-load --arms A --reps 1 with and without --intake-real (a claude that exits 1 first on PATH) and compare spawns. Order: after BG-qm623dvn (both edit bench_load.py and the same paragraph of kb/_self/benchmarks.md, whose paid sentence and --intake-real sentence share one line, so a parallel landing conflicts at the rebase). Planning: the filed repro read a case name no row has and could not pass after a docs fix, so the repro now runs intake_real_rows on planted inputs (a stubbed replay and a fake bench object, no clone and no claude, about 0.1 s) and reads the --intake-real paragraph of kb/_self/benchmarks.md; run once on the base: exit 1 at the missing INTAKE_REAL_SPAWNS_NOTE. The comparison the title names lived in the check of ST-6zg57xiu, whose item file was deleted with its sprint, so nothing is repointed: the fix is the doc and the row note. The existing record keeps its old note until the next --intake-real run (a record is a measurement and is not rewritten). Facts to state: the real row (634 to 644 spawns, wall 50.1 s, the hook's wait INTAKE_HOOK_BUDGET_S) is the hook cut at its wait, the pinned row (936 to 950) a hook whose drift scan checks no item, so the two counts do not compare. kb/_self/tools.md is in the touches because the docs map names it for bench_load.py; it lands after BG-qm623dvn and before BG-r57wg5tg.",
   "filed_in": "clone-0ea70e5c"
 }
