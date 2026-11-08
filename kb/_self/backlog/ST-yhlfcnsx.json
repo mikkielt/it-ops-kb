@@ -1,7 +1,7 @@
 {
   "id": "ST-yhlfcnsx",
   "kind": "story",
-  "title": "A group's forge adapter, named as extension point forge, answers every merge request and pipeline read that land, stalled and red-pipeline make",
+  "title": "A group's forge adapter, named as extension point forge, answers every merge request and pipeline read made through a repository root, as land and stalled make",
   "status": "doing",
   "parent": "EP-y7fe7qqx",
   "sprint": "SP-ep7ck2ab",
@@ -53,7 +53,8 @@
     "_tools/bl_forge.py",
     "kb/_self/extending.md",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
   ],
   "depends_on": [
     "ST-xdircstf",
