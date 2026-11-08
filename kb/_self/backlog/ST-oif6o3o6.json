@@ -80,7 +80,8 @@
   ],
   "depends_on": [
     "ST-rmv67pks",
-    "ST-iw7pe3mc"
+    "ST-iw7pe3mc",
+    "BG-hz5oyxuu"
   ],
   "relates_to": [
     "ST-igkt3vsr",
