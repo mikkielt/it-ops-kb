@@ -12,6 +12,7 @@
   kbgit.py blame <path:line>                               the commit that wrote that line, and the sources it cites
   kbgit.py asof <YYYY-MM-DD | tag | rev> <path>            the file as of the last commit on or before that date (or at the tag)
   kbgit.py tag-census YYYY-MM-DD                           annotated tag census-YYYY-MM-DD on HEAD: "kb confirmed current" (no push)
+  kbgit.py ext-release [--root REPO] [--dry-run]           annotated tag ext-v<API_VERSION> on HEAD of main, the changelog entry as its message (no push)
   kbgit.py sync [--push] [--dry-run] [--remote R] [--branch main] [--session S]   fetch, rebase, fix, gate, push
   kbgit.py publish [--remote R] [--dry-run] [--rewrite] [--hook]    push the integration main without kb/_querylog and any _logs.csv to the public home
   kbgit.py bridge BRANCH [--push] [--dry-run] [--remote R]  a public-home branch to the integration remote: rebase, gate, push by lane
@@ -107,7 +108,8 @@ Sync (kg_sync.py; the only way to push; people push straight to main, CI is a sa
      REMOTE/BRANCH (a `Self-Reviewed:` trailer clears a doc), tests.py --changed with KB_TESTS_FAST=1 (nothing for backlog
      items and the query log store, the suite without the git scenarios for kb content only, the whole suite for any other path; KB_SYNC_NO_TESTS=1 skips it, for the tool's own tests), check-trailers REMOTE/BRANCH..HEAD. A red gate: exit 1,
      nothing pushed.
-  e. --push: git push REMOTE HEAD:BRANCH, never --force. Rejected because the remote moved: fetch and rebase once more,
+  e. --push: git push REMOTE HEAD:BRANCH, never --force, with the `ext-v` tags that point at commits of the range
+     (tags_to_push, missing_ext_tags; not on a code/<id> push). Rejected because the remote moved: fetch and rebase once more,
      then give up (exit 1). A push to main whose range has a code-lane commit (kblane.py) goes instead as the branch
      code/<id> with merge-request push options, main not moving (lane_plan); code_branch picks <id>: the first KB-Work
      id of the range's first code-lane commit that has one, else the range's first KB-Work id, else HEAD's short hash.
@@ -285,6 +287,9 @@ def main():
     y.add_argument("--branch", default="main", help="the remote branch to rebase onto and push to (default main)")
     y.add_argument("--session", help="the Claude Code session sync runs in, as its Claude-Session url or id (default: "
                                      "KB_SESSION, else the session's environment; an empty value: unknown)")
+    er = sub.add_parser("ext-release", help="annotated tag ext-v<API_VERSION> on HEAD of main with the changelog entry as its message; pushes nothing")
+    er.add_argument("--root", help="the repository to tag (default: this clone)")
+    er.add_argument("--dry-run", action="store_true", help="print the tag and its message; make no tag")
     g = sub.add_parser("tag-census", help="annotated tag census-YYYY-MM-DD on HEAD (not pushed)")
     g.add_argument("date", metavar="YYYY-MM-DD")
     pb = sub.add_parser("publish", help=f"push the projection of the integration main (no {kbpublic.PRIVATE_LABEL}) to the public home")
@@ -315,7 +320,7 @@ def main():
     if a.cmd == "sync":
         a.rerun = [os.path.abspath(__file__), *sys.argv[1:]]  # what rerun_sync repeats after a rebase changed this code
     cmds ={"trailers": cmd_trailers, "install-hooks": cmd_install_hooks, "check-trailers": cmd_check_trailers, "lane": cmd_lane, "check-lanes": cmd_check_lanes,
-            "log": cmd_log, "blame": cmd_blame, "asof": cmd_asof, "tag-census": cmd_tag_census, "hook": cmd_hook,
+            "log": cmd_log, "blame": cmd_blame, "asof": cmd_asof, "tag-census": cmd_tag_census, "ext-release": kg_sync.cmd_ext_release, "hook": cmd_hook,
             "sync": cmd_sync, "bridge": cmd_bridge, "contribute": kg_contrib.cmd_contribute, "upstream": kg_upstream.cmd_upstream, "publish": lambda a: (kbpublic.cmd_publish_hook if a.hook else kbpublic.cmd_publish)(a, KB),
             "check-public": lambda a: kbpublic.cmd_check_public(a, KB), "lost-definitions": cmd_lost_definitions}
     if a.cmd in cmds:

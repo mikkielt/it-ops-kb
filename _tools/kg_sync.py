@@ -9,6 +9,7 @@ from collections import namedtuple
 from pathlib import Path
 
 import kbcommon
+import kbext
 import kbpublic
 import kbsettings
 import kg_lane
@@ -1011,14 +1012,27 @@ def sync_once(a, r, host):
         r["pushed"] = "no (without --push)"
         return 0
     now_ahead = int((git("rev-list", "--count", f"{up}..HEAD" if up else "HEAD") or "0").strip())
+    on_main = a.branch == "main"  # the ext-v tags go only with a push to the integration main
     if not now_ahead:
-        r["pushed"] = "nothing to push"
+        tags = missing_ext_tags(KB, a.remote, a.branch) if on_main else []
+        if not tags:
+            r["pushed"] = "nothing to push"
+            return 0
+        code, out = gitx_net("push", a.remote, *(f"refs/tags/{t}" for t in tags), env={"KB_GATE_DONE": "1"})  # gated above
+        if code:
+            print("git push of the tags failed:\n" + out.rstrip())
+            r["pushed"] = "no (tag push failed)"
+            return 1
+        r["pushed"] = f"yes: tag(s) {', '.join(tags)} to {a.remote}; no commits to push"
         return 0
     lane, branch = kg_lane.lane_plan(KB, up, "HEAD", a.branch)
     if branch:
         print(f"lane: code; pushing branch {branch}, {a.branch} does not move")
         return push_branch(a, r, branch, target)
-    code, out = gitx_net("push", a.remote, f"HEAD:refs/heads/{a.branch}", env={"KB_GATE_DONE": "1"})  # gated above
+    # the ext-v tags of the commits this push sends go with them, and those of commits the remote already holds
+    tags = sorted(set(tags_to_push(KB, up, "HEAD")) | set(missing_ext_tags(KB, a.remote, a.branch))) if on_main else []
+    code, out = gitx_net("push", a.remote, f"HEAD:refs/heads/{a.branch}", *(f"refs/tags/{t}" for t in tags),
+                         env={"KB_GATE_DONE": "1"})  # gated above
     if code == 124 and landed_after_timeout(a, target):
         print(f"git push did not finish in time, but {target} holds the local commits:\n" + out.rstrip())
         code = 0
@@ -1034,7 +1048,85 @@ def sync_once(a, r, host):
         print("git push failed:\n" + out.rstrip())
         r["pushed"] = "no (push failed)"
         return 1
-    r["pushed"] = f"yes: {now_ahead} commit(s) to {target} ({short(rev_parse('HEAD'))})"
+    r["pushed"] = f"yes: {now_ahead} commit(s) to {target} ({short(rev_parse('HEAD'))})" + (f" with tag(s) {', '.join(tags)}" if tags else "")
+    return 0
+
+
+EXT_TAG = re.compile(r"ext-v\d+\.\d+\.\d+")
+
+
+def tags_to_push(root, base, head):
+    """The extension API tags (`ext-vMAJOR.MINOR.PATCH`) of the repository ROOT that point at a commit of BASE..HEAD
+    (reachable from HEAD, not from BASE; BASE None: all of HEAD's history), sorted; [] when git cannot say. A tag whose
+    commit a rebase rewrote points outside the range and is not listed."""
+    args = ["tag", "--list", "ext-v*", "--merged", head] + (["--no-merged", base] if base else [])
+    return sorted(t for t in (git(*args, kb=root) or "").split() if EXT_TAG.fullmatch(t))
+
+
+def missing_ext_tags(root, remote, branch="main"):
+    """The local `ext-vMAJOR.MINOR.PATCH` tags of the repository ROOT that REMOTE lacks and whose commit REMOTE's BRANCH
+    holds (an ancestor of its tip, read with one `git ls-remote`), sorted: the tags of commits already pushed, which
+    tags_to_push's range no longer lists. A remote that cannot be read (or whose tip is not in ROOT) gives []; a tag
+    REMOTE has under the same name, even at another commit, is not listed, and no tag of another name is."""
+    try:
+        p = kg_lock.run_git_bounded(["ls-remote", "--tags", "--heads", remote, "refs/tags/ext-v*", f"refs/heads/{branch}"],
+                                    root, "kbgit.py sync: git ls-remote")
+    except (kg_lock.GitNetworkTimeout, OSError):
+        return []
+    if p.returncode:
+        return []
+    refs = dict(reversed(ln.split("\t", 1)) for ln in p.stdout.splitlines() if "\t" in ln)
+    tip = refs.get(f"refs/heads/{branch}")
+    if not tip:
+        return []
+    have = {r[len("refs/tags/"):].replace("^{}", "") for r in refs if r.startswith("refs/tags/")}
+    local = (git("tag", "--list", "ext-v*", "--merged", tip, kb=root) or "").split()  # the tip's ancestry, as the remote holds it
+    return sorted(t for t in local if EXT_TAG.fullmatch(t) and t not in have)
+
+
+def changelog_entry(version, text):
+    """The body of the `## VERSION` entry of the changelog TEXT (up to the next `## `), stripped; "" when it has none."""
+    m = re.search(rf"^##[ \t]+v?{re.escape(version)}(?:[ \t][^\n]*)?\n(.*?)(?=^## |\Z)", text, re.M | re.S)
+    return m.group(1).strip() if m else ""
+
+
+def cmd_ext_release(a):
+    """`kbgit.py ext-release`: the annotated tag ext-v<API_VERSION> on HEAD with the changelog entry as its message.
+    Refuses (exit 2, every reason printed to stderr) a version with no changelog entry, an existing tag, a checkout
+    off main or with uncommitted tracked changes; --dry-run prints the tag and message and makes none. Pushes nothing:
+    `sync --push` sends the tag with the commit it points at."""
+    root = Path(a.root).resolve() if a.root else KB
+    if git("rev-parse", "--is-inside-work-tree", kb=root) is None or not rev_parse("HEAD", kb=root):
+        print(f"ERROR {root} is not a git repository with a commit", file=sys.stderr)
+        return 2
+    version = kbext.API_VERSION
+    tag = f"ext-v{version}"
+    log = root / kbext.CHANGELOG
+    text = log.read_text(encoding="utf-8") if log.is_file() else ""
+    entry = changelog_entry(version, text)
+    problems = []
+    if not entry:
+        problems.append(f"no changelog entry: {kbext.CHANGELOG} has no non-empty `## {version}` section")
+    if rev_parse(f"refs/tags/{tag}", kb=root):
+        problems.append(f"tag {tag} exists already")
+    branch = (git("branch", "--show-current", kb=root) or "").strip()
+    if branch != "main":
+        problems.append(f"the checkout is on {branch or 'a detached HEAD'}, not the main branch (main)")
+    if (git("status", "--porcelain", "--untracked-files=no", kb=root) or "").strip():
+        problems.append("uncommitted changes to tracked files: commit them first")
+    if problems:
+        print("\n".join(f"ERROR {p}" for p in problems), file=sys.stderr)
+        return 2
+    message = f"Extension API {version}\n\n{entry}\n"
+    if a.dry_run:
+        print(f"would create annotated tag {tag} on {rev_parse('HEAD', kb=root)[:12]}, message:\n{message.rstrip()}")
+        return 0
+    p = git_run("tag", "-a", tag, "-F", "-", stdin=message.encode("utf-8"), kb=root)
+    if p is None or p.returncode:
+        print("ERROR git tag failed: " + (p.stderr.decode("utf-8", "replace").strip() if p else "no git"), file=sys.stderr)
+        return 2
+    print(f"created annotated tag {tag} on {rev_parse('HEAD', kb=root)[:12]}\n{message.rstrip()}")
+    print("not pushed; `kbgit.py sync --push` sends it with the commit it points at")
     return 0
 
 
