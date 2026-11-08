@@ -2,7 +2,7 @@
   "id": "ST-vhzvqlo3",
   "kind": "story",
   "title": "The gate refuses a change that removes or changes a public extension entry since the last ext tag without a major API version, a deprecation and a changelog entry",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-y7fe7qqx",
   "sprint": "SP-ep7ck2ab",
   "priority": "P2",
@@ -125,5 +125,7 @@
     }
   ],
   "notes": "Ordered after ST-qtypcthx only to serialise kbext.py; that dependency was dropped on 2026-11-08 because ST-qtypcthx waits on other sprints' claims of kbpublic.py and mon_status.py, and begin refuses two items with overlapping touches anyway.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-a796fc75",
+  "operator": "op-f618a13e"
 }
