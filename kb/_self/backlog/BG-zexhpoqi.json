@@ -18,9 +18,6 @@
     "_tools/bl_base.py",
     "kb/_self/backlog.md"
   ],
-  "relates_to": [
-    "BG-okrkeohe"
-  ],
   "notes": "Premise (planted clone, 2026-10-26): backlog.py new bug --commit --goal with a home-path shape built at run time exits 0, prints 'to fill in: field goal has a leak-scan hit' and commits it; backlog.py check refuses the same text afterwards, so the author rewords it in a second commit and the first stays in history, which kbgit.py publish refuses (BG-okrkeohe). Cause: bl_check.leak_errors runs only in backlog.py check; new, set and the other writers call commit_written without it. Fix in commit_written (_tools/bl_base.py), which every --commit goes through (referrers: bl_close, bl_items, bl_land, bl_plan, bl_upstream); mind the import direction (bl_base never imports bl_check; reuse bl_check.item_leak_hits and the clone allowlist as leak_errors reads them, do not copy the scan). No suite test: a bug gets its repro and user feedback (kb/_self/code.md); BG-okrkeohe's planted gate case covers the range. No claim on these files at planning.",
   "filed_in": "clone-0ea70e5c"
 }
