@@ -15,6 +15,13 @@
         "submit",
         "--help"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; t=[open(p).read() for p in (\".claude/skills/kb-sprint/SKILL.md\",\"skills/sprint/SKILL.md\")]; assert all(\"kbjob.py submit\" in x and \"kbjob.py follow\" in x and \"Monitor\" in x and \"kbjob.py ping\" in x for x in t), \"skill text lacks the job step\"; assert all(\"land ID > <scratch>/land.log\" not in x for x in t), \"the background land log recipe is still the way\""
+      ]
     }
   ],
   "touches": [
@@ -29,5 +36,11 @@
     "ST-a73x2hvh",
     "ST-5h2kx2ri"
   ],
+  "relates_to": [
+    "EP-nij36lt7",
+    "ST-kios45l7",
+    "ST-vbwxcncr"
+  ],
+  "notes": "Premise: what the skill says today (kb-sprint SKILL.md:62 step 4.4 and :57): start land in the background with the log in the scratch directory and wait with coord.py wait --kind progress --item IDS as a background command; the orchestrator is told when it exits. So the wait is already a background command and the session may do other things; what it cannot do is outlive the session, keep the log (land removes the scratch directory: ST-vbwxcncr, ST-kios45l7) or see more than the run state's moves. Measured 2026-11-08 (kb/_querylog/ops, real items, 2026-10-02..11-08, 376 orchestrator-like session files): only 66 of 964 matched landings were a foreground call that ended with the land (7%); but 285 foreground calls of coord.py of 30 s or more (median 212 s, max 580 s) added up to 20.8 h of 104.7 h session wall (20%), 112 backlog.py calls of 30 s or more (median 58 s) 2.2 h, 103 tests.py calls (median 41 s) 1.4 h and 56 kbgit.py calls (median 88 s) 1.6 h: the orchestrator blocks in the wait call itself. The step changes the wait into a Monitor line per move so the model's turn is free for the next dispatch. Protected paths: .claude/settings.json is an agents-rule path, so this story's landing is staged back by the orchestrator (ST-qs27ongb) and its start gate may be held; the skill copy in skills/sprint/ is the plugin's, kept by hand beside the clone's (plugin.md). The behaviour is proven by the first sprint that runs it; the checks prove the text and the CLI it names. Complement: EP-nij36lt7 (run states in coord, waited on by the orchestrator) is the item-level sibling; the job states are the operation-level ones, and the skill reads both.",
   "filed_in": "clone-0ea70e5c"
 }
