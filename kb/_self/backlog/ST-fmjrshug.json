@@ -2,7 +2,7 @@
   "id": "ST-fmjrshug",
   "kind": "story",
   "title": "kbmon's query-log line says how many spool rows wait for delivery, apart from ops rows and rows of ended sessions",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-uh5h46fm",
   "priority": "P3",
@@ -37,5 +37,7 @@
     "ST-nkocjnux"
   ],
   "notes": "Evidence 2026-11-08: ql_report.spool_state counts every row, so '952 rows wait in the spool' sat beside '0 entries undelivered' as if both were pending; about 470 of the 952 were ops rows and some were 15 days old (querylog show --spool). Whether the old rows are stuck is read during the work and filed as its own bug if so. Premise run 2026-11-08: planted check 0 (a query-log home in a temp dir with an ops file of 3 rows, a session file of 2 rows ended 3 days ago, an open one of 2 rows and one of 1 row ended an hour ago; the querylog panel's collect and mon_status.answer) fails on the base: the line reads '8 rows wait in the spool'. The earlier live check is replaced by it. `ended` is the session's `.end` marker in the spool (ql_report.spool_scan), its age the marker's modification time.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-7064b8a6",
+  "operator": "op-f618a13e"
 }
