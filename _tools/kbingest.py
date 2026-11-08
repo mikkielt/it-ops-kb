@@ -123,7 +123,7 @@ Answers: which docs and kb CODE facts a change since a revision makes stale, fro
 Answers: where a symbol is defined, who uses it and what imports a package, from the pinned code map
 Use: python3 _tools/kbingest.py survey REPO | map | where NAME | drift | impact REPO --since REV | url
 """
-import argparse, contextlib, csv, getpass, hashlib, json, os, posixpath, re, shutil, socket, subprocess, sys, tempfile
+import argparse, contextlib, csv, getpass, hashlib, json, os, posixpath, re, shutil, socket, subprocess, sys, tempfile, time
 from pathlib import Path
 from urllib.parse import quote, unquote, urlsplit
 
@@ -1756,6 +1756,107 @@ def nested_quantifier(pattern):
     return False
 
 
+PATTERN_PROBE = [chr(c) for c in range(0x300)]  # the characters two quantified atoms are compared on
+PATTERN_FILE_TIMEOUT_S = 10  # seconds PatternMapper reads one file before it stops and notes it
+_QUANTIFIER = re.compile(r"\*|\+|\?|\{(\d*)(,?)(\d*)\}")
+
+
+def adjacent_overlap(pattern, case="sensitive"):
+    """True when two variable-width atoms (`*`, `+`, `{m,n}`) of PATTERN follow each other, with only skippable atoms
+    (`?`, `*`, an optional group) between, and can match a same character: the shape that runs quadratic on a hostile
+    line (`\\w+\\w*`, `[\\w.:]*?(?P<name>\\w+)`). Atoms are compared on PATTERN_PROBE; a literal or a class of fixed
+    width, and an alternation, end the comparison."""
+    flags = re.I if case == "insensitive" else 0
+    n, pos, atoms, hit = len(pattern), 0, [], []
+
+    def chars(src):
+        try:
+            rx = re.compile(src, flags)
+        except re.error:
+            return frozenset()
+        return frozenset(c for c in PATTERN_PROBE if rx.fullmatch(c))
+
+    def quantifier():
+        nonlocal pos
+        m = _QUANTIFIER.match(pattern, pos)
+        if m is None:
+            return 1, 1  # (least, most) repeats; most None is unbounded
+        pos = m.end()
+        if m.group(0) == "*":
+            least, most = 0, None
+        elif m.group(0) == "+":
+            least, most = 1, None
+        elif m.group(0) == "?":
+            least, most = 0, 1
+        else:
+            least = int(m.group(1) or 0)
+            most = (int(m.group(3)) if m.group(3) else None) if m.group(2) else least
+        if pattern[pos:pos + 1] in ("?", "+"):
+            pos += 1  # lazy or possessive
+        return least, most
+
+    def step(pending, cs, least, most):
+        """The skippable variable atoms still adjacent after an atom of chars CS repeated LEAST..MOST times."""
+        if most is None or most > 1:
+            if cs and any(cs & p for p in pending):
+                hit.append(cs)
+            return pending | {cs} if least == 0 else frozenset({cs})
+        return pending if least == 0 else frozenset()
+
+    def sequence(pending):
+        nonlocal pos
+        outs, current = [], pending
+        while pos < n and pattern[pos] != ")":
+            c, start = pattern[pos], pos
+            if c == "|":
+                outs.append(current)
+                current, pos = pending, pos + 1
+            elif c == "(":
+                pos += 1
+                look = pattern[pos:pos + 2] in ("?=", "?!") or pattern[pos:pos + 3] in ("?<=", "?<!")
+                if pattern[pos:pos + 3] == "?P<":
+                    pos = pattern.find(">", pos) + 1 or n
+                elif pattern[pos:pos + 1] == "?":
+                    pos += 3 if pattern[pos:pos + 3] in ("?<=", "?<!") else 2
+                mark = len(atoms)
+                inner = sequence(frozenset() if look else current)
+                pos += 1  # the `)`
+                least, most = quantifier()
+                if look:
+                    continue
+                cs = frozenset().union(*atoms[mark:]) if atoms[mark:] else frozenset()
+                if most is None or most > 1:
+                    current = step(current, cs, least, most)
+                else:
+                    current = inner if least == 1 else current | inner
+            elif c in "^$":
+                pos += 1
+            elif c == "\\" and pattern[pos + 1:pos + 2] in ("b", "B", "A", "Z"):
+                pos += 2
+            else:
+                if c == "\\":
+                    pos += 2
+                elif c == "[":
+                    pos += 2 if pattern[pos + 1:pos + 2] == "^" else 1
+                    pos += 1 if pattern[pos:pos + 1] == "]" else 0
+                    while pos < n and pattern[pos] != "]":
+                        pos += 2 if pattern[pos] == "\\" else 1
+                    pos += 1
+                else:
+                    pos += 1
+                cs = chars(pattern[start:pos])
+                atoms.append(cs)
+                least, most = quantifier()
+                current = step(current, cs, least, most)
+        outs.append(current)
+        return frozenset().union(*outs)
+
+    while pos < n:
+        sequence(frozenset())
+        pos += 1  # an unmatched `)`
+    return bool(hit)
+
+
 def table_rows(text, columns):
     """([(line, row)], why) of the csv TEXT, which opens with the header COLUMNS: a row is a dict, or None when its
     cell count is not the header's; WHY is set (and no row returned) when the header or the csv is not as expected."""
@@ -1802,6 +1903,8 @@ def rule_row(row, number, case):
         return None, f"row {number}: a regex over {PATTERN_MAX_REGEX} characters"
     if nested_quantifier(pattern):
         return None, f"row {number}: a repeated group holds a quantifier or an alternation"
+    if adjacent_overlap(pattern, case):
+        return None, f"row {number}: two adjacent quantifiers can match the same character"
     try:
         regex = re.compile(pattern, re.I if case == "insensitive" else 0)
     except re.error as e:
@@ -1901,7 +2004,11 @@ class PatternMapper(Mapper):
                 continue
             mapped.append(rel)
             mods, entries, matches, long_lines = set(), set(), 0, 0
+            started = time.monotonic()
             for number, line in enumerate(lines, 1):
+                if time.monotonic() - started >= PATTERN_FILE_TIMEOUT_S:
+                    ctx.note(f"{rel}: stopped at line {number} after {PATTERN_FILE_TIMEOUT_S} seconds")
+                    break
                 if len(line) > self.max_line:
                     long_lines += 1
                     continue
