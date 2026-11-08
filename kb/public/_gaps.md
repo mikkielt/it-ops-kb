@@ -2553,3 +2553,11 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## windows/7zip-archive-formats
 
 - **What the 7-Zip Extra console build unpacks, the console program's name on each OS and the command line that unpacks into a folder.** Looked 2026-10-27 at the 7-Zip home and download pages (S-3jko5ux3, S-e46qx3w3) and the GitHub release (S-wcdfw5eg): they name the packages but not these. Needs the help file shipped in the package (`7-zip.chm`) or a run of the console program on a named version. [UNK] (topic: windows/7zip-archive-formats)
+
+## python/extension-api-versioning
+
+- **Whether the Python standard library has a module that parses PEP 440 version specifiers or compares versions.** Looked 2026-11-08 at the PyPA version specifiers page (S-piurzx4u), the `importlib.metadata` page (S-blp22gnh) and the Python 3.12 release notes (S-ecm3ywfi): they state no such module and say `distutils` was removed in 3.12. Needs the standard library index of the pinned Python docs read for a version parser, or a run listing the modules of one Python version. [UNK] (topic: python/extension-api-versioning)
+
+## gitlab/github-branch-rules-and-auto-merge
+
+- **The GitHub REST reads that tell a pull request's merged state and a commit's check state** (what an adapter for a group's forge calls to answer "is this change merged" and "is its pipeline red"): `gitlab/github-branch-rules-and-auto-merge.md` states rules and merge conditions, and `gitlab/automated-merge-requests.md` the GitLab reads, but no kb article holds the GitHub pull request, check run and combined status endpoints. Looked 2026-11-08 with `kb_pack` on the question as asked. Needs the GitHub REST reference pages for pull requests, check runs and commit statuses read in full. [UNK] (topic: gitlab/github-branch-rules-and-auto-merge)

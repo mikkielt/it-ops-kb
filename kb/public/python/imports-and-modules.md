@@ -2,8 +2,8 @@
 topic: python/imports-and-modules
 priority: P3
 applies_to: [python]
-retrieved_utc: 2026-10-21
-sources: [S-lebxvs2r, S-y3vaig55, S-pnak2iyz, S-uwxacpum, S-d77lvlq4, S-kzlfvktk, S-o7nczrbn, S-nmpccgft, S-ci5jq2sq, S-q5frtccp, S-27tycl3n]
+retrieved_utc: 2026-11-08
+sources: [S-lebxvs2r, S-y3vaig55, S-pnak2iyz, S-uwxacpum, S-d77lvlq4, S-kzlfvktk, S-o7nczrbn, S-nmpccgft, S-ci5jq2sq, S-q5frtccp, S-27tycl3n, S-blp22gnh, S-k56yckat, S-irs7c62v, S-b576ksco]
 status: complete
 ---
 
@@ -13,7 +13,9 @@ status: complete
 A directory of scripts with no package (a flat `_tools/`) resolves its imports through `sys.path[0]`,
 the directory of the script that started the run. That is why sibling modules import by bare name, why a
 module can be both a script and a library, and why import cycles and underscore names matter when one large
-script is split into several modules. This article records what the Python documentation and PEP 8 say
+script is split into several modules. It also records how a loader finds a plugin by entry point group or by a
+`module:attr` name (`importlib.metadata`, `import_module`); the version side of such a plugin API is in
+`python/extension-api-versioning.md`. This article records what the Python documentation and PEP 8 say
 about those points; the rest of the Python tooling is in `python/pytest.md` (test discovery and import
 modes) and `python/ruff.md` (lint and size rules), and `agents/codebase-mapping.md` covers `ast` and
 `ruff analyze graph` as import maps.
@@ -47,6 +49,14 @@ modes) and `python/ruff.md` (lint and size rules), and `agents/codebase-mapping.
 - So when functions move from one module to another and the old module re-exports them, a test that patched
   the old module's name no longer reaches the moved code's own lookups: such tests patch the new module, and
   the re-export keeps only callers' imports working. [DER S-27tycl3n]
+- `importlib.metadata.entry_points(**select_params)` describes the entry points of the current environment as an `EntryPoints` collection, and it hands its keyword parameters to `select` to compare them with each entry point's attributes, so `entry_points(group="g")` and `entry_points().select(group="g")` are the same query. An `EntryPoint` has `name`, `group`, `value`, `module`, `attr`, `extras` and `dist` and a `load()` method that resolves the value. [DOC S-blp22gnh]
+- Before Python 3.12 `entry_points()` accepted no parameters and returned a dictionary keyed by group (selection arrived in Python 3.10); from 3.12 it always returns an `EntryPoints` object, and from 3.13 an `EntryPoint` is no longer indexable like a tuple. The docs say a client "will wish to resolve all entry points for a particular group". [DOC S-blp22gnh]
+- The entry points specification defines an entry point by a group, a name and an object reference, written `importable.module` or `importable.module:object.attr`, and says to look it up with `importlib.import_module` on the part before the colon and a `getattr` for each dot-separated part after it. [DOC S-irs7c62v]
+- A consumer that defines a new entry point group should start its name with a PyPI name it owns and a dot; a group name is letters, digits and underscores in parts separated by dots (`^\w+(\.\w+)*$`), so `it_ops_kb.ranker` is a valid group name. Within one distribution entry point names should be unique. [DOC S-irs7c62v]
+- When two distributions provide the same name in one group, the specification says "the consumer decides how to handle such conflicts"; `importlib.metadata` states no rule for it, so a loader that wants exactly one extender for a group counts the selected entry points itself and treats more than one as an error. [DER S-irs7c62v, S-blp22gnh: the specification leaves conflicts to the consumer; the `entry_points` page documents selection and no conflict rule]
+- Run on Python 3.13.2 (macOS, `python3 -I`, 2026-11-08) with hand-made `.dist-info` directories on `sys.path`: two different distributions that each declared the name `grp` in one group were both returned by `entry_points(group=...)`, each with its own `dist.name`; one distribution present in two `sys.path` entries returned one entry point, from the entry that came first in `sys.path`; a group nobody declared returned an empty collection. Other Python versions were not run. [DER S-blp22gnh: `entry_points` and `EntryPoint.dist` as documented; the three outcomes are this run's own observation]
+- In `pyproject.toml` a package declares entry points in `[project.entry-points]`, a table of tables: each sub-table's name is the group (`[project.entry-points."it_ops_kb.ranker"]`), each key an entry point name and each value an object reference. `[project.scripts]` is the `console_scripts` group, and groups stay one level deep (nested sub-tables are not allowed). [DOC S-b576ksco]
+- `importlib.import_module(name, package=None)` imports a module by absolute or relative name and returns that module (not the top-level package, as `importlib.__import__` does); for a module file created after the interpreter started, `importlib.invalidate_caches()` may be needed before the import system sees it. [DOC S-k56yckat]
 
 ## Reference
 - SNIPPET: list the sibling-module imports of every file in a flat directory; context: Python 3.11+, standard library only; checked: syntax [DER S-ci5jq2sq: `ast.parse`, `ast.walk`, `Import`, `ImportFrom`, `alias` fields as documented]

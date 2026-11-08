@@ -9181,6 +9181,8 @@ f65096690ab7,gitlab/git-test-repositories.md,S-ali5r4n7,located,,delet;git,a7ad9
 f9e69d474f69,gitlab/git-test-repositories.md,S-j4qkzgvv,located,,mark;upstream;remote-track;track;default;commit-ish;ish;commit,ef83b97725ae6d28,"mark it as ""upstream"" from the new branch. This is the default if <commit-ish> is a remote-tracking branch.",2026-10-10
 02ace06d8dec,gitlab/git-trailers-and-hooks.md,S-wjfrtzpf,located,,lead;off;output;standard;trail;trim;whitespac;command,8e1d12ac63ae1b68,standard output of the command with any leading and trailing whitespace trimmed off,2026-10-19
 06baff0476f2,gitlab/git-trailers-and-hooks.md,S-l6s4hfqp,unlocated:no-match,,,,,2026-10-10
+0f92f2fd035b,gitlab/git-trailers-and-hooks.md,S-iwanenqw,located,,version;name,5fb2e9277b39869b,names are treated as versions,2026-11-08
+0f92f2fd035b,gitlab/git-trailers-and-hooks.md,S-yzwct6fv,located,,glob;consider;match;tags,5822ca4d44a3d62e,Only consider tags matching the given,2026-11-08
 0fdf5b3d10ac,gitlab/git-trailers-and-hooks.md,S-l6s4hfqp,located,,overall;code;exit;non-zero;zero;member;non;fail,ab87c93bdf2112f8,the remaining remotes in the group. The overall exit code is non-zero if any member push fails.,2026-10-10
 0ff90dccd22a,gitlab/git-trailers-and-hooks.md,S-kbwvfzcv,unlocated:no-match,,,,,2026-10-19
 0ff90dccd22a,gitlab/git-trailers-and-hooks.md,S-wjfrtzpf,located,,automatically;once;call;add;argument;alia;key-alia;key,0286e86c9f676e14,"once to automatically add a trailer with the specified <key-alias>, and then called each time a --trailer <key-alias>=<value> argument is specified to",2026-10-19
@@ -9200,10 +9202,12 @@ f9e69d474f69,gitlab/git-test-repositories.md,S-j4qkzgvv,located,,mark;upstream;r
 35f98595551c,gitlab/git-trailers-and-hooks.md,S-7dwkyip6,located,,core.hookspath;hookspath;core;path;git_dir;dir;directory;git,21aafcea05815932,"By default the hooks directory is $GITDIR/hooks, but that can be changed via the core.hooksPath configuration variable (see",2026-10-10
 36604cd3e671,gitlab/git-trailers-and-hooks.md,S-wtbq3lvm,located,,generat;git-generat;user-configur;user;group;least;one;configur,fc65c25379a35a19,"a group of one or more lines that (i) is all trailers, or (ii) contains at least one Git-generated or user-configured trailer and consists of",2026-10-10
 37d656062c32,gitlab/git-trailers-and-hooks.md,S-7dwkyip6,unlocated:no-match,,,,,2026-10-10
+39d57fe34344,gitlab/git-trailers-and-hooks.md,S-iwanenqw,located,,meant;whil;lightweight;releas;annotat;tags,e369008866db6e51,Annotated tags are meant for release while lightweight tags are meant,2026-11-08
 3bf0febc45b4,gitlab/git-trailers-and-hooks.md,S-rzi7mtmw,located,,successfully;whether;talk;repository;remot,60070148ef89643e,"it successfully talked with the remote repository, whether it",2026-10-17
 3ff9827f09bc,gitlab/git-trailers-and-hooks.md,S-7dwkyip6,located,,delet;yet;all-zero;exist;local;remot;object;zero,a3e293e007a3a5e2,"yet exist the <remote-object-name> will be the all-zeroes object name. If a ref is to be deleted, the <local-ref> will be supplied as (delete) and",2026-10-10
 45c2f544b885,gitlab/git-trailers-and-hooks.md,S-2kqcgcf3,unlocated:no-match,,,,,2026-10-20
 45c2f544b885,gitlab/git-trailers-and-hooks.md,S-dwkxab7d,unlocated:no-match,,,,,2026-10-20
+4d9920685747,gitlab/git-trailers-and-hooks.md,S-iwanenqw,located,,different;name;other,dd292f708030c546,Just admit you screwed up and use a different name.,2026-11-08
 4dcdf21e0b43,gitlab/git-trailers-and-hooks.md,S-wjfrtzpf,located,,addifdifferentneighbor;neighbor;different;donoth;noth;replac;default;add,eaf2ad168951670c,"The valid values for this option are: addIfDifferentNeighbor (this is the default), addIfDifferent, add, replace or doNothing.",2026-10-10
 50fa19f129e7,gitlab/git-trailers-and-hooks.md,S-2u6tfn4r,located,,push;fetch,f9d3768850dc2b2c,"With --push, push URLs are queried rather than fetch URLs.",2026-10-23
 50fa19f129e7,gitlab/git-trailers-and-hooks.md,S-7dwkyip6,located,,remot,e27a05e731d69cdc,which provide the name and location of the destination remote,2026-10-23
@@ -9246,6 +9250,7 @@ a61afbf2b4ee,gitlab/git-trailers-and-hooks.md,S-2u6tfn4r,located,,instead;urls;p
 a90a6bd8c525,gitlab/git-trailers-and-hooks.md,S-5obxyibm,located,,url;push;transport,605d83e0db99dccd,"strvecpush(&opt.args, transport->url);",2026-10-23
 afd8fc43a49f,gitlab/git-trailers-and-hooks.md,S-wjfrtzpf,unlocated:no-match,,,,,2026-10-10
 afe94bc1ad90,gitlab/git-trailers-and-hooks.md,S-wtbq3lvm,unlocated:no-match,,,,,2026-10-21
+b2509aebe7c1,gitlab/git-trailers-and-hooks.md,S-l6s4hfqp,located,,annotat;tags;refs;push,f9914ca2a73a4820,and also push annotated tags in,2026-11-08
 b7ce9d923c18,gitlab/git-trailers-and-hooks.md,S-wk436jat,unlocated:no-match,,,,,2026-10-20
 b97112093f4b,gitlab/git-trailers-and-hooks.md,S-kbwvfzcv,located,,fail;run;error;command;trailer,cd7bba423f112b13,"error((""running trailer command '%s' failed""), cmd.buf);",2026-10-19
 c15a16a6daf3,gitlab/git-trailers-and-hooks.md,S-wtbq3lvm,unlocated:no-match,,,,,2026-10-10
@@ -14247,31 +14252,55 @@ ffd40ed6f37f,privacy/presidio.md,S808,unlocated:no-match,,,,,2026-10-10
 c46a693e407a,privacy/spacy-model-licence.md,S851,unlocated:no-match,,,,,2026-10-10
 cc4a9b44c0ed,privacy/spacy-model-licence.md,S833,located,,core;en_core_web_lg;install;spacy;web;download;python;presidio,378543ad49b4f286,"""!pip install presidioanalyzer presidioanonymizer\n"", ""!python -m spacy download encoreweblg""",2026-10-10
 d04ce44229c0,privacy/spacy-model-licence.md,S850,located,en_core_web_lg-3.8.0 > No results found > Details: https://spacy.io/models/en#en_core_web_lg,3.0;clear;clearnlp;conversion;net;nlp;note;onto,2978f80424cfa483,"OntoNotes 5 (Ralph Weischedel, Martha Palmer, Mitchell Marcus, Eduard Hovy, Sameer Pradhan, Lance Ramshaw, Nianwen Xue, Ann Taylor, Jeff Kaufman, Michelle Franchini, Mohammed El-Bachouti, Robert",2026-10-10
+0dd602de945e,python/extension-api-versioning.md,S-piurzx4u,located,,fully;compatibl;specification;schem;version,14a1df50de7ab7d4,are fully compatible with the version scheme defined in this specification,2026-11-08
+0f20bbfc95a2,python/extension-api-versioning.md,S-piurzx4u,located,,logical;comma;candidat;operator,4cb1bac6305b0057,"The comma ("","") is equivalent to a logical and operator: a candidate",2026-11-08
+405d8d075c6a,python/extension-api-versioning.md,S-f67thrzd,located,,mark;deprecat;functionality;increment;public;must;api,5ebc60f9e6f08f90,It MUST be incremented if any public API functionality is marked as deprecated.,2026-11-08
+440151df2fc2,python/extension-api-versioning.md,S-f67thrzd,located,,incompatibl;major;chang;api;version,504b840091cb0593,MAJOR version when you make incompatible API changes,2026-11-08
+5968092eee4b,python/extension-api-versioning.md,S-piurzx4u,located,,exclusiv;post-releas;comparison;allow;must;order;post;releas,6cf1c63cdd1bd1f8,The exclusive ordered comparison >V MUST NOT allow a post-release,2026-11-08
+73ea9e62affe,python/extension-api-versioning.md,S-f67thrzd,located,,content;once;relea;version,ec804425b5308dea,"Once a versioned package has been released, the contents of that version",2026-11-08
+8c921f6ae394,python/extension-api-versioning.md,S-piurzx4u,located,,3.1;3.1.0;specifically;exclud;pre-relea;pre;relea,0ad8c26e55fef56a,"== 3.1: specifically version 3.1 (or 3.1.0), excludes all pre-releases,",2026-11-08
+9401c7082ab3,python/extension-api-versioning.md,S-ecm3ywfi,located,,standard;library;note;distutil;packag;remov,fab485755dad1ca0,package has been removed from the standard library.,2026-11-08
+a39088a823f3,python/extension-api-versioning.md,S-f67thrzd,located,,documentation;declar;code,b65a80905fe72f0c,could be declared in the code itself or exist strictly in documentation.,2026-11-08
+a5805328ad56,python/extension-api-versioning.md,S-piurzx4u,unlocated:no-match,,,,,2026-11-08
+a70d0fb57218,python/extension-api-versioning.md,S-piurzx4u,located,,singl;such;must;segment,de4774f32ad41aa7,This operator MUST NOT be used with a single segment version number such as,2026-11-08
+b08962b59fcd,python/extension-api-versioning.md,S-piurzx4u,located,,shorter;different;number;component;segment,bd1a0dbb79a8329d,"segments with different numbers of components, the shorter segment is",2026-11-08
+b27da476fa6d,python/extension-api-versioning.md,S-f67thrzd,located,,ignor;build;metadata,63e90066ec621550,Build metadata SHOULD be ignored when determining,2026-11-08
+bea7b9eca71e,python/extension-api-versioning.md,S-f67thrzd,unlocated:no-match,,,,,2026-11-08
+bea7b9eca71e,python/extension-api-versioning.md,S-piurzx4u,unlocated:no-match,,,,,2026-11-08
+cac27e2aa36a,python/extension-api-versioning.md,S-f67thrzd,located,,anyth;0.y.z;initial;zero;development;may;major;chang,881c6e441513d789,Major version zero (0.y.z) is for initial development. Anything may change,2026-11-08
+d46114795b0b,python/extension-api-versioning.md,S-f67thrzd,located,How should I deal with revisions in the 0.y.z initial development phase? > How do I know when to release 1.0.0? > How should I handle deprecating functionality?,documentation;thing;two;updat;public;api,2afb8156cce7cb44,"public API, you should do two things: (1) update your documentation to let",2026-11-08
+e286258fc9fd,python/extension-api-versioning.md,S-piurzx4u,unlocated:no-match,,,,,2026-11-08
 01fba393f8bb,python/fastapi-capability-dependencies.md,S-neu52zjd,located,,forbidden;respond;status;code;scop;http;server;resourc,1662c83a5dc77394,The resource server SHOULD respond with the HTTP 403 (Forbidden) status code,2026-10-19
 12761989ebfb,python/imports-and-modules.md,S-uwxacpum,unlocated:no-match,,,,,2026-10-10
 2120e56082b9,python/imports-and-modules.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-14
 316852631715,python/imports-and-modules.md,S-y3vaig55,unlocated:no-match,,,,,2026-10-10
 4d386896c5ad,python/imports-and-modules.md,S-q5frtccp,unlocated:no-match,,,,,2026-10-10
+53ab308bbfcc,python/imports-and-modules.md,S-irs7c62v,located,,pypi;new;start;consumer;defin;group;name,a708b1631332c82e,consumers defining a new group should use names starting with a PyPI name,2026-11-08
 64f40bbe7eb9,python/imports-and-modules.md,S-o7nczrbn,unlocated:no-match,,,,,2026-10-10
 64f40bbe7eb9,python/imports-and-modules.md,S-y3vaig55,unlocated:no-match,,,,,2026-10-10
 66ae2a6525ff,python/imports-and-modules.md,S-kzlfvktk,unlocated:no-match,,,,,2026-10-10
 66ae2a6525ff,python/imports-and-modules.md,S-nmpccgft,unlocated:no-match,,,,,2026-10-10
+7142c97f1bf2,python/imports-and-modules.md,S-blp22gnh,located,,each;valu;entrypoint;group;name;entry;point,0c8180534e022e2d,"Each :class:!EntryPoint instance has .name, .group, and .value",2026-11-08
 7b00d4a57ec4,python/imports-and-modules.md,S-nmpccgft,located,Correct:,defensibl;republish;wildcard;api;internal;interfac;public;one,8bb73baf62e0e0a6,"There is one defensible use case for a wildcard import, which is to republish an internal interface as part of a public API (for example,",2026-10-10
 8b4d8dc98ea1,python/imports-and-modules.md,S-y3vaig55,unlocated:no-match,,,,,2026-10-10
+970def241a10,python/imports-and-modules.md,S-irs7c62v,located,,importabl;importable.modul;object.attr;attr;modul;object,3e84722eb7103cfc,"importable.module, or importable.module:object.attr.",2026-11-08
 988a9003e767,python/imports-and-modules.md,S-nmpccgft,unlocated:no-match,,,,,2026-10-10
 9967b55219e8,python/imports-and-modules.md,S-27tycl3n,unlocated:no-match,,,,,2026-10-10
 9b26a99f58b2,python/imports-and-modules.md,S-ci5jq2sq,unlocated:no-match,,,,,2026-10-10
 9b3fea5bfeab,python/imports-and-modules.md,S-uwxacpum,unlocated:no-match,,,,,2026-10-10
 9f0629d76ce0,python/imports-and-modules.md,S-q5frtccp,unlocated:no-match,,,,,2026-10-10
+a4633e03b2c7,python/imports-and-modules.md,S-b576ksco,located,Minimum requirements for the build system to execute.,nest;group;sub;sub-tabl;one;point;entry;tabl,4e87f68fbd824e97,nested sub-tables but instead keep the entry point groups to only one,2026-11-08
 b072e56e02e1,python/imports-and-modules.md,S-kzlfvktk,located,,current;input;interactiv;script;entry;shell;first;directory,db736824e529812f,"input script, if there is one. Otherwise, the first entry is the current directory, which is the case when executing the interactive shell, a :option:-c",2026-10-10
 c4e486678baf,python/imports-and-modules.md,S-27tycl3n,unlocated:no-match,,,,,2026-10-10
 c6fb4f9c9831,python/imports-and-modules.md,S-lebxvs2r,located,namespace package,normal;__name__;populat;__main__;during;main;namespac;name,9dffabde48e1c563,checks only execute when the module is used to populate the,2026-10-21
+c8cfc0b19788,python/imports-and-modules.md,S-blp22gnh,located,,dictionary;keyed;parameter;alway;return;entry;point,c3a3150d8a2b0694,"no parameters and always returned a dictionary of entry points, keyed",2026-11-08
 d0801aff45d4,python/imports-and-modules.md,S-nmpccgft,unlocated:no-match,,,,,2026-10-10
 d0801aff45d4,python/imports-and-modules.md,S-pnak2iyz,unlocated:no-match,,,,,2026-10-10
 d39bc357aecb,python/imports-and-modules.md,S-ci5jq2sq,unlocated:no-match,,,,,2026-10-10
 e486eade00a7,python/imports-and-modules.md,S-ci5jq2sq,unlocated:no-match,,,,,2026-10-10
 e486eade00a7,python/imports-and-modules.md,S-pnak2iyz,unlocated:no-match,,,,,2026-10-10
 e486eade00a7,python/imports-and-modules.md,S-y3vaig55,unlocated:no-match,,,,,2026-10-10
+fcd31b59ddb1,python/imports-and-modules.md,S-k56yckat,located,,top;top-level;level;return;packag;modul,f36ba69b633b477a,returns the top-level package or module (e.g.,2026-11-08
 09aa977feed7,python/interpreter-startup.md,S-d77lvlq4,located,,site-dependent;later;dependent;sys.path;call;site;disabl;import,fc7d3442c12a5517,Disable the import of the module :mod:site and the site-dependent manipulations of :data:sys.path that it entails. Also disable these manipulations if :mod:site is explicitly imported,2026-10-14
 0aaba0a7c7a0,python/interpreter-startup.md,S-4yatj52m,located,,accurat;replac;exception;report;syntaxerror;syntax;err;error,39f32e241293ec12,if (PyErrExceptionMatches(category)) { / Replace the Syntax/DeprecationWarning exception with a SyntaxError to get a more accurate error report /,2026-10-10
 2dfd4b08fa7b,python/interpreter-startup.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-14

@@ -4697,3 +4697,16 @@ _Agent: kb-research_
 - See agents/policy-as-code.md, gitlab/codeowners.md, gitlab/multi-project-pipelines.md, gitlab/variables.md.
 
 _Agent: kb-research_
+
+## QK-group-extensible-versioned-extension-api-need. What does a group-extensible, versioned extension API need to know: Python entry points and importlib loading, version ranges, semantic versioning with deprecation, and git release tags
+- An installed Python package advertises a plugin as an entry point of a group; `importlib.metadata.entry_points(group=...)` selects them (parameters from Python 3.10, always an `EntryPoints` object from 3.12), and an object reference `module:attr` is looked up with `import_module` and `getattr`. [DOC S-blp22gnh, S-irs7c62v]
+- The specification leaves two distributions that supply one name to the consumer, and a run on Python 3.13.2 returned both entry points. [DER S-irs7c62v, S-blp22gnh: the specification's rule and one probe run]
+- Group names should start with a name the consumer owns and a dot; `[project.entry-points."group"]` declares one in `pyproject.toml`. [DOC S-irs7c62v, S-b576ksco]
+- Semantic versioning: major zero is unstable, a deprecation needs a minor release, a removal a major release with at least one minor release that holds the deprecation before it. [DOC S-f67thrzd]
+- A version range is comma-joined clauses compared by numeric segments with zero padding; `<V` leaves out pre-releases of `V`. [DOC S-piurzx4u]
+- Annotated tags mark releases, `git push --follow-tags` carries them with the pushed commits, and a published tag is not moved. [DOC S-iwanenqw, S-l6s4hfqp]
+- Conclusion: an extension API can be versioned with `MAJOR.MINOR.PATCH`, a plugin can declare a lower and an upper bound on `MAJOR.MINOR`, and a loader can compare two integers with the standard library alone; in major zero the upper bound belongs at the next minor. The last release is read with `git describe --match` on an annotated tag. [DER S-f67thrzd, S-piurzx4u, S-iwanenqw, S-yzwct6fv, S-irs7c62v]
+- Open: whether the standard library parses PEP 440 specifiers; the GitHub REST reads a forge adapter would call for a pull request's merged state and a commit's checks. [UNK]
+- See python/imports-and-modules.md, python/extension-api-versioning.md, gitlab/git-trailers-and-hooks.md, claude/plugins.md.
+
+_Agent: kb-research_

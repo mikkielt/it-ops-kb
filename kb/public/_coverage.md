@@ -212,7 +212,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `gitlab/git-history-queries` | P3 | complete | `gitlab/git-history-queries.md` | 8 |
 | `gitlab/git-refs` | P3 | complete | `gitlab/git-refs.md` | 6 |
 | `gitlab/git-test-repositories` | P3 | complete | `gitlab/git-test-repositories.md` | 57 |
-| `gitlab/git-trailers-and-hooks` | P3 | partial | `gitlab/git-trailers-and-hooks.md` | 30 |
+| `gitlab/git-trailers-and-hooks` | P3 | partial | `gitlab/git-trailers-and-hooks.md` | 32 |
 | `gitlab/github-actions-workflow-syntax` | P3 | complete | `gitlab/github-actions-workflow-syntax.md` | 11 |
 | `gitlab/github-branch-rules-and-auto-merge` | P3 | complete | `gitlab/github-branch-rules-and-auto-merge.md` | 18 |
 | `gitlab/github-issue-forms` | P3 | partial | `gitlab/github-issue-forms.md` | 11 |
@@ -337,8 +337,9 @@ Every topic of this root with its priority (the research order, not importance),
 | `python/uv-projects` | P2 | partial | `python/uv-projects.md` | 19 |
 | `python/version-lifecycle` | P2 | complete | `python/version-lifecycle.md`, `python/version-lifecycle.csv` | 8 |
 | `python/alembic-migrations` | P3 | partial | `python/alembic-migrations.md` | 13 |
+| `python/extension-api-versioning` | P3 | partial | `python/extension-api-versioning.md` | 3 |
 | `python/fastapi-capability-dependencies` | P3 | partial | `python/fastapi-capability-dependencies.md` | 12 |
-| `python/imports-and-modules` | P3 | complete | `python/imports-and-modules.md` | 11 |
+| `python/imports-and-modules` | P3 | complete | `python/imports-and-modules.md` | 15 |
 | `python/interpreter-startup` | P3 | partial | `python/interpreter-startup.md` | 12 |
 | `python/macos-fs-usage-output` | P3 | partial | `python/macos-fs-usage-output.md` | 2 |
 | `python/maturin-pyo3-wheels` | P3 | partial | `python/maturin-pyo3-wheels.md` | 14 |
