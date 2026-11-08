@@ -2,7 +2,7 @@
   "id": "ST-axz2he4d",
   "kind": "story",
   "title": "kbext.py rehearse takes a planted fork and a group overlay from one upstream ext tag to the next and reports no conflict, no shipped file edited and every extender verified",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-y7fe7qqx",
   "sprint": "SP-ep7ck2ab",
   "priority": "P2",
@@ -133,6 +133,28 @@
     }
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-a796fc75",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "9e95b8680641e4094dae1ab0f104d54eedf3f229",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess,sys,tempfile,pathlib,inspect\nT=pathlib.Path(tempfile.mkdtemp())\ndef W(p,v):\n    p=pathlib.Path(p); p.parent.mkdir(parents=True,exist_ok=True); p.write_text(v if isinstance(v,str) else json.dumps(v),encoding=\"utf-8\"); return p\ndef R(*a,env=None,cwd=None,inp=None):\n    return subprocess.run([sys.executable,*a],capture_output=True,text=True,env=dict(os.environ,**(env or {})),cwd=cwd,input=inp,timeout=900)\ndef need(c,m):\n    if not c: sys.exit(\"not yet: \"+str(m)[:1500])\ndef git(d,*a):\n    return subprocess.run([\"git\",\"-C\",str(d),*a],capture_output=True,text=True,check=True)\ndef repo(d):\n    d=pathlib.Path(d); d.mkdir(parents=True,exist_ok=True); git(d,\"init\",\"-q\",\"-b\",\"main\"); git(d,\"config\",\"user.name\",\"t\"); git(d,\"config\",\"user.email\",\"t@corp.example.com\"); return d\ndef mod(name):\n    sys.path.insert(0,\"_tools\")\n    try: return __import__(name)\n    except ImportError as x: sys.exit(\"not yet: \"+str(x))\ndef EXT(body):\n    return 'KBEXT_REQUIRES = \">=0.1\"\\n'+body\ndef PY(code,*a,env=None,flags=()):\n    w=\"import sys\\ntry:\\n\"+\"\".join(\"    \"+l+\"\\n\" for l in code.splitlines())+\"except Exception as x:\\n    print('failed: '+type(x).__name__+': '+str(x),file=sys.stderr); sys.exit(3)\\n\"\n    return R(*flags,\"-c\",w,*a,env=env)\n\ntmp=T/\"tmp\"; tmp.mkdir(); env={\"TMPDIR\":str(tmp)}\nt=T/\"grp-kb\"; r=R(\"_tools/kbext.py\",\"init-team\",str(t),\"--group\",\"grp\",\"--upstream\",\"git@corp.example.com:kb/it-ops-kb.git\"); need(r.returncode==0, r.stderr)\nk=lambda *a: R(\"_tools/kbext.py\",\"rehearse\",\"--plant\",\"--fork\",\"--team\",str(t),*a,env=env)\n\nr=k(); out=r.stdout+r.stderr\nneed(r.returncode==0 and \"conflict\" in out and \"verify\" in out and \"kbgit.py upstream\" in out and \"kbroot.py add\" in out, (r.returncode,out[-2000:]))\nneed(not any(tmp.iterdir()), [str(p) for p in tmp.iterdir()])\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess,sys,tempfile,pathlib,inspect\nT=pathlib.Path(tempfile.mkdtemp())\ndef W(p,v):\n    p=pathlib.Path(p); p.parent.mkdir(parents=True,exist_ok=True); p.write_text(v if isinstance(v,str) else json.dumps(v),encoding=\"utf-8\"); return p\ndef R(*a,env=None,cwd=None,inp=None):\n    return subprocess.run([sys.executable,*a],capture_output=True,text=True,env=dict(os.environ,**(env or {})),cwd=cwd,input=inp,timeout=900)\ndef need(c,m):\n    if not c: sys.exit(\"not yet: \"+str(m)[:1500])\ndef git(d,*a):\n    return subprocess.run([\"git\",\"-C\",str(d),*a],capture_output=True,text=True,check=True)\ndef repo(d):\n    d=pathlib.Path(d); d.mkdir(parents=True,exist_ok=True); git(d,\"init\",\"-q\",\"-b\",\"main\"); git(d,\"config\",\"user.name\",\"t\"); git(d,\"config\",\"user.email\",\"t@corp.example.com\"); return d\ndef mod(name):\n    sys.path.insert(0,\"_tools\")\n    try: return __import__(name)\n    except ImportError as x: sys.exit(\"not yet: \"+str(x))\ndef EXT(body):\n    return 'KBEXT_REQUIRES = \">=0.1\"\\n'+body\ndef PY(code,*a,env=None,flags=()):\n    w=\"import sys\\ntry:\\n\"+\"\".join(\"    \"+l+\"\\n\" for l in code.splitlines())+\"except Exception as x:\\n    print('failed: '+type(x).__name__+': '+str(x),file=sys.stderr); sys.exit(3)\\n\"\n    return R(*flags,\"-c\",w,*a,env=env)\n\ntmp=T/\"tmp\"; tmp.mkdir(); env={\"TMPDIR\":str(tmp)}\nt=T/\"grp-kb\"; r=R(\"_tools/kbext.py\",\"init-team\",str(t),\"--group\",\"grp\",\"--upstream\",\"git@corp.example.com:kb/it-ops-kb.git\"); need(r.returncode==0, r.stderr)\nk=lambda *a: R(\"_tools/kbext.py\",\"rehearse\",\"--plant\",\"--fork\",\"--team\",str(t),*a,env=env)\n\nr=k(\"--break\"); out=r.stdout+r.stderr; need(r.returncode==1 and \"ranker\" in out, (r.returncode,out[-2000:]))\nneed(not any(tmp.iterdir()), [str(p) for p in tmp.iterdir()])\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
