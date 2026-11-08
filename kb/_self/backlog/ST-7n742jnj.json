@@ -2,7 +2,7 @@
   "id": "ST-7n742jnj",
   "kind": "story",
   "title": "kbingest.py map takes a group's mapper for a language, named as extension point ingest_mappers, and writes its symbols into the map as the shipped mappers do",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-y7fe7qqx",
   "sprint": "SP-ep7ck2ab",
   "priority": "P3",
@@ -62,5 +62,7 @@
     "ST-xdircstf",
     "ST-y2u3sxta"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-a796fc75",
+  "operator": "op-f618a13e"
 }
