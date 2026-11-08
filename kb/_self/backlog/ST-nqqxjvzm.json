@@ -109,8 +109,7 @@
   ],
   "depends_on": [
     "ST-43b6t2i6",
-    "ST-izw3nds4",
-    "ST-q5o7z2mf"
+    "ST-izw3nds4"
   ],
   "gates": [
     {

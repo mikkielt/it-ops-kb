@@ -80,9 +80,7 @@
     "_tools/fixtures/placeholders/**"
   ],
   "depends_on": [
-    "ST-nqqxjvzm",
-    "ST-xllrtqlt",
-    "ST-3j3wlgg4"
+    "ST-nqqxjvzm"
   ],
   "gates": [
     {
