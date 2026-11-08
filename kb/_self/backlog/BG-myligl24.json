@@ -1,0 +1,18 @@
+{
+  "id": "BG-myligl24",
+  "kind": "bug",
+  "title": "kbsettings.layered(root, \"gate_checks\") raises key gate_checks must be an object for the list SURFACE and the docs give it",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbsettings.layered(root, 'gate_checks') returns the merged list of argument lists over the settings layers, as kbext.SURFACE and kb/_self/extending.md describe the key (list of argument lists), instead of raising SettingsError 'key gate_checks must be an object'; ST-vsdhy56r reads the layers' files with layer_files meanwhile",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,sys,tempfile,pathlib; sys.path.insert(0,'_tools'); import kbsettings; d=pathlib.Path(tempfile.mkdtemp()); (d/'settings.json').write_text(json.dumps({'gate_checks':[['true']]})); kbsettings.layered(d,'gate_checks')"
+    ]
+  },
+  "filed_in": "clone-0ea70e5c"
+}

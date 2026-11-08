@@ -10,6 +10,7 @@ from pathlib import Path
 
 import kbcommon
 import kbpublic
+import kbsettings
 import kg_lane
 import kg_lock
 import kg_merge
@@ -702,6 +703,50 @@ def selector_gate(out):
     return int(bool(refused)), "\n".join(refused + [f"selectors: refused={len(refused)} warned={len(warned)}"])
 
 
+GROUP_CHECK_TIMEOUT_S = 600  # a settings layer's gate check gets this long, KB_GATE_CHECK_TIMEOUT_S overrides it
+
+
+def group_gate(root):
+    """The failures of the group's gate checks, as strings; empty when every check passes or none is set. Each argv of
+    the `gate_checks` lists of the settings layers (group, clone, kb root, user: `kbsettings.layer_files`, in layer
+    order) runs without a shell from ROOT, the repository root, with a timeout of its own (GROUP_CHECK_TIMEOUT_S). A
+    failure names the argv, the layer that lists it and the exit code (`timed out` or `not started` for the rest, a
+    malformed entry or an unreadable settings file too), then the last line of its output."""
+    root = Path(root)
+    try:
+        files = kbsettings.layer_files(root)
+    except kbsettings.SettingsError as exc:
+        return [f"gate_checks: the settings cannot be read: {exc}"]
+    limit = env_number("KB_GATE_CHECK_TIMEOUT_S", GROUP_CHECK_TIMEOUT_S) or GROUP_CHECK_TIMEOUT_S
+    failures = []
+    for layer, path, data in files:
+        listed = data.get("gate_checks", [])
+        if not isinstance(listed, list):
+            failures.append(f"gate_checks of the {layer} layer ({kbsettings.shown_path(path, root)}) must be a list of "
+                            "argument lists")
+            continue
+        for argv in listed:
+            if not (isinstance(argv, list) and argv and all(isinstance(x, str) and x for x in argv)):
+                failures.append(f"gate_checks entry {json.dumps(argv)} of the {layer} layer must be a non-empty list "
+                                "of strings")
+                continue
+            name = f"{shlex.join(argv)} (layer {layer})"
+            try:
+                p = subprocess.run(argv, cwd=root, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                                   timeout=limit)
+            except subprocess.TimeoutExpired:
+                failures.append(f"gate check {name} timed out after {limit:g} s")
+                continue
+            except OSError as exc:
+                failures.append(f"gate check {name} not started: {exc.strerror or type(exc).__name__}")
+                continue
+            if p.returncode:
+                tail = [ln for ln in (p.stdout + p.stderr).strip().splitlines() if ln.strip()][-1:]
+                failures.append(f"gate check {name} failed with exit code {p.returncode}"
+                                + (f": {tail[0][:200]}" if tail else ""))
+    return failures
+
+
 def gate(r, up, host, fix_check=False, since=None):
     """The checks the changed paths (gate_paths) can break, then check-trailers on up..HEAD:
     check.py for kb content, a root file (README.md, AGENTS.md) or a tool, fetch.py --offline for a pinned artifact or its row, doc2query.py stale for an
@@ -798,6 +843,13 @@ def gate(r, up, host, fix_check=False, since=None):
             print(f"refused: {cause}")
         results.append((f"leak-scan {rng}", f"{'FAILED' if leaks else 'ok'}: commits with a hit={len({c.split(':')[0] for c in leaks})}",
                         not leaks))
+    t0 = time.monotonic()
+    group = group_gate(KB)  # the group's own checks, after every shipped one
+    if group:
+        gate_mark(r, "group gate_checks", code=1, since=t0)
+        for failure in group:
+            print(f"refused: {failure}")
+        results.append(("group gate_checks", f"FAILED: {len(group)} failing", False))
     r["gate"] = results
     r["gate_ms"] = r.get("gate_ms", 0) + int((time.monotonic() - t_gate) * 1000)
     return all(ok for _, _, ok in results)

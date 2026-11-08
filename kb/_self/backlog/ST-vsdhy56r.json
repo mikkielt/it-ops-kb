@@ -52,12 +52,35 @@
     "kb/_self/git.md",
     "kb/_self/backlog.md",
     "kb/_self/extending.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
   ],
   "depends_on": [
     "ST-ed7utpmg",
     "ST-y2u3sxta",
     "ST-6a2wn3ug"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does group_gate read the settings layers' gate_checks, given kbsettings.layered takes only objects (BG-myligl24), and which timeout, refusal rows and malformed-entry rule does it use?",
+      "options": [
+        "layer_files lists, 600 s default KB_GATE_CHECK_TIMEOUT_S, a malformed entry or unreadable settings is a failure, a gate row only on failure",
+        "wait for layered to return lists"
+      ],
+      "recommendation": "layer_files lists, 600 s default KB_GATE_CHECK_TIMEOUT_S, a malformed entry or unreadable settings is a failure, a gate row only on failure",
+      "do": {
+        "layer_files lists, 600 s default KB_GATE_CHECK_TIMEOUT_S, a malformed entry or unreadable settings is a failure, a gate row only on failure": "ST-vsdhy56r",
+        "wait for layered to return lists": "ST-vsdhy56r"
+      },
+      "class": "push",
+      "answer": "layer_files lists, 600 s default KB_GATE_CHECK_TIMEOUT_S, a malformed entry or unreadable settings is a failure, a gate row only on failure",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
   ],
   "notes": "Shared files with SP-lwkdljxg (kbcommon.py, kbpublic.py, bl_land.py, map.csv): agreed with its manager on 2026-11-08 that the first claim lands first and the other rebases; its items reach these files late. SP-uh5h46fm (mon_coord.py, mon_status.py) was asked the same and has not answered: the same rule applies.",
   "filed_in": "clone-0ea70e5c",
