@@ -61,10 +61,29 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
     "kb/_self/extending.md",
-    "kb/_self/querylog.md"
+    "kb/_self/querylog.md",
+    "_tools/kbsettings.py"
   ],
   "depends_on": [
     "ST-ed7utpmg"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does read_settings name the source of a key a settings layer set, and which kbsettings names does it use to find the layer's file?",
+      "options": [
+        "source text LAYER, FILE (clone, settings.json) using kbsettings.layered for values and kbsettings._layers and _shown for the file",
+        "source text LAYER alone, using kbsettings.layered only"
+      ],
+      "recommendation": "source text LAYER, FILE (clone, settings.json) using kbsettings.layered for values and kbsettings._layers and _shown for the file",
+      "reason": "the goal asks for the layer name with its file, and layered returns the layer only",
+      "do": {
+        "source text LAYER, FILE (clone, settings.json) using kbsettings.layered for values and kbsettings._layers and _shown for the file": "ST-xx5yzpky",
+        "source text LAYER alone, using kbsettings.layered only": "ST-xx5yzpky"
+      },
+      "class": "agents-rule"
+    }
   ],
   "notes": "Check 3 (backlog.py config on this clone) passes before the work: the kb's own backlog.json must keep loading as it does.",
   "filed_in": "clone-0ea70e5c",
