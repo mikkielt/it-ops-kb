@@ -14,6 +14,13 @@
         "-c",
         "import sys,os,tempfile,subprocess; sys.path.insert(0,\"_tools\"); import kj_store; s=os.path.join(tempfile.mkdtemp(),\"c.sqlite\"); a=kj_store.submit(\".\",\"check\",\"\",\"claude-0123abcd\",{\"name\":\"backlog-check\"},store=s); j=a[\"job\"]; co=lambda *x: subprocess.run([sys.executable,\"_tools/coord.py\",\"--store\",s,*x],capture_output=True,text=True); fo=lambda *x: subprocess.run([sys.executable,\"_tools/kbjob.py\",\"--store\",s,\"follow\",j,*x],capture_output=True,text=True,timeout=60); co(\"transition\",\"job/\"+j,\"--to\",\"running\"); r=fo(\"--timeout\",\"2\"); assert r.returncode==4 and \"--since\" in r.stdout.splitlines()[-1], r; co(\"transition\",\"job/\"+j,\"--to\",\"refused\",\"--field\",\"exit=1\",\"--field\",\"step=rebase\"); r=fo(\"--timeout\",\"5\"); lines=r.stdout.splitlines(); assert r.returncode==1 and lines[-1].startswith(j+\" refused\") and \"step=rebase\" in lines[-1], r"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,tempfile,subprocess; sys.path.insert(0,\"_tools\"); import kj_store; s=os.path.join(tempfile.mkdtemp(),\"c.sqlite\"); a=kj_store.submit(\".\",\"check\",\"\",\"claude-0123abcd\",{\"name\":\"backlog-check\"},store=s); j=a[\"job\"]; kb=lambda *x: subprocess.run([sys.executable,\"_tools/kbjob.py\",\"--store\",s,*x],capture_output=True,text=True,timeout=60); assert kb(\"cancel\",j).returncode==0; assert kj_store.status(\".\",j,store=s)[\"state\"]==\"cancelled\"; r=kb(\"follow\",j,\"--timeout\",\"5\"); assert r.returncode==3 and \"cancelled\" in r.stdout.splitlines()[-1], r; assert kb(\"status\",\"--active\").stdout.count(j)==0"
+      ]
     }
   ],
   "touches": [
@@ -25,5 +32,6 @@
   "depends_on": [
     "ST-nwwcf3kk"
   ],
+  "notes": "Why a line per move and exit codes: Claude Code's Monitor tool runs a command and each stdout line reaches the session as an event, its exit ends the watch, timeout_ms defaults to 300000 and the effective deadline is at most 1800000 ms, persistent false (live docs, not in the kb: https://code.claude.com/docs/en/agent-sdk/python#monitor, read 2026-11-08; kb: public/claude/hooks.md:212 DOC S-fksbud2r). A Bash command with run_in_background ends with a task notification at exit and, in a local interactive session, has no time limit, while unattended -p runs stop it at 30 min by default and 2 h at most (https://code.claude.com/docs/en/tools-reference#time-limit-for-background-commands, read 2026-11-08), and every background task dies when Claude Code exits (https://code.claude.com/docs/en/interactive-mode#how-backgrounding-works, read 2026-11-08): the job outlives the session because the executor, not the session's shell, owns it; follow only reads. Exit 4 with the since cursor makes a follow resumable across Monitor deadlines. follow prints no command output so a Monitor line never carries a path's content or a secret; the skill's current wait is coord.py wait --kind progress --item (kb-sprint SKILL.md:57), whose events follow reuses (coord wait --kind job). cancel is by the submitting operator only (authority rule). No test added (ceiling).",
   "filed_in": "clone-0ea70e5c"
 }
