@@ -1,0 +1,23 @@
+{
+  "id": "BG-qpjpqr6d",
+  "kind": "bug",
+  "title": "install_7z.py passes the NSIS /D= folder as a quoted argument, which fails for a Windows user folder with a space",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "install_7z.py runs the 7-Zip installer with /D=PATH unquoted and last on the command line, so a per-user folder that holds a space installs where it should",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "t = open('_tools/install_7z.py', encoding='utf-8').read()\nassert '\"/D=\" + str(dest.parent)]' not in t, 'the /D= folder is passed as one list argument, which Windows quotes when it holds a space'"
+    ]
+  },
+  "repro_reason": "the defect is how the Windows command line is built; this macOS host cannot run the NSIS installer, so the argument construction is what is read",
+  "links": [
+    "parked: SP-iir3d2tu review"
+  ],
+  "notes": "Review G3 of SP-iir3d2tu (plausible, Windows only, not run): install_7z.py:156 runs subprocess.run([installer, '/S', '/D=' + dest.parent]); NSIS documents /D= as unquoted and last.",
+  "filed_in": "clone-0ea70e5c"
+}
