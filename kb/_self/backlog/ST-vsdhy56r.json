@@ -1,0 +1,31 @@
+{
+  "id": "ST-vsdhy56r",
+  "kind": "story",
+  "title": "The settings layers' gate_checks run in kbgit.py sync --push and in backlog.py done after the shipped checks, and a failing one refuses naming its command",
+  "status": "draft",
+  "parent": "EP-y7fe7qqx",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kg_sync.group_gate(root) runs each argv of gate_checks from the settings layers (group, clone, kb root, user; no shell, from the repository root, a timeout each) after the shipped gate and returns the failures, each naming its argv, its layer and exit code; sync --push refuses the push and done refuses the item on any failure, exit 1, and with no gate_checks set both run as before. git.md (the gate) and backlog.md (Definition of done) say where a group's checks run.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport json,sys,tempfile,pathlib\nd=pathlib.Path(tempfile.mkdtemp())\n(d/\"settings.json\").write_text(json.dumps({\"gate_checks\":[[sys.executable,\"-c\",\"raise SystemExit(0)\"],[sys.executable,\"-c\",\"raise SystemExit(3)\"]]}),encoding=\"utf-8\")\nsys.path.insert(0,\"_tools\"); import kg_sync\nfails=kg_sync.group_gate(str(d))\nassert len(fails)==1 and \"SystemExit(3)\" in str(fails[0]) and \"clone\" in str(fails[0]), fails\n(d/\"settings.json\").write_text(json.dumps({}),encoding=\"utf-8\")\nassert kg_sync.group_gate(str(d))==[]\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kg_sync.py",
+    "_tools/bl_land.py",
+    "kb/_self/git.md",
+    "kb/_self/backlog.md",
+    "kb/_self/extending.md"
+  ],
+  "depends_on": [
+    "ST-ed7utpmg",
+    "ST-y2u3sxta"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

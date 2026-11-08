@@ -1,0 +1,28 @@
+{
+  "id": "ST-n7klnu42",
+  "kind": "story",
+  "title": "kbext.py verify calls each extender a group configured with its point's sample inputs and checks the answer's shape, so a group's CI catches a break at pull time",
+  "status": "draft",
+  "parent": "EP-y7fe7qqx",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Each point in kbext.SURFACE carries sample inputs and a shape check of its answer. kbext.py verify --root WS loads every extender the settings layers name (a load failure or KBEXT_REQUIRES mismatch counts as a failure), calls it with its point's samples in a child process with a timeout, and prints one line per extender, ok or what failed with the point, the module and the layer; exit 0 all ok or none configured, 1 a failure, 2 bad arguments. extending.md gives the command a group's CI runs after each upstream pull.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport json,subprocess,sys,tempfile,pathlib\nd=pathlib.Path(tempfile.mkdtemp()); e=d/\"ext\"; e.mkdir()\n(e/\"grp_lane.py\").write_text(\"KBEXT_REQUIRES = \\\">=1.0,<2\\\"\\ndef good(path):\\n    return \\\"content\\\"\\ndef bad(path):\\n    return 42\\n\",encoding=\"utf-8\")\ns=lambda m: (d/\"settings.json\").write_text(json.dumps({\"extensions\":{\"lane\":m},\"extension_paths\":[\"ext\"]}),encoding=\"utf-8\")\nv=lambda: subprocess.run([sys.executable,\"_tools/kbext.py\",\"verify\",\"--root\",str(d)],capture_output=True,text=True,timeout=120)\ns(\"grp_lane:good\"); r=v(); assert r.returncode==0 and \"lane\" in r.stdout, (r.stdout,r.stderr)\ns(\"grp_lane:bad\"); r=v(); assert r.returncode==1 and \"lane\" in r.stdout+r.stderr and \"grp_lane\" in r.stdout+r.stderr, (r.returncode,r.stdout,r.stderr)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbext.py",
+    "kb/_self/extending.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-y2u3sxta"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

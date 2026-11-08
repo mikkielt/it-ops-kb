@@ -1,0 +1,30 @@
+{
+  "id": "ST-xdircstf",
+  "kind": "story",
+  "title": "kbext.py loads a group's extender for an extension point from the settings layers or an it_ops_kb entry point, and refuses a missing or version-mismatched one by name",
+  "status": "draft",
+  "parent": "EP-y7fe7qqx",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "_tools/kbext.py (standard library only) holds API_VERSION and load(point, root): it reads extensions.<point> as module:attr from kbsettings.effective, puts each extension_paths directory (relative to the file that named it) on sys.path, and else takes the one entry point of group it_ops_kb.<point> from importlib.metadata.entry_points(group=...); a module's KBEXT_REQUIRES (a comma list of >=, <, == bounds on MAJOR.MINOR) must hold API_VERSION. kbext.py resolve POINT --root WS prints the point, module:attr, the layer and file that named it, exit 0; a missing module or attribute, two entry points for one point, or a version outside KBEXT_REQUIRES exits 2 with one line naming the point, the module and the layer. kbext.py call POINT --root WS --json ARGS calls the extender and prints its result as JSON.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport json,subprocess,sys,tempfile,pathlib\nd=pathlib.Path(tempfile.mkdtemp()); e=d/\"ext\"; e.mkdir()\n(e/\"grp_lane.py\").write_text(\"KBEXT_REQUIRES = \\\">=1.0,<2\\\"\\ndef path_lane(path):\\n    return \\\"code\\\" if path.endswith(\\\".py\\\") else \\\"content\\\"\\n\",encoding=\"utf-8\")\n(e/\"grp_bad.py\").write_text(\"KBEXT_REQUIRES = \\\">=99\\\"\\ndef path_lane(path):\\n    return \\\"content\\\"\\n\",encoding=\"utf-8\")\ns=lambda m: (d/\"settings.json\").write_text(json.dumps({\"extensions\":{\"lane\":m},\"extension_paths\":[\"ext\"]}),encoding=\"utf-8\")\nk=lambda *a: subprocess.run([sys.executable,\"_tools/kbext.py\",*a,\"--root\",str(d)],capture_output=True,text=True)\ns(\"grp_lane:path_lane\"); r=k(\"resolve\",\"lane\"); assert r.returncode==0 and \"grp_lane:path_lane\" in r.stdout and \"clone\" in r.stdout, (r.stdout,r.stderr)\nr=k(\"call\",\"lane\",\"--json\",json.dumps([\"_tools/x.py\"])); assert r.returncode==0 and json.loads(r.stdout)==\"code\", (r.stdout,r.stderr)\ns(\"grp_bad:path_lane\"); r=k(\"resolve\",\"lane\"); assert r.returncode==2 and \"lane\" in r.stderr and \"grp_bad\" in r.stderr, (r.returncode,r.stderr)\ns(\"grp_none:path_lane\"); r=k(\"resolve\",\"lane\"); assert r.returncode==2 and \"grp_none\" in r.stderr, (r.returncode,r.stderr)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbext.py",
+    "kb/_self/extending.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/map.csv"
+  ],
+  "depends_on": [
+    "ST-ed7utpmg"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

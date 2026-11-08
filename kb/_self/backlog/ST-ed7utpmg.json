@@ -1,0 +1,36 @@
+{
+  "id": "ST-ed7utpmg",
+  "kind": "story",
+  "title": "kbsettings reads five layers, defaults, group, clone, kb root and user, lets a group lock a key, and explain names the layer and file that decided each one",
+  "status": "draft",
+  "parent": "EP-y7fe7qqx",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbsettings.effective merges, later over earlier: DEFAULTS; the group file (the path group_settings names in the clone's settings.json, or KB_GROUP_SETTINGS); the clone's <WS>/settings.json (in a plugin host, the host project's .it-ops-kb/settings.json); the kb root's settings.json; the user's <WS>/_private/settings.json. Besides coordination it reads the top-level extensions, extension_paths, backlog and gate_checks objects. A group file's locked list names keys a later layer may not change: such a change raises SettingsError naming the key and the group file, exit 2. explain prints each key's source as the layer name and its file (group, clone, root, user, default).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport json,subprocess,sys,tempfile,pathlib\nd=pathlib.Path(tempfile.mkdtemp()); g=d/\"group.json\"\nw=lambda p,v: p.write_text(json.dumps(v),encoding=\"utf-8\")\nw(g,{\"coordination\":{\"announce\":{\"needs_you_after_min\":5}},\"locked\":[\"coordination.announce.needs_you_after_min\"]})\nw(d/\"settings.json\",{\"group_settings\":str(g),\"coordination\":{\"strategy\":{\"working\":\"wait\"}}})\n(d/\"_private\").mkdir(); w(d/\"_private\"/\"settings.json\",{\"coordination\":{\"strategy\":{\"working\":\"proceed\"}}})\nx=lambda k: subprocess.run([sys.executable,\"_tools/kbsettings.py\",\"explain\",k,\"--root\",str(d)],capture_output=True,text=True)\nr=x(\"strategy.working\"); assert r.returncode==0 and \"proceed\" in r.stdout and \"user\" in r.stdout, (r.stdout,r.stderr)\nr=x(\"announce.needs_you_after_min\"); assert r.returncode==0 and \"5\" in r.stdout and \"group\" in r.stdout, (r.stdout,r.stderr)\nw(d/\"settings.json\",{\"group_settings\":str(g),\"coordination\":{\"announce\":{\"needs_you_after_min\":20}}})\nr=x(\"announce.needs_you_after_min\"); assert r.returncode==2 and \"locked\" in r.stderr, (r.returncode,r.stderr)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/kbsettings.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbsettings.py",
+    "_tools/mon_coord.py",
+    "_tools/kb_mcp.py",
+    "kb/_self/coordination.md",
+    "kb/_self/tools.md",
+    "kb/_self/extending.md",
+    "kb/_self/map.csv"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

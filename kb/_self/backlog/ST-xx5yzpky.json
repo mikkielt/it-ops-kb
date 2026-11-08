@@ -1,0 +1,36 @@
+{
+  "id": "ST-xx5yzpky",
+  "kind": "story",
+  "title": "The backlog section of the settings layers overrides backlog.json key by key, and backlog.py config names the layer and file of each value",
+  "status": "draft",
+  "parent": "EP-y7fe7qqx",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "bl_base.load_settings reads backlog.json (or KB_BACKLOG_CONFIG's file), then merges the backlog object of kbsettings.effective over it key by key (group, clone, kb root, user), with the same type checks and refusals as backlog.json; a group-locked key is refused as kbsettings refuses it. backlog.py config prints each value's source as file, group, clone, root, user or default with the file's path, so a group changes forge, review_checks or trackers with no edit of the shipped backlog.json.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport json,subprocess,sys,tempfile,pathlib\nd=pathlib.Path(tempfile.mkdtemp()); subprocess.run([\"git\",\"init\",\"-q\",str(d)],check=True)\n(d/\"backlog.json\").write_text(json.dumps({\"item_dir\":\"items\",\"forge\":\"gitlab\"}),encoding=\"utf-8\")\n(d/\"settings.json\").write_text(json.dumps({\"backlog\":{\"forge\":\"github\"}}),encoding=\"utf-8\")\nr=subprocess.run([sys.executable,\"_tools/backlog.py\",\"--root\",str(d),\"config\"],capture_output=True,text=True)\nline=[l for l in r.stdout.splitlines() if l.startswith(\"forge =\")]\nassert r.returncode==0 and line and \"github\" in line[0] and \"clone\" in line[0], (r.stdout,r.stderr)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "config"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_base.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/extending.md"
+  ],
+  "depends_on": [
+    "ST-ed7utpmg"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

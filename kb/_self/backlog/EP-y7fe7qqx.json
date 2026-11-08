@@ -1,0 +1,22 @@
+{
+  "id": "EP-y7fe7qqx",
+  "kind": "epic",
+  "title": "A group extends it-ops-kb from its own repository and takes every minor upstream release with no conflict and no change of its own",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A group (an in-organization team or an outside organization) adopts it-ops-kb by a fork or by an overlay repository of its own: a marketplace that pins the upstream plugin by an ext-v tag beside the group's own plugin (its skills, hooks and agents), a group settings file and an ext/ directory of Python extenders. It changes content, settings, extension points (lane, forge, pack ranker, MCP tools, ingest mapper, gate checks, leak guards) and whole backlog commands without editing a shipped file; shipped tools stay standard library only and adopting needs no pip install. kbext.py rehearse takes a planted fork and a planted group overlay from one upstream ext tag to the next minor tag with no conflict, no edit of its own and every extender verified; only a major extension API version may break an extender, announced by a deprecation, a changelog entry and the loader's refusal by name.",
+  "relates_to": [
+    "EP-eocmyqdx",
+    "EP-4fawjprq",
+    "EP-p4guu2ip"
+  ],
+  "links": [
+    "kb: public/claude/plugins.md:54 (marketplace plugin sources url/ref/sha), :58,:65 (install scopes, enabledPlugins precedence), :76 (no release channels: pin refs)",
+    "kb: public/claude/settings-and-scopes.md:25 (settings precedence)",
+    "live docs, not in the kb, 2026-11-08: packaging.python.org/en/latest/specifications/entry-points/ (group naming, module:attr) and docs.python.org/3/library/importlib.metadata.html (entry_points(group=) since 3.10)",
+    "kb/_self/plugin.md sections 3, 6, 7; kb/_self/design.md Teams and organizations; kb/_self/git.md Bringing the upstream in, Contributing upstream; kb/_self/code.md Runtime, Layout"
+  ],
+  "notes": "Planned with the operator on 2026-11-08. Interview: adopters are both teams in the organization and outside organizations from day one; a group may change content and settings, its own skills, hooks and agents, Python extenders, and replace a shipped command; hard limits on an upstream pull are no merge conflict, no silent breakage, no upstream review for group-only work and no forced pip install, with friction accepted only on a major API version. Decisions: fork and overlay both supported, overlay first (no shipped file a group must edit); extenders found by an overlay setting naming module:attr plus extension_paths, entry points of group it_ops_kb.<point> only as a second source; an extension API semver (kbext.API_VERSION) separate from content, ext-v tags, deprecation then major, changelog, contract verify; full trust in a group's code, guards included, with each replaced guard named; setting layers defaults < group < clone < kb root < user, a group may lock keys. The group layer is the group of EP-p4guu2ip (nested groups, OPA placement): this epic reads one group file and does not decide placement or authority. Open, not filed: a group cannot switch off one shipped skill or hook (Claude Code turns off a whole plugin only, kb public/claude/hooks.md:141), so replacing a shipped skill means a group skill of its own name beside it; the shipped tests a fork runs unchanged (plugin.md section 6) are not yet part of rehearse.",
+  "filed_in": "clone-0ea70e5c"
+}

@@ -1,0 +1,51 @@
+{
+  "id": "ST-3brmklge",
+  "kind": "story",
+  "title": "kbgit.py ext-release tags the main branch as ext-vX.Y.Z from API_VERSION and its changelog entry, and sync carries the tag to the integration remote",
+  "status": "draft",
+  "parent": "EP-y7fe7qqx",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbgit.py ext-release [--dry-run] reads kbext.API_VERSION, refuses (exit 2, naming what is missing) when kb/_self/extension-changelog.md has no entry for it, when the tag exists, when the checkout is not the main branch or has uncommitted tracked changes, or when kbext.py lint finds a break; else it makes the annotated tag ext-vX.Y.Z with the changelog entry as its message, and --dry-run prints the tag and the message and writes nothing. kbgit.py sync --push sends ext-v tags with the commits they point at; kbgit.py publish sends them to the public home. plugin.md section 4 names ext-v tags beside census tags as the channel a group pins (the first version is this story's gate).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport subprocess,sys; sys.path.insert(0,\"_tools\"); import kbext\ntags=lambda: subprocess.run([\"git\",\"tag\",\"--list\",\"ext-v*\"],capture_output=True,text=True,check=True).stdout\nbefore=tags(); r=subprocess.run([sys.executable,\"_tools/kbgit.py\",\"ext-release\",\"--dry-run\"],capture_output=True,text=True)\nassert r.returncode==0 and \"ext-v\"+kbext.API_VERSION in r.stdout, (r.returncode,r.stdout,r.stderr)\nassert tags()==before, \"dry run made a tag\"\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbgit.py",
+    "_tools/kg_sync.py",
+    "_tools/kg_bridge.py",
+    "_tools/kbpublic.py",
+    "kb/_self/git.md",
+    "kb/_self/plugin.md",
+    "kb/_self/extension-changelog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-vhzvqlo3"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which version does the first ext tag carry?",
+      "options": [
+        "1.0.0",
+        "0.1.0"
+      ],
+      "recommendation": "1.0.0",
+      "reason": "groups inside and outside the organization adopt from day one and only a major may break them; a 0.x series would promise nothing until 1.0",
+      "do": {
+        "1.0.0": "ST-3brmklge",
+        "0.1.0": "ST-3brmklge"
+      },
+      "class": "push"
+    }
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

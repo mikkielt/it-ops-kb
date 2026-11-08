@@ -1,0 +1,58 @@
+{
+  "id": "ST-vhzvqlo3",
+  "kind": "story",
+  "title": "The gate refuses a change that removes or changes a public extension entry since the last ext tag without a major API version, a deprecation and a changelog entry",
+  "status": "draft",
+  "parent": "EP-y7fe7qqx",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbext.surface_breaks(old, new) lists each public entry removed, renamed or with a changed signature between two surfaces; a break passes only when new's API_VERSION has a higher major than old's and the entry was marked deprecated in a minor release the old surface came from (the deprecation window of this story's gate), and every API_VERSION change has a kb/_self/extension-changelog.md entry. kbext.py lint reads the surface at the newest ext-v* tag (none: one line, exit 0) and at the working tree, prints each break, exit 1; kbgit.py sync --push runs it when a changed path is under _tools/. kbext.deprecated(name, since, removed_in) warns once per process, on stderr, when a deprecated entry is used.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport sys,copy; sys.path.insert(0,\"_tools\"); import kbext\nold=copy.deepcopy(kbext.surface()); new=copy.deepcopy(old)\nnew[\"points\"]=[p for p in new[\"points\"] if p[\"name\"]!=\"lane\"]\nassert kbext.surface_breaks(old,new), \"removing lane at the same major passed\"\nmaj=int(old[\"api_version\"].split(\".\")[0]); new[\"api_version\"]=str(maj+1)+\".0.0\"\nfor p in old[\"points\"]:\n    p.update(deprecated_in=old[\"api_version\"]) if p[\"name\"]==\"lane\" else None\nassert kbext.surface_breaks(old,new)==[], kbext.surface_breaks(old,new)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/kbext.py",
+        "lint"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbext.py",
+    "_tools/kg_sync.py",
+    "kb/_self/extension-changelog.md",
+    "kb/_self/extending.md",
+    "kb/_self/git.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-y2u3sxta"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How long must a public extension entry stay deprecated before a major API version may remove it?",
+      "options": [
+        "one minor release",
+        "two minor releases",
+        "90 days and one minor release"
+      ],
+      "recommendation": "one minor release",
+      "reason": "a group then sees the stderr warning and the changelog entry on its next minor pull, before the major that removes it; longer windows slow the shared tools without a second signal",
+      "do": {
+        "one minor release": "ST-vhzvqlo3",
+        "two minor releases": "ST-vhzvqlo3",
+        "90 days and one minor release": "ST-vhzvqlo3"
+      },
+      "class": "push"
+    }
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

@@ -1,0 +1,31 @@
+{
+  "id": "ST-agm3xuwi",
+  "kind": "story",
+  "title": "A group module named in extensions.backlog_commands adds a backlog.py command or replaces a shipped one through bl_cli.register, and backlog.py -h marks it as the group's",
+  "status": "draft",
+  "parent": "EP-y7fe7qqx",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py imports each module that the settings layers' extensions.backlog_commands lists (resolved with kbext, KBEXT_REQUIRES checked) after the shipped ones; its bl_cli.register or bl_cli.extend calls add a command or replace a shipped one of the same name, which prints one stderr line naming the command, the module and the layer each time it runs. backlog.py -h lists a group command with the group name in its help. A module that fails to load is named on stderr and the shipped commands run as before, exit codes unchanged. extending.md names bl_cli.register, bl_cli.extend and the handler's signature as the point's contract.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport json,subprocess,sys,tempfile,pathlib\nd=pathlib.Path(tempfile.mkdtemp()); subprocess.run([\"git\",\"init\",\"-q\",str(d)],check=True); e=d/\"ext\"; e.mkdir(); (d/\"items\").mkdir()\n(d/\"backlog.json\").write_text(json.dumps({\"item_dir\":\"items\"}),encoding=\"utf-8\")\n(e/\"grp_cmd.py\").write_text(\"import bl_cli\\nKBEXT_REQUIRES = \\\">=1.0,<2\\\"\\ndef hello(args):\\n    print(\\\"planted hello\\\")\\n    return 0\\nbl_cli.register(\\\"hello\\\", hello, help=\\\"say hello (group)\\\")\\n\",encoding=\"utf-8\")\n(d/\"settings.json\").write_text(json.dumps({\"group\":\"grp\",\"extensions\":{\"backlog_commands\":[\"grp_cmd\"]},\"extension_paths\":[\"ext\"]}),encoding=\"utf-8\")\nb=lambda *a: subprocess.run([sys.executable,\"_tools/backlog.py\",\"--root\",str(d),*a],capture_output=True,text=True)\nr=b(\"hello\"); assert r.returncode==0 and \"planted hello\" in r.stdout, (r.stdout,r.stderr)\nr=b(\"-h\"); assert r.returncode==0 and \"hello\" in r.stdout, r.stdout[-800:]\nr=b(\"list\"); assert r.returncode in (0,1), r.stderr\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/bl_cli.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/extending.md"
+  ],
+  "depends_on": [
+    "ST-xx5yzpky",
+    "ST-y2u3sxta"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

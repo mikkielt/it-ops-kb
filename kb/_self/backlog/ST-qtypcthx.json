@@ -1,0 +1,61 @@
+{
+  "id": "ST-qtypcthx",
+  "kind": "story",
+  "title": "A group adds leak shapes as data and may replace the leak scan as extension point leak_scan, and every replaced guard is named by kbext.py guards and kbmon --status",
+  "status": "draft",
+  "parent": "EP-y7fe7qqx",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The settings layers' leak.shapes (each a kind and a regular expression, refused at load when it does not compile or matches the empty string) are added to the shapes kbcommon.leak_hits and kbpublic.file_hits refuse, so a group's own ticket or host shape stops a commit, a publish and a contribute. extensions.leak_scan names a function with file_hits' signature that replaces kbpublic.file_hits in this clone. kbext.py guards --root WS prints each replaced guard with its module and layer (none: one line saying the shipped guards run), kbmon.py --status all names a replaced guard on its first lines, and git.md and extending.md say which paths still run the shipped guards (the gate on this story).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport json,os,subprocess,sys,tempfile,pathlib\nd=pathlib.Path(tempfile.mkdtemp()); e=d/\"ext\"; e.mkdir(); g=d/\"group.json\"\ng.write_text(json.dumps({\"leak\":{\"shapes\":[{\"kind\":\"ticket\",\"pattern\":\"TKT-[0-9]{6}\"}]}}),encoding=\"utf-8\")\ncode=\"import sys; sys.path.insert(0, \\\"_tools\\\"); import kbcommon; print(kbcommon.leak_hits(\\\"see TKT-123456 for the change\\\"))\"\nr=subprocess.run([sys.executable,\"-c\",code],capture_output=True,text=True,env=dict(os.environ,KB_GROUP_SETTINGS=str(g)))\nassert r.returncode==0 and \"ticket\" in r.stdout, (r.stdout,r.stderr)\n(e/\"grp_scan.py\").write_text(\"KBEXT_REQUIRES = \\\">=1.0,<2\\\"\\ndef file_hits(path, text, allow, pinned=()):\\n    return []\\n\",encoding=\"utf-8\")\ng.write_text(json.dumps({\"extensions\":{\"leak_scan\":\"grp_scan:file_hits\"},\"extension_paths\":[str(e)]}),encoding=\"utf-8\")\nr=subprocess.run([sys.executable,\"_tools/kbext.py\",\"guards\",\"--root\",str(d)],capture_output=True,text=True,env=dict(os.environ,KB_GROUP_SETTINGS=str(g)))\nassert r.returncode==0 and \"leak_scan\" in r.stdout and \"grp_scan\" in r.stdout and \"group\" in r.stdout, (r.stdout,r.stderr)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_leaks.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbcommon.py",
+    "_tools/kbpublic.py",
+    "_tools/kbext.py",
+    "_tools/mon_status.py",
+    "_tools/kg_contrib.py",
+    "_tools/test_leaks.py",
+    "kb/_self/git.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/extending.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-xdircstf",
+    "ST-y2u3sxta"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "When a group replaces the leak scan, do kbgit.py contribute and the shared repository's own gate still run the shipped leak scan and guards on what the group gives back?",
+      "options": [
+        "shipped guards always",
+        "the group's scan"
+      ],
+      "recommendation": "shipped guards always",
+      "reason": "a group's trust covers its own repository, not what it hands to everyone else; the shared gate never loads a group's extenders",
+      "do": {
+        "shipped guards always": "ST-qtypcthx",
+        "the group's scan": "ST-qtypcthx"
+      },
+      "class": "push"
+    }
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

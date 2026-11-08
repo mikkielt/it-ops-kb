@@ -1,0 +1,48 @@
+{
+  "id": "ST-czmclv6j",
+  "kind": "story",
+  "title": "kbext.py init-team writes a group overlay repository: a marketplace pinning it-ops-kb by ext tag beside the group's plugin, its settings file and a verified sample extender",
+  "status": "draft",
+  "parent": "EP-y7fe7qqx",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbext.py init-team DIR --group NAME --upstream URL [--ref ext-vX.Y.Z] writes, keeping any file that already holds the same content and refusing (exit 2) to overwrite a different one: DIR/.claude-plugin/marketplace.json listing it-ops-kb with a url source at URL and the ref (the pin rule of this story's gate) and the group's own plugin with source \".\"; DIR/.claude-plugin/plugin.json with skills/, agents/ and hooks/ directories for the group's own; DIR/settings/group.json naming group, extension_paths [\"../ext\"] and a sample lane extender in DIR/ext/. A second run changes nothing. kbext.py verify passes on it, and plugin.md gets a section on adopting by fork or by overlay, with design.md's Teams and organizations pointing at it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport json,os,subprocess,sys,tempfile,pathlib\nd=pathlib.Path(tempfile.mkdtemp())/\"grp-kb\"\ni=lambda: subprocess.run([sys.executable,\"_tools/kbext.py\",\"init-team\",str(d),\"--group\",\"grp\",\"--upstream\",\"git@corp.example.com:kb/it-ops-kb.git\",\"--ref\",\"ext-v1.0.0\"],capture_output=True,text=True)\nr=i(); assert r.returncode==0, r.stderr\nm=json.loads((d/\".claude-plugin\"/\"marketplace.json\").read_text(encoding=\"utf-8\"))\nsrcs={p[\"name\"]:p[\"source\"] for p in m[\"plugins\"]}\nassert srcs[\"it-ops-kb\"][\"url\"].endswith(\"it-ops-kb.git\") and srcs[\"it-ops-kb\"][\"ref\"]==\"ext-v1.0.0\" and \".\" in srcs.values(), srcs\nsnap=lambda: sorted((str(p),p.read_bytes()) for p in d.rglob(\"*\") if p.is_file())\na=snap(); r=i(); assert r.returncode==0 and snap()==a, \"second run changed files\"\ng=d/\"settings\"/\"group.json\"; ws=pathlib.Path(tempfile.mkdtemp())\nr=subprocess.run([sys.executable,\"_tools/kbext.py\",\"verify\",\"--root\",str(ws)],capture_output=True,text=True,env=dict(os.environ,KB_GROUP_SETTINGS=str(g)))\nassert r.returncode==0 and \"lane\" in r.stdout, (r.stdout,r.stderr)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbext.py",
+    "kb/_self/plugin.md",
+    "kb/_self/design.md",
+    "kb/_self/extending.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-n7klnu42"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does a group's overlay marketplace pin the shared it-ops-kb plugin?",
+      "options": [
+        "exact ext tag",
+        "follow the main branch"
+      ],
+      "recommendation": "exact ext tag",
+      "reason": "Claude Code has no version ranges or release channels, so an exact tag is the only pin that holds a major back; the group moves the ref after kbext.py verify and rehearse pass",
+      "do": {
+        "exact ext tag": "ST-czmclv6j",
+        "follow the main branch": "ST-czmclv6j"
+      },
+      "class": "design"
+    }
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

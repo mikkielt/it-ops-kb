@@ -1,0 +1,38 @@
+{
+  "id": "ST-6a2wn3ug",
+  "kind": "story",
+  "title": "The lane classifier is extension point lane: extensions.lane wins over lane_module, which stays a supported key for the kb's own kblane",
+  "status": "draft",
+  "parent": "EP-y7fe7qqx",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "bl_land and bl_precheck take the lane classifier through kbext.load(lane): extensions.lane from the settings layers wins, else backlog.json's lane_module names the module and its path_lane function, else no code lane as now; lane_module stays a supported key of API 1, so backlog.json, the skills and the worker role keep their wording. kbext.py resolve lane prints which one decided, and a group lane extender's answer is the lane land and precheck read.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport json,subprocess,sys,tempfile,pathlib\nd=pathlib.Path(tempfile.mkdtemp()); subprocess.run([\"git\",\"init\",\"-q\",str(d)],check=True); e=d/\"ext\"; e.mkdir()\n(d/\"backlog.json\").write_text(json.dumps({\"item_dir\":\"items\",\"lane_module\":\"kblane\"}),encoding=\"utf-8\")\nk=lambda *a: subprocess.run([sys.executable,\"_tools/kbext.py\",*a,\"--root\",str(d)],capture_output=True,text=True)\nr=k(\"resolve\",\"lane\"); assert r.returncode==0 and \"kblane\" in r.stdout, (r.stdout,r.stderr)\n(e/\"grp_lane.py\").write_text(\"KBEXT_REQUIRES = \\\">=1.0,<2\\\"\\ndef path_lane(path):\\n    return \\\"code\\\"\\n\",encoding=\"utf-8\")\n(d/\"settings.json\").write_text(json.dumps({\"extensions\":{\"lane\":\"grp_lane:path_lane\"},\"extension_paths\":[\"ext\"]}),encoding=\"utf-8\")\nr=k(\"resolve\",\"lane\"); assert r.returncode==0 and \"grp_lane\" in r.stdout, (r.stdout,r.stderr)\nr=k(\"call\",\"lane\",\"--json\",json.dumps([\"kb/public/x.md\"])); assert r.returncode==0 and json.loads(r.stdout)==\"code\", (r.stdout,r.stderr)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/bl_precheck.py",
+    "_tools/kbext.py",
+    "kb/_self/backlog.md",
+    "kb/_self/extending.md"
+  ],
+  "depends_on": [
+    "ST-xdircstf",
+    "ST-y2u3sxta"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

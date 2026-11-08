@@ -1,0 +1,29 @@
+{
+  "id": "ST-7n742jnj",
+  "kind": "story",
+  "title": "kbingest.py map takes a group's mapper for a language, named as extension point ingest_mappers, and writes its symbols into the map as the shipped mappers do",
+  "status": "draft",
+  "parent": "EP-y7fe7qqx",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kbingest.py map reads extensions.ingest_mappers (a language name to a module:attr) and for each such language calls mapper(repo_dir, rev, files) for the files whose suffixes the mapper's SUFFIXES names; it adds the packages, imports, entry points and symbols it returns to the map under that language, in the same record shapes, and a group mapper wins over a shipped one for its language. A mapper that raises or returns another shape adds a note naming the language and the point and maps nothing for it. kbingest.py where then finds a symbol the group mapper gave.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport json,os,subprocess,sys,tempfile,pathlib\nd=pathlib.Path(tempfile.mkdtemp()); e=d/\"ext\"; e.mkdir(); repo=d/\"repo\"; repo.mkdir()\ng=lambda *a: subprocess.run([\"git\",\"-C\",str(repo),*a],check=True,capture_output=True)\ng(\"init\",\"-q\"); (repo/\"job.foo\").write_text(\"task deploy_ring\\n\",encoding=\"utf-8\"); g(\"add\",\"-A\"); g(\"-c\",\"user.name=t\",\"-c\",\"user.email=t@corp.example.com\",\"commit\",\"-qm\",\"x\")\n(e/\"grp_foo.py\").write_text(\"KBEXT_REQUIRES = \\\">=1.0,<2\\\"\\nSUFFIXES = [\\\".foo\\\"]\\ndef mapper(repo_dir, rev, files):\\n    return {\\\"symbols\\\": [{\\\"name\\\": \\\"deploy_ring\\\", \\\"kind\\\": \\\"task\\\", \\\"path\\\": f, \\\"line\\\": 1} for f in files]}\\n\",encoding=\"utf-8\")\ngs=d/\"group.json\"; gs.write_text(json.dumps({\"extensions\":{\"ingest_mappers\":{\"foo\":\"grp_foo:mapper\"}},\"extension_paths\":[str(e)]}),encoding=\"utf-8\")\nenv=dict(os.environ,KB_GROUP_SETTINGS=str(gs)); out=d/\"map.json\"\nr=subprocess.run([sys.executable,\"_tools/kbingest.py\",\"map\",str(repo),\"--out\",str(out)],capture_output=True,text=True,env=env)\nassert r.returncode==0, r.stderr\ndoc=json.loads(out.read_text(encoding=\"utf-8\"))\nassert any(s.get(\"name\")==\"deploy_ring\" for s in doc[\"symbols\"]), doc[\"symbols\"][:5]\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbingest.py",
+    "kb/_self/tools.md",
+    "kb/_self/extending.md"
+  ],
+  "depends_on": [
+    "ST-xdircstf",
+    "ST-y2u3sxta"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

@@ -1,0 +1,30 @@
+{
+  "id": "ST-yhlfcnsx",
+  "kind": "story",
+  "title": "A group's forge adapter, named as extension point forge, answers every merge request and pipeline read that land, stalled and red-pipeline make",
+  "status": "draft",
+  "parent": "EP-y7fe7qqx",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "bl_forge.arm(root) returns the adapter of extensions.forge when the settings layers name one (a class built as Adapter(target, run, cwd) with the methods request, pipelines, pipeline, jobs, trace, set_description and merge that the shipped glab and gh arms have), else the glab or gh arm the forge setting picks as now; extending.md lists those methods and their return shapes as the forge point's contract, and land, stalled and red-pipeline reach the forge only through arm.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport json,subprocess,sys,tempfile,pathlib\nd=pathlib.Path(tempfile.mkdtemp()); subprocess.run([\"git\",\"init\",\"-q\",str(d)],check=True); e=d/\"ext\"; e.mkdir()\n(d/\"backlog.json\").write_text(json.dumps({\"item_dir\":\"items\",\"forge\":\"gitlab\",\"forge_project\":\"corp/kb\"}),encoding=\"utf-8\")\n(e/\"grp_forge.py\").write_text(\"KBEXT_REQUIRES = \\\">=1.0,<2\\\"\\nclass Adapter:\\n    def __init__(self, target, run, cwd=None):\\n        self.target = target\\n    def request(self, branch=None, title_prefix=None):\\n        return {\\\"state\\\": \\\"merged\\\", \\\"branch\\\": branch}\\n\",encoding=\"utf-8\")\n(d/\"settings.json\").write_text(json.dumps({\"extensions\":{\"forge\":\"grp_forge:Adapter\"},\"extension_paths\":[\"ext\"]}),encoding=\"utf-8\")\nsys.path.insert(0,\"_tools\"); import bl_base,bl_forge\nbl_base.load_settings(str(d)); a=bl_forge.arm(str(d))\nassert type(a).__module__==\"grp_forge\", type(a)\nassert a.request(branch=\"code/ST-aaaaaaaa\")[\"state\"]==\"merged\"\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_forge.py",
+    "kb/_self/extending.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-xdircstf",
+    "ST-y2u3sxta"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
