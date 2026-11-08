@@ -18,6 +18,20 @@ Everything not in `kbext.SURFACE` is internal: only the extension points and set
 | `leak_scan` | `file_hits(path, text, allow, pinned=()) -> list` | 0.1.0 | | |
 | `backlog_commands` | `list of modules adding or replacing a command through bl_cli.register(name, handler, add_arguments=None, help=None) or bl_cli.extend(name, wrap, add_arguments)` | 0.1.0 | | |
 
+## The forge point
+
+`extensions.forge` names a class, `Adapter(target, run, cwd=None)`, that `bl_forge.arm(root)` builds in place of the `Glab` or `Gh` arm the `forge` setting picks: `target` is the `bl_forge.Target` (`forge`, `host`, `project`) of the project, `run` the command runner (`run(argv, cwd=None) -> (code, out, err)`) and `cwd` the workspace root. With no `extensions.forge` and no entry point of group `it_ops_kb.forge`, `arm` returns the arm the `forge` setting picks, as before; a named adapter that cannot be loaded exits 2 with kbext's one line and never falls back. An empty `forge` setting still raises `NoForge` before the adapter is built. `bl_forge.read_request`, `set_description` and `merge_own` and the reads of stalled and land all go through `arm(root)`, so the adapter answers each of them; `url_arm`, which has a remote's url and no root (`red-pipeline`, the intake `ci` detector and the query log's delivery), keeps reading that url's own forge. The adapter answers in GitLab's words, `opened`, `merged` and `closed` for a request and `success`, `failed`, `canceled`, `skipped`, `manual`, `running` and `pending` for a pipeline or job.
+
+| method | returns |
+| --- | --- |
+| `request(branch=None, title_prefix=None)` | the request of the source branch, or of the title starting with the prefix, an open one before a merged one before a closed one, or None for none; an object with attributes `state`, `iid`, `title`, `branch`, `url`, `pipeline` (its head pipeline's status or None), `merge_status`, `mergeable`, `auto_merge`, `merged_at` and `description` (`""` for none), as `bl_forge.Request` has; raises `bl_forge.ForgeError` when the forge cannot be read |
+| `pipelines(ref=None, sha=None, limit=1)` | a list of at most `limit` pipelines of the ref or commit, newest first, each with attributes `id`, `sha`, `status`, `url` and `ref`, as `bl_forge.Pipeline` has |
+| `pipeline(ref)` | the newest pipeline of the ref, or None for none |
+| `jobs(pipeline_id)` | the pipeline's jobs as a list of dicts in GitLab's job words (`id`, `name`, `status`, `failure_reason` and `started_at`, the keys the readers use), a retried job's attempts all in it, or None when the list cannot be read; an adapter that counts its list reads keeps `job_calls`, which the `ci.pipeline` ops row reports |
+| `trace(job_id)` | the job's log as text, `""` when it cannot be read |
+| `set_description(request, text)` | `(ok, output)`: whether the request's description became the text, and the forge's answer or error line |
+| `merge(request)` | `(merged, output)`: whether the request merged at once, and the forge's output; an adapter that refuses to merge sets a `merge_refusal` text, which `merge_own` raises as `Rejected` before any call |
+
 ## Settings keys
 
 The keys of a settings file (`kb/_self/coordination.md`, Coordination settings) that the extension API reads.

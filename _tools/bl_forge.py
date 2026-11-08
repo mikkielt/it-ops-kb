@@ -8,11 +8,15 @@ home) and the project is `forge_project`, else the remote's URL; a caller that h
 log's delivery, the CI detector) gets the arm of `url_arm`, which reads the url's forge when the setting names none.
 An empty `forge` setting is a project with no forge: `target` and `arm` raise `NoForge` (a `Refused`) before any call,
 and the callers that read for the project (stalled, land, red-pipeline) skip the read and say so.
+A group's own adapter, the class `extensions.forge` names (kb/_self/extending.md), replaces both arms for the callers
+that read for the project through `arm(root)` (`read_request`, `set_description`, `merge_own`, stalled, land);
+`url_arm`, which has a url and no root (`red-pipeline`, the intake `ci` detector, the query log's delivery), keeps
+reading the url's own forge.
 Both arms answer in GitLab's words (`opened`, `merged`, `closed`; a pipeline or job `success`, `failed`, `canceled`,
 `skipped`, `manual`, `running`, `pending`), so a caller reads one vocabulary. A read that cannot be made raises
 `ForgeError`; no such request or pipeline is None; a job list or a log that cannot be read is None or "", which its
 callers take as no verdict. Standard library only; imports `bl_base` at load, and `ql_deliver` (the remote url's
-parser), `kbpublic` and `kg_lane` where it reads them, never `backlog`.
+parser), `kbpublic`, `kbext`, `kbsettings` and `kg_lane` where it reads them, never `backlog`.
 """
 import json, re, urllib.parse
 from collections import namedtuple
@@ -300,10 +304,30 @@ def target(root, run=None):
     return Target(forge, host, pinned_project(project))
 
 
+def extension_class(root):
+    """The class the extension point `forge` names for ROOT (`extensions.forge` of a settings layer, else the one
+    entry point of group `it_ops_kb.forge`, as `kbext.load` finds it), or None when none is named. A setting or
+    entry point that cannot be loaded raises Rejected with kbext's one line, never a quiet fall back to glab or gh."""
+    import kbext, kbsettings
+    from importlib import metadata
+    try:
+        named = "forge" in kbsettings.layered(root, "extensions", setting("kb_root") or None)[0]
+        if not named and not tuple(metadata.entry_points(group=f"{kbext.GROUP}.forge")):
+            return None
+        return kbext.load("forge", root, setting("kb_root") or None)
+    except (kbext.ExtensionError, kbsettings.SettingsError) as e:
+        raise Rejected(f"kbext: {e}")
+
+
 def arm(root, run=None):
-    """The arm of the configured forge, Glab or Gh, for the project of `target`; `run` is bl_base.run's shape."""
+    """The arm of the project's forge for the project of `target`; `run` is bl_base.run's shape. The class the
+    extension point `forge` names (kb/_self/extending.md) is built as `Adapter(target, run, cwd)`; with none named,
+    it is Glab or Gh, as the `forge` setting picks."""
     run = run or bl_base.run
     t = target(root, run)
+    group = extension_class(root)
+    if group is not None:
+        return group(t, run, cwd=root)
     return (Gh if t.forge == "github" else Glab)(t, run, cwd=root)
 
 
@@ -377,7 +401,7 @@ def merge_own(root, branch, run=None):
     if not re.fullmatch(re.escape(CODE_BRANCH_PREFIX) + bl_base.id_re().pattern, branch or ""):
         raise Rejected(f"{branch!r} is no item's own {CODE_BRANCH_PREFIX}<id> branch: only that one merges")
     a = arm(root, run)
-    if a.merge_refusal:
+    if getattr(a, "merge_refusal", None):  # a group's adapter may carry none
         raise Rejected(a.merge_refusal)
     req = a.request(branch=branch)
     if req is None:
