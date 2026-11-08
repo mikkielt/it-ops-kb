@@ -42,9 +42,6 @@
   "depends_on": [
     "ST-i5az334d",
     "ST-57o3hmbo",
-    "BG-gu2kjifh",
-    "ST-nejgzptp",
-    "ST-66v7jwkw",
     "BG-whmvabqj"
   ],
   "gates": [
