@@ -2,7 +2,7 @@
   "id": "ST-bgjpctzz",
   "kind": "story",
   "title": "Research sprint goal: Groups extend it-ops-kb from their own repository through a versioned extension API",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ep7ck2ab",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-a796fc75",
+  "operator": "op-f618a13e"
 }
