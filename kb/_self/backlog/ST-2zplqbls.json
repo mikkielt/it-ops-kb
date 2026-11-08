@@ -1,0 +1,28 @@
+{
+  "id": "ST-2zplqbls",
+  "kind": "story",
+  "title": "Precheck runs each planted check the way land does, in a scratch worktree on a work branch with an empty cache",
+  "status": "draft",
+  "parent": "EP-n4dci4w7",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bl_precheck runs each committed item's checks and repro in a scratch worktree on a work/<id> branch with an empty _cache and an isolated CLAUDE_PLUGIN_DATA, as land does, so a check that depends on the cwd's branch or a warm cache fails at planning, not at the land step checks (SP-uh5h46fm: ST-drlo365l's and BG-2n4csy5p's checks were refused at land); kb/_self/backlog.md and the sprint skill say so.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import bl_precheck\nfrom pathlib import Path\ncode='import subprocess,sys;sys.exit(1 if subprocess.check_output([\\'git\\',\\'rev-parse\\',\\'--abbrev-ref\\',\\'HEAD\\'],text=True).startswith(\\'work/\\') else 0)'\nitem={'status':'todo','checks':[{'run':['python3','-c',code]}]}\nbl=type('B',(),{'root':Path.cwd(),'items':{'ST-aaaaaaaa':item},'sprint_items':lambda self,sid:['ST-aaaaaaaa']})()\nrows=bl_precheck.precheck_rows(bl,'SP-aaaaaaaa')\nsys.exit(0 if len(rows)==1 and rows[0][3] is False else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_precheck.py",
+    "kb/_self/backlog.md",
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-uh5h46fm close"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

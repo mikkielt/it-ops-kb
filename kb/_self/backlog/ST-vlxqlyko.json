@@ -1,0 +1,28 @@
+{
+  "id": "ST-vlxqlyko",
+  "kind": "story",
+  "title": "A chained item's done check pins only what its clause states, and the worker brief names the stale docs",
+  "status": "draft",
+  "parent": "EP-n4dci4w7",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "(a) A done check of a chained item pins only what its clause states, not incidental planted values that a later chained item's goal changes (BG-tybempcu's check planted 30 s orphans, then ST-crmdmgb4 hid orphans under 60 s and broke it at land step siblings); (b) the worker brief tells the worker to run selfdoc stale --since origin/main and name each listed doc in Self-Reviewed (BG-kd5zawtx stopped at land step stale on tools.md). The sprint skill, agents/worker.md and kb/_self/backlog.md say so.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;p=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self','what may a chained item\\'s done check pin'],capture_output=True,text=True);sys.exit(0 if p.returncode==0 and 'incidental' in p.stdout and 'clause' in p.stdout else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "agents/worker.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-uh5h46fm close"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

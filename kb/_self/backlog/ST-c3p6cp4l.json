@@ -1,0 +1,31 @@
+{
+  "id": "ST-c3p6cp4l",
+  "kind": "story",
+  "title": "A live child is read from the whole process table and the load line takes the 60 s orphan rule",
+  "status": "draft",
+  "parent": "EP-n4dci4w7",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "mon_sessions finds a process's live child among every process of the table, not only listed ones (cwd in the clone), so a child with another or unreadable cwd gives with a live child; the load line of mon_status counts orphans by the same 60 s rule as the Sessions line.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,time;sys.path.insert(0,'_tools');import bl_procs,mon_base,mon_sessions,mon_status\nfrom pathlib import Path\nroot=Path.cwd().resolve();start=time.time()-600\ntab={900001:(1,start,'node'),900002:(900001,start,'sleep')}\nbl_procs.process_table=lambda *a,**k:tab\nbl_procs.cwd_map=lambda *a,**k:({900001:str(root),900002:'/nonexistent-elsewhere'},None)\ndata=mon_sessions.collect(mon_base.Ctx(root))\nmine=[p for p in data['procs'] if p['pid']==900001]\nsnap={'taken':'2026-11-09T10:00:00Z','panels':{'host':{'state':'ok','data':{'load':[1.0,1.0,1.0],'cores':8}},'sessions':{'state':'ok','data':{'procs':[{'pid':5,'age_s':30,'class':'orphan','checkout':'.'}]}}}}\ntext=' '.join(mon_status.answer(snap,'load')['lines'])\nsys.exit(0 if mine and mine[0].get('live_child') and ' 0 of them orphan' in text else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/mon_sessions.py",
+    "_tools/mon_status.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md",
+    "_tools/coord.py",
+    "_tools/mon_needs.py"
+  ],
+  "links": [
+    "parked: SP-uh5h46fm review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

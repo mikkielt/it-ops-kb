@@ -1,0 +1,29 @@
+{
+  "id": "ST-244druac",
+  "kind": "story",
+  "title": "The query-log spool split counts consumed rows as waiting and rows of open sessions as waiting for delivery",
+  "status": "draft",
+  "parent": "EP-n4dci4w7",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "mon_querylog.spool_split never counts a tools row the consumed ledger lists as waiting, and the status line separates rows of still-open sessions from rows a delivery will take now.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,tempfile,json;sys.path.insert(0,'_tools');import mon_querylog\nfrom pathlib import Path\nq=Path(tempfile.mkdtemp());sp=q/'spool';sp.mkdir()\nrow=lambda i:json.dumps({'id':i,'ts':'2026-11-01T10:00:00Z','surface':'kb_hook'})\n(sp/'tools-2026-11-01.jsonl').write_text(row('r1')+chr(10)+row('r2')+chr(10))\n(q/'consumed.json').write_text(json.dumps({'tools-2026-11-01.jsonl':['r1']}))\n(sp/'s-open.jsonl').write_text(row('o1')+chr(10)+row('o2')+chr(10))\nout=mon_querylog.spool_split(sp)\nsys.exit(0 if out['waiting']==1 and 2 in [v for k,v in out.items() if k!='waiting'] else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/mon_querylog.py",
+    "_tools/mon_status.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-uh5h46fm review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

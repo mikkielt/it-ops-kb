@@ -1,0 +1,27 @@
+{
+  "id": "BG-ot47avdg",
+  "kind": "bug",
+  "title": "A code-lane land's first pass cannot fetch the code branch after the push and ends not done, so each code item needs a second land run",
+  "status": "draft",
+  "parent": "EP-n4dci4w7",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "One backlog.py land run of a code-lane item waits for its merge request and finishes, or says exactly why it did not: when the code/<id> branch is already gone from the remote after the push (the merge request auto-merged and removed its source branch, so the fetch finds no remote ref) and the commits are on the remote main, land waits on those commits, not on a missing branch tip.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,subprocess,tempfile,os;sys.path.insert(0,'_tools');import bl_land\nfrom pathlib import Path\nt=Path(tempfile.mkdtemp())\nenv=dict(os.environ,GIT_AUTHOR_NAME='a',GIT_AUTHOR_EMAIL='a@example.com',GIT_COMMITTER_NAME='a',GIT_COMMITTER_EMAIL='a@example.com',GIT_CONFIG_GLOBAL='/dev/null',GIT_CONFIG_SYSTEM='/dev/null')\ng=lambda *a,cwd=t:subprocess.run(['git',*a],cwd=cwd,env=env,check=True,capture_output=True,text=True).stdout.strip()\ng('init','-q','--bare','remote.git')\ng('clone','-q','remote.git','work')\nw=t/'work'\ng('checkout','-q','-b','main',cwd=w)\n(w/'f').write_text('x')\ng('add','f',cwd=w)\ng('commit','-q','-m','c',cwd=w)\ng('push','-q','origin','HEAD:refs/heads/main',cwd=w)\ntip=bl_land.pushed_tip(w,'origin','code/ST-aaaaaaaa')\nsys.exit(0 if tip and g('rev-parse','HEAD',cwd=w) in tip else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-uh5h46fm close"
+  ],
+  "notes": "Likely cause, not proven: kg_sync.push_options sends merge_request.auto_merge and merge_request.remove_source_branch, so a merge request that merges at once removes code/<id> before land's pushed_tip fetch, which then reports no tip. Also read: land without --wait-merge is two-pass by design (the first pass says so before the push); the repro covers the missing-branch fetch only.",
+  "filed_in": "clone-0ea70e5c"
+}

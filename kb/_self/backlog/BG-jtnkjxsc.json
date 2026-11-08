@@ -1,0 +1,26 @@
+{
+  "id": "BG-jtnkjxsc",
+  "kind": "bug",
+  "title": "redact._known_load crashes on a deep cache file and loads a wrong-shaped one as a Known of characters",
+  "status": "draft",
+  "parent": "EP-n4dci4w7",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Any unreadable, deep or wrong-shaped cache file makes known() fall back to a full scan and never raises.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,tempfile;sys.path.insert(0,'_tools');import redact;from pathlib import Path;p=Path(tempfile.mkdtemp())/'k.json';p.write_text('['*100000)\ntry:\n    r=redact._known_load(p,'K')\nexcept Exception:\n    sys.exit(1)\nsys.exit(0 if r is None else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/redact.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-uh5h46fm review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

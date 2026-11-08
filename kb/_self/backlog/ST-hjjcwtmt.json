@@ -1,0 +1,28 @@
+{
+  "id": "ST-hjjcwtmt",
+  "kind": "story",
+  "title": "The coord panel keeps an ask open for an absent item, an unconfirmed provisional answer and an unloadable backlog",
+  "status": "draft",
+  "parent": "EP-n4dci4w7",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "mon_coord.gate_settled keeps an ask open when its item is absent from the panel root's backlog and while the gate's answer is an agent's unconfirmed provisional one (by agent); without_settled leaves every ask open and the coord panel ok when Backlog(root) raises Refused or ExtensionError.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import mon_coord,bl_base\nB=type('B',(),{'items':{}})\nabsent=mon_coord.gate_settled('Gate g1 of ST-zzzzzzzz',B())\nmk=lambda by:type('B',(),{'items':{'ST-zzzzzzzz':{'status':'open','gates':[{'id':'g1','kind':'provisional','answer':'x','by':by}]}}})()\nagent=mon_coord.gate_settled('Gate g1 of ST-zzzzzzzz',mk('agent'))\noper=mon_coord.gate_settled('Gate g1 of ST-zzzzzzzz',mk('operator'))\ndef boom(*a,**k):\n    raise bl_base.Refused('x')\nbl_base.load_settings=lambda r:None\nbl_base.Backlog=boom\nasks=[{'id':'a1','ref':'k1'}]\nkept=mon_coord.without_settled(asks,[{'key':'k1','value':'Gate g1 of ST-zzzzzzzz'}],'.')\nsys.exit(0 if (not absent and not agent and oper and kept==asks) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/mon_coord.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-uh5h46fm review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

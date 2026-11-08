@@ -1,0 +1,27 @@
+{
+  "id": "ST-ytdwh3wp",
+  "kind": "story",
+  "title": "A time-bounded check states its margin against the run-to-run spread on a loaded host",
+  "status": "draft",
+  "parent": "EP-n4dci4w7",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A check that bounds measured times (a panel budget) states its margin against the run-to-run spread on a loaded host, load near the core count, since land runs the checks while other landings run (BG-2n4csy5p's 10 s all-panels check failed as a sibling at load 11.7 of 14 cores); the sprint skill's plan step and kb/_self/backlog.md (Sprints, Plan) say so.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;p=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self','what host load does a time-bounded check\\'s margin assume'],capture_output=True,text=True);sys.exit(0 if p.returncode==0 and 'loaded host' in p.stdout else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-uh5h46fm close"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
