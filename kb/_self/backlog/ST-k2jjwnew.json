@@ -60,7 +60,8 @@
     "kb/_self/tools.md",
     "kb/_self/extending.md",
     "kb/_self/embedding.md",
-    "kb/_self/token-efficiency.md"
+    "kb/_self/token-efficiency.md",
+    "_tools/kbext.py"
   ],
   "depends_on": [
     "ST-xdircstf",
