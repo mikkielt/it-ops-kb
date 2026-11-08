@@ -60,11 +60,48 @@
     "kb/_self/tools.md",
     "kb/_self/extending.md",
     "kb/_self/embedding.md",
-    "kb/_self/token-efficiency.md"
+    "kb/_self/token-efficiency.md",
+    "_tools/kbext.py"
   ],
   "depends_on": [
     "ST-xdircstf",
     "ST-y2u3sxta"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does kb_mcp.py read the extension point mcp_tools, and where are the group's tools served?",
+      "options": [
+        "extensions.mcp_tools is one module:attr or a list of them (each attribute a tool dict or a list), else an entry point; served only on the team's own server, never under --roots or in the kbtools catalog",
+        "extensions.mcp_tools is one module:attr only, served on every server"
+      ],
+      "recommendation": "extensions.mcp_tools is one module:attr or a list of them (each attribute a tool dict or a list), else an entry point; served only on the team's own server, never under --roots or in the kbtools catalog",
+      "do": {
+        "extensions.mcp_tools is one module:attr or a list of them (each attribute a tool dict or a list), else an entry point; served only on the team's own server, never under --roots or in the kbtools catalog": "ST-k2jjwnew",
+        "extensions.mcp_tools is one module:attr only, served on every server": "ST-k2jjwnew"
+      },
+      "class": "design",
+      "answer": "extensions.mcp_tools is one module:attr or a list of them (each attribute a tool dict or a list), else an entry point; served only on the team's own server, never under --roots or in the kbtools catalog",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "What does a load failure or a malformed tool dict leave out, and how does a tool's description and result take the group name?",
+      "options": [
+        "all of the group's tools are left out with one stderr line; description is the group name, a colon and the description; a non-text answer of call is an isError result",
+        "only the failing spec's tools are left out; description prefixed only when it lacks the group name"
+      ],
+      "recommendation": "all of the group's tools are left out with one stderr line; description is the group name, a colon and the description; a non-text answer of call is an isError result",
+      "do": {
+        "all of the group's tools are left out with one stderr line; description is the group name, a colon and the description; a non-text answer of call is an isError result": "ST-k2jjwnew",
+        "only the failing spec's tools are left out; description prefixed only when it lacks the group name": "ST-k2jjwnew"
+      },
+      "class": "design",
+      "answer": "all of the group's tools are left out with one stderr line; description is the group name, a colon and the description; a non-text answer of call is an isError result",
+      "by": "agent"
+    }
   ],
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-a796fc75",

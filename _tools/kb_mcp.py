@@ -92,6 +92,14 @@ asks and, unasked, for a source past its freshness lifetime):
              found in the files or text given (paths relative to the host project, CLAUDE_PROJECT_DIR or the cwd);
              imports=true matches only the packages the files declare (imports, manifests), not comments or strings;
              a server limited to named roots (--roots) refuses paths, which would read its own files, and takes text
+  <group>_<name>  (the team's own server only, as kb_monitor_status) each tool of the group's extension point `mcp_tools` (a
+             dict with name, description, inputSchema and call, or a list of them, named by `extensions.mcp_tools` as one
+             `module:attr` or a list of them, or by an entry point of group it_ops_kb.mcp_tools), served beside the shipped
+             tools under the settings' `group` name; its description starts with that name, a tools/call runs `call`
+             with the arguments and answers its text, and an exception in it is an isError result. A tool whose prefixed
+             name is a shipped tool's is left out, and a missing group name or a load failure leaves all of the group's
+             tools out, each with one stderr line (`point mcp_tools`); the settings are read from CLAUDE_PROJECT_DIR, else
+             the cwd, once per process.
 
   kb_feedback  (the team's own server only: off under --roots, and kb_http.py never serves it) an agent's report on one
              lookup: `pack` (the `pack: P-<8 hex>` handle) or `question`, `outcome` (answered, partly, missed, misled),
@@ -1750,16 +1758,102 @@ def coord_enabled():
     return not limited() and os.environ.get("KB_COORD_TOOLS") != "0"
 
 
-def tool_list(every=False):
-    """The tools this server lists. With `every`, every tool it can serve, whatever its environment (the feedback,
-    monitor, settings, backlog, query-log, docs and tools facades and the live-docs, coord and backlog-write tools):
-    the catalog of kbtools.py reads it, so two runs in two environments print the same one."""
+def shipped_tools(every=False):
+    """The tools this server ships (never a group's own): see `tool_list`."""
     own = not limited() or every
     return (TOOL_LIST + ([FEEDBACK_TOOL] + MONITOR_TOOL_LIST + SETTINGS_TOOL_LIST + BACKLOG_TOOL_LIST
                          + QUERYLOG_TOOL_LIST + DOCS_TOOL_LIST + TOOLS_TOOL_LIST + CODE_TOOL_LIST if own else [])
             + (COORD_TOOL_LIST if every or coord_enabled() else [])
             + (BACKLOG_WRITE_TOOL_LIST if every or backlog_write_enabled() else [])
             + (LIVE_TOOL_LIST if every or live_enabled() else []))
+
+
+GROUP_TOOLS = {}  # (workspace, settings file) -> ([tool dicts], {name: handler}): read once per process
+
+
+def group_note(text):
+    print(f"kb_mcp: {text}", file=sys.stderr)
+
+
+def group_name(root):
+    """The group's name: the `group` string of the last settings layer that sets one, or None."""
+    import kbsettings
+    name = None
+    for _layer, path, data in kbsettings.layer_files(root):
+        if "group" in data:
+            name = data["group"]
+            if not isinstance(name, str):
+                raise kbsettings.SettingsError(f"{kbsettings.shown_path(path, root)}: key group must be a string")
+    return name
+
+
+def group_dicts(extenders):
+    """The tool dicts the extenders of mcp_tools hold, each one a tool dict or a list of them; raises ExtensionError."""
+    import kbext
+    tools = [t for e in extenders for t in (e if isinstance(e, (list, tuple)) else [e])]
+    for tool in tools:
+        if not (isinstance(tool, dict) and isinstance(tool.get("name"), str)
+                and re.fullmatch(r"[a-z][a-z0-9_]*", tool["name"]) and isinstance(tool.get("description"), str)
+                and isinstance(tool.get("inputSchema"), dict) and callable(tool.get("call"))):
+            raise kbext.ExtensionError("point mcp_tools: each tool must be a dict with a lower-case name, a description, "
+                                       "an inputSchema object and a callable call")
+    return tools
+
+
+def group_call(prefixed, call):
+    def run(args):
+        try:
+            out = call(args)
+        except Exception as e:  # noqa: BLE001 - the group's code: any failure is the tool's error result
+            raise ToolError(f"{prefixed} raised {type(e).__name__}: {e}")
+        if not isinstance(out, str):
+            raise ToolError(f"{prefixed} must return text, not {type(out).__name__}")
+        return out
+    return run
+
+
+def group_tools():
+    """([tool dicts], {name: handler}) of the group's own tools, extension point mcp_tools: each served as
+    `<group>_<name>` with the group's name at the start of its description, beside the shipped tools. A tool whose
+    prefixed name is a shipped tool's is left out, one stderr line naming it; no group name or a load failure leaves all
+    of the group's tools out, one stderr line naming the point. Read once per process."""
+    root = os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
+    key = (root, os.environ.get("KB_GROUP_SETTINGS"))
+    if key in GROUP_TOOLS:
+        return GROUP_TOOLS[key]
+    listed, handlers = [], {}
+    GROUP_TOOLS[key] = (listed, handlers)
+    import kbext, kbsettings
+    try:
+        if not kbext.configured("mcp_tools", root):
+            return listed, handlers
+        group = group_name(root)
+        if not group or not re.fullmatch(r"[a-z][a-z0-9_]*", group):
+            raise kbext.ExtensionError("the settings name no group (key group, lower-case letters, digits and "
+                                       "underscores), so the tools carry no prefix")
+        tools = group_dicts(kbext.load_all("mcp_tools", root))
+    except (kbext.ExtensionError, kbsettings.SettingsError) as e:
+        group_note(f"point mcp_tools: the group's tools are left out: {' '.join(str(e).split())}")
+        return listed, handlers
+    shipped = {t["name"] for t in shipped_tools(every=True)}
+    for tool in tools:
+        prefixed = f"{group}_{tool['name']}"
+        if prefixed in shipped or prefixed in handlers:
+            group_note(f"point mcp_tools: tool {prefixed} is left out: its name is already "
+                       f"{'a shipped' if prefixed in shipped else 'a group'} tool's")
+            continue
+        listed.append({"name": prefixed, "description": f"{group}: {tool['description']}",
+                       "inputSchema": tool["inputSchema"]})
+        handlers[prefixed] = group_call(prefixed, tool["call"])
+    return listed, handlers
+
+
+def tool_list(every=False):
+    """The tools this server lists. With `every`, every tool it can serve, whatever its environment (the feedback,
+    monitor, settings, backlog, query-log, docs and tools facades and the live-docs, coord and backlog-write tools):
+    the catalog of kbtools.py reads it, so two runs in two environments print the same one. The group's own tools
+    (`group_tools`) follow on the team's own server, never in that catalog."""
+    return shipped_tools(every) + (group_tools()[0] if not every and not limited() else [])
 
 
 # ---------------------------------------------------------------- protocol
@@ -1825,6 +1919,8 @@ def handle(msg):
             handlers.update(COORD_HANDLERS)
         if backlog_write_enabled():
             handlers["kb_backlog_write"] = kb_backlog_write
+        if not limited():
+            handlers.update({n: h for n, h in group_tools()[1].items() if n not in handlers})
         if name not in handlers:
             return error(msg_id, -32602, f"Unknown tool: {name}")
         if not isinstance(args, dict):
