@@ -20,5 +20,9 @@
     "_tools/coord.py",
     "kb/_self/coordination.md"
   ],
+  "relates_to": [
+    "EP-nij36lt7"
+  ],
+  "notes": "Shape: the value of job/ID is one JSON object (the record kj_store writes at submit: job, op, subject, host, clone, operator, by, options, attempt, submitted_ts, and the members the executor sets: state, exit, step, pid), and transition on a job/ID key rewrites its state, exit and step members and keeps every other, in the same BEGIN IMMEDIATE transaction that posts the job event (as run/ITEM does with its state, coord.py:600 transition); the first move none to queued creates {state: queued}, and kj_store's submit gives the other members in that one write, so a job is one key and one event stream. A sibling table beside the run table, not an extension of it: run/ITEM says where an item is in its work (coordination.md:55), job/ID says where an operation is; the job's own step is the CLI's last land.step name. Closed event fields are added where coord.KIND_FIELDS and check_kind (coord.py:549) hold the others; no other file names KIND_FIELDS (referrers: coord.py only). Wait: coord.py wait --kind job --item ID returns on a move (wait, coord.py:690, already filters by kind and item ids of 1 to 120 characters, so JB-... ids fit item_ids). Evidence for why the layer is a table and not new storage: the store is one SQLite file with entries and an append-only events table, writes serialise on BEGIN IMMEDIATE with a 30 s wait (coordination.md:7-9), and every session of a clone, worker worktrees included, already shares it. No test added (ceiling); a planted-store check runs the table.",
   "filed_in": "clone-0ea70e5c"
 }
