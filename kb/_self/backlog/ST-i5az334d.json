@@ -138,7 +138,9 @@
       },
       "class": "design",
       "answer": "The replay's rows (cpu_s, rss_peak_mb, rss_mean_mb, spawns_per_min per class and all, wall_s) plus run_failures and cost, the all CPU from wait4 and the class CPU from ps times; --dry-run without the flag exits 2",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "filed_in": "clone-0ea70e5c",
