@@ -4,6 +4,7 @@
   "title": "A central coord service holds the job queue of every clone, and each executor, workstation, server or CI, takes only the jobs placed on its own kind",
   "status": "draft",
   "parent": "EP-tmw3tokk",
+  "sprint": "SP-lwkdljxg",
   "priority": "P3",
   "rank": 0,
   "goal": "kbjob.py takes the global --url URL --key-file PATH of coord.py, with the same plain-http refusal and key file mode rule, for submit, follow, status, log and cancel, which reach the job table of a central coord serve through POST /v1/run; kbjob.py serve --kind workstation|server|ci --url URL --key-file PATH takes from the central queue only the queued jobs whose placement executor is its kind, a workstation executor only those whose host id is its own and whose operator is the operator of its key file; a job with no placement is placed on the workstation; each job runs in the clone whose integration remote url equals the one the job names (no such clone leaves the job queued with the reason) and every move is posted back to the central store, so a job placed on another kind, host or operator stays queued; the central store keeps states and events only, the output log stays with the executor and log JOB names the host that has it",

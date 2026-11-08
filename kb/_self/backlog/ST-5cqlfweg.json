@@ -4,6 +4,7 @@
   "title": "A job that was running when its executor died is found lost at the next serve and runs again once, or fails",
   "status": "draft",
   "parent": "EP-tmw3tokk",
+  "sprint": "SP-lwkdljxg",
   "priority": "P2",
   "rank": 0,
   "goal": "kbjob.py serve, at its start and every 30 s, finds each job in running, waiting-lock or waiting-merge whose lease jobrun/ID has expired and whose recorded pid no longer runs, moves it to lost (step lost), then to queued with attempt raised by one the first time and to failed the second time; a child whose pid still runs and whose command line names the job's operation is adopted: serve takes the lease again and follows that pid instead of starting a second process; kj_exec.recover(root, store=None, alive=..., leased=...) is that pass and returns the moves it made; a sync-push or check job simply runs again, and land and stage-back rely on their own resume rules (a land state left at landing by a dead land is taken over, bl_land.enter_run)",

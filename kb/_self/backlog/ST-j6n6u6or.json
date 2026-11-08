@@ -4,6 +4,7 @@
   "title": "A group's placement overrides are coord keys its own operators write, refused when they break the decision schema",
   "status": "draft",
   "parent": "EP-p4guu2ip",
+  "sprint": "SP-lwkdljxg",
   "priority": "P2",
   "rank": 0,
   "goal": "coord keeps a group's overrides as group/<group path>/policy/placement, one JSON object mapping an operation to {executor, identity, fallback, fallback_after_s, budget_cap_usd}; a put whose value is no such object (an unknown operation, executor, identity or fallback, a negative number) exits 2 naming the field, served or local; the write rule of group keys decides who may put it; coord.py get prints it back unchanged",

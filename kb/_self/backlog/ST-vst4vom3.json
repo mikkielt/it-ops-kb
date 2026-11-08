@@ -4,6 +4,7 @@
   "title": "kbjob.py serve --kind server keeps one clone per integration remote and runs the jobs placed on the server there, landings from the pushed worker branch",
   "status": "draft",
   "parent": "EP-p4guu2ip",
+  "sprint": "SP-lwkdljxg",
   "priority": "P2",
   "rank": 0,
   "goal": "kbjob.py serve --kind server --data DIR takes the queued jobs placed on server, keeps one clone per integration remote url under DIR (cloned at the first job, fetched before each), runs the job's argv there as the CLI would on a workstation and lands an item from the remote work/<id> in a worktree of that clone; a test-ceiling refusal ends the job failed with the reason host condition and the central host's platform, never retried with another ceiling",

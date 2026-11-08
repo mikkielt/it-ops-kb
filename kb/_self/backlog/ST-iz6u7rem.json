@@ -4,6 +4,7 @@
   "title": "A central executor keeps its own query-log spool and the follower writes its row too, and the job is counted once",
   "status": "draft",
   "parent": "EP-p4guu2ip",
+  "sprint": "SP-lwkdljxg",
   "priority": "P2",
   "rank": 0,
   "goal": "A server executor writes one ops row per finished job, carrying the job id and origin server, to its own query-log spool and delivers it to the integration remote as a clone does (never the publish remote); kbjob.py follow writes the same row with origin follower in the submitter's clone; kbjob.py stats and the digest count each job id once, preferring the executor's row; a CI job writes none",

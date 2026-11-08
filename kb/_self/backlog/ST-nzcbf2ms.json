@@ -4,6 +4,7 @@
   "title": "coord's key directory nests groups as deep as GitLab's, and a group's keys are written by its own operators and those of the groups above it",
   "status": "draft",
   "parent": "EP-p4guu2ip",
+  "sprint": "SP-lwkdljxg",
   "priority": "P2",
   "rank": 0,
   "goal": "coord.py serve reads a key file at any depth of --keys: DIR/G1/.../OPERATOR is the operator G1/.../OPERATOR, whose groups are G1, G1/G2 and so on; a claim or put of a key under group/G1/.../GN/ is accepted from an operator whose group path is that path or one of its ancestors and exits 1 for any other caller; a key under team/NAME/ keeps its rule, NAME read as a group one level deep; flat operators and keys outside group/ and team/ behave as before; every event a served caller leaves names the full operator path",

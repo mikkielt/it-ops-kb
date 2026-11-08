@@ -4,6 +4,7 @@
   "title": "An executor runs a job as the identity its placement names, reading the credential from a 0600 file or a masked CI variable, and refuses a job whose credential is missing",
   "status": "draft",
   "parent": "EP-p4guu2ip",
+  "sprint": "SP-lwkdljxg",
   "priority": "P2",
   "rank": 0,
   "goal": "kj_cred.resolve(identity, group, operator, cred_dir, environ) gives the environment of the job's git: none disables every push (an invalid pushurl); group-bot reads cred_dir/group/<group path> or the CI variable KB_GROUP_TOKEN_<GROUP_PATH upper, / as _>; operator reads cred_dir/operator/<operator path>; the token reaches git only through a GIT_ASKPASS helper that reads the file, never argv or an environment value; a file with a group or other bit, or no credential, raises kj_cred.Refused naming the identity and the path or variable, and the job ends refused with that reason",

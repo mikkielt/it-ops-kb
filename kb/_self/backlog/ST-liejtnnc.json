@@ -4,6 +4,7 @@
   "title": "kbjob.py opa-config --print prints the OPA configuration and service unit that pull both bundles from coord, and writes nothing",
   "status": "draft",
   "parent": "EP-p4guu2ip",
+  "sprint": "SP-lwkdljxg",
   "priority": "P2",
   "rank": 0,
   "goal": "kbjob.py opa-config --print --url URL --token-file PATH --key-env NAME prints an OPA configuration (one service at URL with bearer token_path PATH, the bundles kbjobs and kbjobs-overrides with polling and persist: true, signing keyid kbjobs, the key read from ${NAME} by OPA's environment substitution) and a systemd unit running opa run --server with it; no file is written, and the token's and the key's text never appear in the output",

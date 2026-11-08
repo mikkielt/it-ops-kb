@@ -4,6 +4,7 @@
   "title": "kbjob.py submit records the placement decision in the job, and status shows where and as whom it runs and which level decided",
   "status": "draft",
   "parent": "EP-p4guu2ip",
+  "sprint": "SP-lwkdljxg",
   "priority": "P2",
   "rank": 0,
   "goal": "kbjob.py submit asks kj_place for the decision before it queues and keeps it in the job record as placement {executor, identity, fallback, fallback_after_s, budget_cap_usd, decided_by, reason}; status prints it; a decision that cannot be had queues the job for the workstation with the reason; a resubmit of a live job keeps the first decision",

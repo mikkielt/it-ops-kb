@@ -4,6 +4,7 @@
   "title": "Jobs of one class run one at a time in submit order and the rest in parallel, and a job whose lock another process holds waits as waiting-lock",
   "status": "draft",
   "parent": "EP-tmw3tokk",
+  "sprint": "SP-lwkdljxg",
   "priority": "P2",
   "rank": 0,
   "goal": "kj_exec.next_runnable(jobs, running, holders, slots) returns (run, wait) for the queued jobs: land jobs of one clone run one at a time (the clone's landing lock), sync-push jobs of a host one at a time (the host main lock kb-main.lock), a check tests-full job one at a time per host (the test lock), done and stage-back jobs one at a time per item, every other pair in parallel up to slots (default 3, serve --parallel N); a job whose class has a lock holder outside the executor (a session's own land or sync run by hand: pid, clone and step read from the lock file as bl_procs.lock_holders does) is not started but moved to waiting-lock with the holder's pid, clone and step in its event, and starts when the lock is free, so no child burns the 1800 s main-lock wait; kj_exec.lock_holders() reads the host's lock files; submit order is the order inside one class",

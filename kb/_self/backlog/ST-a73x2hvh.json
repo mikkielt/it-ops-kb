@@ -4,6 +4,7 @@
   "title": "kbjob.py ensure starts the executor when none runs, ping tells, and submit never queues for nobody",
   "status": "draft",
   "parent": "EP-tmw3tokk",
+  "sprint": "SP-lwkdljxg",
   "priority": "P2",
   "rank": 0,
   "goal": "kbjob.py ping exits 0 printing the pid when an executor of this host runs (its host file) and 1 when none does; ensure runs ping and, when none runs, starts serve detached (new session, stdin closed, log kb-jobs/serve.log in the git common directory), waits up to 10 s for the host file to name its pid and prints kbjob: serving pid N (exit 0, or exit 1 with the log's last line); submit calls ensure first and prints kbjob: no executor, started pid N when it had to, unless --no-ensure; login-item --print prints a macOS LaunchAgent plist (Label, ProgramArguments serve, RunAtLoad, KeepAlive, StandardErrorPath) and a systemd user unit, and writes nothing and touches no file under the home directory",

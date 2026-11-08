@@ -4,6 +4,7 @@
   "title": "A job placed on CI starts a pipeline through GitLab's pipeline trigger API, and its kb-job runs only for such pipelines",
   "status": "draft",
   "parent": "EP-p4guu2ip",
+  "sprint": "SP-lwkdljxg",
   "priority": "P2",
   "rank": 0,
   "goal": "kbjob.py submit of a job placed on ci posts POST <gitlab>/api/v4/projects/<id>/trigger/pipeline with token (read from --trigger-token-file, mode 0600), ref (the pushed commit's branch) and variables[KB_JOB]=JB-...; the job record keeps the pipeline id and web_url and log JOB names it; a failed trigger leaves the job queued with the HTTP status as reason; .gitlab-ci.yml gains kb-job on the docker-linux runner, rules only $CI_PIPELINE_SOURCE == \"trigger\", running kbjob.py serve --kind ci --job $KB_JOB --once, and every other job stays manual",

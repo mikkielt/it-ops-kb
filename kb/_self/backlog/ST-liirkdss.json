@@ -4,6 +4,7 @@
   "title": "Each finished job writes one operations row with its queue wait, lock wait and run time, and kbjob.py stats prints their medians per operation",
   "status": "draft",
   "parent": "EP-tmw3tokk",
+  "sprint": "SP-lwkdljxg",
   "priority": "P3",
   "rank": 0,
   "goal": "the executor records one ops row job.run per finished job in the query log's ops store (closed keys: op, exit class, attempt, queued_ms, wait_ms of waiting-lock and waiting-merge, run_ms), through ql_capture as land.step rows are, and kbjob.py stats prints for each operation one line op n=N queued_ms=MEDIAN wait_ms=MEDIAN run_ms=MEDIAN (nearest-rank p95 beside it), so the wait the service removes from a session is measured the same way backlog.py landings measures a landing",

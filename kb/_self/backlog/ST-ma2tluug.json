@@ -4,6 +4,7 @@
   "title": "A job placed on a workstation whose executor is offline moves to the fallback its policy names, and only there",
   "status": "draft",
   "parent": "EP-p4guu2ip",
+  "sprint": "SP-lwkdljxg",
   "priority": "P2",
   "rank": 0,
   "goal": "A workstation executor holds the lease jobexec/<host>/<operator> while it serves; a queued job placed on a workstation whose lease has been missing for the decision's fallback_after_s is taken by an executor of the decision's fallback kind, which records a job event with the reason executor offline since T and the new placement; a decision with no fallback leaves the job queued with that reason; a live lease keeps the job on its workstation",

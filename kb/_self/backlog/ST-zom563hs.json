@@ -4,6 +4,7 @@
   "title": "kbjob.py place asks the OPA placement policy where and as whom a job runs, and any failure to answer means the workstation",
   "status": "draft",
   "parent": "EP-p4guu2ip",
+  "sprint": "SP-lwkdljxg",
   "priority": "P2",
   "rank": 0,
   "goal": "kbjob.py place OP [SUBJECT] --opa URL builds the input {op, subject, roots, root_groups, operator, groups, host, capabilities: {paid, push}} and sends it as POST URL/v1/data/kbjobs/placement with urllib; it prints one JSON decision {executor, identity, fallback, fallback_after_s, budget_cap_usd, decided_by, reason}; an unreachable OPA, a reply with no result, or an executor, identity or fallback outside the tables (workstation|server|ci, none|group-bot|operator) gives executor workstation, identity none and a reason naming the cause, exit 0; without --opa it reads KB_OPA_URL, and with neither it decides workstation with the reason no policy",

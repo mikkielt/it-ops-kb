@@ -4,6 +4,7 @@
   "title": "A commit a job makes names the operator who submitted it and the job, whichever identity authors it",
   "status": "draft",
   "parent": "EP-p4guu2ip",
+  "sprint": "SP-lwkdljxg",
   "priority": "P2",
   "rank": 0,
   "goal": "kg_trailers.job_trailers(environ) reads KB_JOB and KB_JOB_OPERATOR, which the executor sets for a job's process, and apply_trailers(message, computed, operator=..., job=...) sets KB-Operator to the submitter and adds KB-Job: JB-..., whatever git author the job's identity gives; an operator value that is an email address or a session GUID, or a job value that is no job id, is dropped with a line on stderr; commits made outside a job are unchanged",

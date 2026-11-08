@@ -4,6 +4,7 @@
   "title": "A worker branch is pushed to the integration remote at stage-back when its landing is placed off the workstation, and land deletes it after",
   "status": "draft",
   "parent": "EP-p4guu2ip",
+  "sprint": "SP-lwkdljxg",
   "priority": "P2",
   "rank": 0,
   "goal": "bl_dispatch.push_work_branch(root, item) pushes work/<item> to the integration remote with --force-with-lease against the remote tip it last saw (none for a first push), and stage-back calls it when kbjob.py place land ITEM gives an executor other than workstation; a lease that no longer holds exits 1 naming the branch; bl_land.delete_remote_work_branch(root, item) removes it once the item landed; nothing ever pushes work/* to the publish remote, and the pre-push guard refuses such a push",

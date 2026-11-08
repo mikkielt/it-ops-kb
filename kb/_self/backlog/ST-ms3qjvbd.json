@@ -4,6 +4,7 @@
   "title": "A root pointer names its owning group path, and a pointer that names only a team is read as a group one level deep",
   "status": "draft",
   "parent": "EP-p4guu2ip",
+  "sprint": "SP-lwkdljxg",
   "priority": "P2",
   "rank": 0,
   "goal": "kbroot.py add-remote takes --group G1/.../GN (letters, digits, `_ . -` per level) beside --team, writes `group:` into the pointer, and kbroot.py list and kb_status show group=PATH for a root that names one; a pointer with only `team: NAME` is read as group NAME; a group that is no path of ids is refused, exit 2, naming the pointer; KB-Teams trailers are unchanged",

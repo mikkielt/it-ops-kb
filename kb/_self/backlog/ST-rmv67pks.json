@@ -4,6 +4,7 @@
   "title": "kbjob.py serve runs the queued jobs of its host one after another, each as a process group of its own with its output kept",
   "status": "draft",
   "parent": "EP-tmw3tokk",
+  "sprint": "SP-lwkdljxg",
   "priority": "P2",
   "rank": 0,
   "goal": "python3 _tools/kbjob.py [--store PATH] serve [--once] runs the queued jobs of its own host, clone and operator in submit order, one at a time: it takes a job with the lease jobrun/JB-... (ttl 60 s, renewed every 20 s while the child runs), moves it queued to running, runs the operation's argv from kj_ops.OPS in the clone as the leader of a process group of its own with stdin closed and stdout and stderr appended to kb-jobs/JB-.../output.log under the clone's git common directory, and moves it to succeeded (exit 0), refused (exit 1 and a line land stopped at step NAME: or another stop line naming a step: that step, as bl_land.land_refused_step reads it) or failed (any other end, with the exit and the last output line), each move through the job table of ST-hojylkmb; kj_exec.classify(exit, text) is that rule as a pure function; --once drains the queue and exits 0 (1 when a job failed); a job of another operator or host stays queued; a second serve on one host exits 0 naming the running one's pid (an exclusive file in the host lock directory holding pid, clone and start time, cleared when the pid is gone, as kg_lock does)",

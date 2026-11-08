@@ -4,6 +4,7 @@
   "title": "A paid job is refused without a budget, and a group's daily cap refuses a job that would pass it before it starts",
   "status": "draft",
   "parent": "EP-p4guu2ip",
+  "sprint": "SP-lwkdljxg",
   "priority": "P2",
   "rank": 0,
   "goal": "The closed operation table gains bench (subject a scenario, paid); submit of a paid operation (bench, dispatch, begin) without --budget USD exits 2 naming --budget; with a decision whose budget_cap_usd is set, the group's spend of the UTC day (bl_cost.spend_usd of its finished jobs) plus the budgets of its live jobs plus this budget above the cap exits 1 naming the three figures and the cap, and queues nothing; a job under the cap is queued with its budget; nothing is stopped mid-run",

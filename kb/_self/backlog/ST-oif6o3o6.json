@@ -4,6 +4,7 @@
   "title": "land runs as one job across its merge request: the job waits as waiting-merge without holding a slot or the landing lock, and finishes with the second pass",
   "status": "draft",
   "parent": "EP-tmw3tokk",
+  "sprint": "SP-lwkdljxg",
   "priority": "P2",
   "rank": 0,
   "goal": "kj_land.drive(job, run_pass, merged, sleep, post) runs a land job as one job: the first pass is bl_land's land ID --wait-merge 0; when it pushed a code branch its pending (shas, branch) is read with bl_land.pending_merge(root, iid), the job moves to waiting-merge with the branch in the event, the executor's slot and the landing lock are free while it polls merged_on_main every 60 s for up to the wait_merge option (default 1800 s), and when the shas are on the integration main the job moves back to running for the second pass (land ID --wait-merge 0 again, which finishes the item as a content landing) and ends succeeded; a wait that runs out ends refused with step wait-merge and the text land says today (merge it with backlog.py merge ID, then submit again); the job never merges the request itself; a job found in waiting-merge after an executor restart (ST-5cqlfweg) polls again from its recorded pending without running the first pass again; a content landing is one pass and never waits",
