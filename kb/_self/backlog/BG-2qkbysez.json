@@ -2,7 +2,7 @@
   "id": "BG-2qkbysez",
   "kind": "bug",
   "title": "kbmon's sessions.orphan alert names an orphan of any age, so the receipt's ALERT line and kbask name a 1-second orphan the panel hides",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-uh5h46fm",
   "priority": "P2",
@@ -22,6 +22,19 @@
     "kb/_self/tools.md"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-7064b8a6",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "9889be6d6acb43e942d8a29f7179fea25f76bb0f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import mon_sessions;sys.exit(1 if mon_sessions.alerts({'procs':[{'class':'orphan','pid':4242,'age_s':1}]}) else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
