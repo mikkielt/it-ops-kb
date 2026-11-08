@@ -138,7 +138,12 @@
         "The nearest enclosing _root.md of the scanned tree gives the names (a nearer root listing none ends the search), and a list kbcommon refuses lets no name pass": "BG-r57wg5tg",
         "The nearest enclosing _root.md that lists names gives them, and a refused list stops the scan with an error": "BG-r57wg5tg"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "The nearest enclosing _root.md of the scanned tree gives the names (a nearer root listing none ends the search), and a list kbcommon refuses lets no name pass",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "links": [
