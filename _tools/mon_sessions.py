@@ -4,7 +4,7 @@ with their branches and the stalled items with their signals.
 The processes are `backlog.py procs`' inventory (`bl_procs.snapshot`): pid, age and class (`orphan`, `hook`, `detached` or `foreign`; an orphan whose session's transcript was written under `bl_procs.FRESH_S` seconds ago is `detached`),
 each with its checkout as a path relative to the clone (`.` is the clone itself; a worktree outside it is its directory
 name, with the parents that tell it from a same-named one), never an absolute one. A process whose command name is `claude` is a Claude Code session: `headless`, with its item,
-when its checkout is a worktree on a `work/<id>` branch, else `interactive`; any other process has no session. The worktrees
+when its checkout is a worktree on a `work/<id>` branch or when its class is `detached` (then with no item), else `interactive`; any other process has no session. The worktrees
 are `git worktree list`'s, and the stalled items are `bl_stall.collect`'s, only those with a signal. `operator` is this
 clone's operator id and role (`kbwho.operator()`, never an email) and `intents` the live session intents of the coord store
 (`coord.py digest`: session, item and the `operator` the hook posted, none for an intent that carries no operator; a
@@ -105,8 +105,8 @@ WINDOWS_LIMIT = ("Windows shows no working directory: a process is listed when i
 RAW_KEYS = ("session", "base", "quiet")  # the keys of a `session_entries` entry that the panel's data never holds
 AGENT_STATES = ("working", "blocked", "idle", "done")  # the states an `agent_states` line may give
 AGENT_STATES_SECONDS = 5  # the longest the `agent_states` command may take
-ROLES = ("worker", "sprint runner", "planner", "reviewer", "interactive", "benchmark agent", "bare twin", "observer",
-         "unknown")  # the roles `role_of` gives
+ROLES = ("worker", "sprint runner", "planner", "reviewer", "headless", "interactive", "benchmark agent", "bare twin",
+         "observer", "unknown")  # the roles `role_of` gives
 
 
 def no_request(argv, cwd=None):
@@ -176,11 +176,19 @@ def checkout_paths(procs, bases):
     return out
 
 
-def session_of(base, by_path):
+def session_of(base, by_path, detached=False):
     """(session, item) of a Claude Code process in the checkout BASE (None when unplaced) whose worktrees' branches are
-    BY_PATH."""
+    BY_PATH: `headless` with its item on a `work/<id>` branch; `headless` with no item when DETACHED (its parent is gone
+    and `backlog.py procs` classes it detached); else `interactive`."""
     m = WORK_BRANCH.fullmatch(by_path.get(base) or "")
-    return ("headless", m.group(1)) if m else ("interactive", None)
+    return ("headless", m.group(1)) if m else ("headless", None) if detached else ("interactive", None)
+
+
+def is_detached(kind, quiet=None):
+    """Whether a process of class KIND is detached: class `detached`, or an `orphan` whose session wrote its transcript
+    QUIET seconds ago (None: no transcript), under `bl_procs.FRESH_S`."""
+    import bl_procs
+    return kind == bl_procs.DETACHED or (kind == bl_procs.ORPHAN and quiet is not None and quiet < bl_procs.FRESH_S)
 
 
 def backlog(root):
@@ -721,14 +729,15 @@ def landing_steps(root):
     return cur
 
 
-def role_of(base, worker, review, runner, planner, observer, listed):
+def role_of(base, worker, review, runner, planner, observer, listed, detached=False):
     """The role of a session, the first row that fits (a fixed table, read from the checkout's path and branch, the
     claims ledgers, the item files and the coord leases, never a command line or an environment): `bare twin` (the
     checkout is `bare/agentN`), `benchmark agent` (`multi-<hash>/agentN`), `observer` (nothing names the session and a
     `remediate/` claim is live), `reviewer` (its item is a review story), `worker` (a dispatch record names the process,
     or the checkout is on a `work/<id>` branch), `sprint runner` (the checkout's ledger holds a dispatch record whose worker pid runs, or one whose item's run state is
     `working`; with neither the session is only a session in a worktree, `interactive`),
-    `planner` (its items are all epics or sprints), `interactive` (the checkout is a worktree of the clone) and else
+    `planner` (its items are all epics or sprints), `headless` (DETACHED: its parent is gone and `backlog.py procs`
+    classes the process detached, so no person is at it), `interactive` (the checkout is a worktree of the clone) and else
     `unknown`."""
     parts = Path(base).parts
     tail = [parts[-2] if len(parts) > 1 else "", parts[-1] if parts else ""]
@@ -737,7 +746,7 @@ def role_of(base, worker, review, runner, planner, observer, listed):
     if AGENT_DIR.fullmatch(tail[1]) and MULTI_DIR.fullmatch(tail[0]):
         return "benchmark agent"
     for role, fits in (("observer", observer), ("reviewer", review), ("worker", worker), ("sprint runner", runner),
-                       ("planner", planner), ("interactive", listed)):
+                       ("planner", planner), ("headless", detached), ("interactive", listed)):
         if fits:
             return role
     return "unknown"
@@ -836,6 +845,7 @@ def session_entries(ctx, procs, placed, by_path, found, bl, names, light=False, 
     without them): a session's `agent_state` is the state its pid has there, else its session id, null for neither."""
     import bl_procs
     claude = [p for p in procs if p["comm"] == CLAUDE and placed.get(p["pid"])]
+    kinds = {p["pid"]: p.get("kind") for p in claude}
     ledgers = {b: ledger_records(b) for b in sorted({placed[p["pid"]] for p in claude} | {os.path.realpath(ctx.root)})}
     placed = dict(placed)
     by_branch = {b: path for path, b in by_path.items() if b}
@@ -879,13 +889,14 @@ def session_entries(ctx, procs, placed, by_path, found, bl, names, light=False, 
         sprints = {it.get("sprint") for it in known}
         live_workers = os.name != "nt" and any(bl_procs.running(w) for w in (worker_of(r)[0] for r in records.values()) if w is not None)
         runner = not worker and bool(dispatched) and (live_workers or any(runs().get(i) == "working" for i in dispatched))
+        quiet = None if light else transcript_quiet(sid, now)
         role = role_of(base, worker, any(it.get("review") for it in known), runner,
                        bool(known) and all(it.get("kind") in PLAN_KINDS for it in known),
-                       sid is None and not hook_sessions(base) and remediating, base in by_path)
+                       sid is None and not hook_sessions(base) and remediating, base in by_path,
+                       is_detached(kinds.get(p["pid"]), quiet))
         item = items[0] if len(items) == 1 else None
         sprint = sprints.pop() if len(sprints) == 1 else None
         stamp, spend = spool_figures(sid) if sid is not None and not light else (None, None)
-        quiet = None if light else transcript_quiet(sid, now)
         silent = None if light else silence(quiet, stamp, p["start"], now)
         step = step_of(role, items + [i for i in dispatched if runner and i not in items], bl, landing, live_workers) \
             if bl is not None and not light else None
@@ -972,10 +983,10 @@ def collect(ctx):
     out = []
     for p in procs or []:
         base = placed.get(p["pid"])
-        session, item = session_of(base, by_path) if p["comm"] == CLAUDE else (None, None)
+        kind = bl_procs.DETACHED if p["kind"] == bl_procs.ORPHAN and p["pid"] in fresh else p["kind"]
+        session, item = session_of(base, by_path, kind == bl_procs.DETACHED) if p["comm"] == CLAUDE else (None, None)
         _, _, rest = p["where"].partition("/")
         shown = names.get(base, p["where"].split("/", 1)[0])
-        kind = bl_procs.DETACHED if p["kind"] == bl_procs.ORPHAN and p["pid"] in fresh else p["kind"]
         out.append({"pid": p["pid"], "age_s": max(0, int(now - p["start"])), "class": kind,
                     "checkout": shown + ("/" + rest if rest else ""), "session": session, "item": item})
     me = kbwho.operator()
@@ -1149,7 +1160,7 @@ def session_lines(sessions, width, taken=None):
 
 
 def lines(data, width=80, taken=None):
-    """The body rows: the processes table (an orphan's row starts `! `, orphans first, PROCS_SHOWN at most), the worktrees
+    """The body rows: a `processes  N detached processes` row while any process is detached, the processes table (an orphan's row starts `! `, orphans first, PROCS_SHOWN at most), the worktrees
     with their branches, the dispatch runs (item, pid, session, `alive` or `ended`, live ones first, DISPATCH_SHOWN at most) and
     the stalled items, each a `! ` row of its id and signals; first the clone's operator, the live session intents
     (session, item, operator) and the sessions, one `session_line` each (TAKEN is the snapshot's taken time)."""
@@ -1185,6 +1196,9 @@ def lines(data, width=80, taken=None):
         if len(found) > OVERLAPS_SHOWN:
             parts.append(f"+{len(found) - OVERLAPS_SHOWN} more")
         rows += [("overlaps" if n == 0 else "").ljust(LABEL) + clipped(p, width - 2 - LABEL) for n, p in enumerate(parts)]
+    detached = sum(p["class"] == "detached" for p in procs)
+    if detached:
+        rows.append("processes".ljust(LABEL) + f"{detached} detached process{'' if detached == 1 else 'es'}")
     if procs:
         shown = procs[:PROCS_SHOWN]
         rows += [("! " if flag else "") + text for flag, text in table(shown, width - 2)]
