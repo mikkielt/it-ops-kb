@@ -1,0 +1,23 @@
+{
+  "id": "BG-tybempcu",
+  "kind": "bug",
+  "title": "kbmon --status all's '+N more' counts hidden lines, not the items it cuts, so 'Coord: 4 live claims' shows two and '+5 more'",
+  "status": "draft",
+  "parent": "EP-n4dci4w7",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Where --status all cuts a topic to ALL_LINES lines (mon_status.trimmed), the cut line names what it hides by kind with counts (for coord: claims, drift lines, asks, settings), so a reader can square it with the topic's headline count: on 2026-11-08 'Coord: 4 live claims:' showed two claims and '+5 more', where the five were two claims, drift, asks and settings. The same form serves Sessions and Load. Relates to BG-p4xl2hea (sprints cut to four lines).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re,subprocess,sys;r=subprocess.run([sys.executable,'_tools/kbmon.py','--status','all','--timeout','60'],capture_output=True,text=True);sys.exit(r.returncode not in (0,1) or bool(re.search(r'\\+[0-9]+ more: python3 _tools/kbmon.py --status coord',r.stdout)))"
+    ]
+  },
+  "touches": [
+    "_tools/mon_status.py",
+    "kb/_self/monitoring.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

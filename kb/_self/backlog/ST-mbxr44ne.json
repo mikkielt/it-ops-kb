@@ -1,0 +1,25 @@
+{
+  "id": "ST-mbxr44ne",
+  "kind": "story",
+  "title": "kbmon's ask and claim times show in local time or say UTC",
+  "status": "draft",
+  "parent": "EP-n4dci4w7",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Each wall-clock time kbmon prints for an ask, claim or landing (mon_coord builds 'since YYYY-MM-DD HH:MM' in UTC today) is either local time or carries 'UTC', so 'since 2026-10-27 22:39' is not read as local 22:39 when it was 23:39 local. The form is UTC with the suffix, the same in every panel.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,subprocess,sys;r=subprocess.run([sys.executable,'_tools/kbmon.py','--status','coord','--timeout','60'],capture_output=True,text=True);bad=[l for l in r.stdout.splitlines() if re.search(r'since [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}(?! UTC)',l)];sys.exit(r.returncode not in (0,1) or bool(bad))"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/mon_coord.py",
+    "_tools/mon_needs.py",
+    "kb/_self/monitoring.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

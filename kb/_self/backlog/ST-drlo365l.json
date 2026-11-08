@@ -1,0 +1,24 @@
+{
+  "id": "ST-drlo365l",
+  "kind": "story",
+  "title": "kbmon's sessions panel counts a detached headless claude session as headless, never interactive, and names detached processes",
+  "status": "draft",
+  "parent": "EP-n4dci4w7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A claude session whose process is detached (parent pid 1, as backlog.py procs classes it: a dispatch --detach worker, a reviewer, a headless runner or plan session) counts as headless in kbmon's sessions panel and its line says so with its checkout, never interactive, and the panel names the count of detached processes bl_procs lists: mon_sessions treats only a work/<id> branch as headless, so on 2026-11-08 the detached claude pid 87971 in the plan-ops worktree showed as 's-6dc3ca interactive up 17m' and the headline said '0 headless', and no status line names procs' detached processes (a 19-day-old tmux among them). The check compares procs' detached claude count with the panel's headless count, so it reads the defect only while a detached claude runs; the worker plants one (a detached sleep-wrapped stub named claude in a scratch worktree) to prove it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,subprocess,sys;p=subprocess.run([sys.executable,'_tools/backlog.py','procs'],capture_output=True,text=True).stdout;d=len(re.findall(r'detached claude',p));r=subprocess.run([sys.executable,'_tools/kbmon.py','--status','sessions','--timeout','60'],capture_output=True,text=True);m=re.search(r'([0-9]+) headless',r.stdout);sys.exit(r.returncode not in (0,1) or m is None or int(m.group(1))<d)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/mon_sessions.py",
+    "kb/_self/monitoring.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

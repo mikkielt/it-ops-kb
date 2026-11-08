@@ -1,0 +1,23 @@
+{
+  "id": "BG-tm7hwv5i",
+  "kind": "bug",
+  "title": "kbmon --receipt prints needs you: 0 when the panels that hold asks and orphans were not read, so an unknown count reads as nothing waiting",
+  "status": "draft",
+  "parent": "EP-n4dci4w7",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "When a panel that can hold needs-you entries (coord, sessions, sprint, host) was not read, the receipt's needs-you part says the count is unknown for those panels (as mon_needs.line already does with 'nothing; not read: ...') instead of a number: today mon_receipt.needs_tail (_tools/mon_receipt.py) prints len(entries) over the panels read, so the session-start line of 2026-11-08 said 'needs you: 0 (not read: sprint, sessions, host, coord)' while the coord store held five open asks.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/kbmon.py','--receipt','--timeout','3'],capture_output=True,text=True);sys.exit(r.returncode not in (0,1) or 'needs you: 0 (not read' in r.stdout)"
+    ]
+  },
+  "touches": [
+    "_tools/mon_receipt.py",
+    "kb/_self/monitoring.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

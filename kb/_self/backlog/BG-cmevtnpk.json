@@ -1,0 +1,23 @@
+{
+  "id": "BG-cmevtnpk",
+  "kind": "bug",
+  "title": "kbmon shows a landed item as still landing at step verify, because a verify row in the same millisecond as land.end re-adds the landing",
+  "status": "draft",
+  "parent": "EP-n4dci4w7",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "A landing whose land.end row is recorded is never shown as in progress by kbmon's sprint panel, whatever land.step rows share its timestamp or follow it: on 2026-11-08 --status sprints printed 'landing A paid session-load record…, at step verify, last step 29 min ago' and 'landing Sessions no person watches…, at step verify, last step 11.2 days ago' while ops showed land.end exit=0 at 16:48:46.898Z and backlog.py runs said landed; mon_sprint's landing reader removes the landing on land.end and the trailing verify row adds it back. Relates to BG-v53lnj6a and BG-i6vjrbng (row order of land.end and land.step).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/kbmon.py','--status','sprints','--timeout','60'],capture_output=True,text=True);sys.exit(r.returncode!=0 or 'at step verify' in r.stdout)"
+    ]
+  },
+  "touches": [
+    "_tools/mon_sprint.py",
+    "kb/_self/monitoring.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

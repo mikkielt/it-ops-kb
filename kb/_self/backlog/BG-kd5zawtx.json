@@ -1,0 +1,24 @@
+{
+  "id": "BG-kd5zawtx",
+  "kind": "bug",
+  "title": "kbmon lists an ask as needing the operator after its gate was answered and its item landed, since backlog.py answer never closes the ask",
+  "status": "draft",
+  "parent": "EP-n4dci4w7",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "An ask that names a backlog gate stops showing under kbmon's needs-you line and coord panel once that gate is answered (by backlog.py answer, operator or provisional) or its item is done or deleted: today mon_coord closes an ask only on a coord answer event (_tools/mon_coord.py CLOSED) and backlog.py answer posts none, so five asks of 2026-10-27 about gates of ST-zkhku3sg, ST-3j3wlgg4, BG-okrkeohe and ST-6zg57xiu, all answered and their items done, still read as needs you, each telling the reader to run answer --recommended on a gate already answered otherwise. The ask kbmon still shows names the gate it waits on.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/kbmon.py','--status','coord','--timeout','60'],capture_output=True,text=True);sys.exit(r.returncode!=0 or 'A580958191e' in r.stdout)"
+    ]
+  },
+  "touches": [
+    "_tools/mon_coord.py",
+    "_tools/mon_needs.py",
+    "kb/_self/monitoring.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
