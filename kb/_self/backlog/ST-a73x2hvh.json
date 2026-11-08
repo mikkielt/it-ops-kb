@@ -13,14 +13,14 @@
       "run": [
         "python3",
         "-c",
-        "import sys,os,tempfile,subprocess,signal,time; d=tempfile.mkdtemp(); h=tempfile.mkdtemp(); env=dict(os.environ,KB_HOST_LOCK_DIR=d,HOME=h); s=os.path.join(d,\"c.sqlite\"); kb=lambda *x: subprocess.run([sys.executable,\"_tools/kbjob.py\",\"--store\",s,*x],env=env,capture_output=True,text=True,timeout=60); r=kb(\"ensure\"); assert r.returncode==0, r; pid=int(r.stdout.split(\"pid\")[1].split()[0]); assert kb(\"ping\").returncode==0; e=kb(\"ensure\"); assert e.returncode==0 and str(pid) in e.stdout, e; os.kill(pid,signal.SIGTERM); time.sleep(2); assert kb(\"ping\").returncode==1; p=kb(\"login-item\",\"--print\"); assert p.returncode==0 and \"RunAtLoad\" in p.stdout and \"serve\" in p.stdout and os.listdir(h)==[], (p, os.listdir(h))"
+        "import sys,os,tempfile,subprocess,signal,time; d=tempfile.mkdtemp(); h=tempfile.mkdtemp(); env=dict(os.environ,KB_HOST_LOCK_DIR=d,HOME=h,KB_OPERATOR=\"op-00000000\"); s=os.path.join(d,\"c.sqlite\"); kb=lambda *x: subprocess.run([sys.executable,\"_tools/kbjob.py\",\"--store\",s,*x],env=env,capture_output=True,text=True,timeout=60); r=kb(\"ensure\"); assert r.returncode==0, r; pid=int(r.stdout.split(\"pid\")[1].split()[0]); assert kb(\"ping\").returncode==0; e=kb(\"ensure\"); assert e.returncode==0 and str(pid) in e.stdout, e; os.kill(pid,signal.SIGTERM); time.sleep(2); assert kb(\"ping\").returncode==1; p=kb(\"login-item\",\"--print\"); assert p.returncode==0 and \"RunAtLoad\" in p.stdout and \"serve\" in p.stdout and os.listdir(h)==[], (p, os.listdir(h))"
       ]
     },
     {
       "run": [
         "python3",
         "-c",
-        "import sys,os,tempfile,subprocess,signal,time\nd=tempfile.mkdtemp(); h=tempfile.mkdtemp(); env=dict(os.environ,KB_HOST_LOCK_DIR=d,HOME=h); s=os.path.join(d,\"c.sqlite\")\nkb=lambda *x: subprocess.run([sys.executable,\"_tools/kbjob.py\",\"--store\",s,*x],env=env,capture_output=True,text=True,timeout=60)\nr=kb(\"submit\",\"check\",\"--name\",\"backlog-check\"); o=r.stdout+r.stderr; assert r.returncode==0 and \"no executor, started pid\" in o, r\nos.kill(int(o.split(\"started pid\")[1].split()[0]),signal.SIGTERM)\n"
+        "import sys,os,tempfile,subprocess,signal,time\nd=tempfile.mkdtemp(); h=tempfile.mkdtemp(); env=dict(os.environ,KB_HOST_LOCK_DIR=d,HOME=h,KB_OPERATOR=\"op-00000000\"); s=os.path.join(d,\"c.sqlite\")\nkb=lambda *x: subprocess.run([sys.executable,\"_tools/kbjob.py\",\"--store\",s,*x],env=env,capture_output=True,text=True,timeout=60)\nr=kb(\"submit\",\"check\",\"--name\",\"backlog-check\"); o=r.stdout+r.stderr; assert r.returncode==0 and \"no executor, started pid\" in o, r\nos.kill(int(o.split(\"started pid\")[1].split()[0]),signal.SIGTERM)\n"
       ]
     }
   ],
