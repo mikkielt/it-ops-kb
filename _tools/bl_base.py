@@ -1,6 +1,6 @@
 """The shared ground of backlog.py's modules (kb/_self/backlog.md): the project settings (`SETTINGS`, read once from
-backlog.json by `read_settings`, with `SETTINGS`' defaults for the keys it leaves out, for the root the process runs on:
-`load_settings`) and the accessors that give them at call time (`setting`, `rel_dir`, `kinds`, `id_re`, ...), the
+backlog.json by `read_settings`, with `SETTINGS`' defaults for the keys it leaves out and the `backlog` object of
+kbsettings' layers over both, for the root the process runs on: `load_settings`) and the accessors that give them at call time (`setting`, `rel_dir`, `kinds`, `id_re`, ...), the
 two refusals, the Backlog class that reads and writes the item files, git, the claims ledger's path (`claims_ledger`)
 and the command runner, the clone's id and the upstream's item ids behind an item's provenance (`clone_id`, `upstream_ids`,
 `Backlog.upstream_items`), the directories a worker's worktree sits under (`worker_dirs`, `main_worker_dir`), the scope helpers,
@@ -164,8 +164,9 @@ def config_path(root, env=None):
 
 def read_settings(root, env=None):
     """(values, sources, path, problems): the effective project settings of the repository at ROOT. Each key of
-    SETTINGS takes the file's value (source "file") or its default (source "default"); a key the file holds wrongly
-    keeps its default and gives a problem naming it. No file at the root is no problem (all defaults); a
+    SETTINGS takes the file's value (source "file") or its default (source "default"), then the value the `backlog`
+    object of a settings layer gives it (source "LAYER, FILE", `_apply_layers`); a key a file or layer holds wrongly
+    keeps the value below it and gives a problem naming it. No file at the root is no problem (all defaults); a
     KB_BACKLOG_CONFIG that names no file is."""
     env = os.environ if env is None else env
     path = config_path(root, env)
@@ -191,7 +192,34 @@ def read_settings(root, env=None):
             values[k], sources[k] = v, "file"
     elif env.get(CONFIG_ENV):
         problems.append(f"{CONFIG_ENV} names {path}, which is no file")
+    _apply_layers(root, values, sources, problems)
     return values, sources, path, problems
+
+
+def _apply_layers(root, values, sources, problems):
+    """Lay the `backlog` object of kbsettings' layers (group, clone and user files: `kbsettings.layered`) over VALUES
+    key by key, each key under the same type rules as backlog.json's. A key set there gets the source "LAYER, FILE"
+    (the file as a path under ROOT, a group file outside it by its name); a refused key or a settings error (a key the
+    group file locks, an unknown key, an unreadable file) gives a problem naming it and its layer, the key keeping the
+    value below. Standard library only: kbsettings imports nothing of the project."""
+    import kbsettings
+    try:
+        merged, layer_of = kbsettings.layered(root, "backlog")
+        files = {layer: path for layer, path, _ in kbsettings._layers(root)}
+    except kbsettings.SettingsError as e:
+        problems.append(str(e))
+        return
+    for k, v in merged.items():
+        layer = layer_of[k]
+        where = f"{layer}, {kbsettings._shown(files[layer], root)}"
+        if k not in SETTINGS:
+            problems.append(f"{where}: unknown key {k!r} (keys: {', '.join(SETTINGS)})")
+            continue
+        why = _type_problem(SETTINGS[k][0], v)
+        if why:
+            problems.append(f"{where} ({layer} layer): key {k!r} must be {why}")
+            continue
+        values[k], sources[k] = copy.deepcopy(v), where
 
 
 _LOADED = []  # [read_settings(root), the root] of the root this process runs on; empty until load_settings or a first read
@@ -1154,7 +1182,8 @@ def need(bl, iid):
 
 def cmd_config(bl, a):
     """`config`: the effective project settings of the repository, one line each with its value and where it came
-    from (file: backlog.json or the KB_BACKLOG_CONFIG file; default: `SETTINGS`' value). A file with a problem is
+    from (file: backlog.json or the KB_BACKLOG_CONFIG file; default: `SETTINGS`' value; or the settings layer, group, clone
+    or user, with its file, that set it over the file). A file or layer with a problem is
     refused, each problem naming its key (exit 2), and nothing is printed of the settings."""
     values, sources, path, problems = read_settings(bl.root)
     if problems:
