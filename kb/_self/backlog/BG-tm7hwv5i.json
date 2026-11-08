@@ -2,7 +2,7 @@
   "id": "BG-tm7hwv5i",
   "kind": "bug",
   "title": "kbmon --receipt prints needs you: 0 when the panels that hold asks and orphans were not read, so an unknown count reads as nothing waiting",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-uh5h46fm",
   "priority": "P2",
@@ -42,6 +42,28 @@
   ],
   "notes": "Evidence 2026-11-08: mon_receipt.needs_tail (_tools/mon_receipt.py) prints len(entries) over the panels read, so the session-start line said 'needs you: 0 (not read: sprint, sessions, host, coord)' while the coord store held five open asks. mon_needs.line already says 'nothing; not read: ...' for the same case. Premise run 2026-11-08: the repro fails (exit 1), because the live receipt still prints 'needs you: 0 (not read'. Planted check 0 (mon_receipt.receipt on three planted snapshots: no panel, coord and sessions in state timeout, every panel ok) fails on the base: the first two print 'needs you: 0 (not read: ...)'. The wording of the count is settled in the goal.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-7064b8a6",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "f2f2bad35ecb65305944ca242cf049728ae9cdce",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import atexit,shutil,tempfile\n_m=tempfile.mkdtemp\ndef _d(*a,**k):\n d=_m(*a,**k);atexit.register(shutil.rmtree,d,True);return d\ntempfile.mkdtemp=_d\nimport sys\nsys.path.insert(0, '_tools')\nimport mon_receipt\nok = {\"state\": \"ok\", \"data\": {}}\nfull = {n: ok for n in (\"sprint\", \"querylog\", \"sessions\", \"host\", \"coord\")}\ngone = mon_receipt.receipt({\"alerts\": [], \"panels\": {}})[\"line\"]\nlate = mon_receipt.receipt({\"alerts\": [], \"panels\": {**full, \"coord\": {\"state\": \"timeout\"}, \"sessions\": {\"state\": \"timeout\"}}})[\"line\"]\nread = mon_receipt.receipt({\"alerts\": [], \"panels\": full})[\"line\"]\nprint(gone, late, read, sep=\"\\n\")\nbad = (\"needs you: unknown\" not in gone or \"needs you: 0\" in gone or \"not read: sprint, querylog, sessions, host\" not in gone\n       or \"needs you: unknown\" not in late or \"needs you: 0\" in late or \"not read: sessions, coord\" not in late\n       or \"needs you: 0\" not in read or \"unknown\" in read or \"not read\" in read)\nsys.exit(not not bad)\n"
+        ],
+        "exit": 0,
+        "sha256": "56beb0dff7627d11"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/kbmon.py','--receipt','--timeout','3'],capture_output=True,text=True);sys.exit(r.returncode not in (0,1) or 'needs you: 0 (not read' in r.stdout)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
