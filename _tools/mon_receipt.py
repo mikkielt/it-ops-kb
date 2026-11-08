@@ -5,7 +5,8 @@ alerts (stdlib only; imports `mon_needs`, which imports nothing at load).
 
 The line is at most MAX_LINE characters and unchanged by `redact.redact`. It names up to NAMED alert messages, how many more
 there are and the command that prints the state of the first alert's panel (with no alert it says so), and ends with the
-count of `mon_needs.entries` and the command that prints the `needs you` line, with the panels that count could not read.
+count of `mon_needs.entries` and the command that prints the `needs you` line; with a panel that count reads unread, `unknown
+(not read: PANELS)` takes the count's place.
 The fingerprint is the hash of the sorted kinds and ids of the alerts only, so it moves when an alert appears, goes or changes
 kind, not when an alert's message or since changes, nor when what waits on the operator does. Docs: kb/_self/monitoring.md.
 """
@@ -50,10 +51,11 @@ def clip(text, n):
 
 
 def needs_tail(snap):
-    """`; needs you: N — COMMAND`: N entries of `mon_needs.entries`, with `(not read: PANELS)` for the panels it lacks."""
+    """`; needs you: N — COMMAND`: N entries of `mon_needs.entries`; `; needs you: unknown (not read: PANELS) — COMMAND` when a
+    panel the count reads was not read, since a count over the panels read would say nothing waits of a source never read."""
     missing = mon_needs.unread(snap)
-    return (f"; needs you: {len(mon_needs.entries(snap))}" + (f" (not read: {', '.join(missing)})" if missing else "")
-            + " — " + NEEDS_COMMAND)
+    count = f"unknown (not read: {', '.join(missing)})" if missing else str(len(mon_needs.entries(snap)))
+    return f"; needs you: {count} — " + NEEDS_COMMAND
 
 
 def assemble(alerts, panel, budget):
