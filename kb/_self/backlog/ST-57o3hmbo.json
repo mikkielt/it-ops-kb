@@ -75,7 +75,9 @@
       },
       "class": "design",
       "answer": "window default WINDOW_S, one ps listing a second, cpu_s from the ps time field (from the first listing for a process already running, all of it for a later one), roots fixed at the start",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Reads the live sessions through the in-process reader ST-bngriclp adds to _tools/mon_sessions.py (pid, session id, checkout, role, item), agreed with that epic's session through coord; it adds no second reader. A kbtail follower shows as its own process class. mon_sessions.live_sessions(root) (landed with ST-bngriclp) gives a worker's item as the raw suffix of its work/ branch when that is no backlog item id: keep only item ids or pass the text through redact.redact, as kbtail does since BG-lagjhkzn. Nothing it writes holds a session's prompt or a path outside the clone; the review reads the rows and snapshot it writes for that.",
