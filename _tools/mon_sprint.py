@@ -216,20 +216,23 @@ def sprints(root, backlog=None, runs=None):
 
 def landings(root, bl):
     """[{item, title, step, since, last}] of the landings in progress, newest first: an item BL (the backlog the sprints are
-    read from) holds not done or dropped whose newest `land.step` row has no later `land.end` row; `last` is the time of
-    that row, `title` the item's; [] when the ops rows cannot be read."""
+    read from) holds not done or dropped whose newest `land.step` row has no later `land.end` row (a `land.step` row of the
+    `land.end` row's own time or earlier, read after it, is no new landing); `last` is the time of that row, `title` the item's; [] when the ops rows cannot be read."""
     try:
         import bl_stall
         import mon_log
         rows = mon_log.in_spool_order(bl_stall.ops_rows(str(root)), root)
     except Exception:  # noqa: BLE001 - an unreadable log shows no landing
         return []
-    cur = {}
+    cur, ended = {}, {}
     for r in rows:
         item = r.get("item")
         if r.get("event") == "land.end":
             cur.pop(item, None)
+            ended[item] = str(r.get("ts") or "")
         elif r.get("event") == "land.step" and isinstance(item, str):
+            if item in ended and str(r.get("ts") or "") <= ended[item]:
+                continue  # a step row written in the millisecond of its landing's end, after it: a late step, not a new landing
             cur.setdefault(item, {"item": item, "since": r.get("ts")}).update(step=r.get("step"), last=r.get("ts"))
     cur = {i: v for i, v in cur.items() if i in bl.items and bl.items[i].get("status") not in ("done", "dropped")}
     return sorted(({"item": v["item"], "title": str(bl.items[v["item"]].get("title") or ""), "step": v["step"],
