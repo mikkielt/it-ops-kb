@@ -1,0 +1,33 @@
+{
+  "id": "ST-gunwdkqn",
+  "kind": "story",
+  "title": "The sprint skill's run step submits land, stage-back and sync as jobs, follows them with the Monitor tool and goes on to the next ready item",
+  "status": "draft",
+  "parent": "EP-tmw3tokk",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the kb-sprint skill (in the clone and in the plugin's copy) tells the orchestrator, when python3 _tools/kbjob.py ping exits 0, to submit each landing, stage-back and sync --push with kbjob.py submit OP ID --by claude-<8 hex>, to follow it with one Monitor call on kbjob.py follow JOB (a line per move; a waiting-merge line is the cue to run backlog.py merge ID or tell the operator) or a background shell on the same command, and to go on at once with dispatching and claiming the next ready items and answering gates, instead of one background land ID > log per landing and a coord.py wait; a follow that ends with exit 4 is run again with its --since; the existing path stays for a host where ping exits 1 and for a headless worker; .claude/settings.json allows python3 _tools/kbjob.py submit, follow, status, log, cancel, ping and ensure and never serve or login-item; kb/_self/backlog.md describes the job step beside the run states",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/kbjob.py",
+        "submit",
+        "--help"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "skills/sprint/SKILL.md",
+    ".claude/settings.json",
+    "kb/_self/backlog.md",
+    "kb/_self/plugin.md"
+  ],
+  "depends_on": [
+    "ST-oif6o3o6",
+    "ST-a73x2hvh",
+    "ST-5h2kx2ri"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
