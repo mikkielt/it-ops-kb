@@ -77,7 +77,9 @@
         "ETag is the SHA-256 of the bundle bytes, which carry fixed times and owners; a value that is not a JSON object is left out": "ST-mpbq7lyz",
         "ETag is the store's highest revision of the group keys; a value that is not a JSON object is served as it is": "ST-mpbq7lyz"
       },
-      "class": "design"
+      "class": "design",
+      "answer": "ETag is the SHA-256 of the bundle bytes, which carry fixed times and owners; a value that is not a JSON object is left out",
+      "by": "agent"
     }
   ],
   "notes": "Research 2026-11-08: OPA bundle manifest roots, resource default bundles/<name>, Etag/304, bearer token_path, ${NAME} substitution only under opa run and only for defined variables, persistence_directory default $PWD/.opa, and test discovery by the test_ prefix are in kb public/agents/policy-as-code.md (QK-operations-placement-stories-need-opa-bundles).",

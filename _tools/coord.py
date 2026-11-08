@@ -131,7 +131,9 @@ when it is the same target or a claim on its path (a claim on a path covers its 
 entry it adds as a `code_added` event (fields `target`, REPO:PATH[#SYMBOL], and optionally `ref`, `path:line`), which
 `wait --kind code_added` returns: an agent that waits on the claim reads those events instead of reading the code.
 
-  coord.py serve --bind [HOST:]PORT --keys DIR       answer every command above as a JSON request over HTTP, on the store
+  coord.py serve --bind [HOST:]PORT --keys DIR [--policy-dir DIR]
+                                                     answer every command above as a JSON request over HTTP, on the store;
+                                                     the bundles below are read with GET
   coord.py --url URL --key-file PATH COMMAND ...     send COMMAND to such a server instead of a local store
 
 `serve` binds 127.0.0.1 unless --bind names a host (port 0 picks a free port) and prints `coord.py: serving URL` as
@@ -152,6 +154,13 @@ until an event arrives or S seconds pass. The request carries the token in the c
 beyond loopback through a TLS front end (an https URL is accepted): a plain http --url whose host is not loopback, and a
 `serve --bind` host that is not loopback, exit 2 naming plain http and TLS, unless the global flag --plain-http is given
 before the command (`coord.py --plain-http serve ...`; `--plain-http --url ... --key-file ...`).
+
+Two OPA bundles are served with GET behind the same bearer check (401 for a token no file holds): `/v1/bundles/kbjobs.tar.gz`
+holds the `.rego` and `data.json`/`data.yaml`/`data.yml` files under --policy-dir (manifest roots kbjobs/placement and
+kbjobs/groups; 404 where serve has no --policy-dir), and `/v1/bundles/kbjobs-overrides.tar.gz` holds `kbjobs/overrides/data.json`,
+which maps each group path to the JSON object its key `group/G1/.../GN/policy/placement` holds (manifest root kbjobs/overrides).
+Each reply carries an `ETag` that is a digest of the bundle's bytes, so it changes only with the content, and a request whose
+`If-None-Match` names it gets 304 with no body. Any other GET path answers 404, and any other method 405.
 
 Without `--holder`, `claim` and `dedup` take the holder from the environment variable KB_COORD_HOLDER, else `anonymous`.
 
@@ -260,6 +269,11 @@ BODY_LIMIT = 65536
 SQLITE_MAX_INT = 2**63 - 1
 REQUEST_SECONDS = 60
 ENDPOINT = "/v1/run"
+BUNDLE_POLICY = "/v1/bundles/kbjobs.tar.gz"  # the committed placement policy, an OPA bundle of --policy-dir
+BUNDLE_OVERRIDES = "/v1/bundles/kbjobs-overrides.tar.gz"  # the groups' placement overrides, an OPA bundle of the store's keys
+POLICY_ROOTS = ("kbjobs/placement", "kbjobs/groups")  # the manifest roots of the policy bundle
+OVERRIDES_ROOT = "kbjobs/overrides"  # the manifest root of the overrides bundle, which holds data.json there
+POLICY_DATA_FILES = ("data.json", "data.yaml", "data.yml")  # the data files of --policy-dir a bundle carries, besides *.rego
 LIVE = "(expires IS NULL OR expires > :now OR value IS NOT NULL)"  # a row with a value outlives its lease
 PUBLIC = ("key, value, revision, CASE WHEN expires > :now THEN holder END AS holder, "
           "CASE WHEN expires > :now THEN expires END AS expires")
@@ -1345,6 +1359,8 @@ def build_parser(parser_class=argparse.ArgumentParser, remote=False):
         p = sub.add_parser("serve", parents=parents)
         p.add_argument("--bind", required=True, metavar="[HOST:]PORT", help="host (default 127.0.0.1) and port (0: a free one)")
         p.add_argument("--keys", required=True, metavar="DIR", help="one file per operator, named for it, holding its token")
+        p.add_argument("--policy-dir", metavar="DIR", help="the committed placement policy (.rego and data files), served as "
+                       f"GET {BUNDLE_POLICY}; without it that path answers 404")
     return parser
 
 
@@ -1433,6 +1449,70 @@ def authenticate(keys_dir, header):
     return found[0] if len(found) == 1 else None
 
 
+def bundle_bytes(members, roots):
+    """An OPA bundle as a gzipped tar: the `.manifest` naming ROOTS, then MEMBERS ((name, bytes), in the order given). Fixed
+    times, owners and modes and an unstamped gzip header make the same members the same bytes, so a digest of them is an ETag."""
+    import gzip
+    import io
+    import tarfile
+    manifest = json.dumps({"roots": list(roots)}, sort_keys=True).encode("utf-8")
+    raw = io.BytesIO()
+    with tarfile.open(fileobj=raw, mode="w", format=tarfile.GNU_FORMAT) as tar:
+        for name, data in [(".manifest", manifest), *members]:
+            info = tarfile.TarInfo(name)
+            info.size, info.mtime, info.mode = len(data), 0, 0o644
+            tar.addfile(info, io.BytesIO(data))
+    return gzip.compress(raw.getvalue(), mtime=0)
+
+
+def policy_bundle(policy_dir):
+    """The bundle of POLICY_DIR: every `*.rego` and POLICY_DATA_FILES file under it, by relative path in name order, with the
+    roots POLICY_ROOTS; a hidden directory or file and a symbolic link are left out. Read on every request, so a committed change is served at once."""
+    members = []
+    top = Path(policy_dir)
+    for directory, subdirs, files in os.walk(top):
+        subdirs[:] = sorted(d for d in subdirs if not d.startswith(".") and not (Path(directory) / d).is_symlink())
+        for name in sorted(files):
+            path = Path(directory) / name
+            if name.startswith(".") or path.is_symlink() or not (name.endswith(".rego") or name in POLICY_DATA_FILES):
+                continue
+            members.append((path.relative_to(top).as_posix(), path.read_bytes()))
+    return bundle_bytes(sorted(members), POLICY_ROOTS)
+
+
+def overrides_bundle(store, now):
+    """The bundle whose one data file, `kbjobs/overrides/data.json`, maps each group path to the placement override its
+    key `group/G1/.../GN/policy/placement` holds as parsed JSON (a value that is not a JSON object is left out), root OVERRIDES_ROOT."""
+    con = connect(store)
+    try:
+        con.execute(SCHEMA)
+        rows = con.execute(f"SELECT key, value FROM entries WHERE key LIKE 'group/%' AND value IS NOT NULL AND {LIVE} ORDER BY key",
+                           {"now": now}).fetchall()
+    finally:
+        con.close()
+    data = {}
+    for row in rows:
+        parts = row["key"].split("/")
+        if len(parts) < 4 or tuple(parts[-2:]) != PLACEMENT_KEY:
+            continue
+        try:
+            override = json.loads(row["value"])
+        except (ValueError, RecursionError):
+            continue
+        if isinstance(override, dict):
+            data["/".join(parts[1:-2])] = override
+    body = json.dumps(data, sort_keys=True, ensure_ascii=False).encode("utf-8")
+    return bundle_bytes([(f"{OVERRIDES_ROOT}/data.json", body)], (OVERRIDES_ROOT,))
+
+
+def etag_matches(header, etag):
+    """Whether an If-None-Match header names ETAG (or is `*`): a list of entity tags, a weak one compared by its tag alone."""
+    if header is None:
+        return False
+    tags = [t.strip() for t in header.split(",")]
+    return "*" in tags or etag in [t[2:] if t.startswith("W/") else t for t in tags]
+
+
 def server_class():
     """The HTTP server class of `serve`, made when it is asked for: the http modules cost every other command about 15 ms to load."""
     import http.server
@@ -1495,14 +1575,39 @@ def server_class():
         def do_other(self):
             self.refuse(405, f"only POST {ENDPOINT}", [("Allow", "POST")])
 
-        do_GET = do_HEAD = do_PUT = do_DELETE = do_PATCH = do_other
+        do_HEAD = do_PUT = do_DELETE = do_PATCH = do_other
+
+        def do_GET(self):
+            if authenticate(self.server.keys, self.headers.get("Authorization")) is None:
+                return self.refuse(401, "unknown or revoked token", [("WWW-Authenticate", "Bearer")])
+            try:
+                if self.path == BUNDLE_POLICY and self.server.policy_dir is not None:
+                    data = policy_bundle(self.server.policy_dir)
+                elif self.path == BUNDLE_OVERRIDES:
+                    data = overrides_bundle(self.server.store, time.time())
+                else:
+                    return self.refuse(404, f"only GET {BUNDLE_OVERRIDES}, and GET {BUNDLE_POLICY} where serve has --policy-dir")
+            except (OSError, sqlite3.Error) as error:
+                return self.refuse(500, f"bundle: {error.__class__.__name__}")
+            etag = '"' + hashlib.sha256(data).hexdigest() + '"'
+            if etag_matches(self.headers.get("If-None-Match"), etag):
+                self.send_response(304)
+                self.send_header("ETag", etag)
+                self.send_header("Content-Length", "0")
+                return self.end_headers()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/gzip")
+            self.send_header("Content-Length", str(len(data)))
+            self.send_header("ETag", etag)
+            self.end_headers()
+            self.wfile.write(data)
 
 
     class Server(http.server.ThreadingHTTPServer):
         daemon_threads = True
 
-        def __init__(self, address, keys, store):
-            self.keys, self.store = keys, store
+        def __init__(self, address, keys, store, policy_dir=None):
+            self.keys, self.store, self.policy_dir = keys, store, policy_dir
             if ":" in address[0]:
                 self.address_family = socket.AF_INET6
             super().__init__(address, Handler)
@@ -1551,6 +1656,10 @@ def serve(args):
     if not Path(args.keys).is_dir():
         print(f"coord.py: --keys {args.keys} is not a directory", file=sys.stderr)
         return 2
+    policy_dir = getattr(args, "policy_dir", None)
+    if policy_dir is not None and not Path(policy_dir).is_dir():
+        print(f"coord.py: --policy-dir {policy_dir} is not a directory", file=sys.stderr)
+        return 2
     try:
         files = key_files(args.keys)
     except OSError as error:
@@ -1565,7 +1674,7 @@ def serve(args):
     if loose:
         return 2
     try:
-        httpd = server_class()((host, port), args.keys, args.store)
+        httpd = server_class()((host, port), args.keys, args.store, policy_dir)
     except OSError as error:
         print(f"coord.py: cannot bind {args.bind}: {error}", file=sys.stderr)
         return 2
