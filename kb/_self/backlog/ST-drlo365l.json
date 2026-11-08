@@ -13,7 +13,7 @@
       "run": [
         "python3",
         "-c",
-        "import atexit,shutil,tempfile\n_m=tempfile.mkdtemp\ndef _d(*a,**k):\n d=_m(*a,**k);atexit.register(shutil.rmtree,d,True);return d\ntempfile.mkdtemp=_d\nimport os, re, sys, tempfile, time\nfrom pathlib import Path\nhome = tempfile.mkdtemp()\nos.environ[\"CLAUDE_PLUGIN_DATA\"] = home\nos.environ[\"CLAUDE_PLUGIN_ROOT\"] = os.getcwd()\nos.environ[\"KB_COORD_STORE\"] = home + \"/none.db\"\nsys.path.insert(0, '_tools')\nimport bl_procs, mon_base, mon_sessions, mon_status\nhere = str(Path('.').resolve())\nthen = int(time.time()) - 1200\ntab = {90001: (1, then, \"claude\"), 90002: (90001, then, \"node\"), 90003: (1, then, \"sh\"), 90004: (90003, then, \"sleep\"),\n       90005: (90006, then, \"claude\"), 90006: (77777, then, \"zsh\")}\nbl_procs.process_table = lambda: dict(tab)\nbl_procs.cwd_map = lambda: ({p: here for p in tab}, None)\nbl_procs.leads_group = lambda pid: pid in (90001, 90003)\ndata = mon_sessions.collect(mon_base.Ctx(root=Path(here)))\nrole = {s[\"pid\"]: s[\"role\"] for s in data[\"sessions\"]}\nkind = {p[\"pid\"]: (p[\"class\"], p[\"session\"]) for p in data[\"procs\"]}\nfacts = mon_status.answer({\"taken\": \"2026-11-08T12:00:00Z\", \"panels\": {\"sessions\": {\"state\": \"ok\", \"data\": data}}}, \"sessions\")\ntext = \"\\n\".join(mon_sessions.lines(data, 120))\nprint(role, kind, facts[\"facts\"], sep=\"\\n\")\nbad = (kind.get(90001) != (\"detached\", \"headless\") or kind.get(90005) != (\"foreign\", \"interactive\") or role.get(90001) != \"headless\"\n       or role.get(90005) != \"interactive\" or facts[\"facts\"][\"headless\"] != 1 or facts[\"facts\"][\"interactive\"] != 1\n       or not re.search(r\"\\b2 detached process\", text))\nsys.exit(not not bad)\n"
+        "import atexit,shutil,tempfile\n_m=tempfile.mkdtemp\ndef _d(*a,**k):\n d=_m(*a,**k);atexit.register(shutil.rmtree,d,True);return d\ntempfile.mkdtemp=_d\nimport os, re, sys, tempfile, time\nfrom pathlib import Path\nhome = tempfile.mkdtemp()\nos.environ[\"CLAUDE_PLUGIN_DATA\"] = home\nos.environ[\"CLAUDE_PLUGIN_ROOT\"] = os.getcwd()\nos.environ[\"KB_COORD_STORE\"] = home + \"/none.db\"\nsys.path.insert(0, '_tools')\nimport bl_procs, bl_stall, mon_base, mon_sessions, mon_status\nhere = str(Path('.').resolve())\nthen = int(time.time()) - 1200\ntab = {90001: (1, then, \"claude\"), 90002: (90001, then, \"node\"), 90003: (1, then, \"sh\"), 90004: (90003, then, \"sleep\"),\n       90005: (90006, then, \"claude\"), 90006: (77777, then, \"zsh\")}\nbl_procs.process_table = lambda: dict(tab)\nbl_procs.cwd_map = lambda: ({p: here for p in tab}, None)\nbl_procs.leads_group = lambda pid: pid in (90001, 90003)\nbl_stall.worktrees = lambda *a, **k: [(here, \"main\")]\nbl_procs.worktrees = lambda *a, **k: [here]\ndata = mon_sessions.collect(mon_base.Ctx(root=Path(here)))\nrole = {s[\"pid\"]: s[\"role\"] for s in data[\"sessions\"]}\nkind = {p[\"pid\"]: (p[\"class\"], p[\"session\"]) for p in data[\"procs\"]}\nfacts = mon_status.answer({\"taken\": \"2026-11-08T12:00:00Z\", \"panels\": {\"sessions\": {\"state\": \"ok\", \"data\": data}}}, \"sessions\")\ntext = \"\\n\".join(mon_sessions.lines(data, 120))\nprint(role, kind, facts[\"facts\"], sep=\"\\n\")\nbad = (kind.get(90001) != (\"detached\", \"headless\") or kind.get(90005) != (\"foreign\", \"interactive\") or role.get(90001) != \"headless\"\n       or role.get(90005) != \"interactive\" or facts[\"facts\"][\"headless\"] != 1 or facts[\"facts\"][\"interactive\"] != 1\n       or not re.search(r\"\\b2 detached process\", text))\nsys.exit(not not bad)\n"
       ]
     }
   ],
@@ -39,6 +39,42 @@
     "_tools/mon_sessions.py",
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does the sessions panel's text name the count of detached processes, and how does it read at one?",
+      "options": [
+        "a row labelled processes, shown only while a process is detached, reading '1 detached process' at one and 'N detached processes' otherwise",
+        "a row always shown, '0 detached processes' included"
+      ],
+      "recommendation": "a row labelled processes, shown only while a process is detached, reading '1 detached process' at one and 'N detached processes' otherwise",
+      "do": {
+        "a row labelled processes, shown only while a process is detached, reading '1 detached process' at one and 'N detached processes' otherwise": "ST-drlo365l",
+        "a row always shown, '0 detached processes' included": "ST-drlo365l"
+      },
+      "class": "design",
+      "answer": "a row labelled processes, shown only while a process is detached, reading '1 detached process' at one and 'N detached processes' otherwise",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How does a detached claude process that sits in no work branch show as a role in the sessions rows?",
+      "options": [
+        "role headless, a new row of the role table below planner and above interactive",
+        "role worker"
+      ],
+      "recommendation": "role headless, a new row of the role table below planner and above interactive",
+      "do": {
+        "role headless, a new row of the role table below planner and above interactive": "ST-drlo365l",
+        "role worker": "ST-drlo365l"
+      },
+      "class": "design",
+      "answer": "role headless, a new row of the role table below planner and above interactive",
+      "by": "agent"
+    }
   ],
   "notes": "Evidence 2026-11-08: mon_sessions treats only a work/<id> branch as headless (session_of), so the detached claude pid 87971 in the plan-ops worktree showed as 's-6dc3ca interactive up 17m' and the headline said '0 headless'; no status line names procs' detached processes (a 19-day-old tmux among them). Detached means parent pid 1 as `backlog.py procs` classes it: a dispatch --detach worker, a reviewer, a headless runner or plan session. Premise run 2026-11-08: planted check 0 (bl_procs.process_table, cwd_map and leads_group replaced by a planted table of a detached claude with a child, a detached sh with a sleep child, a claude under a live shell and that shell; mon_sessions.collect, mon_status.answer and mon_sessions.lines, in a temp query-log home with no coord store) fails on the base: the detached claude is session `interactive` in its process row and its sessions row, the answer counts 0 headless and 2 interactive, and no panel line names detached processes. The earlier live check (procs' detached claude count against the panel's headless count) is replaced: it read the defect only while a detached claude runs. Settled in the goal: a sessions row holds no checkout (only the processes table does), so the row says headless and not its checkout; the count is named in the panel's text (mon_sessions.lines), not in the status answer, whose file mon_status.py six items already touch; the goal covers class detached, and a `claude` of class orphan (parent gone, no record, no recent transcript) is not changed here.",
   "filed_in": "clone-0ea70e5c",
