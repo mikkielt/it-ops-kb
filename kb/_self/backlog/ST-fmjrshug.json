@@ -4,6 +4,7 @@
   "title": "kbmon's query-log line says how many spool rows wait for delivery, apart from ops rows and rows of ended sessions",
   "status": "draft",
   "parent": "EP-n4dci4w7",
+  "sprint": "SP-uh5h46fm",
   "priority": "P3",
   "rank": 0,
   "goal": "kbmon's query-log line splits the spool count it prints (spool_state counts every row) into the rows a delivery will take, the ops rows, and rows of sessions that ended more than a day ago, so '952 rows wait in the spool' no longer sits beside '0 entries undelivered' as if both were pending: on 2026-11-08 about 470 of the 952 were ops rows and some were 15 days old (querylog show --spool). Whether the old rows are stuck is read during the work and filed as its own bug if so.",

@@ -4,6 +4,7 @@
   "title": "kbmon --status all's '+N more' counts hidden lines, not the items it cuts, so 'Coord: 4 live claims' shows two and '+5 more'",
   "status": "draft",
   "parent": "EP-n4dci4w7",
+  "sprint": "SP-uh5h46fm",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

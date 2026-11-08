@@ -4,6 +4,7 @@
   "title": "kbmon names an orphan process only after a minute and says when it has a live child, never that nothing waits for it",
   "status": "draft",
   "parent": "EP-n4dci4w7",
+  "sprint": "SP-uh5h46fm",
   "priority": "P3",
   "rank": 0,
   "goal": "kbmon's sessions headline and needs-you line name an orphan process (bl_procs class orphan) only once it is at least 60 s old, say 'with a live child' when one of its children still runs (an sh loop around sleep, as pids 46638 and 88109 were on 2026-11-08), and drop the claim 'nothing waits for them', which the code cannot know (mon_status prints it today, and listed 'orphan pid 86144, running 1s'). The worker plants an orphan sh with a sleep child in a scratch directory to prove each case.",

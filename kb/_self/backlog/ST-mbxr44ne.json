@@ -4,6 +4,7 @@
   "title": "kbmon's ask and claim times show in local time or say UTC",
   "status": "draft",
   "parent": "EP-n4dci4w7",
+  "sprint": "SP-uh5h46fm",
   "priority": "P3",
   "rank": 0,
   "goal": "Each wall-clock time kbmon prints for an ask, claim or landing (mon_coord builds 'since YYYY-MM-DD HH:MM' in UTC today) is either local time or carries 'UTC', so 'since 2026-10-27 22:39' is not read as local 22:39 when it was 23:39 local. The form is UTC with the suffix, the same in every panel.",

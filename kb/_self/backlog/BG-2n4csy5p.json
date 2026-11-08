@@ -4,6 +4,7 @@
   "title": "kbmon's coord panel takes about 8 s to collect on this clone, so the sessions and sprint panels time out in --status all and the session-start receipt",
   "status": "draft",
   "parent": "EP-n4dci4w7",
+  "sprint": "SP-uh5h46fm",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",

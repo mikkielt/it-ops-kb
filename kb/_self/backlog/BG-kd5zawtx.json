@@ -4,6 +4,7 @@
   "title": "kbmon lists an ask as needing the operator after its gate was answered and its item landed, since backlog.py answer never closes the ask",
   "status": "draft",
   "parent": "EP-n4dci4w7",
+  "sprint": "SP-uh5h46fm",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",

@@ -4,6 +4,7 @@
   "title": "kbmon --receipt prints needs you: 0 when the panels that hold asks and orphans were not read, so an unknown count reads as nothing waiting",
   "status": "draft",
   "parent": "EP-n4dci4w7",
+  "sprint": "SP-uh5h46fm",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
