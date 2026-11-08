@@ -78,7 +78,12 @@
         "bl_cli.load_group_commands reads the list through the public kbsettings.layered and kbsettings.layer_files, puts extension_paths on sys.path and checks KBEXT_REQUIRES against kbext.API_VERSION and kbext.BOUND_RE itself, until kbext.py has a public loader of a list": "ST-agm3xuwi",
         "Wait for kbext.py to gain a public loader of a list (kbext.py is outside this item's touches), and call it": "ST-agm3xuwi"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "call the public kbext.load_all(point, root) from ST-k2jjwnew; copy no loader logic into bl_cli; the orchestrator rebases this branch onto origin/main once ST-k2jjwnew lands",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     },
     {
       "id": "g2",
