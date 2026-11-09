@@ -2,7 +2,7 @@
   "id": "BG-sind5ikv",
   "kind": "bug",
   "title": "Backlog.save loses a gate field that changed on disk since load, so a confirmation written while done ran its checks leaves by agent beside the operator and role keys",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-moxpl354",
   "priority": "P2",
   "rank": 0,
@@ -20,6 +20,19 @@
     "kb/_self/backlog.md"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-a1b2c3d4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "f6d324d1478c33d433a9f8215b07a50bc17e61e8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys, json, pathlib, tempfile\nsys.path.insert(0, '_tools')\nimport bl_base\nr = pathlib.Path(tempfile.mkdtemp()); d = r / bl_base.rel_dir(); d.mkdir(parents=True)\nf = d / 'BG-aaaaaaaa.json'\ngate = {\"id\": \"g1\", \"kind\": \"provisional\", \"question\": \"q\", \"options\": [\"a\", \"b\"], \"recommendation\": \"a\", \"answer\": \"a\", \"by\": \"agent\"}\nf.write_text(bl_base.canonical({\"id\": \"BG-aaaaaaaa\", \"kind\": \"bug\", \"title\": \"t\", \"status\": \"todo\", \"gates\": [gate]}), encoding='utf-8')\nbl = bl_base.Backlog(r); it = bl.items['BG-aaaaaaaa']\ndisk = json.loads(f.read_text(encoding='utf-8')); disk['gates'][0].update(by='operator', operator='op-x', role='interactive')\nf.write_text(bl_base.canonical(disk), encoding='utf-8')\nit['status'] = 'done'; bl.save(it)\ng = json.loads(f.read_text(encoding='utf-8'))['gates'][0]\nok = g.get('by') == 'operator' and g.get('operator') == 'op-x'\nprint('confirm kept' if ok else 'confirm lost, gate mixed', g)\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "343f0aa2c3dfbdfa"
+      }
+    ]
+  }
 }
