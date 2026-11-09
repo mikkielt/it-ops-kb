@@ -19,5 +19,9 @@
     "_tools/kg_hooks.py",
     "_tools/kblane.py"
   ],
+  "links": [
+    "parked: SP-mut2pmu3 review"
+  ],
+  "notes": "SP-mut2pmu3 review gap 6 (S3). kg_hooks.py:87 (new_lanes, merge-commit branch) feeds diff-tree --name-only -c to paths_lane; path_lane no longer calls a bare kb/<name> content, only commit_paths strips the gitlink, so a merge whose changes hold a kb gitlink is now a code path and the hook refuses a merge that was content before. Fix: filter the gitlink in that branch too (a kblane helper both call).",
   "filed_in": "clone-0ea70e5c"
 }
