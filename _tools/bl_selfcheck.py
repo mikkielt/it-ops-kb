@@ -37,7 +37,8 @@ The eight checks, each independent and each a result {name, state, detail, remed
                read that fails is `unknown:forge`, no failure; a project with no forge, an empty `forge` setting,
                reads none and has no `unknown:forge`)
   orphans      no process in a checkout of the clone runs on after its parent is gone (`bl_procs.snapshot`'s
-               `orphan`: a background run a session left behind, named, never signaled; a foreign process is a live
+               `orphan`: a background run a session left behind, named, never signaled; a `claude` process whose
+               working directory holds a transcript written under `bl_procs.FRESH_S` seconds ago is `detached`, no orphan; a foreign process is a live
                session's and no failure, nor is a `hook`, a session-end run of the query log's distill that holds
                the distill lock or is younger than `ql_distill.USAGE_LOCK_WAIT_S` plus `bl_procs.HOOK_MARGIN_S`,
                named with its age in the result's detail); `unknown` on a host that cannot list working directories
