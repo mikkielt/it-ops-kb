@@ -268,7 +268,7 @@ def rule_paths(text):
     return out
 
 
-# Two wordings that hold a `push` word and are no push: the upload date of a package release (`uploaded` beside a date
+# Three wordings that hold a `push` word and are no push (the third, `MIRROR_STORE`, is below): the upload date of a package release (`uploaded` beside a date
 # or a time) and a display-only count question, where the push is a noun after a preposition (`before its push`) that
 # only places a count or a list (`how many unpushed commits does land list before its push?`) and no word of the
 # question acts on it or asks for it (`should`, `retry`, `run`, `force`). Every other use of those words keeps the class.
@@ -284,6 +284,10 @@ PUSH_ACTION = re.compile(
     r"\b(?:should|may|must|shall|can|could|would|will|need|needs|do|did|retry|retries|run|runs|rerun|force|forced|redo|"
     r"undo|skip|repeat|perform|execute|trigger|start|make|allow|approve|abort|cancel|reset|revert|enable|disable)\b",
     re.I)
+# A mirror store is the directory an executor keeps its own copy of a queue in (`a local mirror store of its own`), a
+# place on the executor's disk and no write to a shared branch or a public copy, so the two words together are no
+# `push` word; `mirror` alone, and any other word after it, keep the class.
+MIRROR_STORE = re.compile(r"\bmirror[- ]stores?\b", re.I)
 
 # A forge's name in a `do` or `host_check` command acts on that forge (`curl -X POST https://gitlab.com/api/v4/.../tags`,
 # `gh pr merge 12 --repo github`), so a command keeps the class by it; the name in a question or an option, or inside a
@@ -303,7 +307,7 @@ def kb_content_only(item):
 
 
 def without_benign_push_words(text, question=None, kb_content=False):
-    """The text with the two wordings above replaced by a space: what the `push` words are searched in. `question` is
+    """The text with the wordings above replaced by a space: what the `push` words are searched in. `question` is
     the gate's question: a count question's push noun is blanked only in it, so an option that says `push` keeps the
     class, and only when the question also holds a display word (`list`, `count`, `show`) and no word that acts on the
     push or asks for it. `kb_content` (the item's touches all under `kb/`, `kb_content_only`) also blanks each
@@ -311,7 +315,7 @@ def without_benign_push_words(text, question=None, kb_content=False):
     if (question and question in text and COUNT_QUESTION.search(question) and DISPLAY_WORD.search(question)
             and not PUSH_ACTION.search(question)):
         text = text.replace(question, PUSH_NOUN.sub(" ", question), 1)
-    text = UPLOAD_DATE.sub(" ", text)
+    text = MIRROR_STORE.sub(" ", UPLOAD_DATE.sub(" ", text))
     return KEY_IN_WORD.sub(" ", text) if kb_content else text
 
 
