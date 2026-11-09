@@ -477,7 +477,7 @@ def landing_lock(root, iid, poll=None):
     me = (f"pid={os.getpid()}\nclone={root}\nstarted={time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}\n"
           f"item={iid}\n")
     qdir, ticket = landing_queue_dir(path), None
-    got = False
+    staged, recorded = f"{path}.new.{os.getpid()}", False  # the record's own file, linked to the lock path once whole
     # the handler is read before it is installed and the install is inside the block whose finally restores it, so an
     # interrupt right after the install (before `signal.signal` returns the old one) still finds `prev` to restore
     prev = signal.getsignal(signal.SIGTERM)
@@ -506,6 +506,21 @@ def landing_lock(root, iid, poll=None):
                 with contextlib.suppress(OSError):
                     os.unlink(qdir / name)
                 ticket = None
+        def stage():
+            """Write the record to the file STAGED names (the name is held before the file is made, so the finally below
+            removes it after an interrupt at any point after os.open)."""
+            nonlocal recorded
+            with contextlib.suppress(OSError):
+                os.unlink(staged)  # a leftover of an earlier process of this pid
+            fd = os.open(staged, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            try:
+                f = os.fdopen(fd, "w", encoding="utf-8", newline="\n")
+            except BaseException:
+                os.close(fd)
+                raise
+            with f:
+                f.write(me)
+            recorded = True
         take()
         told, waited, bound = None, 0.0, kg_lock.max_wait()
         while True:
@@ -526,8 +541,13 @@ def landing_lock(root, iid, poll=None):
                 time.sleep(poll)
                 waited += time.monotonic() - began
                 continue
+            if not recorded:
+                stage()
             try:
-                fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+                os.link(staged, path)  # the lock file appears whole, or not at all: never an empty one
+            except FileNotFoundError:  # the staged record was removed: write it again
+                recorded = False
+                continue
             except FileExistsError:
                 text = tests_py.read_lock(path)
                 if text is None and not os.path.exists(path):  # released: look again
@@ -558,21 +578,8 @@ def landing_lock(root, iid, poll=None):
                 time.sleep(poll)
                 waited += time.monotonic() - began
                 continue
-            got = True
-            try:
-                # an interrupt before the record is written would leave an empty lock file that the `got` release below
-                # (which removes only a file whose record names this pid) never removes
-                try:
-                    f = os.fdopen(fd, "w", encoding="utf-8", newline="\n")
-                except BaseException:
-                    os.close(fd)
-                    raise
-                with f:
-                    f.write(me)
-            except BaseException:
-                with contextlib.suppress(OSError):
-                    os.unlink(path)
-                raise
+            with contextlib.suppress(OSError):
+                os.unlink(staged)  # the lock file keeps the record
             break
         if ticket:
             with contextlib.suppress(OSError):
@@ -583,11 +590,14 @@ def landing_lock(root, iid, poll=None):
         if ticket:
             with contextlib.suppress(OSError):
                 os.unlink(qdir / ticket)
-        if got:
-            holder = tests_py.read_holder(path)
-            if holder and holder["pid"] == os.getpid():
-                with contextlib.suppress(OSError):
-                    os.unlink(path)
+        # the lock file is removed when its record names this pid, whether or not the link returned: an interrupt right
+        # after it leaves no file the release would skip
+        holder = tests_py.read_holder(path)
+        if holder and holder["pid"] == os.getpid():
+            with contextlib.suppress(OSError):
+                os.unlink(path)
+        with contextlib.suppress(OSError):
+            os.unlink(staged)
         if prev is not None:
             with contextlib.suppress(ValueError, OSError):
                 signal.signal(signal.SIGTERM, prev)
