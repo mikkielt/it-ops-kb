@@ -21,8 +21,12 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "depends_on": [
+    "BG-zmwnp3hh"
+  ],
   "links": [
     "parked: SP-lmpjclxz review"
   ],
+  "notes": "Order: same files bl_authority.py and test_authority.py as BG-zmwnp3hh.",
   "filed_in": "clone-0ea70e5c"
 }
