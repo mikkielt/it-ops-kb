@@ -1,0 +1,22 @@
+{
+  "id": "SP-zobzdhwi",
+  "kind": "sprint",
+  "title": "Monitoring reports live work correctly",
+  "status": "planned",
+  "goal": "placeholder goal",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e",
+  "filed_in": "clone-0ea70e5c"
+}
