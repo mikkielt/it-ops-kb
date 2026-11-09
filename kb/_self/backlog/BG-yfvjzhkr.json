@@ -22,6 +22,23 @@
         "-c",
         "import os, subprocess, sys, tempfile; t=tempfile.mkdtemp(); subprocess.run([sys.executable, \"_tools/benchmarks.py\", \"run\", \"pool\", \"--dry-run\", \"--sample\", \"1\"], capture_output=True, env=dict(os.environ, BENCH_SCRATCH=t)); sys.exit(1 if [n for n in os.listdir(t) if n.startswith(\"run-\")] else 0)"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys, tempfile, pathlib; sys.path.insert(0, \"_tools\"); import bench_core; d=pathlib.Path(tempfile.mkdtemp())/\"run-1-abcd1234\"; b=bench_core.Bench(d, 1); b.close(); sys.exit(1 if d.exists() else 0)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "Bench.close removes the run's own scratch directory when it holds no raw log worth keeping",
+      "check": 1
+    },
+    {
+      "clause": "a benchmarks.py run with --dry-run makes none, so no run-<pid>-<hex> directory is left behind",
+      "check": 0
     }
   ],
   "touches": [
