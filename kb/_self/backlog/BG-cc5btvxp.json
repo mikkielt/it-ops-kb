@@ -2,7 +2,7 @@
   "id": "BG-cc5btvxp",
   "kind": "bug",
   "title": "The group gate_checks refusal in kbgit.py sync --push has no planted failure in the push gate's tests",
-  "status": "draft",
+  "status": "doing",
   "parent": "EP-y7fe7qqx",
   "sprint": "SP-ga3lbnlk",
   "priority": "P2",
@@ -41,5 +41,7 @@
     "parked: SP-ep7ck2ab close"
   ],
   "notes": "Planning 2026-11-09: the check's selector -k gate_checks collects NONE now on purpose: the work adds one test whose name holds gate_checks to _tools/test_sync_e2e.py (a planted failing group gate_checks argv; assert sync --push refuses naming the argv and the layer), within max_ids 120 and the seconds ceiling (make room by merging an existing test, never raise).",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-0a3e91bc",
+  "operator": "op-f618a13e"
 }
