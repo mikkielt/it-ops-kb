@@ -2,7 +2,7 @@
   "id": "ST-kcdeil4w",
   "kind": "story",
   "title": "kbjob.py serve --kind ci --job runs exactly the one job a CI pipeline was started for and refuses a job placed elsewhere",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-p4guu2ip",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",
@@ -96,5 +96,7 @@
       "agent_session": true
     }
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-432be86e",
+  "operator": "op-f618a13e"
 }
