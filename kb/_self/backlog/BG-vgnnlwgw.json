@@ -2,7 +2,7 @@
   "id": "BG-vgnnlwgw",
   "kind": "bug",
   "title": "backlog.py show ID --field F on a deleted item accepts an unknown field and prints {}, where a live item exits 2",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-yriisdti",
   "priority": "P3",
   "rank": 0,
@@ -27,5 +27,7 @@
   "links": [
     "parked: SP-vxdacfpl review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev2run01",
+  "operator": "op-f618a13e"
 }
