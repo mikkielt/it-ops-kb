@@ -2,7 +2,7 @@
   "id": "BG-k7ordg7h",
   "kind": "bug",
   "title": "kbtail.py drops a coord change that comes less than 5 s after a rescan, so a new session waits for the 30 s timer",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-booflukv",
   "sprint": "SP-zobzdhwi",
   "priority": "P2",
@@ -27,5 +27,7 @@
   "links": [
     "parked: SP-7ba3r4ec review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-0f9262ec",
+  "operator": "op-f618a13e"
 }
