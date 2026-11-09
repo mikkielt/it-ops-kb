@@ -1,7 +1,7 @@
 file,field,type,required,default,notes,tag,source
 plugin.json,name,string,yes,,"kebab-case; no spaces/@/:/path separators/control/bidi chars; namespaces every component",DOC,S-3xyywfcr
 plugin.json,displayName,string,no,name,"shown in UI in place of name; marketplace entry displayName takes precedence when installed from one",DOC,S-3xyywfcr
-plugin.json,version,string,no,,"not semver-checked; pins plugin until changed; not used for command-source or claude.ai-hosted-marketplace plugins",DOC,S-3xyywfcr
+plugin.json,version,string,no,,"not semver-checked; pins plugin until changed; not used for command-source, claude.ai-hosted-marketplace or loaded-in-place local-marketplace plugins",DOC,S-3xyywfcr
 plugin.json,description,string,no,,short explanation of what the plugin provides,DOC,S-3xyywfcr
 plugin.json,author,object,no,,"{name (required), email, url}",DOC,S-3xyywfcr
 plugin.json,homepage,string,no,,must parse as a URL or plugin fails to load,DOC,S-3xyywfcr
@@ -23,7 +23,7 @@ plugin.json,lspServers,path/object/array of either,no,,".json file or inline map
 plugin.json,outputStyles,path or array of paths,no,,REPLACES default output-styles/ scan,DOC,S-3xyywfcr
 plugin.json,workflows,path or array of paths,no,,.js files/dirs; REPLACES default workflows/ scan,DOC,S-3xyywfcr
 plugin.json,experimental.themes,path or array of paths,no,,REPLACES default themes/ scan; top-level themes key still loads with a validate warning,DOC,S-3xyywfcr
-plugin.json,experimental.monitors,path or inline array,no,monitors/monitors.json,"entries: name/command/description required, when: always|on-skill-invoke:<skill>; not on Bedrock/Google Cloud Agent Platform/Microsoft Foundry",DOC,S-3xyywfcr
+plugin.json,experimental.monitors,path or inline array,no,monitors/monitors.json,"entries: name/command/description required, when: always|on-skill-invoke:<skill>; not started with -p; on Bedrock/Claude Platform on AWS/Google Cloud Agent Platform/Microsoft Foundry or with telemetry off needs Claude Code v2.1.310+",DOC,S-3xyywfcr;S-i7if5i7z
 plugin.json,experimental.evals,path or array of paths,no,evals/,eval case directory when not the default; claude plugin eval --eval-dir overrides,DOC,S-lkcsn2fs;S-3xyywfcr
 lspServers entry,command,string,yes,,language server binary; no spaces unless value starts with /,DOC,S-3xyywfcr
 lspServers entry,extensionToLanguage,object,yes,,"map of .ext to LSP language id, at least one entry",DOC,S-3xyywfcr

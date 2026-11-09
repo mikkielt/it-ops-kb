@@ -765,8 +765,8 @@ ff91bfbf1644,Is it safe to allow unsigned scripts?
 8d8349a3550d,ConfigMgr WMI execution policy values
 8d8349a3550d,What WMI property controls ConfigMgr execution policy?
 8d8349a3550d,How do you query SCCM policy settings via WMI?
-7a2e2a4c0b61,CMPivot certificate signing
-7a2e2a4c0b61,How do you trust Microsoft tools under AllSigned?
+a35482a89500,CMPivot certificate signing
+a35482a89500,How do you trust Microsoft tools under AllSigned?
 0aea1df0b854,PowerShell CI script loading
 0aea1df0b854,How do you load a signed script without breaking the signature?
 0aea1df0b854,Why does copy-paste break PowerShell signatures?

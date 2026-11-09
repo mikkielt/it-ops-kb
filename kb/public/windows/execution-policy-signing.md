@@ -35,7 +35,8 @@ status: complete
 - Failure signals: Monitoring error `0x87D00327` "Script is not signed"; reports show "Discovery Error", with `0x87D00327` or `0x87D00320` "The script host has not been installed yet"; `DcmWmiProvider.log` shows "Script is not signed (Error: 87D00327; Source: CCM)". [DOC S-pm6pjuef]
 - Security guidance: don't set Bypass broadly. If Bypass is needed, use a custom client setting scoped to the computers that need unsigned scripts. [DOC S1483]
 - WMI `SMS_ConfigMgrClientAgentConfig.PowerShellExecutionPolicy` (UInt32) documents only 0 = Bypass and 1 = Restricted. There is no value for All Signed (see conflicts). [DOC S-f26o3j3w]
-- CMPivot (and the Edge installer) are signed with "Microsoft Code Signing PCA 2011". Under AllSigned, import that code-signing certificate into the machine **Trusted Publishers** store. [DOC S-2z2zfj3l]
+- CMPivot (and the Edge installer) are signed with "Microsoft Code Signing PCA 2011". Under AllSigned, import that code-signing certificate into the machine **Trusted Publishers** store. (valid 2026-10-21..2026-11-09) [DOC S-2z2zfj3l]
+- CMPivot is signed with the "Microsoft Code Signing PCA 2011" certificate. Under AllSigned the device must trust it: with the Configuration Manager 2603 update rollup or 2609 and later the client adds it to the machine **Trusted Publishers** store itself before running the script; with earlier versions export the code-signing certificate from the certification path of `CMPivot.exe` in the console `bin` folder and import it into that store. (valid 2026-11-09..) [DOC S-2z2zfj3l]
 - For a signed PowerShell CI script, load it with **Open**. Copy and paste into the CI editor breaks the signature. [DOC S-mmydokhp]
 
 ## Reference
