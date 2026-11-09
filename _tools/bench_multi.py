@@ -1892,8 +1892,9 @@ def duplicate_research(root, manifest, lines):
     """The duplicate research of the run: for each two agents that added a fact of one claim (bench_repro.match_facts, as
     `repro compare` matches them) on the article of a research key `research:TOPIC:TERM`, a line naming the agent whose fact
     was committed while the other agent's claim of that key was live (a second between the clock of the store and the
-    commit's whole seconds is allowed), once for each pair and key. The fact need not hold TERM: a lack term is free text
-    that agents word differently, so two matched facts on the claimed article count as one claim's duplicate."""
+    commit's whole seconds is allowed), once for each pair of matched facts however many such keys the owner held on the
+    article (the first key in the store's order is named). The fact need not hold TERM: a lack term is free text that
+    agents word differently, so two matched facts on the claimed article count as one claim's duplicate."""
     who = {r["n"]: r["agent"] for r in lines if r.get("n")}
     bare = origin_path(root)
     added = {n: added_facts(bare, manifest["base"], agent_email(n)) for n in who}
@@ -1902,19 +1903,25 @@ def duplicate_research(root, manifest, lines):
         if a["coord_store"] not in seen:
             seen.add(a["coord_store"])
             windows += claim_windows(a["coord_store"])
-    out, named = [], set()
+    out = []
     for x, y in itertools.combinations(sorted(who), 2):
         for i, j in bench_repro.match_facts(added[x], added[y]) if added[x] and added[y] else ():
+            hit = None
             for key, holder, start, end in windows:
                 topic, _, term = key[len(RESEARCH):].partition(":")
                 m = HOLDER_AGENT.search(holder or "")
                 owner = int(m.group(1)) if m else None
                 for adder, fact in ((y, added[y][j]), (x, added[x][i])):
-                    if (owner in (x, y) and owner != adder and (x, y, key) not in named and on_topic(fact["path"], topic)
+                    if (owner in (x, y) and owner != adder and on_topic(fact["path"], topic)
                             and start - 1 <= fact["at"] <= end + 1):
-                        named.add((x, y, key))
-                        out.append(f"duplicate research: {who[adder]} added a fact for {term!r} on {topic} while {who[owner]} held the "
-                                   f"dedup claim {key}, and {who[owner]} wrote it too")
+                        hit = (adder, owner, key, term, topic)
+                        break
+                if hit:
+                    break
+            if hit:
+                adder, owner, key, term, topic = hit
+                out.append(f"duplicate research: {who[adder]} added a fact for {term!r} on {topic} while {who[owner]} held the "
+                           f"dedup claim {key}, and {who[owner]} wrote it too")
     return out
 
 

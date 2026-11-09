@@ -20,6 +20,26 @@
     "kb/_self/benchmarks.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which research key does the one duplicate-research line name when the owner held several live keys on the article?",
+      "options": [
+        "the first key in the store's order whose window holds the fact",
+        "one line naming every such key"
+      ],
+      "recommendation": "the first key in the store's order whose window holds the fact",
+      "reason": "one line per fact pair is the goal, so one key is named",
+      "do": {
+        "the first key in the store's order whose window holds the fact": "BG-3ji4fsfo",
+        "one line naming every such key": "BG-3ji4fsfo"
+      },
+      "class": "design",
+      "answer": "the first key in the store's order whose window holds the fact",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-n7f53pgv review"
   ],
