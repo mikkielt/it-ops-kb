@@ -180,7 +180,8 @@ def usd(value):
 
 
 def when(text):
-    return str(text)[:16].replace("T", " ") if text else "-"
+    """`2026-10-18T10:20:30Z` as `2026-10-18 10:20 UTC`."""
+    return str(text)[:16].replace("T", " ") + " UTC" if text else "-"
 
 
 def ago(now, stamp):
