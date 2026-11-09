@@ -2,7 +2,7 @@
   "id": "BG-zvzfglnl",
   "kind": "bug",
   "title": "A query-log delivery refused by its sync logs no reason, and kbmon raises REFUSED though another run delivered the rows",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-osevumx6",
   "priority": "P3",
   "rank": 0,
@@ -57,6 +57,37 @@
   ],
   "notes": "Planning 2026-11-09: the checks replace the repro as the proof (the repro reads this host's distill.log, which a landing worktree does not have). The old trailing note about the 2026-10-26 sightings was cut from the goal. Planned 2026-11-09 in SP-osevumx6: items that share a file wait on each other (kbcommon.py, redact.py then kbask.py, ql_capture.py then ql_deliver.py); no open item of the other live sprints touches this item's code files.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-cdcea91c",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "537af17fff031058811446e9b436f4bd775b8280",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,tempfile;sys.path.insert(0,'_tools');import ql_deliver as d;out=[];nl=chr(10);run=lambda argv,cwd=None:(0,'a'*40+nl,'') if argv[:2]==['git','rev-parse'] else (2,'pushed: no'+nl,'sync refused: another sync holds the lock'+nl);p=d.Pusher('.',tempfile.mkdtemp(),run,None,out.append,cloud=False);c=p.deliver('r1');print(c,out);sys.exit(0 if c==2 and any('another sync holds the lock' in o for o in out) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "3ccee76c02eec84d"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import mon_querylog as m;last={'outcome':'refused','why':'sync exit 2','when':'2026-11-08T10:00:00Z'};a=m.alerts({'last_delivery':last,'undelivered':0});b=m.alerts({'last_delivery':last,'undelivered':3});print(len(a),len(b));sys.exit(0 if not a and len(b)==1 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "a79122992d53d358"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,sys;p=os.path.expanduser(\"~/it-ops-kb/_cache/querylog/distill.log\")\nL=open(p).read().splitlines() if os.path.exists(p) else []\nbad=[i for i,l in enumerate(L) if \"sync exit 2: nothing pushed\" in l and i>0 and L[i-1].strip()==\"pushed: no\"]\nprint(\"refusals logged with no reason:\",len(bad));sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "d5264796db7ce260"
+      }
+    ]
+  }
 }
