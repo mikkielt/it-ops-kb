@@ -2,7 +2,7 @@
   "id": "BG-o4rrijqe",
   "kind": "bug",
   "title": "session-load classes a detached headless claude session as interactive, because bench_load.LIVE_HEADLESS_ROLES lacks the role headless that kbmon's sessions panel now gives it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-bpjqqauu",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,7 @@
     "kb/_self/tools.md"
   ],
   "notes": "Premise: the bug's repro fails on the base (origin/main at the planning commit, 2026-11-09); precheck ran it through the landing's check runner. Sprint order: items that share one file are chained with depends_on.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-bdc0a493",
+  "operator": "op-f618a13e"
 }
