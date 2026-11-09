@@ -1,0 +1,22 @@
+{
+  "id": "BG-qk32vc5n",
+  "kind": "bug",
+  "title": "census.py read accepts a date that is no calendar day and an empty note",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "census.py read refuses, exit 2 before any write, a --date that is no valid YYYY-MM-DD day (2026-13-45) and an empty --note",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess, sys\nr = subprocess.run([sys.executable, \"_tools/census.py\", \"--root\", \"public\", \"read\", \"S100\", \"--note\", \"n\", \"--date\", \"2026-13-45\", \"--dry-run\"], capture_output=True, text=True)\nprint(\"exit\", r.returncode, r.stdout[-150:])\nsys.exit(1 if r.returncode == 0 else 0)\n"
+    ]
+  },
+  "touches": [
+    "_tools/census.py",
+    "kb/_self/web-sources.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
