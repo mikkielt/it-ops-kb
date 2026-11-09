@@ -2,7 +2,7 @@
   "id": "BG-lpxhiubn",
   "kind": "bug",
   "title": "kbmon prints the delivery, lock and since times as bare UTC without saying UTC",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-hyfyn22d",
   "priority": "P3",
@@ -28,5 +28,7 @@
   "links": [
     "parked: SP-uh5h46fm review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev4run01",
+  "operator": "op-f618a13e"
 }
