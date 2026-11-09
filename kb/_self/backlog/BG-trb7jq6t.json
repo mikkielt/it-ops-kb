@@ -1,0 +1,25 @@
+{
+  "id": "BG-trb7jq6t",
+  "kind": "bug",
+  "title": "kbid.py repoint onto a url that is already a root row leaves a duplicate source id in the citing tags and a duplicate anchor row",
+  "status": "todo",
+  "sprint": "SP-2cq2hse4",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "kbid.py repoint OLD NEW_URL, where NEW_URL is already a row of the root, leaves every fact that cited both ids with one id once in its tag and one anchor row per fact, path and source, so check.py stays clean",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os, re, subprocess, sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport kbid, kbroot, kbfacts\nt = tempfile.mkdtemp()\nd = os.path.join(t, \"zq\")\nold_url, new_url = \"https://example.org/docs/old-page\", \"https://example.org/docs/new-page\"\nold, new = kbid.source_id(old_url, \"ZQ\"), kbid.source_id(new_url, \"ZQ\")\nfact = \"The setting is on by default. [DER %s, %s]\"\nart = [\"---\", \"topic: win/a\", \"priority: P1\", \"applies_to: x\", \"retrieved_utc: 2026-01-01\", \"sources: [\" + old + \", \" + new + \"]\", \"status: complete\", \"---\", \"\", \"# A\",\n       \"\", \"## Summary\", \"- Summary line one. [DOC \" + new + \"]\", \"\", \"## Facts\", \"- \" + fact % (old, new), \"\"]\nfiles = {\"_root.md\": kbroot.root_md(\"zq\", \"ZQ\", \"internal\", \"planted\"), **{k: v.format(name=\"zq\") for k, v in kbroot.FILES.items()}, \"win/a.md\": \"\\n\".join(art)}\nfiles[\"_sources.csv\"] += (old + \",\" + old_url + \",Old,Example Org,CC BY 4.0,quote,2026-01-01,,,win/a.md,\\n\"\n                          + new + \",\" + new_url + \",New,Example Org,CC BY 4.0,quote,2026-01-01,,,win/a.md,\\n\")\nk0 = kbfacts.fact_key(fact % (old, new))\nfiles[\"_anchors.csv\"] = (\"fact,path,source_id,status,heading,terms,sha,quote,verified_utc\\n\" + k0 + \",win/a.md,\" + old + \",unlocated:no-match,,,,,2026-01-01\\n\"\n                         + k0 + \",win/a.md,\" + new + \",unlocated:no-match,,,,,2026-01-01\\n\")\nfor rel, text in files.items():\n    os.makedirs(os.path.dirname(os.path.join(d, rel)) or d, exist_ok=True)\n    open(os.path.join(d, rel), \"w\", newline=\"\").write(text)\nenv = dict(os.environ, KB_ROOTS=d)\nrun = lambda *a: subprocess.run([sys.executable, *a], env=env, capture_output=True, text=True)\nr = run(\"_tools/kbid.py\", \"repoint\", old, new_url, \"--root\", \"zq\")\nc = run(\"_tools/check.py\", \"--root\", \"zq\")\ntag = [m for m in re.findall(r\"\\[DER ([^\\]]*)\\]\", open(os.path.join(d, \"win/a.md\")).read()) if \",\" in m or m]\ndup = any(len(set(x.replace(\" \", \"\").split(\",\"))) != len(x.replace(\" \", \"\").split(\",\")) for x in tag)\nprint(\"repoint exit\", r.returncode, \"check exit\", c.returncode, \"tags\", tag, \"duplicate id in a tag:\", dup, c.stdout[-200:])\nsys.exit(1 if dup or c.returncode else 0)\n"
+    ]
+  },
+  "touches": [
+    "_tools/kbid.py",
+    "_tools/factdiff.py",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
