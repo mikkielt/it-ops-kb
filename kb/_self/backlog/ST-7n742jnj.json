@@ -82,8 +82,7 @@
       "answer": "a public loader in kbext.py, not a copy: kbext.py is now in this item's touches. ST-k2jjwnew (landing now) splits kbext.resolve into _find and _import and adds public load_all; after it lands, rebase onto origin/main and add one public kbext.load_spec(point, spec, root) that loads one module:attr with load's sys.path, KBEXT_REQUIRES and refusals (load_all may call it), then call it per language. Until the rebase, code against kbext.load_spec",
       "by": "operator",
       "operator": "op-f618a13e",
-      "role": "interactive",
-      "agent_session": true
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -102,7 +101,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "files no earlier language maps",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
@@ -121,7 +122,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "the commit hash, and a note with nothing mapped",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "filed_in": "clone-0ea70e5c",

@@ -78,8 +78,7 @@
       "answer": "layer_files lists, 600 s default KB_GATE_CHECK_TIMEOUT_S, a malformed entry or unreadable settings is a failure, a gate row only on failure",
       "by": "operator",
       "operator": "op-f618a13e",
-      "role": "interactive",
-      "agent_session": true
+      "role": "interactive"
     }
   ],
   "notes": "Shared files with SP-lwkdljxg (kbcommon.py, kbpublic.py, bl_land.py, map.csv): agreed with its manager on 2026-11-08 that the first claim lands first and the other rebases; its items reach these files late. SP-uh5h46fm (mon_coord.py, mon_status.py) was asked the same and has not answered: the same rule applies.",

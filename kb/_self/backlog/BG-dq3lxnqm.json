@@ -74,7 +74,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "item_leak_hits takes shipped=True, only report_body passes it",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "filed_in": "clone-0ea70e5c",

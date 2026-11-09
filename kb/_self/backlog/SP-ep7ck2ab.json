@@ -18,8 +18,7 @@
       "answer": "approve",
       "by": "operator",
       "operator": "op-f618a13e",
-      "role": "interactive",
-      "agent_session": true
+      "role": "interactive"
     }
   ],
   "creator": "op-f618a13e",

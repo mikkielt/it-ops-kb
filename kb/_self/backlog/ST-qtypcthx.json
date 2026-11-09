@@ -123,8 +123,7 @@
       "answer": "shipped guards always",
       "by": "operator",
       "operator": "op-f618a13e",
-      "role": "interactive",
-      "agent_session": true
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -143,7 +142,9 @@
       "class": "push",
       "hold": true,
       "answer": "refuse with kbext.ExtensionError, naming the layer",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
@@ -163,8 +164,7 @@
       "answer": "contribute and publish",
       "by": "operator",
       "operator": "op-f618a13e",
-      "role": "interactive",
-      "agent_session": true
+      "role": "interactive"
     },
     {
       "id": "g4",
@@ -184,8 +184,7 @@
       "answer": "kbmon.py status adds the lines after needs you from kbext.replaced_guards, and the group, clone and user layers are read",
       "by": "operator",
       "operator": "op-f618a13e",
-      "role": "interactive",
-      "agent_session": true
+      "role": "interactive"
     }
   ],
   "notes": "Shared files with SP-lwkdljxg (kbcommon.py, kbpublic.py, bl_land.py, map.csv): agreed with its manager on 2026-11-08 that the first claim lands first and the other rebases; its items reach these files late. SP-uh5h46fm (mon_coord.py, mon_status.py) was asked the same and has not answered: the same rule applies.",

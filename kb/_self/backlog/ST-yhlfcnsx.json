@@ -78,7 +78,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "extensions.forge or the it_ops_kb.forge entry point, as kbext.load finds it",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -97,7 +99,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "refuse with Rejected carrying kbext's one line, exit 2",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",

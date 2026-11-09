@@ -88,8 +88,7 @@
       "answer": "A bare copy of the upstream whose main is moved from the first tag to the second",
       "by": "operator",
       "operator": "op-f618a13e",
-      "role": "interactive",
-      "agent_session": true
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -109,8 +108,7 @@
       "answer": "KB_GROUP_SETTINGS names the team's settings file, and a shipped file is one tracked at the first tag that the group's setup modified or deleted",
       "by": "operator",
       "operator": "op-f618a13e",
-      "role": "interactive",
-      "agent_session": true
+      "role": "interactive"
     },
     {
       "id": "g3",
@@ -129,7 +127,9 @@
       "class": "push",
       "hold": true,
       "answer": "The tracked tool modules the three tools import with their data files, no tests or fixtures, and the changelog; exit 0 verified, 1 a finding, 2 a rehearsal that could not be made",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "filed_in": "clone-0ea70e5c",

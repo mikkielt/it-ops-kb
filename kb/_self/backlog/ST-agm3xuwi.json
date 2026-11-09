@@ -82,8 +82,7 @@
       "answer": "call the public kbext.load_all(point, root) from ST-k2jjwnew; copy no loader logic into bl_cli; the orchestrator rebases this branch onto origin/main once ST-k2jjwnew lands",
       "by": "operator",
       "operator": "op-f618a13e",
-      "role": "interactive",
-      "agent_session": true
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -101,7 +100,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "A handler that takes one parameter is called with the arguments alone and any other with (bl, args), which an extend wrap keeps",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
@@ -119,7 +120,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "What it registered before failing is taken back, it is named on stderr with its layer, and the modules after it still load",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g4",
@@ -137,7 +140,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "Every command the group's modules registered is taken back, the failing module is named on stderr and the shipped commands run as before",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "filed_in": "clone-0ea70e5c",
