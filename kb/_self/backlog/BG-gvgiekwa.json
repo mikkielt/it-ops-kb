@@ -1,0 +1,18 @@
+{
+  "id": "BG-gvgiekwa",
+  "kind": "bug",
+  "title": "PaidBench.__init__ puts a failing claude shim on PATH around Bench.__init__, which no longer starts claude, and its docstring says Bench reads the version there",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "bench_load.PaidBench no longer builds a failing claude shim around Bench.__init__, and its docstring names where the paid run's version stays ? (benchmarks.main presets it), since Bench.__init__ starts no claude",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,tempfile; sys.path.insert(0,'_tools'); import bench_load; n=[]; o=bench_load.shim_dir; bench_load.shim_dir=lambda d: (n.append(1), o(d))[1]; bench_load.PaidBench(tempfile.mkdtemp(),1); sys.exit(1 if n else 0)"
+    ]
+  },
+  "filed_in": "clone-0ea70e5c"
+}
