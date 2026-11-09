@@ -25,11 +25,9 @@
   "touches": [
     "skills/sprint/SKILL.md"
   ],
-  "depends_on": [
-    "ST-upd6ssky"
-  ],
   "links": [
     "parked: SP-pww4aqis close"
   ],
+  "notes": "Unchained from ST-upd6ssky during the run: its edit is in the run section, the others edit the plan section.",
   "filed_in": "clone-0ea70e5c"
 }
