@@ -2,7 +2,7 @@
   "id": "BG-6pig3u5d",
   "kind": "bug",
   "title": "kbmon --status host and the host panel's data show a disk share just under 10% as 10%, where the host alert says 9.96%",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-hyfyn22d",
   "priority": "P3",
   "rank": 0,
@@ -24,5 +24,7 @@
   "links": [
     "parked: SP-zobzdhwi review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev4run01",
+  "operator": "op-f618a13e"
 }
