@@ -104,10 +104,24 @@ def git(*args, cwd, check=True):
                           check=check).stdout.strip()
 
 
-def scratch_dir():
-    """The scratch directory of the benchmarks' clones: BENCH_SCRATCH, else <temp>/it-ops-kb-bench, resolved so a clone under
-    a symlinked temp directory (macOS `/var` is `/private/var`) sits at the path its own tools report."""
+def scratch_base():
+    """The directory every benchmark scratch directory sits under, the same for every process: BENCH_SCRATCH, else
+    <temp>/it-ops-kb-bench, resolved so a clone under a symlinked temp directory (macOS `/var` is `/private/var`) sits at
+    the path its own tools report. `repro` and `multi` keep their instances here: a later command finds them again."""
     return Path(os.environ.get("BENCH_SCRATCH") or Path(tempfile.gettempdir()) / "it-ops-kb-bench").resolve()
+
+
+_RUN_DIRS = {}
+
+
+def scratch_dir():
+    """The scratch directory of this process's `run`: `run-<pid>-<8 hex>` under `scratch_base()`, named once per process,
+    so two runs started at once keep their clones, data and raw logs apart (one shared clone made the later run's
+    `git checkout` fail). Nothing is made here: `Bench` makes it."""
+    base = scratch_base()
+    if base not in _RUN_DIRS:
+        _RUN_DIRS[base] = base / f"run-{os.getpid()}-{uuid.uuid4().hex[:8]}"
+    return _RUN_DIRS[base]
 
 
 def isolate(clone, mode, bare):
@@ -268,9 +282,15 @@ class Bench:
         return self.clone("kb", "off", register=True)
 
     def close(self):
+        """Unregister the servers, then remove the run's clones and their bare origins: they are this run's alone and weigh
+        about 1.3 GB each, and the raw logs and data beside them stay."""
         for c in self.registered:
             for name in ("kb", "microsoft-learn", "claude-code-docs", "mcp-docs"):
                 subprocess.run(["claude", "mcp", "remove", "--scope", "local", name], cwd=c, capture_output=True)
+        for c in self._clones.values():
+            for d in (c, c.with_name(c.name + "-origin.git")):
+                shutil.rmtree(d, ignore_errors=True)
+        self._clones.clear()
 
     # -- model runs through agent_bench.py in the lookup clone
 

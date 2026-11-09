@@ -474,7 +474,7 @@ def own_dirs(cls, snap):
     """({directory a record of CLS may sit strictly under}, {directory it may be, or sit under}), each really resolved, for
     the classes scratch and sandbox: a scratch directory is made under the `scratch_dir` of a checkout of this clone (the
     main checkout's or a linked worktree's); a bench multi sandbox is the sandbox root `bench_multi.default_dir` names or a
-    directory under the benchmarks' scratch directory (`bench_core.scratch_dir`) that holds its clones."""
+    directory under the benchmarks' scratch directory (`bench_core.scratch_base`) that holds its clones."""
     cache = snap.setdefault("own_dirs", {})
     if cls not in cache:
         if cls == "scratch":
@@ -483,7 +483,7 @@ def own_dirs(cls, snap):
         else:
             import bench_core
             import bench_multi
-            cache[cls] = ({norm_real(bench_core.scratch_dir())}, {norm_real(bench_multi.default_dir())})
+            cache[cls] = ({norm_real(bench_core.scratch_base())}, {norm_real(bench_multi.default_dir())})
     return cache[cls]
 
 

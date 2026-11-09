@@ -26,7 +26,7 @@ from pathlib import Path
 
 import agent_bench
 import kbpublic
-from bench_core import FIELDS, HOME, RESULTS as BENCH_RESULTS, isolate, merge_rows, no_plugin_env, read_rows, scratch_dir, \
+from bench_core import FIELDS, HOME, RESULTS as BENCH_RESULTS, isolate, merge_rows, no_plugin_env, read_rows, scratch_base, \
     stream_run, write_rows
 
 ADDED = "kb/public/_retrieval/repro_bench.csv"  # the file whose first commit's parent is the default REV
@@ -81,7 +81,7 @@ def clone_path(root, n):
     """The working clone of instance N: under the scratch directory, in a directory of its own for each DIR. The scratch
     directory is resolved (a temp directory can be a symlink, as /var is on macOS), so the clone's tools and its tests,
     which see the resolved path, agree on where the clone is."""
-    return scratch_dir().resolve() / ("repro-" + hashlib.sha1(str(Path(root).resolve()).encode("utf-8")).hexdigest()[:8]) / f"instance{n}"
+    return scratch_base() / ("repro-" + hashlib.sha1(str(Path(root).resolve()).encode("utf-8")).hexdigest()[:8]) / f"instance{n}"
 
 
 def mcp_path(root, n):
@@ -318,7 +318,7 @@ def check(out=print):
     the push stayed inside the probe (probe_checks); remove the probe. Returns 0 when every property holds, 1 when one
     fails, or raises Refused."""
     _, url = remote_url()
-    root = scratch_dir().resolve() / f"repro-check-{os.getpid()}"
+    root = scratch_base() / f"repro-check-{os.getpid()}"
     try:
         setup(1, root=root, out=lambda line: None)
         failed = probe_checks(root, url, out)

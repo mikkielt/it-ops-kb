@@ -28,7 +28,7 @@ import bench_repro
 import bl_clean
 import coord
 import kbpublic
-from bench_core import (HOME, PRICE, RESULTS, isolate, pinned, read_rows, resolve_model, scratch_dir, spent_run, tier_of, transcript,
+from bench_core import (HOME, PRICE, RESULTS, isolate, pinned, read_rows, resolve_model, scratch_base, spent_run, tier_of, transcript,
                         write_rate, write_rows)
 from bench_repro import (Refused, failure_of, inside, instance_env, lock_dir, mcp_config, reset_clone, run_git, same_path, sh,
                          utc_now)
@@ -99,7 +99,7 @@ def origin_path(root):
 
 def clone_path(root, n):
     """The working clone of agent N: under the scratch directory, in a directory of its own for each DIR."""
-    return scratch_dir() / ("multi-" + hashlib.sha1(str(Path(root).resolve()).encode("utf-8")).hexdigest()[:8]) / f"agent{n}"
+    return scratch_base() / ("multi-" + hashlib.sha1(str(Path(root).resolve()).encode("utf-8")).hexdigest()[:8]) / f"agent{n}"
 
 
 def scratch_path(root, n):
@@ -408,7 +408,7 @@ def probe(out=print):
     """Build a two-agent sandbox of each coordination mode in a temporary directory, check its stores, and in the shared
     one land a commit from each clone (landing_checks); remove the sandboxes. Returns 0 when every property holds, 1 when
     one fails, or raises Refused."""
-    base = scratch_dir() / f"multi-probe-{os.getpid()}"
+    base = scratch_base() / f"multi-probe-{os.getpid()}"
     res = []
     try:
         for coord in COORDS:
@@ -2214,7 +2214,7 @@ def fitness(root=None, out=print, only=()):
     plant (`plant_named`); a clean replay with --bare also needs the `isolation: ok` line; a case of COORD_WANTS also needs the
     measures of its run (`case_measures`) inside the ranges COORD_WANTS gives it. Each case's line ends with its CASE_MEASURES as name=value.
     Returns 0 when every case passes, else 1; raises Refused on a refusal of `run` or `check` and on a name in `only` that is no case."""
-    root = (Path(root) if root else scratch_dir() / f"multi-fitness-{os.getpid()}").resolve()
+    root = (Path(root) if root else scratch_base() / f"multi-fitness-{os.getpid()}").resolve()
     made = not root.exists()
     failed, cases = [], fitness_cases()
     unknown = [n for n in only if n not in {c[0] for c in cases}]
