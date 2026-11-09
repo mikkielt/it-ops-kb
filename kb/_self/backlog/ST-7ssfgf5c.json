@@ -25,6 +25,12 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "planning a story that changes the leak scan or a guard lists every path that hands content outside the clone (each caller of kbpublic.file_hits and kbcommon.leak_hits",
+      "check": 0
+    }
+  ],
   "touches": [
     "skills/sprint/SKILL.md"
   ],
