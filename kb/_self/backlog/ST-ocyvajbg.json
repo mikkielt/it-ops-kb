@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "Plan step runs referrers on every symbol a bug's repro calls, so a repro that needs a shared function changed has its callers in touches before the start",
   "status": "draft",
+  "sprint": "SP-moxpl354",
   "priority": "P3",
   "rank": 0,
   "goal": "The kb-sprint plan step says to run referrers on each function a committed bug's repro calls or asserts on and to put each caller in touches, so a worker is not stopped for touches (BG-ui3f5s37 stopped with no fix and again at land for kb/_self/backlog.md, both for callers of scratch_dir outside its touches)",
@@ -11,12 +12,20 @@
       "run": [
         "python3",
         "-c",
-        "import sys; t=open(\".claude/skills/kb-sprint/SKILL.md\",encoding=\"utf-8\").read(); ok=\"repro calls\" in t; print(ok); sys.exit(0 if ok else 1)"
+        "import sys,pathlib\nt=pathlib.Path('skills/sprint/SKILL.md').read_text(encoding='utf-8')\ns=t.split('## plan',1)[1].split('## start',1)[0].lower()\nmiss=[w for w in ['repro calls', 'referrers'] if w not in s]\nsys.exit('not yet: plan section lacks '+', '.join(miss) if miss else 0)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "referrers",
+        "scratch_dir"
       ]
     }
   ],
   "touches": [
-    ".claude/skills/kb-sprint/SKILL.md"
+    "skills/sprint/SKILL.md"
   ],
   "links": [
     "parked: SP-bpjqqauu close"
