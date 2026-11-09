@@ -2,7 +2,7 @@
   "id": "BG-vwwjwawd",
   "kind": "bug",
   "title": "An interrupt between the creation of a landing ticket and the assignment of its name leaves the ticket in the queue, and the landing lock's SIGTERM handler is not restored",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-6aegt3bs",
   "priority": "P3",
   "rank": 0,

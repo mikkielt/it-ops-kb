@@ -2,7 +2,7 @@
   "id": "BG-2izxgdra",
   "kind": "bug",
   "title": "A land first pass of a code item that ends not done yet with no merge to wait for leaves its run state at landing, which runs lists as drift and claim and stage-back read as a land still running",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-6aegt3bs",
   "priority": "P3",
   "rank": 0,

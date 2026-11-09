@@ -2,7 +2,7 @@
   "id": "BG-5b35ssgk",
   "kind": "bug",
   "title": "A landing ticket of a dead process whose pid another process now holds is waited for until the lock's bound, so every later landing ends refused at step landing lock",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-6aegt3bs",
   "priority": "P3",
   "rank": 0,

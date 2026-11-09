@@ -2,7 +2,7 @@
   "id": "ST-lcg45cer",
   "kind": "story",
   "title": "Research sprint goal: Lock follow-ups: a dead or reused pid's landing ticket never blocks, an interrupted land or claim leaves nothing behind, and a first pass with nothing to wait for ends cleanly",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-6aegt3bs",
   "goal_research": true,
   "priority": "P1",

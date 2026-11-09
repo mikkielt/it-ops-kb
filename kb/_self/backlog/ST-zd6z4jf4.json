@@ -2,7 +2,7 @@
   "id": "ST-zd6z4jf4",
   "kind": "story",
   "title": "Review sprint: Lock follow-ups: a dead or reused pid's landing ticket never blocks, an interrupted land or claim leaves nothing behind, and a first pass with nothing to wait for ends cleanly",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-6aegt3bs",
   "review": true,
   "priority": "P1",
