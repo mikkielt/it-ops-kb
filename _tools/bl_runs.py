@@ -13,7 +13,8 @@
   runs [SP|ID] --reconcile  write the state git shows to each drifted run key and exit 0 once none is left
 
 A run state contradicts git in five ways, checked in this order and each item named once, with the state `--reconcile` writes:
-the item file is `done` and the run state is not `landed`, `none` included (writes `landed`); the run state is `landed` and the
+the item file is `done`, its done commit is on the integration main (the item file reads done on it as last fetched) and the run state
+is not `landed`, `none` included (writes `landed`; a done item whose commit is not on it yet keeps its key until `land` moves it); the run state is `landed` and the
 item file is not done (a reopened item: writes `none`, which moves to `claimed`, where `landed` moves nowhere; `reopen` writes it
 too, `reset_landed`); the run state is `working` and the worker pid is
 gone or was never recorded anywhere (`failed`); the run state is `staging` or `landing` and no process record of the item
@@ -27,7 +28,7 @@ A key that moved on between the read and the write is read again, three tries. E
 1 drift listed (or a reconcile write failed), 2 coord cannot be read or the argument names no item.
 
 Standard library only; imports `bl_base`, `bl_cli`, `bl_clean` (the coord runner and the CAS writer), `bl_dispatch` (the
-branch name) and `bl_items` (the worker's pid), never `backlog` (a layer rule). It registers its own subcommand when imported, so `backlog.py` carries only
+branch name), `bl_items` (the worker's pid) and `kbpublic` (the integration remote's name), never `backlog` (a layer rule). It registers its own subcommand when imported, so `backlog.py` carries only
 the import."""
 import json
 import subprocess
@@ -116,9 +117,25 @@ def branch_gates(root, iid):
         return None
 
 
-def drift_of(state, status, alive, claimed):
-    """(the state git shows, why) for a run key that contradicts git, else None."""
-    if status == "done" and state != "landed":
+def on_integration_main(root, iid):
+    """Whether the item's file reads `done` on the integration main as last fetched (the done commit is on it). True when
+    the ref is missing: git cannot say, so the item file is taken as the answer."""
+    import kbpublic
+    ref = f"refs/remotes/{kbpublic.integration_remote(root)}/main"
+    if subprocess.run(["git", "-C", str(root), "rev-parse", "--verify", "-q", ref], capture_output=True).returncode:
+        return True
+    p = subprocess.run(["git", "-C", str(root), "show", f"{ref}:{rel_dir()}/{iid}.json"], capture_output=True, text=True,
+                       encoding="utf-8", errors="replace")
+    try:
+        return p.returncode == 0 and json.loads(p.stdout).get("status") == "done"
+    except (ValueError, AttributeError):
+        return False
+
+
+def drift_of(state, status, alive, claimed, on_main=True):
+    """(the state git shows, why) for a run key that contradicts git, else None. ON_MAIN: the item's done commit is on the
+    integration main; a done item whose commit is not has no drift of the claim kinds either: `land` moves its key once it is."""
+    if status == "done" and state != "landed" and on_main:
         return "landed", f"the item file is done and the run state is {state}"
     if state == "landed" and status not in (None, "done"):
         return NONE, f"the run state is landed and the item file is {status}, not done"
@@ -128,7 +145,7 @@ def drift_of(state, status, alive, claimed):
         return "failed", "the run state is working and its worker pid is gone"
     if state in HELD and not alive:
         return HELD[state][0], f"the run state is {state} and no {HELD[state][1]} of the item runs"
-    if state not in SETTLED and not claimed:
+    if state not in SETTLED and not claimed and on_main:
         return "released", f"the run state is {state} and no claim holds the item"
     return None
 
@@ -156,8 +173,9 @@ def collect(bl, states, scope):
                 trees = trees_of(bl.root)
                 ledgers = ledgers_of(trees)
             claimed = claimed_elsewhere(trees, ledgers, owned, iid)
+        on_main = status != "done" or state == "landed" or on_integration_main(bl.root, iid)
         rows.append({"id": iid, "state": state, "status": status, "gates": branch_gates(bl.root, iid) if it else None,
-                     "pid": pid, "alive": alive, "drift": drift_of(state, status, alive, claimed)})
+                     "pid": pid, "alive": alive, "drift": drift_of(state, status, alive, claimed, on_main)})
     return rows
 
 
