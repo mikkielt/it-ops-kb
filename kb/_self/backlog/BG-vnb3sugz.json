@@ -20,6 +20,27 @@
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which generic verbs does CLAUSE_STOPWORDS gain so an item sharing only them with a clause no longer carries it?",
+      "options": [
+        "name and read only, the two the goal names",
+        "name, read and a longer list of other generic verbs (make, give, keep, show, list, run)"
+      ],
+      "recommendation": "name and read only, the two the goal names",
+      "reason": "a longer list drops clause words other sprints' clauses match on, which the goal does not ask",
+      "do": {
+        "name and read only, the two the goal names": "BG-vnb3sugz",
+        "name, read and a longer list of other generic verbs (make, give, keep, show, list, run)": "BG-vnb3sugz"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "name and read only, the two the goal names",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ia6xayiy review"
   ],

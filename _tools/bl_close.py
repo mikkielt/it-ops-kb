@@ -996,11 +996,12 @@ def fold_word(w):
 
 # words of four letters or more that name no work: function words and the backlog's own vocabulary, which a title or
 # goal holds whatever it is about, so sharing one proves nothing (`close --summary` credited a story with a clause on
-# `that`, `each`, `goal`, `story` and `clause` alone)
+# `that`, `each`, `goal`, `story` and `clause` alone, and another with `name` and `read` plus one subject word); `name`
+# and `read` are the generic verbs a title or goal uses of any work
 CLAUSE_STOPWORDS = frozenset((
     "that this these those each with from into onto over than then them they their there what which when where who "
     "have been were will would should could does only also such some more most both same just like about after "
-    "before goal story storie clause item sprint").split())
+    "before goal story storie clause item sprint name read").split())
 
 
 def clause_words(text):
