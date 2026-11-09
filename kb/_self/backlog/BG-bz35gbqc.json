@@ -1,0 +1,22 @@
+{
+  "id": "BG-bz35gbqc",
+  "kind": "bug",
+  "title": "A released item's work branch cannot land after a re-claim: land's rebase conflicts on the item file and the run state needs a resumed worker session to reach returned",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "land re-bases a re-claimed item's branch by taking the item file of origin/main plus the branch's own gate and note changes, and moves a claimed run with a finished branch to landing without a worker session",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.exit(1)"
+    ]
+  },
+  "repro_reason": "seen in SP-mut2pmu3 with BG-ouhonprv, BG-pwhlp2sy and BG-sa4pmxsl: each branch was rebuilt by hand (claim commit first, item file conflict) and a paid dispatch --resume reached returned; needs a released item with a pushed branch",
+  "touches": [
+    "_tools/bl_land.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
