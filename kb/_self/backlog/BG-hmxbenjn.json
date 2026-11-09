@@ -15,7 +15,6 @@
       "import sys; sys.path.insert(0, \"_tools\"); import bl_authority as a; g={\"id\": \"g9\", \"question\": \"How does an executor keep its jobs?\", \"options\": [\"a local mirror store of its own\", \"the central store directly\"]}; sys.exit(0 if a.derived_class({\"touches\": [\"_tools/kj_exec.py\"]}, g) != \"push\" else 1)"
     ]
   },
-  "notes": "Met again by ST-ma2tluug: a provisional gate whose option read 'through a mirror store and LocalRemote, as a central queue's executor does' was classed push and made blocking (gate add printed: class push, matched 'mirror').",
   "touches": [
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
@@ -24,6 +23,6 @@
   "depends_on": [
     "BG-a65lzrjf"
   ],
-  "notes": "Order: same file bl_authority.py as BG-a65lzrjf. Touches: the push words live in bl_authority (derived_class).",
+  "notes": "Met again by ST-ma2tluug: a provisional gate whose option read 'through a mirror store and LocalRemote, as a central queue's executor does' was classed push and made blocking (gate add printed: class push, matched 'mirror').\n\nOrder: same file bl_authority.py as BG-a65lzrjf. Touches: the push words live in bl_authority (derived_class). Planning 2026-11-09: premise reproduces on origin/main (precheck).",
   "filed_in": "clone-0ea70e5c"
 }
