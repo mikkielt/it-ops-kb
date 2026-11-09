@@ -21,6 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: the sprint's goal concerns the backlog tools and the kb-sprint skill text, which the _self rules and the code answer; no public kb article or source row is read or changed, so the story touches no kb/public file.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-a1b2c3d4",
   "operator": "op-f618a13e"
