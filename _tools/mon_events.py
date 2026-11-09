@@ -41,6 +41,7 @@ MAX_ATTRS = 16
 STEP_SLACK_NS = 1_000_000_000  # a step this much older than its landing's start is another landing's
 NOT_ATTRS = ("id", "ts", "surface", "v", "event")
 ID_LIST_FIELDS = ("item", "topic", "touch")  # coord fields whose comma-separated value is a list of ids
+PROGRESS_LIST_FIELDS = ID_LIST_FIELDS + ("gates",)  # a progress event's own gates field is a list of ids too
 EPOCH = datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)
 
 
@@ -330,7 +331,8 @@ def coord_records(ctx, after):
         kind = e.get("kind") if isinstance(e.get("kind"), str) else ""
         values = e.get("fields") if isinstance(e.get("fields"), dict) else {}
         out.append({"name": "coord." + (kind if kind and mon_export.stable(kind) else "event"), "time": at,
-                    "attributes": attributes({"seq": e["seq"], **id_list(values)})})
+                    "attributes": attributes({"seq": e["seq"], **id_list(values, PROGRESS_LIST_FIELDS if kind == "progress"
+                                                                         else ID_LIST_FIELDS)})})
     return out, max([after] + [e["seq"] for e in events]), spans
 
 
