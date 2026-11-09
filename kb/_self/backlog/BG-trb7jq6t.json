@@ -2,7 +2,7 @@
   "id": "BG-trb7jq6t",
   "kind": "bug",
   "title": "kbid.py repoint onto a url that is already a root row leaves a duplicate source id in the citing tags and a duplicate anchor row",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-2cq2hse4",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,7 @@
     "kb/_self/tools.md",
     "kb/_self/content-rules.md"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-c41d77ea",
+  "operator": "op-f618a13e"
 }
