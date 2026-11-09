@@ -2,7 +2,7 @@
   "id": "BG-nek3djiy",
   "kind": "bug",
   "title": "repro compare pairs two facts about different options of one page as one claim and prints a false conflict",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-bpjqqauu",
   "priority": "P3",
   "rank": 0,
@@ -47,6 +47,19 @@
     "parked: SP-75hdeqld review"
   ],
   "notes": "Premise: the bug's repro fails on the base (origin/main at the planning commit, 2026-11-09); precheck ran it through the landing's check runner. Sprint order: items that share one file are chained with depends_on.",
-  "claimed_by": "claude-bdc0a493",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "71d63fa7e6e3ab8292f50a1c05cf768407de1e16",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bench_repro as b;m=lambda p,t:{'path':p,'line':1,'text':t+' [DOC S1]','kinds':['DOC'],'ids':['S1'],'urls':['https://e.com/p']};a=[m('public/x/a.md','The `--timeout` option sets the maximum wait time in seconds, default 30.')];c=[m('public/x/b.md','The `--retries` option sets the maximum wait time in seconds, default 3.')];o=b.overlap_and_conflicts(a,c);print(o[0],len(o[1]));sys.exit(1 if o[1] else 0)"
+        ],
+        "exit": 0,
+        "sha256": "6516751f32ddf5e5"
+      }
+    ]
+  }
 }
