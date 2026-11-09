@@ -15,6 +15,15 @@
       "import sys;sys.path.insert(0,'_tools');import mon_needs as m;last={'outcome':'refused','why':'sync exit 2'};r=m.delivery_entries({'last_delivery':last,'undelivered':0});print(len(r));sys.exit(1 if r else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport sys;sys.path.insert(0,'_tools');import mon_needs as m,mon_querylog as q\nlast={'outcome':'refused','why':'sync exit 2'}\nzero=m.delivery_entries({'last_delivery':last,'undelivered':0})\nsome=m.delivery_entries({'last_delivery':last,'undelivered':3})\nunknown=m.delivery_entries({'last_delivery':last})\nalerts0=q.alerts({'last_delivery':last,'undelivered':0}) if hasattr(q,'alerts') else None\nprint(len(zero),len(some),len(unknown),alerts0)\nsys.exit(0 if not zero and len(some)==1 and len(unknown)==1 else 1)\n"
+      ]
+    }
+  ],
   "touches": [
     "_tools/mon_needs.py",
     "kb/_self/monitoring.md",
