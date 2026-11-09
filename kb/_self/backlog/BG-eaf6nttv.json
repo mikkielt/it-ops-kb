@@ -2,7 +2,7 @@
   "id": "BG-eaf6nttv",
   "kind": "bug",
   "title": "A CI executor on a stock GitLab runner refuses every job, since the clone's origin url carries the job token and never equals the submitter's url, and a url with a credential reaches the job record",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-lwkdljxg",
   "priority": "P1",
   "rank": 0,
@@ -27,5 +27,7 @@
   "depends_on": [
     "BG-gnychh55"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-432be86e",
+  "operator": "op-f618a13e"
 }
