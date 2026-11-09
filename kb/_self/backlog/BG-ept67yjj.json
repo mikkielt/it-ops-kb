@@ -2,7 +2,7 @@
   "id": "BG-ept67yjj",
   "kind": "bug",
   "title": "The query log's gap step files a new public gap for a question a closed entry of the same question settled as a _self question",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-6iiony54",
   "sprint": "SP-2cq2hse4",
   "priority": "P2",
@@ -51,6 +51,19 @@
   ],
   "notes": "Found 2026-11-09 when 'which coordination strategy does a session suggest when another item touching the same files is working' (asked 4 times) was filed again as F-ed67905154ee hours after F-debac1b47a9e closed it as a _self question. The _self branch (a question the _self root's pack answers good with a tested question) is not in this item. Premise: the repro, ql_apply.gap_decision on that question against the committed ledger, gives keep on 55dde769f.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-c41d77ea",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "ddd4345025581d34ca04cf0cbaff63cc4eea8e03",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0, \"_tools\")\nimport ql_apply\nq = \"Which coordination strategy does a session suggest when another item touching the same files is working\"\nres, article, decision = ql_apply.gap_decision(q, ql_apply.Gate())\nprint(\"gap step decision:\", decision)\nsys.exit(0 if decision == \"closed\" else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "2f69f6127abdc9f9"
+      }
+    ]
+  }
 }
