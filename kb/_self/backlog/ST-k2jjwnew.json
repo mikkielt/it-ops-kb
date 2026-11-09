@@ -83,7 +83,9 @@
       },
       "class": "design",
       "answer": "extensions.mcp_tools is one module:attr or a list of them (each attribute a tool dict or a list), else an entry point; served only on the team's own server, never under --roots or in the kbtools catalog",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -100,7 +102,9 @@
       },
       "class": "design",
       "answer": "all of the group's tools are left out with one stderr line; description is the group name, a colon and the description; a non-text answer of call is an isError result",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "filed_in": "clone-0ea70e5c",

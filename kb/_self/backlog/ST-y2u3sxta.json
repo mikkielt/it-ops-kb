@@ -77,7 +77,9 @@
       },
       "class": "design",
       "answer": "Two tables under the headings Extension points and Settings keys, one row per entry with the columns name, signature, added, deprecated, removed, the name and signature in backticks",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Everything not in kbext.SURFACE is internal: extending.md says so in its first lines. The registry names every planned point up front, so the point stories implement a contract that already exists.",

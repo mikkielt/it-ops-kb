@@ -104,7 +104,9 @@
       },
       "class": "design",
       "answer": "a workspace with no clone file",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
@@ -122,7 +124,9 @@
       },
       "class": "design",
       "answer": "ext-v and the running API_VERSION",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g4",
@@ -140,7 +144,9 @@
       },
       "class": "design",
       "answer": "compare the exact text, write nothing on any difference, manifest holds name and description only",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g5",
@@ -158,7 +164,9 @@
       },
       "class": "design",
       "answer": "marketplace NAME-kb, module group_ranker, name of lower-case letters digits and single hyphens",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "filed_in": "clone-0ea70e5c",

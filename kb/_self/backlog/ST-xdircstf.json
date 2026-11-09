@@ -96,7 +96,9 @@
       },
       "class": "design",
       "answer": "refuse it, exit 2 naming the point, the module and the layer",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -113,7 +115,9 @@
       },
       "class": "design",
       "answer": "the module itself, which call refuses as not callable",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
@@ -151,7 +155,9 @@
       },
       "class": "design",
       "answer": "comma-separated comparisons on MAJOR.MINOR with >=, >, <=, < and ==, the upper bound optional",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Shared files with SP-lwkdljxg (kbcommon.py, kbpublic.py, bl_land.py, map.csv): agreed with its manager on 2026-11-08 that the first claim lands first and the other rebases; its items reach these files late. SP-uh5h46fm (mon_coord.py, mon_status.py) was asked the same and has not answered: the same rule applies. API_VERSION starts at 0.1.0: the operator's answer to ST-3brmklge's gate on 2026-11-08 (no compatibility promise until 1.0); the planted extenders declare >=0.1 so they stay valid when 1.0 comes.",

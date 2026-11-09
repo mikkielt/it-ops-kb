@@ -98,7 +98,9 @@
       },
       "class": "design",
       "answer": "raise SettingsError naming the file (locks would otherwise go unseen)",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -115,7 +117,9 @@
       },
       "class": "design",
       "answer": "dotted key as the files hold it (coordination.announce.x, extensions.k); a name ending before the key locks everything below",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
