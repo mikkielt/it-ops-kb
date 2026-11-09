@@ -1,0 +1,18 @@
+{
+  "id": "BG-jqvphkdh",
+  "kind": "bug",
+  "title": "The commit-msg hook passes no job to apply_trailers and no executor sets KB_JOB and KB_JOB_OPERATOR, so a commit a job makes carries no KB-Job and no submitter",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kg_hooks.hook_commit_msg calls kg_trailers.job_trailers(os.environ) and passes its operator and job to apply_trailers, a job's operator replacing session_operator(), and kj_exec.job_env sets KB_JOB to the job id and KB_JOB_OPERATOR to the record's operator for the job's process, so a commit made in a job carries KB-Operator of the submitter and KB-Job",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,os;sys.path.insert(0,os.path.abspath(\"_tools\"));import kg_hooks,inspect;sys.exit(0 if \"job_trailers\" in inspect.getsource(kg_hooks) else 1)"
+    ]
+  },
+  "filed_in": "clone-0ea70e5c"
+}
