@@ -40,6 +40,9 @@
     "_tools/bl_land.py",
     "_tools/bl_ops.py"
   ],
+  "depends_on": [
+    "BG-ot47avdg"
+  ],
   "links": [
     "parked: SP-x5gjv4r7 close"
   ],
