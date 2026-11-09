@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "A claim whose item file cannot be saved, or that is interrupted while it waits for the ledger lock, leaves the coord run state at claimed, which refuses the next claimer and which runs --reconcile does not clear",
   "status": "draft",
+  "sprint": "SP-6aegt3bs",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

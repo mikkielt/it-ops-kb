@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "A landing ticket of a dead process whose pid another process now holds is waited for until the lock's bound, so every later landing ends refused at step landing lock",
   "status": "draft",
+  "sprint": "SP-6aegt3bs",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
