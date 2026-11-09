@@ -2,7 +2,7 @@
   "id": "BG-bh7mf3wv",
   "kind": "bug",
   "title": "session-load's arm B replays kbmon --once without --shared, so it does not measure the shared snapshot the pane mod now uses",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-bpjqqauu",
   "priority": "P2",
   "rank": 0,
@@ -27,5 +27,7 @@
     "parked: SP-wpttdu7u review"
   ],
   "notes": "Review gap 2 of SP-wpttdu7u: bench_load.py:33 PANE_COMMANDS = ((\"--once\",), (\"--status\", \"all\")), used at 326 and 590; the mod runs --once --shared --max-age 55 (register.tsx:157). bench_load.py was outside ST-dktdxpc3's touches. Premise: the bug's repro fails on the base (origin/main at the planning commit, 2026-11-09); precheck ran it through the landing's check runner. Sprint order: items that share one file are chained with depends_on.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-bdc0a493",
+  "operator": "op-f618a13e"
 }
