@@ -1049,10 +1049,47 @@ def sync_once(a, r, host):
 EXT_TAG = re.compile(r"ext-v\d+\.\d+\.\d+")
 
 
+def patch_ids(root, *log_args):
+    """{patch id: commit} of the commits `git log` LOG_ARGS lists in the repository ROOT (the diff each makes, whatever
+    its base); {} when git cannot say."""
+    log = git("log", "-p", "--format=commit %H", *log_args, kb=root)
+    out = git("patch-id", "--stable", stdin=log.encode("utf-8"), kb=root) if log else None
+    return dict(ln.split()[:2] for ln in (out or "").splitlines() if len(ln.split()) >= 2)
+
+
+def retarget_ext_tags(root, base, head):
+    """Move each local `ext-vMAJOR.MINOR.PATCH` tag of the repository ROOT whose commit a rebase rewrote onto the
+    rebased commit of BASE..HEAD that makes the same change (the same patch id), keeping its annotation; the names moved,
+    sorted. A tag whose commit BASE or HEAD holds, or that no commit of the range matches, stays where it is."""
+    stale = [t for t in (git("tag", "--list", "ext-v*", kb=root) or "").split() if EXT_TAG.fullmatch(t)]
+    for rev in (head, base):
+        if rev and stale:
+            held = set((git("tag", "--list", "ext-v*", "--merged", rev, kb=root) or "").split())
+            stale = [t for t in stale if t not in held]
+    if not stale:
+        return []
+    now = patch_ids(root, f"{base}..{head}" if base else head)
+    moved = []
+    for t in stale:
+        old = rev_parse(f"refs/tags/{t}", kb=root)
+        was = patch_ids(root, "-1", old) if old else {}
+        new = now.get(next(iter(was), None))
+        if not new or new == old:
+            continue
+        message = git("tag", "--list", t, "--format=%(contents)", kb=root)
+        if message is None or not message.strip():
+            continue
+        p = git_run("tag", "-a", "-f", t, "-F", "-", new, stdin=message.encode("utf-8"), kb=root)
+        if p is not None and p.returncode == 0:
+            moved.append(t)
+    return sorted(moved)
+
+
 def tags_to_push(root, base, head):
     """The extension API tags (`ext-vMAJOR.MINOR.PATCH`) of the repository ROOT that point at a commit of BASE..HEAD
     (reachable from HEAD, not from BASE; BASE None: all of HEAD's history), sorted; [] when git cannot say. A tag whose
-    commit a rebase rewrote points outside the range and is not listed."""
+    commit a rebase rewrote is first moved onto the rebased commit (`retarget_ext_tags`), so it is listed with it."""
+    retarget_ext_tags(root, base, head)
     args = ["tag", "--list", "ext-v*", "--merged", head] + (["--no-merged", base] if base else [])
     return sorted(t for t in (git(*args, kb=root) or "").split() if EXT_TAG.fullmatch(t))
 
