@@ -2,7 +2,7 @@
   "id": "BG-hmxbenjn",
   "kind": "bug",
   "title": "A gate whose option names a local mirror store of an executor is classed push and made blocking",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-pww4aqis",
   "priority": "P2",
   "rank": 0,
@@ -24,5 +24,7 @@
     "BG-a65lzrjf"
   ],
   "notes": "Met again by ST-ma2tluug: a provisional gate whose option read 'through a mirror store and LocalRemote, as a central queue's executor does' was classed push and made blocking (gate add printed: class push, matched 'mirror').\n\nOrder: same file bl_authority.py as BG-a65lzrjf. Touches: the push words live in bl_authority (derived_class). Planning 2026-11-09: premise reproduces on origin/main (precheck). 2026-11-09 ST-vst4vom3 hit it again: gate g2 asked where a server executor keeps its mirror store and clones under --data DIR; gate add printed class push (matched 'mirror'), option names 'clones/' outside the touches: made blocking.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-6b037793",
+  "operator": "op-f618a13e"
 }
