@@ -202,7 +202,7 @@ score takes a census log that holds the outcomes a census recorded and the resul
 sources, agreement, false confirms (`confirmed` where the census changed a fact: updated, superseded or gone, the error
 that dates a stale fact) of the changed sources, unconfirmed. It reads, writes nothing and asks no model.
 
-check, record, confirm, repin, judge, dispatch and apply (not their --dry-run) each append one ops row `census.phase` to the query log (phase,
+check, record, confirm, repin, judge, dispatch and apply (not their --dry-run) each append one ops row `census.phase` to the query log (phase, `census-apply` for apply,
 date, ms, exit and the rows per bucket or outcome; kb/_self/querylog.md): factdiff.py detect, apply and review write the same.
 
 run and finish chain the phases no model decides, each step a command of its own (its argv is printed first, its ops
@@ -3731,6 +3731,7 @@ def cmd_finish(a, tally):
 
 PHASES = {"check": cmd_check, "record": cmd_record, "confirm": cmd_confirm, "repin": cmd_repin,
           "judge": cmd_judge, "dispatch": cmd_dispatch, "apply": cmd_apply}  # each writes a census.phase ops row
+PHASE_TOKENS = {"apply": "census-apply"}  # the row's phase where the command's name is factdiff.py's too
 
 
 def main():
@@ -3861,7 +3862,8 @@ def main():
             "apply": cmd_apply, "run": cmd_run, "finish": cmd_finish}
     run = lambda tally: cmds[a.cmd](a, tally)  # noqa: E731
     if a.cmd in PHASES and not getattr(a, "dry_run", False):
-        sys.exit(ql_capture.census_phase(a.cmd, run, ql_capture.phase_date(getattr(a, "date", None), getattr(a, "log", None))))
+        # `apply` is also a phase of factdiff.py: the row of this one is told apart by its token
+        sys.exit(ql_capture.census_phase(PHASE_TOKENS.get(a.cmd, a.cmd), run, ql_capture.phase_date(getattr(a, "date", None), getattr(a, "log", None))))
     sys.exit(run(Counter()))
 
 
