@@ -14,5 +14,8 @@
       "import sys,tempfile; sys.path.insert(0,'_tools'); import bench_load; n=[]; o=bench_load.shim_dir; bench_load.shim_dir=lambda d: (n.append(1), o(d))[1]; bench_load.PaidBench(tempfile.mkdtemp(),1); sys.exit(1 if n else 0)"
     ]
   },
+  "links": [
+    "parked: SP-bpjqqauu review"
+  ],
   "filed_in": "clone-0ea70e5c"
 }
