@@ -2,7 +2,7 @@
   "id": "BG-jtnkjxsc",
   "kind": "bug",
   "title": "redact._known_load crashes on a deep cache file and loads a wrong-shaped one as a Known of characters",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-osevumx6",
   "priority": "P3",
@@ -49,6 +49,19 @@
   ],
   "notes": "Planned 2026-11-09 in SP-osevumx6: items that share a file wait on each other (kbcommon.py, redact.py then kbask.py, ql_capture.py then ql_deliver.py); no open item of the other live sprints touches this item's code files.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-cdcea91c",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "51b8c7cf457f8adeb9be38af7ed18c4b73fc77e4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,tempfile;sys.path.insert(0,'_tools');import redact;from pathlib import Path;p=Path(tempfile.mkdtemp())/'k.json';p.write_text('['*100000)\ntry:\n    r=redact._known_load(p,'K')\nexcept Exception:\n    sys.exit(1)\nsys.exit(0 if r is None else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
