@@ -60,5 +60,6 @@
   "links": [
     "parked: SP-mc4dzsfe close"
   ],
+  "notes": "Planner 2026-11-09 (SP-6aegt3bs): premise reproduces on main (repro exit 1: run state landing after a first pass with no pending request, also with --wait-merge 0, which the fixture shows). Check 3 (a first pass that landed the item keeps landed) passes before the work on purpose: it pins that the fix does not overwrite a landed state. Detail settled: land_move_run moves a state still landing after land_pass returned 0 to refused with step merge-request (ops_token of merge request), reading it from coord, never from the pass's own result.",
   "filed_in": "clone-0ea70e5c"
 }
