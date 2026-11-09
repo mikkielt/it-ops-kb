@@ -1,0 +1,22 @@
+{
+  "id": "ST-525ypepb",
+  "kind": "story",
+  "title": "A land that stops at the stale step names the docs it needs a Self-Reviewed line for, and the worker brief says to rerun selfdoc.py stale after the rebase onto origin/main",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The worker brief and the land stop message tell a worker to run selfdoc.py stale --since origin/main again after rebasing on origin/main, since SP-osevumx6 landings of BG-fwqcimiv and BG-fjptk52z stopped at the stale step on kb/_self/tools.md, which the worker's own pre-rebase run did not list",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "t=open('agents/worker.md',encoding='utf-8').read();import sys;sys.exit(0 if 'after the rebase' in t and 'selfdoc.py stale' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "agents/worker.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
