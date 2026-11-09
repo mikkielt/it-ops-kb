@@ -2,7 +2,7 @@
   "id": "ST-2uuiyhxj",
   "kind": "story",
   "title": "Research sprint goal: Backlog tool: gate classes, operator authority and item records are right",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-pww4aqis",
   "goal_research": true,
   "priority": "P1",
@@ -23,6 +23,20 @@
   ],
   "notes": "No outside facts: the sprint goal states bugs of the backlog tool's own code and its _self docs; it asks no question the kb or the live docs answer, so no kb fact or gap entry is written.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-6b037793",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "a4100211190d1e10247cf5a522d0929a62faa672",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-2uuiyhxj"
+        ],
+        "exit": 0,
+        "sha256": "e4652c43aab9adc0"
+      }
+    ]
+  }
 }
