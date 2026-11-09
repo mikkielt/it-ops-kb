@@ -91,7 +91,7 @@ def alerts(data):
         return []
     when = ev.get("when")
     return [{"kind": "eval", "id": "kb.eval", "panel": "kb", "message": "lookup eval FAILED at the last landing",
-             "since": str(when)[:16].replace("T", " ") if when else ""}]
+             "since": str(when)[:16].replace("T", " ") + " UTC" if when else ""}]
 
 
 def tree_signature(kbcommon):
