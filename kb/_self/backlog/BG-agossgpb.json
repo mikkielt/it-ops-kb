@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "agent.run marks a run failed when its answer merely opens with the words API Error, and a run with no closing text as ok",
   "status": "draft",
+  "sprint": "SP-osevumx6",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

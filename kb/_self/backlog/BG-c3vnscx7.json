@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "The leak scan flags the EC armor label quoted before a repository path with a camel-case abbreviation (ConfigMgr, UserSvc), which the old segment-length rule let pass",
   "status": "draft",
+  "sprint": "SP-osevumx6",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

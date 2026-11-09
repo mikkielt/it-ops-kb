@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kbask.py ask takes a session label such as s-0e0c2d as its target and exits 0, but the coord hook delivers only asks to a full session id, an announced item or any, so the other session never sees the question",
   "status": "draft",
+  "sprint": "SP-osevumx6",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",

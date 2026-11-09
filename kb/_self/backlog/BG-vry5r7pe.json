@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "A stale feedback.ids lock taken by two writers that both saw it stale can be held by both",
   "status": "draft",
+  "sprint": "SP-osevumx6",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

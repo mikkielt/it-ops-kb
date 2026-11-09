@@ -4,6 +4,7 @@
   "title": "An ops row of a census phase or of the sync gate written by a probe in another working directory still reaches the owning clone's spool",
   "status": "draft",
   "parent": "EP-iowijan3",
+  "sprint": "SP-osevumx6",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",

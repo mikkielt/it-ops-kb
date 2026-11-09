@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "The query-log spool keeps the rows of sessions whose end marker is over a day old, with no entry undelivered",
   "status": "draft",
+  "sprint": "SP-osevumx6",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

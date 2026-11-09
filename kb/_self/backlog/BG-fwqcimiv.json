@@ -4,6 +4,7 @@
   "title": "The leak scan reads a prose secret assignment followed by a comma, bracket or backtick as a placeholder and passes it",
   "status": "draft",
   "parent": "EP-n4dci4w7",
+  "sprint": "SP-osevumx6",
   "priority": "P1",
   "rank": 0,
   "severity": "S2",

@@ -4,6 +4,7 @@
   "title": "redact._known_load crashes on a deep cache file and loads a wrong-shaped one as a Known of characters",
   "status": "draft",
   "parent": "EP-n4dci4w7",
+  "sprint": "SP-osevumx6",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

@@ -4,6 +4,7 @@
   "title": "kbcommon.url_holds_credential reads a Windows path with an @ in a folder name as a credential url",
   "status": "draft",
   "parent": "EP-eocmyqdx",
+  "sprint": "SP-osevumx6",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
