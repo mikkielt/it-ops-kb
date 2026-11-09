@@ -2,7 +2,7 @@
   "id": "BG-5dcfyrks",
   "kind": "bug",
   "title": "redact keeps the start of a url password that holds an angle bracket, because the password class of URL_USERINFO excludes < and >",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-osevumx6",
   "priority": "P3",
   "rank": 0,
@@ -23,5 +23,7 @@
     "parked: SP-w57bnhhx review"
   ],
   "notes": "Found by the SP-w57bnhhx review on 2026-10-26 (fresh-context reviewer, probed on the tip of the main branch); not S1, so parked as a draft in no sprint. Planned 2026-11-09 in SP-osevumx6: items that share a file wait on each other (kbcommon.py, redact.py then kbask.py, ql_capture.py then ql_deliver.py); no open item of the other live sprints touches this item's code files.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-cdcea91c",
+  "operator": "op-f618a13e"
 }
