@@ -465,6 +465,7 @@ class _Chain(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         why = self.refuse(newurl) if self.refuse else ""
         if why:
+            fp.close()
             raise _Refused(why)
         self.hops.append((code, newurl))
         return super().redirect_request(req, fp, code, msg, headers, newurl)
