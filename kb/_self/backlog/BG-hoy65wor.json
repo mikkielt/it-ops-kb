@@ -52,12 +52,25 @@
         "omit --out when the log is factdiff-<date>.csv, the name detect picks itself": "BG-hoy65wor",
         "always name the log with --out": "BG-hoy65wor"
       },
+      "class": "design"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which sources does the check step of a selected census.py run take: every source the selection names, or only those detect reads?",
+      "options": [
+        "every source the selection names, as a run with no selection takes every source",
+        "only the sources detect reads (cited, not superseded)"
+      ],
+      "recommendation": "every source the selection names, as a run with no selection takes every source",
+      "reason": "the census log then covers the selection the way the full census covers all sources",
+      "do": {
+        "every source the selection names, as a run with no selection takes every source": "BG-hoy65wor",
+        "only the sources detect reads (cited, not superseded)": "BG-hoy65wor"
+      },
       "class": "design",
-      "answer": "omit --out when the log is factdiff-<date>.csv, the name detect picks itself",
-      "by": "operator",
-      "operator": "op-f618a13e",
-      "role": "interactive",
-      "agent_session": true
+      "answer": "every source the selection names, as a run with no selection takes every source",
+      "by": "agent"
     }
   ],
   "links": [
