@@ -2,7 +2,7 @@
   "id": "BG-tje2kpiv",
   "kind": "bug",
   "title": "The kbmon-pane mod never retries a failed --receipt run while the alert set stays the same",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-hyfyn22d",
   "priority": "P3",
@@ -44,6 +44,19 @@
   "links": [
     "parked: SP-3hgirkur review"
   ],
-  "claimed_by": "claude-ev4run01",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "5f584c632f29fd6762841165cc915516ecd0cea7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('.claude/skills/kbmon-pane/hooks/register.tsx',encoding='utf-8').read();i=t.find('lastAlerts = alerts');j=t.find('session.append');sys.exit(0 if (i>=0 and j>=0 and i>j) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
