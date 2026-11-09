@@ -1,7 +1,8 @@
 """Where and as whom a job runs: kbjob.py place asks an OPA placement policy (stdlib only; kb/_self/coordination.md, section "Operation jobs").
 
-`place(root, op, subject, url, ...)` builds the input {op, subject, roots, root_groups, operator, groups, host,
-capabilities: {paid, push}}, sends it as `POST URL/v1/data/kbjobs/placement` and returns the one decision
+`place(op, subject, url, ...)` builds the input {op, subject, roots, root_groups, operator, groups, host,
+capabilities: {paid, push}} (the capabilities describe the operation: `paid` for one that spends model calls, `push` for one
+that pushes to a remote, read from `PAID_OPS` and `PUSH_OPS`, never from the environment), sends it as `POST URL/v1/data/kbjobs/placement` and returns the one decision
 {executor, identity, fallback, fallback_after_s, budget_cap_usd, decided_by, reason}. Any failure to answer, an unreachable
 OPA, a reply with no `result`, or a field outside the tables of `coord` (executor workstation|server|ci, identity
 none|group-bot|operator, fallback null or an executor, the two numbers null or 0 and up), decides the workstation with
@@ -35,15 +36,14 @@ def roots_of():
     return [r.name for r in served], {r.name: kbcommon.pointer_group(r) for r in served if kbcommon.pointer_group(r)}
 
 
-def capabilities_of(root):
-    """{paid, push} of this session: `paid` when a Claude API key is in the environment (a job that spends money can run here),
-    `push` when the clone has an integration remote to push to."""
-    import kj_store
-    try:
-        push = bool(kj_store.remote_url(kj_store.clone_path(root)))
-    except Exception:  # noqa: BLE001 - an unreadable remote is no push capability, never a refused placement
-        push = False
-    return {"paid": bool(os.environ.get("ANTHROPIC_API_KEY")), "push": push}
+PAID_OPS = ("bench", "dispatch", "begin")  # the operations that spend model calls
+PUSH_OPS = ("land", "sync-push")  # the operations that push to a remote
+
+
+def capabilities_of(op):
+    """{paid, push} of the operation OP, not of the host: `paid` when OP spends model calls, `push` when it pushes to a remote.
+    Read from the two tables above, never from the environment or a remote, so no credential is touched."""
+    return {"paid": op in PAID_OPS, "push": op in PUSH_OPS}
 
 
 def group_paths(operator_path):
@@ -52,11 +52,11 @@ def group_paths(operator_path):
     return ["/".join(parts[:i]) for i in range(1, len(parts))]
 
 
-def build_input(root, op, subject, operator=None, groups=None):
+def build_input(op, subject, operator=None, groups=None):
     """The OPA input for OP on SUBJECT: what the policy decides from."""
     names, root_groups = roots_of()
     return {"op": op, "subject": subject or "", "roots": names, "root_groups": root_groups, "operator": operator or "",
-            "groups": list(groups or []), "host": platform.node(), "capabilities": capabilities_of(root)}
+            "groups": list(groups or []), "host": platform.node(), "capabilities": capabilities_of(op)}
 
 
 def number_or_none(value):
@@ -109,9 +109,9 @@ def ask(url, body):
     return checked(data["result"])
 
 
-def place(root, op, subject, url=None, operator=None, groups=None):
+def place(op, subject, url=None, operator=None, groups=None):
     """The decision for OP on SUBJECT: the policy at URL, else the one KB_OPA_URL names, else the workstation (reason `no policy`)."""
     url = url or os.environ.get(ENV_URL, "")
     if not url:
         return refused("no policy: no --opa and no KB_OPA_URL")
-    return ask(url, build_input(root, op, subject, operator, groups))
+    return ask(url, build_input(op, subject, operator, groups))

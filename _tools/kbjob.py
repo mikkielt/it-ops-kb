@@ -285,7 +285,7 @@ def place_command(args, remote):
             operator = None
     groups = kj_place.group_paths(operator)
     operator = operator or kj_store.operator_id()
-    print(json.dumps(kj_place.place(str(ROOT), args.op, args.subject, args.opa, operator, groups), sort_keys=True, ensure_ascii=False))
+    print(json.dumps(kj_place.place(args.op, args.subject, args.opa, operator, groups), sort_keys=True, ensure_ascii=False))
     return 0
 
 
