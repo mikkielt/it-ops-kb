@@ -2,7 +2,7 @@
   "id": "BG-epvddq7p",
   "kind": "bug",
   "title": "dispatch's worker brief tells a worker whose touches are protected skill text to run stage-back --check but not that the orchestrator's stage-back needs --self-reviewed for each doc the worker read",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-rzwljgxv",
   "priority": "P2",
   "rank": 0,
@@ -28,6 +28,19 @@
     "parked: SP-c6tr77jl close"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-ev1run01",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "b7a619fba67aaa22a2344973f6b2b40a4dfba6c6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import bl_dispatch as d;from bl_base import Backlog;bl=Backlog(\".\");d.staged_files=lambda b,i:[\".claude/skills/x/SKILL.md\"];t=d.compose_brief(bl,\"BG-epvddq7p\");s=t.split(\"\\n## Staging copies\\n\")[1].split(\"\\n## \")[0];sys.exit(0 if \"--self-reviewed\" in s and \"selfdoc.py stale\" in s else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
