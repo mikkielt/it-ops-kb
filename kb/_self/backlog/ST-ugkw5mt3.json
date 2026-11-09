@@ -2,7 +2,7 @@
   "id": "ST-ugkw5mt3",
   "kind": "story",
   "title": "A worker branch is pushed to the integration remote at stage-back when its landing is placed off the workstation, and land deletes it after",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-p4guu2ip",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",
@@ -62,5 +62,7 @@
     "ST-c6ao5unb"
   ],
   "notes": "Order agreed 2026-11-08 with SP-ep7ck2ab's manager (ask A1e21b0d155): shared files (_tools/kbpublic.py, _tools/kbcommon.py, _tools/bl_land.py, kb/_self/map.csv) land by first claim; the later item rebases. No hard dependency. Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: stage-back calls it when kbjob.py place land ITEM gives an executor other than workstation",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-61c966d6",
+  "operator": "op-f618a13e"
 }
