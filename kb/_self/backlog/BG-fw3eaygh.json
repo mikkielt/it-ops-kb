@@ -1,0 +1,19 @@
+{
+  "id": "BG-fw3eaygh",
+  "kind": "bug",
+  "title": "extending.md says kbpublic.file_hits passes a leak_scan extender no root, so root is None there, but file_hits now passes the file's root to one that takes it",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/_self/extending.md, The leak point, says kbpublic.file_hits passes root to an extender whose signature takes it and calls a four-argument extender without it, and no longer says root is None there",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,re; sys.exit(1 if re.search(r\"so .root. is .None. there\", open(\"kb/_self/extending.md\", encoding=\"utf-8\").read()) else 0)"
+    ]
+  },
+  "repro_reason": "a doc sentence about an extension point's call has no behaviour to run; the text match is the only proof",
+  "filed_in": "clone-0ea70e5c"
+}
