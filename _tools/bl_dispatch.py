@@ -137,6 +137,11 @@ WORKER_RULES = (
      "stack's.",
      "A stacked item (its base holds another item's commits not yet landed): each commit names in its own "
      "`Self-Reviewed` trailer the docs read for its change, not the stack's."),
+    ("selfdoc.py",
+     "A rebase onto `origin/main` (`git rebase origin/main`) changes what `selfdoc.py stale --since origin/main` "
+     "lists: run it again after the rebase onto origin/main, before each commit, and read every doc it now lists, "
+     "as the landing stops at its stale step on one the run before the rebase did not list.",
+     ""),
     "A choice the goal leaves open (a name, a default, a width, an opt-in, a limit, a price), an implementation "
     "choice (how the code or text does what the goal says) and a narrowing of the rows the goal names (fewer rows, "
     "files or cases than it lists): record a provisional gate with your recommendation (`{backlog} gate add {id} "

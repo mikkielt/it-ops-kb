@@ -42,6 +42,29 @@
   "depends_on": [
     "ST-rosm4sdw"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which projects' briefs get the rule to run selfdoc.py stale again after the rebase onto origin/main?",
+      "options": [
+        "only where the project's root has selfdoc.py",
+        "every project"
+      ],
+      "recommendation": "only where the project's root has selfdoc.py",
+      "reason": "the host-neutral brief has no stale step to name",
+      "do": {
+        "only where the project's root has selfdoc.py": "ST-525ypepb",
+        "every project": "ST-525ypepb"
+      },
+      "class": "agents-rule",
+      "answer": "only where the project's root has selfdoc.py",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "links": [
     "parked: SP-osevumx6 close"
   ],
