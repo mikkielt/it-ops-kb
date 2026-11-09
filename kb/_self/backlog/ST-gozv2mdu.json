@@ -2,7 +2,7 @@
   "id": "ST-gozv2mdu",
   "kind": "story",
   "title": "Review sprint: Leak scan, redaction and query-log capture hold on the layouts reviews found",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-osevumx6",
   "review": true,
   "priority": "P1",
@@ -40,6 +40,44 @@
   ],
   "notes": "Review run 2026-11-09: fresh reviewer found 3 S2 leak-scan gaps (fixed in this sprint) and 3 lower ones (parked). All provisional answers confirmed on the operator's delegation. done refused only on the held-out answer-rate check (false_good=9, max 8, caused by the new articles of d270ae793, not by this sprint); left open for the operator's re-label decision. 2026-11-09 ~09:20 CET: the operator, asked by manager session c9419db9, confirmed every operator-class answer recorded from an agent session in this sprint by its recommendation (incl. any departure from the recommendation the sprint manager chose). The agent_session flags stay as written; this note is the operator confirmation.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-cdcea91c",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "ac30e53892189b60cc2f07110e6a095eed9dfd24",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "ec6949e1de116575"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "72213ea2c645b253"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval",
+          "--file",
+          "kb/public/_retrieval/lookup_heldout.csv",
+          "--root",
+          "public",
+          "--min",
+          "86",
+          "--max-false-good",
+          "8"
+        ],
+        "exit": 0,
+        "sha256": "cc886a3cfa4026eb"
+      }
+    ]
+  }
 }
