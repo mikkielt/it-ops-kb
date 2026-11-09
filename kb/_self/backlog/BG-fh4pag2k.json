@@ -18,9 +18,12 @@
   "touches": [
     "_tools/backlog.py"
   ],
+  "depends_on": [
+    "BG-3kjhj5uw"
+  ],
   "links": [
     "parked: SP-f2o3aqm2 review"
   ],
-  "notes": "Review gap (S4) of SP-f2o3aqm2, fresh-context reviewer 2026-10-24; parked, no fitness test or user report names it.",
+  "notes": "Review gap (S4) of SP-f2o3aqm2, fresh-context reviewer 2026-10-24; parked, no fitness test or user report names it. Order: BG-3kjhj5uw edits the same dispatch usage paragraph of _tools/backlog.py, so this one runs after it.",
   "filed_in": "clone-0ea70e5c"
 }
