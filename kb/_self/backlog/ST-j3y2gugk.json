@@ -1,0 +1,25 @@
+{
+  "id": "ST-j3y2gugk",
+  "kind": "story",
+  "title": "A source whose page moved is re-pointed by one command that writes the new row, supersedes the old one and re-keys its anchor and doc2query rows",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbid.py (or factdiff.py) re-points a moved source in one command: a new _sources.csv row for the new url with the old row's licence, reuse and publisher, superseded_by on the old row, the citing facts' tags moved to the new id, and their anchor and doc2query rows re-keyed, so check and doc2query stale stay clean; found 2026-11-09 when two refresh runs re-pointed 20 moved sources by hand with scratch scripts for 60 anchor and 15 doc2query rows, and kbid.py add refused hosts with no registry licence record",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/kbid.py",
+        "repoint",
+        "-h"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbid.py",
+    "kb/_self/web-sources.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
