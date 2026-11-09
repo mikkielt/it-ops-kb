@@ -50,6 +50,44 @@
     "kb/_self/plugin.md",
     "kb/_self/token-efficiency.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does kb_mcp.py prefix the tools of a group whose name has a hyphen?",
+      "options": [
+        "keep the hyphen",
+        "turn each hyphen into an underscore"
+      ],
+      "recommendation": "keep the hyphen",
+      "reason": "no collision between acme-corp and acme_corp, a valid MCP name, and the tool name still shows the group as written",
+      "do": {
+        "keep the hyphen": "BG-gcecxy67",
+        "turn each hyphen into an underscore": "BG-gcecxy67"
+      },
+      "class": "design",
+      "answer": "keep the hyphen",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Does kb_mcp.py leave out a group tool whose prefixed name is over 64 characters?",
+      "options": [
+        "leave it out with a stderr line",
+        "serve it anyway"
+      ],
+      "recommendation": "leave it out with a stderr line",
+      "reason": "an MCP client refuses a longer tool name, which the goal's valid-name clause needs",
+      "do": {
+        "leave it out with a stderr line": "BG-gcecxy67",
+        "serve it anyway": "BG-gcecxy67"
+      },
+      "class": "design",
+      "answer": "leave it out with a stderr line",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ep7ck2ab review"
   ],
