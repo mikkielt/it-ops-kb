@@ -26,7 +26,7 @@ worktree and scratch directory, the in-flight sibling items with the files their
 tests and whole-suite failures that are no test the orchestrator names, the fixed worker rules (two only for the touches: `self_eval_rules`, `tool_code_rules`) and the rules of the project's own docs (`rules_section`, the
 one function that builds that part: backlog.json's `kb_root` gives the cited fact lines of a kb root, its `docs_map`
 the docs and `##` headings the item's touches map to). Standard library only; imports `bl_base`, `bl_cli`,
-`bl_items` (for the `goal` text and `claim`), `bl_land` (the worker's branch and worktree names), `bl_plan` and `bl_view` (the overlap rule and the held claims `begin` reads) and `bl_clean` (the `own/` records), never `backlog`."""
+`bl_items` (for the `goal` text and `claim`), `bl_land` (the worker's branch and worktree names), `bl_plan` and `bl_view` (the overlap rule and the held claims `begin` reads), `bl_authority` (the money signal of a gate, for the paid-call stub) and `bl_clean` (the `own/` records), never `backlog`."""
 import argparse
 import contextlib
 import csv
@@ -44,6 +44,7 @@ import time
 import urllib.parse
 from pathlib import Path
 
+import bl_authority
 import bl_clean
 import bl_cli
 import bl_items
@@ -671,6 +672,36 @@ def worker_env(oid, iid=None, sprint=None, traceparent=None):
     return env
 
 
+STUB_DIR_NAME = "stub-bin"  # under the item's scratch directory: the first PATH directory of a worker with no approved spend
+
+
+def money_approved(it):
+    """Whether the item IT carries a gate with an answer whose words name a money signal (`bl_authority.strict_signals`)."""
+    return any(isinstance(g, dict) and g.get("answer") and any(kind == "money" for kind, _ in bl_authority.strict_signals(g))
+               for g in it.get("gates") or [])
+
+
+def paid_stub(iid):
+    """The text of the stub `claude` of the item IID: a /bin/sh script that says on stderr what the worker lacks and exits 2."""
+    msg = f"claude: {iid} has no answered gate naming money, which a call of claude (a paid session) needs; no call was made"
+    return f"#!/bin/sh\nprintf '%s\\n' {shlex.quote(msg)} >&2\nexit 2\n"
+
+
+def guard_spend(bl, iid, env):
+    """ENV (a worker's environment, `worker_env`) with, for an item with no money gate answered (`money_approved`), the
+    directory `STUB_DIR_NAME` of its scratch directory first on PATH, holding a stub `claude` written now (`paid_stub`), so
+    a child call of `claude` by name stops there; an item with one gets ENV as it is. The session itself is started by the
+    absolute path `claude_argv` gives, which needs no PATH."""
+    if money_approved(bl.items[iid]):
+        return env
+    stub = scratch_path(bl.root, iid) / STUB_DIR_NAME
+    stub.mkdir(parents=True, exist_ok=True)
+    write_text(stub / "claude", paid_stub(iid))
+    (stub / "claude").chmod(0o755)
+    env["PATH"] = str(stub) + os.pathsep + env.get("PATH", "")
+    return env
+
+
 def budget_usd(flag=None, env=None):
     """The worker's spend cap in USD as text, or None for none: the `--max-budget-usd` FLAG, else the `BUDGET_ENV`
     variable of ENV (default: the environment), else none. Subagent work does not count against `--max-turns`, so the
@@ -706,7 +737,7 @@ def claude_argv(bl, iid, model=None, turns=None, budget=None, resume=None):
     dirs = [scratch_path(bl.root, iid)] + ([repos_dir(bl.root, iid)] if repo_checkouts(bl, iid) else [])
     if not (Path(bl.root) / ROLE_FILE).is_file():
         dirs.append(PLUGIN_ROOT)
-    return ["claude", "-p", *(["--resume", resume] if resume else []), "--model", model or DEFAULT_MODEL, "--effort", EFFORT, "--output-format", "json",
+    return [os.path.abspath(shutil.which("claude") or "claude"), "-p", *(["--resume", resume] if resume else []), "--model", model or DEFAULT_MODEL, "--effort", EFFORT, "--output-format", "json",
             "--add-dir", *map(str, dirs), "--max-turns", str(turns or max_turns(bl, iid)),
             *([BUDGET_FLAG, budget] if budget else [])]
 
@@ -1237,7 +1268,7 @@ def run_direct(bl, iid, argv, wt, stdin_path, scratch, started, source):
         traceparent = worker_traceparent(iid, it.get("sprint"))
         try:
             proc = subprocess.Popen(argv, cwd=str(wt), stdin=stdin, stdout=out, stderr=err,
-                                    env=worker_env(oid, iid, it.get("sprint"), traceparent))
+                                    env=guard_spend(bl, iid, worker_env(oid, iid, it.get("sprint"), traceparent)))
         except OSError:
             bl_items.move_run(iid, "failed", "dispatch")
             raise
@@ -1294,7 +1325,7 @@ def run_launched(bl, iid, argv, wt, stdin_path, scratch, started, source):
     for f in (pidfile, exitfile):
         f.unlink(missing_ok=True)
     bl_items.move_run(iid, "working", "dispatch")
-    env = worker_env(oid, iid, it.get("sprint"), worker_traceparent(iid, it.get("sprint")))
+    env = guard_spend(bl, iid, worker_env(oid, iid, it.get("sprint"), worker_traceparent(iid, it.get("sprint"))))
     largv = launcher_argv(setting("launcher"), wt, launched_line(argv, stdin_path, result, errlog, pidfile, exitfile, env,
                                                                    dict(os.environ)))
     try:
