@@ -2,7 +2,7 @@
   "id": "BG-myligl24",
   "kind": "bug",
   "title": "kbsettings.layered raises must be an object for the list and string keys group, gate_checks and extension_paths, which its goal and the docs name",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-y7fe7qqx",
   "sprint": "SP-ga3lbnlk",
   "priority": "P2",
@@ -90,6 +90,28 @@
     "parked: SP-ep7ck2ab review"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-0a3e91bc",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "5f8a9a9026610d7ae4913a966cf3eb6d4a895e22",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport inspect,sys\nsys.path.insert(0,\"_tools\")\nimport kg_sync,kbext\nfor f in (kg_sync.group_gate,kbext._named,kbext._add_paths):\n    if \"layer_files\" in inspect.getsource(f):\n        sys.exit(\"not yet: \"+f.__module__+\".\"+f.__name__+\" reads layer_files\")\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport json,sys,tempfile,pathlib\nsys.path.insert(0,\"_tools\")\nimport kbsettings\nd=pathlib.Path(tempfile.mkdtemp())\n(d/\"settings.json\").write_text(json.dumps({\"gate_checks\":[[\"true\"]],\"extension_paths\":[\"/x\"],\"group\":\"acme\"}))\nfor name,want in ((\"gate_checks\",\"true\"),(\"extension_paths\",\"/x\"),(\"group\",\"acme\")):\n    try:\n        merged,layers=kbsettings.layered(d,name)\n    except kbsettings.SettingsError as e:\n        sys.exit(\"not yet: \"+str(e))\n    assert want in str(merged), (name,merged)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
