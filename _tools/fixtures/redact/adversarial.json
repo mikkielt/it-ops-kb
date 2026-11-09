@@ -77,7 +77,12 @@
     {"id": "domain.vault-token", "text": "VAULT_TOKEN={v}", "v": "long"},
     {"id": "closed.comma", "text": "secret={v},", "v": "slash"},
     {"id": "closed.paren", "text": "(secret={v})", "v": "slash"},
-    {"id": "closed.prose", "text": "the secret: {v}, then", "v": "slash"}
+    {"id": "closed.prose", "text": "the secret: {v}, then", "v": "slash"},
+    {"id": "closed.paren-stop", "text": "(secret={v}).", "v": "slash"},
+    {"id": "closed.bracket-stop", "text": "[secret={v}].", "v": "slash"},
+    {"id": "closed.span-before-key", "text": "Set `secret={v}` in the file.", "v": "slash"},
+    {"id": "closed.span-export", "text": "run `export DB_PASSWORD={v}`", "v": "mixed"},
+    {"id": "closed.span-stop", "text": "`password: {v}`.", "v": "mixed"}
   ],
   "utility": [
     {"id": "kb-cve", "text": "Install KB5034441 and check CVE-2024-38063 before the next ring."},

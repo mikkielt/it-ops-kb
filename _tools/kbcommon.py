@@ -286,7 +286,7 @@ URL_USERINFO = re.compile(r"""(\b[A-Za-z][A-Za-z0-9+.-]*://[^\s/:@"'<>]*:)([^\s/
 STRUCTURED = ("auth", "url")
 PROSE_STRUCTURED = STRUCTURED + ("assign",)
 PLACEHOLDER_WORDS = frozenset(("pass password passwd pwd pw secret token key test tiger user changeme change-me example "
-                               "none null true false str string where in is it the see for to of").split())
+                               "none null true false str string where in is it the see for to of value").split())
 _NOT_A_VALUE = re.compile(r"[${}<>*()\[\],;`\u2026\u201c\u201d]|\.\.\.")
 _PLACEHOLDER_NAME = re.compile(r".|[A-Z][A-Z_]+|(?i:(?:your|my)[-_].*|.*[-_]here)")
 
@@ -303,10 +303,13 @@ _CODE_REF = re.compile(r"[a-z]+(?:_[a-z]+)+|(?:[A-Za-z]:)?[a-z0-9._~-]*(?:/[a-z0
 
 def _closed_value(value):
     """Whether an unquoted assignment value, read without the punctuation that closes it, is a literal: the `, ) ] }`
-    after it and a code span's backticks are dropped (`(password=v)`, `password: v, then`), a code expression still holds
-    its opening `(`, `[` or `{`, and a snake_case name or a path so closed is a reference (`api_key=token_provider,`)."""
-    bare = value.rstrip(",)]}")
-    bare = bare[1:-1] if len(bare) > 1 and bare[0] == bare[-1] == "`" else bare
+    after it, one full stop behind them (`(password=v).`) and a code span's backticks, whether its opening one sits before
+    the key or in the value, are dropped (`(password=v)`, `password: v, then`), a code expression still holds its
+    opening `(`, `[` or `{`, and a snake_case name or a path so closed is a reference (`api_key=token_provider,`)."""
+    bare = value.rstrip(",)]}`")
+    if bare.endswith(".") and not bare.endswith(".."):
+        bare = bare[:-1].rstrip(",)]}`")
+    bare = bare[1:] if len(bare) > 1 and bare[0] == "`" else bare
     return _value(bare, 1) and (bare == value or not _CODE_REF.fullmatch(bare))
 
 
