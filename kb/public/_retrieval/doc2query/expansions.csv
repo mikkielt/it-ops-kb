@@ -457,15 +457,9 @@ f9afed7bacc7,Claude cache: ephemeral vs. long-term retention periods
 174c06de8cb6,prompt cache write cost
 174c06de8cb6,How much do cache writes cost compared to base input tokens?
 174c06de8cb6,Claude cached token pricing: 5-minute vs. 1-hour TTL
-76507ce623d4,prompt cache invalidation hierarchy
-76507ce623d4,What order does cache invalidation follow when different parts change?
-76507ce623d4,Claude cache: when does tool definition change affect system and messages
 6927e9b5e6b3,cache tokens in usage response
 6927e9b5e6b3,How are cached tokens reported in usage information?
 6927e9b5e6b3,prompt cache: API response fields for cache hits and writes
-a46aa63d4b1a,cache breakpoint placement
-a46aa63d4b1a,How should cache breakpoints be positioned in a request?
-a46aa63d4b1a,"prompt cache: which blocks are safe to cache, pre-warming requests"
 b5e0c3c4f709,Claude Code prompt cache display
 b5e0c3c4f709,How does Claude Code display cache statistics?
 b5e0c3c4f709,/usage command output: Prompt cache (main) information
