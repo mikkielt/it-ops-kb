@@ -2,7 +2,7 @@
   "id": "BG-g6usmwjt",
   "kind": "bug",
   "title": "gate remove --by operator in an agent session removes a ceiling-class gate, which answer refuses there whatever --by says",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-pww4aqis",
   "priority": "P3",
   "rank": 0,
@@ -30,6 +30,19 @@
   ],
   "notes": "Order: same file bl_items.py as BG-s7smga3g and same test_authority.py as BG-a65lzrjf. Premise reproduces on origin/main (precheck 2026-11-09). Review gap G8 of SP-lmpjclxz. Same fix as the draft story ST-jiz53bwh (gate remove of a ceiling-class gate): the story is left to the operator to merge or drop after this lands; its check names an existing test selection.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-6b037793",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "6ccd29552162a5c617fc4e596d214b68e26ab740",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess as s,sys,tempfile as t,os; d=t.mkdtemp(); r=lambda *a, env=None: s.run([sys.executable,\"_tools/backlog.py\",\"--root\",d,*a],capture_output=True,text=True,env=env); i=r(\"new\",\"story\",\"--title\",\"S\",\"--goal\",\"g\",\"--touch\",\"_tools/tests_ceiling.json\").stdout.split()[2]; r(\"gate\",\"add\",i,\"--kind\",\"provisional\",\"--question\",\"Which wording?\",\"--option\",\"a\",\"--option\",\"b\",\"--recommendation\",\"a\"); env=dict(os.environ,CLAUDECODE=\"1\"); p=r(\"gate\",\"remove\",i,\"g1\",\"--by\",\"operator\",env=env); sys.exit(\"a ceiling gate was removed from an agent session\" if p.returncode==0 else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
