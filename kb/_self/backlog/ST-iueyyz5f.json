@@ -67,7 +67,11 @@
         "Jobs placed by the same decided_by, counted on the UTC day of their submit": "ST-iueyyz5f",
         "Jobs of the same operator group path, counted on the UTC day of their last event": "ST-iueyyz5f"
       },
-      "class": "design"
+      "class": "design",
+      "answer": "Jobs placed by the same decided_by, counted on the UTC day of their submit",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
