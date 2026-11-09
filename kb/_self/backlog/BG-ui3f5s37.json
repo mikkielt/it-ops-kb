@@ -2,7 +2,7 @@
   "id": "BG-ui3f5s37",
   "kind": "bug",
   "title": "Two session-load runs at once share one sandbox clone, so the later one records only a git checkout error",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-bpjqqauu",
   "priority": "P2",
   "rank": 0,
@@ -53,6 +53,19 @@
   ],
   "notes": "Premise: the bug's repro fails on the base (origin/main at the planning commit, 2026-11-09); precheck ran it through the landing's check runner. Sprint order: items that share one file are chained with depends_on.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-bdc0a493",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "99cd109c0ca8d2ba668c0ae539fc7ecfced026fa",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys; c=[sys.executable,\"-c\",\"import sys; sys.path.insert(0,\\\"_tools\\\"); import bench_core; print(bench_core.scratch_dir())\"]; a,b=(subprocess.run(c,capture_output=True,text=True).stdout for _ in (1,2)); sys.exit(0 if a!=b else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
