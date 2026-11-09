@@ -1,0 +1,22 @@
+{
+  "id": "ST-xu4iaqza",
+  "kind": "story",
+  "title": "Planning: same-file bug fixes of one sprint go in one item or run without a depends chain, since each claim waits for the landing of the one before",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the plan step bundles bug fixes that touch one module into one item when each is small, or the sprint's claims meet only at landing, because a chain of same-file items took five landings (about 25 minutes each on a shared host) in SP-yriisdti and ran past the planned window",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.exit('to fill in at planning')"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
