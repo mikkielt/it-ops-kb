@@ -2,7 +2,7 @@
   "id": "BG-v6h6rhfk",
   "kind": "bug",
   "title": "A _root.md or pointer that is not valid UTF-8 passes publish's tree refusal and the sync range gate, since blobs() drops undecodable files",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-mut2pmu3",
   "priority": "P2",
   "rank": 0,
@@ -45,5 +45,7 @@
     "parked: SP-n7zxspch review"
   ],
   "notes": "Review gap G2 of SP-n7zxspch. kbpublic.py:510-512 and :515-518 read through blobs()/texts() (:454-457), which drop undecodable blobs; history_refusals :860-866 and :879-882 and internal_prefixes :620-623 do the same. A cp1250 byte in a Polish description is enough. kbcommon.load_root raises UnicodeDecodeError on such a file (not RootError), so other tools fail on it while publish and sync pass it. Premise run 2026-11-09: the repro fails on the base (an undecodable _root.md gives no tree cause). Outbound paths: tree_refusals and history_refusals serve publish (shipped=True) and the sync range gate; internal_prefixes serves tree_hits (the tracked-file scan test_leaks and bl_check read), so one fix in kbpublic.py covers all of them; the planted check plants an undecodable _root.md that says visibility: public and asks all three functions. An unreadable file counts as not public (the closed rule), so no exemption is added.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev3run01",
+  "operator": "op-f618a13e"
 }
