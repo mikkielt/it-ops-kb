@@ -46,7 +46,7 @@ GATE_WAIT_S = 600  # seconds the replays of N sessions wait for each other befor
 LOAD_SAMPLE_S = 0.5  # the pause between two reads of the host's 1-minute load while sessions run at once
 LIVE_ARM = "live"  # the arm of the rows of `run session-load --live`
 LIVE_TICK_S = 1.0  # the pause between two `ps` listings of a live run
-LIVE_HEADLESS_ROLES = ("worker", "sprint runner", "reviewer", "benchmark agent", "bare twin", "observer")  # the roles of mon_sessions.ROLES that run headless: the others are interactive
+LIVE_HEADLESS_ROLES = ("worker", "sprint runner", "reviewer", "headless", "benchmark agent", "bare twin", "observer")  # the roles of mon_sessions.ROLES that run headless: the others are interactive
 LIVE_ITEM_ID = re.compile(r"[A-Z]{2}-[a-z2-7]{8}")  # a backlog item id, as kbtail keeps one
 SETTLE_S = 30  # seconds a replay waits for the processes it left running in the clone
 PAID_ARMS = ("A", "C", "D", "worker")  # the arms of `run session-load --paid`: B needs an interactive session; worker runs A's settings in a worker's environment
@@ -737,7 +737,7 @@ def live_class(args, clone):
 def live_roots(b, rows):
     """({root pid: class}, [{"class", "role", "item"}]) of the processes whose trees `run session-load --live` follows: the
     live Claude Code sessions of this clone (`mon_sessions.live_sessions`: the class `claude headless` for a worker, sprint
-    runner, reviewer, benchmark agent, bare twin or observer, `claude interactive` for the other roles), or the processes
+    runner, reviewer, detached headless session, benchmark agent, bare twin or observer, `claude interactive` for the other roles), or the processes
     `--live-pids` names that are running (a class by their own command line, role None). An item is kept only as a backlog
     item id, else None: the raw suffix of a branch can be any text."""
     pids = getattr(b, "live_pids", None)
