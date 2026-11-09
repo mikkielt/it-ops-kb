@@ -71,7 +71,7 @@ FEEDBACK_COMMENT_MAX_CHARS = 1000  # a person's comment kept in the spool, after
 USER_REF = re.compile(r"(?<![\w/.-])((?:[\w-]+/)+[\w.-]*\.md):([1-9]\d*)(?![\w:])")  # a kb path:line in a person's text
 USER_WORDS = {"wrong": re.compile(r"\bwrong\b", re.I), "stale": re.compile(r"\b(?:stale|outdated)\b", re.I),
               "missing": re.compile(r"\bmissing\b", re.I)}
-USER_NEGATION = re.compile(r"(?:\b(?:not|no|nothing|never|neither|nor|without)|n't)(?:[ \t]+\w+){0,2}[ \t]+$", re.I)  # before a word
+USER_NEGATION = re.compile(r"(?:\b(?:not|no|nothing|never|neither|nor|without)|n't)(?:[ \t]+(?!(?:and|but|or)\b)\w+){0,2}[ \t]+$", re.I)  # before a word; a comma or and, but, or ends its reach
 _lock = threading.Lock()
 
 # ---------------------------------------------------------------- operational rows (the `ops` surface)
