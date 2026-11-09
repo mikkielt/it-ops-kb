@@ -2,7 +2,7 @@
   "id": "BG-airpdmok",
   "kind": "bug",
   "title": "A stage-back rerun after a kill leaves a new file the dead run copied in untracked and out of the commit",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rzwljgxv",
   "priority": "P2",
   "rank": 0,
@@ -34,5 +34,7 @@
     "parked: SP-42b2cjm3 review"
   ],
   "notes": "Run order dependency dropped at 20:10 (landings take about 45 minutes each; the planned chain would not finish before the sprint's worker cutoff). Rebase merges separate hunks of the shared file.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev1run01",
+  "operator": "op-f618a13e"
 }
