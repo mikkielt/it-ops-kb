@@ -2633,3 +2633,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## windows/hyper-v-checkpoints
 
 - **Whether deleting a checkpoint of a running VM merges live, and how long the merge takes.** Looked 2026-11-09 with the Microsoft Learn search and the checkpoints, AVHDX troubleshooting, merge-many-differencing-disks, rapid-disk-consumption, `Remove-VMSnapshot` and `Merge-VHD` pages (S-jm73ioph, S-zaodq75u, S-vmvrdxj2, S-3rvh2ao3, S-vmamynim, S-ftfjuu42): they say the files merge when the VM shuts down and that a VM can be merged online by script, but give no statement about a live merge or a duration. Needs a Hyper-V storage-internals page (topic: windows/hyper-v-checkpoints)
+
+## defender/safe-links
+
+- **Safe Links Defender for Office 365 overview** The kb was asked this in a logged lookup of 2026-11-09, and no article answered it (query log finding F-99e433c5e192). Looked in the kb 2026-11-09: `rag.py pack` gives `good`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: defender/safe-links)
