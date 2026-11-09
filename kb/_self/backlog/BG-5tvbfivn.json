@@ -2,7 +2,7 @@
   "id": "BG-5tvbfivn",
   "kind": "bug",
   "title": "runs --reconcile writes landed for a done item whose done commit is not yet on the integration main",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-pww4aqis",
   "priority": "P3",
   "rank": 0,
@@ -27,5 +27,7 @@
     "parked: SP-42b2cjm3 review"
   ],
   "notes": "Order: same file bl_runs.py as BG-gt4i6ec6. Premise reproduces on origin/main (precheck 2026-11-09). Also: runs reports no drift for such an item, which follows from the same state rule in bl_runs.py.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-6b037793",
+  "operator": "op-f618a13e"
 }
