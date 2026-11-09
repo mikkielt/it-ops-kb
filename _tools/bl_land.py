@@ -2207,9 +2207,12 @@ def land_cleanup(bl, iid):
 
 def pushed_tip(root, remote, code_branch):
     """[the tip of CODE_BRANCH on REMOTE] as sync pushed it, fetched: sync may rebase the range onto a newer main
-    before it pushes, so the commits --wait-merge waits for are the pushed ones, not the ones land rebased. None when
-    the fetch fails (git dies with exit 128 on a ref the remote lacks), times out or leaves no ref, said once: a stale
-    or missing tip is never waited for, and the first pass still ends as not done yet (BG-bd547fvz)."""
+    before it pushes, so the commits --wait-merge waits for are the pushed ones, not the ones land rebased. A branch the
+    remote no longer has (the request sync opened merged at once and removed it: merge_request.remove_source_branch) is
+    found by its merge on the integration main, [that merge commit] (merged_branch_commit), so the first pass ends with
+    a merge to wait for and the run goes on to its second pass. None when the fetch times out, or when neither the
+    branch nor its merge is there, said once: a stale or missing tip is never waited for, and the first pass still
+    ends as not done yet (BG-bd547fvz)."""
     import kg_lock
     tracking = f"refs/remotes/{remote}/{code_branch}"
     try:
@@ -2219,12 +2222,38 @@ def pushed_tip(root, remote, code_branch):
         say(f"land: could not fetch {code_branch} from {remote} after the push ({e}): no tip to wait for")
         return None
     if p.returncode:
+        merged = merged_branch_commit(root, remote, code_branch)
+        if merged:
+            say(f"land: {code_branch} is gone from {remote} after the push: its merge request merged and removed it")
+            return [merged]
         say(f"land: could not fetch {code_branch} from {remote} after the push "
             f"({(p.stderr or p.stdout).strip() or f'exit {p.returncode}'}): no tip to wait for")
         return None
     tip = subprocess.run(["git", "rev-parse", "-q", "--verify", tracking], cwd=root, capture_output=True, text=True,
                          encoding="utf-8", errors="replace").stdout.strip()
     return [tip] if tip else None
+
+
+def merged_branch_commit(root, remote, code_branch):
+    """The merge commit of CODE_BRANCH on the integration main of REMOTE, read from git after a fetch of the main, by its
+    subject `Merge branch 'CODE_BRANCH' into ...` (what a forge merge request writes); None when the main holds none
+    or cannot be read."""
+    ref = f"refs/remotes/{remote}/main"
+    try:
+        fetched = land_git_network(root, "wait-merge", "fetch", "--quiet", remote, f"+refs/heads/main:{ref}")
+    except Refused:
+        return None
+    if fetched.returncode:
+        return None
+    subject = f"Merge branch '{code_branch}' into"
+    p = subprocess.run(["git", "log", "--first-parent", "--merges", "--fixed-strings", f"--grep={subject}",
+                        "--format=%H %s", ref], cwd=root, capture_output=True, text=True, encoding="utf-8",
+                       errors="replace")
+    for line in p.stdout.splitlines():
+        sha, _, subj = line.partition(" ")
+        if subj.startswith(subject):
+            return sha
+    return None
 
 
 WAIT_POLL = 60  # seconds between land --wait-merge's reads of the integration main
