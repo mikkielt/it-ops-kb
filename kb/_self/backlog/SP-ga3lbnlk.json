@@ -1,0 +1,22 @@
+{
+  "id": "SP-ga3lbnlk",
+  "kind": "sprint",
+  "title": "Extension API follow-ups: group locks hold for every key, verify accepts valid extenders, ext tags are sent",
+  "status": "planned",
+  "goal": "a key a group file locks raises SettingsError for list and string keys as for objects; kbsettings.layered reads group, gate_checks and extension_paths; kbext.py verify loads a backlog_commands module that extends a shipped command and calls a leak_scan extender by its setting's name, every FAIL naming point, module and layer; an ext-v tag reaches the remote after sync --push rebases its commit; the backlog_commands entry point is read; kb_mcp serves mcp_tools of a hyphenated group; group gate_checks of a kb root's settings run; kbingest where rebuilds its map when ingest_mappers change; docs and docstrings of the extension API match the code",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e",
+  "filed_in": "clone-0ea70e5c"
+}
