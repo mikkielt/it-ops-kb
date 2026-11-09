@@ -75,7 +75,9 @@
       },
       "class": "design",
       "answer": "every source the selection names, as a run with no selection takes every source",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
