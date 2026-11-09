@@ -296,7 +296,9 @@ def _value(value, least):
             and not _PLACEHOLDER_NAME.fullmatch(value) and value.lower() not in PLACEHOLDER_WORDS)
 
 
-_CODE_REF = re.compile(r"[a-z]+(?:_[a-z]+)+|.*[\\/].*")  # a snake_case name or a path: what prose closes with `,` or a backtick
+# A snake_case name, a lower-case path with `/` (a mixed-case value holding `/` is base64-style) or a path with `\`: what
+# prose closes with `,` or a backtick.
+_CODE_REF = re.compile(r"[a-z]+(?:_[a-z]+)+|(?:[A-Za-z]:)?[a-z0-9._~-]*(?:/[a-z0-9._~-]*)+|.*\\.*")
 
 
 def _closed_value(value):

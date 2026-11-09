@@ -3,7 +3,8 @@
     "short": ["Fk12", "ab"],
     "mixed": ["Fake", "Pass12345x"],
     "word": ["sun", "shine"],
-    "long": ["Zx9Qm4Lp7Rt2", "Vb8Nc5Kd3Wf6Hj"]
+    "long": ["Zx9Qm4Lp7Rt2", "Vb8Nc5Kd3Wf6Hj"],
+    "slash": ["wJalrXUtnFEM", "I/K7MDENG/bPxRfiCY"]
   },
   "matrix": {
     "keys": ["password", "passwd", "pwd", "secret", "api_key", "client_secret", "DB_PASSWORD", "token"],
@@ -73,7 +74,10 @@
     {"id": "domain.laps", "text": "LAPS password for PL-LT-00123: {v}", "v": "mixed"},
     {"id": "domain.wifi", "text": "<keyMaterial>{v}</keyMaterial>", "v": "mixed"},
     {"id": "domain.sql-sa", "text": "SQL sa password = {v}", "v": "mixed"},
-    {"id": "domain.vault-token", "text": "VAULT_TOKEN={v}", "v": "long"}
+    {"id": "domain.vault-token", "text": "VAULT_TOKEN={v}", "v": "long"},
+    {"id": "closed.comma", "text": "secret={v},", "v": "slash"},
+    {"id": "closed.paren", "text": "(secret={v})", "v": "slash"},
+    {"id": "closed.prose", "text": "the secret: {v}, then", "v": "slash"}
   ],
   "utility": [
     {"id": "kb-cve", "text": "Install KB5034441 and check CVE-2024-38063 before the next ring."},
@@ -94,6 +98,7 @@
     {"id": "ph-stars", "text": "password=***"},
     {"id": "ph-api-key", "text": "api_key=YOUR_API_KEY"},
     {"id": "ref-path", "text": "secret: kb/public/security/secret-shapes-in-text.md"},
+    {"id": "ref-path-closed", "text": "path=kb/public/x.md, then"},
     {"id": "ref-entra", "text": "client_secret: see the app registration in Entra"},
     {"id": "ref-code-path", "text": "The stored password: `C:\\WSL\\kb-runner-import\\keepalive.ps1` imports the distribution."},
     {"id": "hdr-angle", "text": "Authorization: Bearer <token>"},
