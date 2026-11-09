@@ -2,7 +2,7 @@
   "id": "BG-s7smga3g",
   "kind": "bug",
   "title": "An operator answer to a gate that blocks by a strict signal, a querylog or delete text class, an option path or the item's title carries no agent_session flag when an agent session records it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-pww4aqis",
   "priority": "P3",
   "rank": 0,
@@ -24,5 +24,7 @@
     "parked: SP-lmpjclxz review"
   ],
   "notes": "Premise reproduces on origin/main (precheck 2026-11-09). Review gap G2 of SP-lmpjclxz. horizon and the review list a flagged answer already (e3455be8d).",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-6b037793",
+  "operator": "op-f618a13e"
 }
