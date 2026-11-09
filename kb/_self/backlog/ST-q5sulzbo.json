@@ -2,7 +2,7 @@
   "id": "ST-q5sulzbo",
   "kind": "story",
   "title": "Research sprint goal: Claim and dispatch follow-ups: claim restores its SIGTERM handler, a reworded gate gets no old answer, workers start with named plugins off, and the dispatch usage text names the real turn caps and --max-budget-usd",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ejeki6bv",
   "goal_research": true,
   "priority": "P1",
@@ -23,6 +23,20 @@
   ],
   "notes": "No outside facts: the goal is about the backlog tool's own code paths and usage text; one kb_pack on the claude -p flags found --max-turns and --max-budget-usd already in public/claude/ci-and-headless.md:46,96, and the enabledPlugins settings key is not in the kb but the item BG-3pqzpd2q takes it from the repro, not new research.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-ev5run01",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "cc6c4de0157f7fe22270b9d7874f405213c95b2d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-q5sulzbo"
+        ],
+        "exit": 0,
+        "sha256": "113c822ab415091a"
+      }
+    ]
+  }
 }
