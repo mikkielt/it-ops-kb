@@ -1,0 +1,22 @@
+{
+  "id": "SP-ejeki6bv",
+  "kind": "sprint",
+  "title": "Claim and dispatch follow-ups: claim restores its SIGTERM handler, a reworded gate gets no old answer, workers start with named plugins off, and the dispatch usage text names the real turn caps and --max-budget-usd",
+  "status": "planned",
+  "goal": "claim restores the SIGTERM handler it replaced on an interrupt right after the handler is installed; Backlog.save keeps a disk answer only on a gate the run left as loaded; backlog.json takes worker_plugins_off and dispatch starts a worker with those plugins off; the dispatch usage text gives the turn caps of bl_dispatch.TURNS and names --max-budget-usd on both dispatch entries",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e",
+  "filed_in": "clone-0ea70e5c"
+}
