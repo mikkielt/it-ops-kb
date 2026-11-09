@@ -2,8 +2,8 @@
 topic: mcp/registry-and-extensions
 priority: P2
 applies_to: "MCP Registry (preview, registry.modelcontextprotocol.io, server.json schema 2025-12-11); MCP extensions framework (spec 2026-07-28 and draft)"
-retrieved_utc: 2026-10-21
-sources: [S-gg2bczek, S-3j6fi7yk, S-bgodqwyo, S-w5egb2fu, S-rl4z6q5b, S-xmxnlqbx, S-uussqmqn, S-vl6444k5, S-vouhh5ur, S-wvioh66u, S-rji5dyla, S-blfb3mqc, S-mqa2z3kr, S-hrri7kcy, S-4zkeipor, S-2hsm4de7, S-ovo7i7xn, S-rxtqmq47, S-3zrbebvf]
+retrieved_utc: 2026-11-09
+sources: [S-gg2bczek, S-3j6fi7yk, S-bgodqwyo, S-w5egb2fu, S-rl4z6q5b, S-xmxnlqbx, S-uussqmqn, S-vl6444k5, S-vouhh5ur, S-wvioh66u, S-rji5dyla, S-blfb3mqc, S-mqa2z3kr, S-hrri7kcy, S-4zkeipor, S-2hsm4de7, S-ovo7i7xn, S-rxtqmq47, S-3zrbebvf, S-qaypf2it]
 status: complete
 ---
 
@@ -145,6 +145,13 @@ the Skills extension (serving Agent Skills over `resources/read`) and two author
   mcpc; Skills over MCP has partial support in ChatGPT, fast-agent and MCP Inspector and a checkmark for mcpc; the only
   client with a checkmark for OAuth Client Credentials is mcpc (the page's rendered markdown export drops the checkmark
   cells, so the mcpc row is read from the page's source file). [DOC S-blfb3mqc, S-mqa2z3kr]
+- The same matrix at its newest commit (66c6a64582db, 2026-11-03), read from the page's source file, where each cell is a
+  `<CHECK />` tag or the word `Partial`, adds a Tasks column and rows for Claude Code, Kiro Crew, MCPJam, Glean and
+  others. Tasks has a checkmark for Claude (web), Claude Code, MCPJam and Glean. Skills has a checkmark for MCPJam,
+  mcpc and Glean and `Partial` for ChatGPT, fast-agent and MCP Inspector. Enterprise Auth has a checkmark for
+  Archestra.AI, mcpc and Glean; OAuth Client Credentials only for mcpc. MCP Apps has none for Claude Code, mcpc,
+  fast-agent and MCP Inspector. The page's note says auth-extension support is tracked apart from the core
+  authorization features. [DOC S-qaypf2it]
 - MCP Apps: a tool declares an interactive UI via `_meta.ui.resourceUri` pointing to a `ui://` resource;
   the host fetches and renders that HTML resource inside a sandboxed iframe (no access to parent DOM,
   cookies, or localStorage); the resource's `_meta.ui` object can set `permissions` (e.g. microphone,

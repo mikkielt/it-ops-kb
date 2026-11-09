@@ -3,7 +3,7 @@ topic: mcp/tasks-extension
 priority: P1
 applies_to: "MCP Tasks extension io.modelcontextprotocol/tasks for 2026-07-28"
 retrieved_utc: 2026-11-09
-sources: [S713, S714, S-kkc22tjk, S718, S701, S740, S746, S-2j2leiio, S-mqa2z3kr]
+sources: [S713, S714, S-kkc22tjk, S718, S701, S740, S746, S-2j2leiio, S-mqa2z3kr, S-qaypf2it]
 status: partial
 ---
 # Tasks extension (`io.modelcontextprotocol/tasks`)
@@ -30,7 +30,7 @@ and may `tasks/cancel`. `tasks/result` (blocking) and `tasks/list` were removed.
 - Security section: a server MAY use task ids as bearer tokens for stored state and MUST generate them with enough entropy that a third party cannot guess them, and it MUST authenticate and authorize every task-related request; with no `tasks/list`, one caller's tasks cannot leak to another. [DOC S718]
 - The spec text does not say whether a task created by one principal may be read or updated by another (a subagent, a second client) when the server's authorization allows it; it names only "permission to access a task". [UNK S718: security section read 2026-10-16]
 - Extensions are disabled by default and need explicit opt-in; SDKs may choose whether to implement them. [DOC S714]
-- The community-maintained extension matrix lists no Tasks column and no Claude Code row. [DOC S-mqa2z3kr]
+- The community-maintained extension matrix at commit 80041ab0a139 listed no Tasks column and no Claude Code row; at commit 66c6a64582db (2026-11-03) it has a Tasks column with a checkmark for Claude (web), Claude Code, MCPJam and Glean. [DOC S-mqa2z3kr, S-qaypf2it]
 - Claude Code's MCP page (read 2026-11-09) documents MCP tasks as in public beta in the Claude Code CLI, requiring v2.1.304 or later, and says a `tools/call` request that can become a task carries `"io.modelcontextprotocol/tasks": {}` under `extensions` in `params._meta["io.modelcontextprotocol/clientCapabilities"]` on a 2026-07-28 connection; a request that cannot become a task omits it. The page read 2026-09-28 named no Tasks extension. [DOC S740]
 - A tool call becomes an MCP task in Claude Code only when the server supports tasks and is connected on protocol revision 2026-07-28 (HTTP, stdio or claude.ai connector), the session fetches feature flags (not Bedrock, not with telemetry off), Anthropic has turned tasks on for the session kind (terminal CLI, Agent SDK and GitHub Actions on v2.1.304 or later; not the VS Code extension or the desktop app), the call comes from the main conversation and not a subagent, and a non-interactive run reads `--input-format stream-json` with `CLAUDE_AUTO_BACKGROUND_TASKS` at `1`. A one-shot `claude -p "<prompt>"` run gets no MCP tasks. [DOC S740]
 - Claude Code moves a task to the background at once and tells Claude the result when it ends; a task has no Claude Code time limit once in the background, `x` in `/tasks` stops following it and asks the server to cancel (the server may still finish it), and `CLAUDE_CODE_MCP_AUTO_BACKGROUND_MS` at `0` or `CLAUDE_CODE_DISABLE_MCP_TASK_BACKGROUND` at `1` makes Claude wait for the result. A server answers with a task only when the request carries the extension, else the call fails with `Unsupported result type 'task' for tools/call`. [DOC S740]

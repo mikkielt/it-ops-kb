@@ -282,10 +282,10 @@ Every topic of this root with its priority (the research order, not importance),
 | `mcp/python-sdk` | P1 | complete | `mcp/python-sdk.md` | 19 |
 | `mcp/security-best-practices` | P1 | complete | `mcp/security-best-practices.md` | 3 |
 | `mcp/spec-overview` | P1 | complete | `mcp/spec-overview.md`, `mcp/schema/2026-07-28/README.md`, `mcp/schema/2026-07-28/schema.ts`, `mcp/schema/2026-07-28/schema.json` | 10 |
-| `mcp/tasks-extension` | P1 | partial | `mcp/tasks-extension.md` | 9 |
+| `mcp/tasks-extension` | P1 | partial | `mcp/tasks-extension.md` | 10 |
 | `mcp/tools` | P1 | complete | `mcp/tools.md` | 7 |
 | `mcp/transports-stdio` | P1 | complete | `mcp/transports-stdio.md` | 6 |
-| `mcp/registry-and-extensions` | P2 | complete | `mcp/registry-and-extensions.md` | 19 |
+| `mcp/registry-and-extensions` | P2 | complete | `mcp/registry-and-extensions.md` | 20 |
 | `mcp/resources-prompts` | P2 | complete | `mcp/resources-prompts.md` | 11 |
 | `mcp/transports-streamable-http` | P2 | complete | `mcp/transports-streamable-http.md` | 11 |
 | `mecm/adminservice` | P0 | complete | `mecm/adminservice.md`, `mecm/adminservice-routes.csv` | 21 |
