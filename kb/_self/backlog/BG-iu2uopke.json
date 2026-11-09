@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "A SIGTERM that ends claim after it saved the item file as doing puts the run state back to released, so the item file and the run state disagree",
   "status": "draft",
+  "sprint": "SP-luspfajx",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

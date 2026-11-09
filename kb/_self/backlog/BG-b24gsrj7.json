@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "An interrupt right after landing_lock installs its SIGTERM handler, before the block that restores it opens, leaves the handler installed",
   "status": "draft",
+  "sprint": "SP-luspfajx",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "An interrupt in claim between taking the coord run state and the block that puts it back leaves the run state at claimed",
   "status": "draft",
+  "sprint": "SP-luspfajx",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
