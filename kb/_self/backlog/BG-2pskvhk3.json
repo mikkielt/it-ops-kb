@@ -26,6 +26,26 @@
   "depends_on": [
     "BG-agossgpb"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does the foreign-probe guard for ops rows live: in ql_capture.record, with foreign_probe moved to ql_base, or in each caller?",
+      "options": [
+        "guard in ql_capture.record for the ops surface, foreign_probe moved to ql_base",
+        "guard in each caller (census_phase and record_gate each call foreign_probe)"
+      ],
+      "recommendation": "guard in ql_capture.record for the ops surface, foreign_probe moved to ql_base",
+      "reason": "one guard covers every ops writer, present and future",
+      "do": {
+        "guard in ql_capture.record for the ops surface, foreign_probe moved to ql_base": "BG-2pskvhk3",
+        "guard in each caller (census_phase and record_gate each call foreign_probe)": "BG-2pskvhk3"
+      },
+      "class": "design",
+      "answer": "guard in ql_capture.record for the ops surface, foreign_probe moved to ql_base",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-vmtfnkim review"
   ],

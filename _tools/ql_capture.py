@@ -14,7 +14,7 @@ import collections, datetime, functools, hashlib, json, os, re, secrets, sys, th
 from pathlib import Path
 from urllib.parse import urlsplit
 
-from ql_base import DISABLED_NAME, HOME, json_lines, logging_off, now, places, read_mode
+from ql_base import DISABLED_NAME, HOME, foreign_probe, json_lines, logging_off, now, places, read_mode
 
 SPOOL_MAX_AGE_DAYS = 30
 SPOOL_ROW_MAX_CHARS = 4000
@@ -297,10 +297,11 @@ def record(surface, session_id=None, **fields):
     """Append one spool row and return it, or None when capture is off. Never raises: a caller's work never fails
     for its log. An `ops` row (`record("ops", event="land.step", item=..., ...)`) is written only when it is a
     closed event with its closed keys (ops_problems), not a past event (PAST_EVENTS) and short enough to stay whole
-    (OPS_ROW_MAX_CHARS); it is never given a session."""
+    (OPS_ROW_MAX_CHARS); it is never given a session, and none is written in a probe from another working directory
+    that names no query log home of its own (`ql_base.foreign_probe`)."""
     try:
         spool = spool_dir()
-        if spool is None:
+        if spool is None or (surface == OPS and foreign_probe()):
             return None
         row = {"id": str(uuid.uuid4()), "ts": now(), "surface": surface, "v": ROW_FORMAT}
         given = {k: v for k, v in fields.items() if v is not None}
