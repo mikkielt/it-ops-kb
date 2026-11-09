@@ -23,6 +23,27 @@
   "depends_on": [
     "BG-ad2yq7oy"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does _known_load judge a cache file wrong-shaped?",
+      "options": [
+        "Accept only a JSON object whose known holds a list of strings per field",
+        "Accept any iterable per field as before and only catch RecursionError"
+      ],
+      "recommendation": "Accept only a JSON object whose known holds a list of strings per field",
+      "do": {
+        "Accept only a JSON object whose known holds a list of strings per field": "BG-jtnkjxsc",
+        "Accept any iterable per field as before and only catch RecursionError": "BG-jtnkjxsc"
+      },
+      "class": "design",
+      "answer": "Accept only a JSON object whose known holds a list of strings per field",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-uh5h46fm review"
   ],
