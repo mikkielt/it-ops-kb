@@ -2,7 +2,7 @@
   "id": "ST-t7f4urlk",
   "kind": "story",
   "title": "coordination.md says only a refusal under the claims lock moves the run state back to released, though claim also does it for an item file save error, an interrupt and a SIGTERM",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-luspfajx",
   "priority": "P3",
   "rank": 0,
@@ -25,5 +25,7 @@
   "links": [
     "parked: SP-6aegt3bs close"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-luspfajx",
+  "operator": "op-f618a13e"
 }
