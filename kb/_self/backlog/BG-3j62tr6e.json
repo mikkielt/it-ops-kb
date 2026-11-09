@@ -2,7 +2,7 @@
   "id": "BG-3j62tr6e",
   "kind": "bug",
   "title": "kbgit.py install-hooks --uninstall says push.recurseSubmodules was unset when it left a user's value alone",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-mut2pmu3",
   "priority": "P3",
@@ -22,5 +22,7 @@
   ],
   "links": [
     "parked: SP-mguax5m3 review"
-  ]
+  ],
+  "claimed_by": "claude-ev3run01",
+  "operator": "op-f618a13e"
 }
