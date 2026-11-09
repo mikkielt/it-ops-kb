@@ -43,7 +43,9 @@
       },
       "class": "design",
       "answer": "Compare the bytes just before the read position at each read",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
