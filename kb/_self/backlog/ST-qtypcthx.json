@@ -165,6 +165,22 @@
       "operator": "op-f618a13e",
       "role": "interactive",
       "agent_session": true
+    },
+    {
+      "id": "g4",
+      "kind": "blocking",
+      "question": "Where does kbmon --status all take its guard lines, and which settings layers do leak.shapes read in a scan?",
+      "options": [
+        "kbmon.py status adds the lines after needs you from kbext.replaced_guards, and the group, clone and user layers are read",
+        "mon_status.answer adds the lines, and a kb root layer is read too"
+      ],
+      "recommendation": "kbmon.py status adds the lines after needs you from kbext.replaced_guards, and the group, clone and user layers are read",
+      "reason": "mon_status.answer stays a function of the snapshot, and a scan names no kb root",
+      "do": {
+        "kbmon.py status adds the lines after needs you from kbext.replaced_guards, and the group, clone and user layers are read": "ST-qtypcthx",
+        "mon_status.answer adds the lines, and a kb root layer is read too": "ST-qtypcthx"
+      },
+      "class": "push"
     }
   ],
   "notes": "Shared files with SP-lwkdljxg (kbcommon.py, kbpublic.py, bl_land.py, map.csv): agreed with its manager on 2026-11-08 that the first claim lands first and the other rebases; its items reach these files late. SP-uh5h46fm (mon_coord.py, mon_status.py) was asked the same and has not answered: the same rule applies.",
