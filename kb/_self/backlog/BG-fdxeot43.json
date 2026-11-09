@@ -1,0 +1,23 @@
+{
+  "id": "BG-fdxeot43",
+  "kind": "bug",
+  "title": "A gate naming the usage field as the API writes it (usage.cache_read_input_tokens) is still classed secrets, since the glue rule keeps a dotted prefix",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "a gate naming usage.cache_read_input_tokens, response.usage.cache_creation_input_tokens or usage.count_tokens is classed by its other words, while vault.read_token and registration-def_token stay secrets",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,\"_tools\"); import bl_authority as b; c=b.class_reasons({\"touches\":[]},{\"id\":\"g1\",\"question\":\"Why does usage.cache_read_input_tokens differ?\",\"options\":[\"one\",\"two\"]})[0]; print(\"class\",c); sys.exit(0 if c==\"design\" else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_authority.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
