@@ -2,7 +2,7 @@
   "id": "BG-3ji4fsfo",
   "kind": "bug",
   "title": "bench_multi duplicate_research prints one line per research key the owner holds on the article, so one duplicate fact counts several times",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-hyfyn22d",
   "priority": "P3",
   "rank": 0,
@@ -23,5 +23,7 @@
   "links": [
     "parked: SP-n7f53pgv review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev4run01",
+  "operator": "op-f618a13e"
 }
