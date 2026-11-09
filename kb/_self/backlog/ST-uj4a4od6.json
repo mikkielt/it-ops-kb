@@ -21,6 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: every item of the sprint fixes a defect of the repository's own monitoring tools (kbtail, kbmon, selfcheck, procs), whose behaviour the tools' code and kb/_self/monitoring.md define; no vendor or standard fact is needed, so no kb article or gap entry changes.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-0f9262ec",
   "operator": "op-f618a13e"
