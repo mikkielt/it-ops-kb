@@ -2,7 +2,7 @@
   "id": "BG-myligl24",
   "kind": "bug",
   "title": "kbsettings.layered raises must be an object for the list and string keys group, gate_checks and extension_paths, which its goal and the docs name",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-y7fe7qqx",
   "sprint": "SP-ga3lbnlk",
   "priority": "P2",
@@ -51,5 +51,7 @@
   "links": [
     "parked: SP-ep7ck2ab review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-0a3e91bc",
+  "operator": "op-f618a13e"
 }
