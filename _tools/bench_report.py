@@ -199,11 +199,18 @@ def records_table(rows, scenario):
         counts = [r["runs"] for r in mine if r["runs"] and r["case"] != "all paid runs"]
         runs = [max(sorted(set(counts), key=float), key=counts.count)] if counts else []  # the most common; ties: the smallest
         total = [float(r["value"]) for r in mine if r["metric"] == "spend_usd" and _isnum(r["value"])]
-        spend = sum(total) if total else sum(float(r["value"]) * float(r["runs"] or 1) for r in mine
-                                           if r["metric"] in ("cost", "cost_est") and _isnum(r["value"]))
+        paid = [r for r in mine if r["metric"] == "spend_usd" and _isnum(r["value"])] or \
+               [r for r in mine if r["metric"] in ("cost", "cost_est") and _isnum(r["value"])]
+        spend = sum(total) if total else sum(float(r["value"]) * float(r["runs"] or 1) for r in paid)
+        at = {r["commit"] for r in paid if r["commit"]}  # the spend rows' own commit, named when it is not the first row's
+        cost = "-"
+        if spend:
+            cost = "$%.2f" % spend
+            if len(at) == 1 and at != {first["commit"]}:
+                cost += " (at %s)" % next(iter(at))
         label = f"{rec} ({first['arm']})" if scenario in ARMED and first["arm"] else rec
         out.append(f"| {label} | {first['date'] or '-'} | {first['commit'] or '-'} | {first['claude_code'] or '-'} | "
-                   f"{first['kb_topics'] or '-'} | {', '.join(runs) or '-'} | {('$%.2f' % spend) if spend else '-'} |")
+                   f"{first['kb_topics'] or '-'} | {', '.join(runs) or '-'} | {cost} |")
     return "\n".join(out)
 
 

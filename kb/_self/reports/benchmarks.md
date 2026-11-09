@@ -1414,10 +1414,12 @@ What it shows: `sh _tools/kbpy` adds 3.5 ms at the median to a Python start of 9
 | record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
 |---|---|---|---|---|---|---|
 | 2026-10-26 | 2026-10-26 | 4b064dd | 2.1.310 | 434 | 5 | - |
-| 2026-10-28 | 2026-10-28 | 553d9e5 | 2.1.311 | 442 | 3 | $0.56 |
+| 2026-10-28 | 2026-10-28 | 553d9e5 | 2.1.311 | 442 | 3 | $0.56 (at 1f6011b) |
 <!-- /bench -->
 
 The record of 2026-10-26 mixes two commits, both on `main`: its rows of arms `A`, `C` and `D` are at `4b064dd`, those of arm `B` at `786dd41`, the commit that added arm `B`'s pane commands to the tool (the table shows the commit of the first row).
+
+The record of 2026-10-28 also mixes two commits: its three `idle hook intake real` rows are at `553d9e5` (the table's commit), and its paid rows, the ones the spend belongs to, at `1f6011b`, which the spend cell names.
 
 **The paid record of 2026-10-28** (`run session-load --paid --arms A,C,D,worker --sessions 1,4,8 --reps 3`) replaces the replay with real sessions: per arm, phase, session count and rep, one `claude -p` of `claude-haiku-5-5` under `--max-budget-usd 0.5` per session, in a throwaway clone of its own with the arm's hooks, and the same sampler of `ps` follows each session's process tree. The phase `idle` is a prompt that calls no tool, `working` one that calls three (the PreToolUse, PostToolUse and Stop hooks run). The arm `worker` is arm `A` under the environment of a dispatched worker (`KB_UNWATCHED=1`). The cases `idle all` and `working all` are one session, `idle all x4` and `x8` (and `working`) the sum of 4 and 8 sessions started together; each cell is the mean of 3 reps and no run failed. The record has no file reads (no `fs_usage` capture was made). The 312 runs cost $0.56 by the sessions' own result events (the `cost` rows, the sum of the sessions of a case). The host was not idle: the notes of the `cpu_s` rows give its load at the start of each group (7 to 19 on 14 cores), so the figures at 8 sessions include contention. In the first table below the cells of the record of 2026-10-28 for arms `A`, `C` and `D` are these paid sessions and the cell before them the replay of 2026-10-26: the `->` there joins two different measurements and its percentage is not a change of one.
 
