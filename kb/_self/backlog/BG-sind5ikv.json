@@ -1,0 +1,23 @@
+{
+  "id": "BG-sind5ikv",
+  "kind": "bug",
+  "title": "Backlog.save loses a gate field that changed on disk since load, so a confirmation written while done ran its checks leaves by agent beside the operator and role keys",
+  "status": "todo",
+  "sprint": "SP-moxpl354",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "Backlog.save keeps a gate field the run did not change when its value on disk differs from the loaded copy's, so an answer confirmation (by agent to operator, with operator and role) written to the item file while the run was loading is kept whole",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys, json, pathlib, tempfile\nsys.path.insert(0, '_tools')\nimport bl_base\nr = pathlib.Path(tempfile.mkdtemp()); d = r / bl_base.rel_dir(); d.mkdir(parents=True)\nf = d / 'BG-aaaaaaaa.json'\ngate = {\"id\": \"g1\", \"kind\": \"provisional\", \"question\": \"q\", \"options\": [\"a\", \"b\"], \"recommendation\": \"a\", \"answer\": \"a\", \"by\": \"agent\"}\nf.write_text(bl_base.canonical({\"id\": \"BG-aaaaaaaa\", \"kind\": \"bug\", \"title\": \"t\", \"status\": \"todo\", \"gates\": [gate]}), encoding='utf-8')\nbl = bl_base.Backlog(r); it = bl.items['BG-aaaaaaaa']\ndisk = json.loads(f.read_text(encoding='utf-8')); disk['gates'][0].update(by='operator', operator='op-x', role='interactive')\nf.write_text(bl_base.canonical(disk), encoding='utf-8')\nit['status'] = 'done'; bl.save(it)\ng = json.loads(f.read_text(encoding='utf-8'))['gates'][0]\nok = g.get('by') == 'operator' and g.get('operator') == 'op-x'\nprint('confirm kept' if ok else 'confirm lost, gate mixed', g)\nsys.exit(0 if ok else 1)\n"
+    ]
+  },
+  "touches": [
+    "_tools/bl_base.py",
+    "kb/_self/backlog.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
