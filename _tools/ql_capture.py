@@ -37,7 +37,7 @@ BRANCH_ACTION = "branch"  # the `work` row of a session's first prompt on a `wor
 OPEN_ACTIONS = ("claim", BRANCH_ACTION)  # the `work` rows that open an item's window (usage_targets, ql_distill.work_windows)
 AGENT_ACTIONS = ("agent-start", "agent-stop")  # the `work` rows of a subagent's start and stop (agent_row)
 AGENT_SALT_NAME = "agent.salt"  # beside the spool, never committed: what a hash of an agent id is salted with
-AGENT_FAILED_TEXT = "API Error"  # how the closing text of a subagent run that an API failure ended begins
+AGENT_FAILED_TEXT = "Agent terminated early due to an API error"  # the line Claude Code documents (claude/errors) for a subagent an API failure ended
 AGENT_HASH_CHARS = 12
 WORK_BRANCH_REF = "ref: refs/heads/work/"
 GIT_TIMEOUT = 10  # seconds a git process of pushed_status may take: a hook never waits longer
@@ -1042,17 +1042,18 @@ def settle_pending(spool, sid, event, pid):
 def agent_row(event, sid):
     """The `work` row of a SubagentStart or SubagentStop event: `action` agent-start or agent-stop, `agent` (a salted
     short hash of the agent id, never the id), `group` (kbusage.agent_group of the agent type, in lower case: a token) and `item` when the
-    hook's directory is on a `work/<id>` branch. A SubagentStop row also has `exit`: 1 when the subagent's closing
-    text (`last_assistant_message`, read for its first words only and never kept) opens with the `API Error` line
-    Claude Code ends a run on after an API failure, else 0. None for an event with no agent id. Distill pairs the rows
-    (ql_distill.plan_agents)."""
+    hook's directory is on a `work/<id>` branch. A SubagentStop row also has `exit` when the subagent left closing text
+    (`last_assistant_message`, read for its first words only and never kept): 1 when it opens with the line the
+    Claude Code docs give a subagent that an API failure ended (AGENT_FAILED_TEXT), else 0; a run with no closing
+    text leaves `exit` unset. None for an event with no agent id. Distill pairs the rows (ql_distill.plan_agents)."""
     import kbusage
     agent = agent_hash(event.get("agent_id"))
     if agent is None:
         return None
     kind = str(event.get("agent_type") or "").rsplit(":", 1)[-1]
     stop = event.get("hook_event_name") == "SubagentStop"
-    failed = int(text_of(event.get("last_assistant_message")).lstrip().startswith(AGENT_FAILED_TEXT)) if stop else None
+    closing = text_of(event.get("last_assistant_message")).lstrip() if stop else ""
+    failed = int(closing.startswith(AGENT_FAILED_TEXT)) if closing else None
     return record("work", sid, action=AGENT_ACTIONS[stop], agent=agent, exit=failed,
                   group=kbusage.agent_group(kind).lower(), item=work_branch_item(event.get("cwd")))
 
