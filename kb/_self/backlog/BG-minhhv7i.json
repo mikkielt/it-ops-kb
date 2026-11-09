@@ -1,0 +1,23 @@
+{
+  "id": "BG-minhhv7i",
+  "kind": "bug",
+  "title": "kbgit.py contribute still leaves every commit out on git 2.38 and 2.39, since merge-tree --merge-base needs git 2.40 and the up-front check refuses only below 2.38",
+  "status": "todo",
+  "sprint": "SP-mut2pmu3",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kg_contrib.old_git refuses a git older than 2.40 up front, naming its version, with exit 2, and the cherry_pick message and the git.md contribute paragraph say 2.40",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,shutil,subprocess as s,sys,tempfile\nhere=os.getcwd();T=tempfile.mkdtemp();real=shutil.which(\"git\")\nE={k:v for k,v in os.environ.items() if not k.startswith((\"GIT_\",\"KB_\",\"CLAUDE\"))}\nE.update(GIT_CONFIG_GLOBAL=os.devnull,GIT_CONFIG_NOSYSTEM=\"1\",GIT_AUTHOR_NAME=\"t\",GIT_AUTHOR_EMAIL=\"t\"+chr(64)+\"example.com\",GIT_COMMITTER_NAME=\"t\",GIT_COMMITTER_EMAIL=\"t\"+chr(64)+\"example.com\")\ng=lambda *a,cwd:s.run([real,*a],cwd=cwd,env=E,capture_output=True,text=True,check=True)\nup=os.path.join(T,\"up.git\");cl=os.path.join(T,\"cl\")\ng(\"init\",\"-q\",\"--bare\",\"-b\",\"main\",up,cwd=T);g(\"clone\",\"-q\",up,cl,cwd=T)\nshutil.copytree(os.path.join(here,\"_tools\"),cl+\"/_tools\",ignore=shutil.ignore_patterns(\"__pycache__\",\"*.pyc\",\"fixtures\"))\nos.makedirs(cl+\"/kb/public\")\nopen(cl+\"/kb/public/_root.md\",\"w\").write(\"---\\nroot: public\\nid_prefix: S\\nvisibility: public\\ndescription: p\\n---\\n\")\nopen(cl+\"/kb/public/_sources.csv\",\"w\").write(\"id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by\\n\")\nopen(cl+\"/a.txt\",\"w\").write(\"1\\n\");g(\"add\",\"-A\",cwd=cl);g(\"commit\",\"-qm\",\"base\",cwd=cl);g(\"push\",\"-q\",\"origin\",\"HEAD:main\",cwd=cl)\ng(\"remote\",\"add\",\"upstream\",up,cwd=cl);g(\"fetch\",\"-q\",\"upstream\",cwd=cl)\nopen(cl+\"/x.txt\",\"w\").write(\"2\\n\");g(\"add\",\"-A\",cwd=cl);g(\"commit\",\"-qm\",\"feat: x\",cwd=cl)\nsh=os.path.join(T,\"bin\");os.makedirs(sh)\nopen(sh+\"/git\",\"w\").write(\"#!/bin/sh\\nif [ \\\"$1\\\" = \\\"--version\\\" ]; then echo \\\"git version 2.39.5 (Apple Git-154)\\\"; exit 0; fi\\nif [ \\\"$1\\\" = \\\"merge-tree\\\" ]; then echo \\\"error: unknown option merge-base\\\" >&2; exit 129; fi\\nexec \"+real+\" \\\"$@\\\"\\n\")\nos.chmod(sh+\"/git\",0o755)\nE2=dict(E,PATH=sh+os.pathsep+E[\"PATH\"])\np=s.run([sys.executable,os.path.join(cl,\"_tools\",\"kbgit.py\"),\"contribute\",\"--upstream\",\"upstream\"],cwd=cl,env=E2,capture_output=True,text=True,timeout=120)\no=p.stdout+p.stderr\nprint(p.returncode,o[-300:])\nshutil.rmtree(T,ignore_errors=True)\nsys.exit(0 if p.returncode==2 and \"2.39\" in o else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/kg_contrib.py",
+    "kb/_self/git.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
