@@ -1,0 +1,26 @@
+{
+  "id": "ST-m7chi2bb",
+  "kind": "story",
+  "title": "A plan that names several one-sentence edits of one skill file puts them in one item or says why not",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb-sprint plan says that several edits of one skill file's plan or run step are one item unless each is large, since each separate item runs alone behind the file's held claim and its own landing queue",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,pathlib\nt=pathlib.Path('skills/sprint/SKILL.md').read_text(encoding='utf-8').lower()\nmiss=[w for w in ['edits of one skill file'] if w not in t]\nsys.exit('not yet: skills/sprint/SKILL.md lacks '+', '.join(miss) if miss else 0)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-moxpl354 close"
+  ],
+  "notes": "SP-moxpl354: eight one-sentence edits of skills/sprint/SKILL.md ran one at a time, about 15 minutes each from begin to landed, since begin refuses an item whose touches meet a held claim; a ninth, ST-7drozeza, had to be unchained by hand.",
+  "filed_in": "clone-0ea70e5c"
+}
