@@ -50,10 +50,34 @@
     "kb/_self/plugin.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the scan keep a closed code reference (api_key=token_provider, a path) from being flagged once , ) ] } and backticks no longer make a value a placeholder?",
+      "options": [
+        "Exempt a snake_case name or a path only when closing punctuation was stripped",
+        "Strip the punctuation with no exemption and edit the tracked docs that then hit",
+        "Strip only for values holding a digit and an upper-case letter"
+      ],
+      "recommendation": "Exempt a snake_case name or a path only when closing punctuation was stripped",
+      "do": {
+        "Exempt a snake_case name or a path only when closing punctuation was stripped": "BG-fwqcimiv",
+        "Strip the punctuation with no exemption and edit the tracked docs that then hit": "BG-fwqcimiv",
+        "Strip only for values holding a digit and an upper-case letter": "BG-fwqcimiv"
+      },
+      "class": "secrets",
+      "answer": "Exempt a snake_case name or a path only when closing punctuation was stripped",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "links": [
     "parked: SP-fn7letri review"
   ],
-  "notes": "Planned 2026-11-09 in SP-osevumx6: items that share a file wait on each other (kbcommon.py, redact.py then kbask.py, ql_capture.py then ql_deliver.py); no open item of the other live sprints touches this item's code files.",
+  "notes": "Planned 2026-11-09 in SP-osevumx6: items that share a file wait on each other (kbcommon.py, redact.py then kbask.py, ql_capture.py then ql_deliver.py); no open item of the other live sprints touches this item's code files. Gate g1 (class secrets) answered with its recommendation on the operator's delegation by manager c9419db9, who judged the class topical (scanner topic, no real secret); the new corpus rows still catch Pass12345x-style values.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-cdcea91c",
   "operator": "op-f618a13e"

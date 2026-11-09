@@ -22,5 +22,6 @@
   "links": [
     "parked: SP-fn7letri review"
   ],
+  "notes": "BG-fwqcimiv (2026-11-09) changes the unquoted-assignment rule of kbcommon.structured_secrets (a value closed by , ) ] } or a code span's backticks is now read as a value; kbcommon._closed_value), so verdicts cached under SCAN_FORM 8 pass what the scan now flags; the bump stays here since kbpublic.py is outside that item's touches.",
   "filed_in": "clone-0ea70e5c"
 }

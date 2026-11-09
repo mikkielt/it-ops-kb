@@ -277,7 +277,8 @@ URL_USERINFO = re.compile(r"""(\b[A-Za-z][A-Za-z0-9+.-]*://[^\s/:@"'<>]*:)([^\s/
 # What the leak scan takes of them (`structured_secrets`): the shapes named in STRUCTURED, each only for a value, not a
 # placeholder. A header credential has 12 or more characters; a url password and an unquoted assignment value have one or
 # more. A placeholder is one of ASSIGNED_PLACEHOLDER whole, a value with one of `$ { } < > *` or `...`, a code expression
-# or markup rather than a literal (a value with one of `( ) [ ] , ; \``), an upper-case name (`YOUR_API_KEY`), a
+# or markup rather than a literal (a value with one of `( ) [ ] , ; \``; an unquoted assignment value is first stripped of
+# the `, ) ] }` that close it and of a code span's backticks), an upper-case name (`YOUR_API_KEY`), a
 # `your-`, `my-` or `-here` name, one character, or one of the words in PLACEHOLDER_WORDS. A quoted assignment value is the last SECRETS
 # shape's; the assignment is read in prose files and item text only.
 STRUCTURED = ("auth", "url")
@@ -293,6 +294,18 @@ def _value(value, least):
             and not _PLACEHOLDER_NAME.fullmatch(value) and value.lower() not in PLACEHOLDER_WORDS)
 
 
+_CODE_REF = re.compile(r"[a-z]+(?:_[a-z]+)+|.*[\\/].*")  # a snake_case name or a path: what prose closes with `,` or a backtick
+
+
+def _closed_value(value):
+    """Whether an unquoted assignment value, read without the punctuation that closes it, is a literal: the `, ) ] }`
+    after it and a code span's backticks are dropped (`(password=v)`, `password: v, then`), a code expression still holds
+    its opening `(`, `[` or `{`, and a snake_case name or a path so closed is a reference (`api_key=token_provider,`)."""
+    bare = value.rstrip(",)]}")
+    bare = bare[1:-1] if len(bare) > 1 and bare[0] == bare[-1] == "`" else bare
+    return _value(bare, 1) and (bare == value or not _CODE_REF.fullmatch(bare))
+
+
 def structured_secrets(text, kinds=STRUCTURED):
     """[matched text] of the shapes named in KINDS ("auth", "url", "assign") that hold a value in `text`."""
     out = []
@@ -301,7 +314,8 @@ def structured_secrets(text, kinds=STRUCTURED):
     if "url" in kinds:
         out += [m.group(0) for m in URL_USERINFO.finditer(text) if _value(m.group(2), 1)]
     if "assign" in kinds:
-        out += [m.group(0) for m in ASSIGNMENT.finditer(text) if m.group(2)[:1] not in "\\\"'" and _value(m.group(2), 1)]
+        out += [m.group(0) for m in ASSIGNMENT.finditer(text)
+                if m.group(2)[:1] not in "\\\"'" and _closed_value(m.group(2))]
     return out
 
 
