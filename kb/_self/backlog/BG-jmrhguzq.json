@@ -2,7 +2,7 @@
   "id": "BG-jmrhguzq",
   "kind": "bug",
   "title": "kbmon's kb panel cuts its refreshed, eval and index row at 80 columns, losing counts and dates",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-zobzdhwi",
   "priority": "P3",
   "rank": 0,
@@ -45,6 +45,19 @@
   "links": [
     "parked: SP-5gph7fh6 review"
   ],
-  "claimed_by": "claude-0f9262ec",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "9fae083558f7d95c0f67c52a937d5594fe6387b6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=120);p.wall=time.time()-t0\n    if p.returncode not in (0,1): print('kbmon exit',p.returncode,p.stderr[-300:]);sys.exit(1)\n    return p\np=k('--once','--panel','kb',env=dict(os.environ,COLUMNS='80'))\nrows=[x for x in p.stdout.splitlines() if 'eval' in x or 'index' in x]\nprint(rows)\nsys.exit(1 if not rows or any(x.endswith('\\u2026') for x in rows) else 0)"
+        ],
+        "exit": 0,
+        "sha256": "5ff7c86c685700d7"
+      }
+    ]
+  }
 }
