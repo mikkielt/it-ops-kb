@@ -351,32 +351,29 @@ def _named(root, kb_root, name, key):
     """The setting `name.key` and where it came from: (value, layer, shown file) or None when no layer sets it."""
     try:
         merged, source = kbsettings.layered(root, name, kb_root)
-        layers = kbsettings.layer_files(root, kb_root)
+        if key not in merged:
+            return None
+        layer = source[key]
+        path = kbsettings.layer_path(root, layer, kb_root)
     except kbsettings.SettingsError as e:
         raise ExtensionError(str(e))
-    if key not in merged:
-        return None
-    layer = source[key]
-    files = [p for which, p, data in layers if which == layer and key in (data.get(name) or {})]
-    return merged[key], layer, kbsettings.shown_path(files[-1], root)
+    return merged[key], layer, kbsettings.shown_path(path, root)
 
 
 def _add_paths(root, kb_root):
     """Put the extension_paths directories of every settings layer on sys.path, each relative to the file naming it."""
     try:
-        layers = kbsettings.layer_files(root, kb_root)
+        listed, layers = kbsettings.layered(root, "extension_paths", kb_root)
+        homes = {layer: kbsettings.layer_path(root, layer, kb_root) for layer in set(layers)}
     except kbsettings.SettingsError as e:
         raise ExtensionError(str(e))
-    for _, path, data in layers:
-        listed = data.get("extension_paths", [])
-        if isinstance(listed, dict):
-            listed = list(listed.values())
-        if not isinstance(listed, list) or not all(isinstance(d, str) and d for d in listed):
-            raise ExtensionError(f"{kbsettings.shown_path(path, root)}: key extension_paths must be a list of directories")
-        for d in listed:
-            full = str(Path(d) if Path(d).is_absolute() else Path(path).parent / d)
-            if full not in sys.path:
-                sys.path.insert(0, full)
+    for layer, d in zip(layers, listed):
+        if not (isinstance(d, str) and d):
+            raise ExtensionError(f"{kbsettings.shown_path(homes[layer], root)}: key extension_paths must be a list of "
+                                 "directories")
+        full = str(Path(d) if Path(d).is_absolute() else Path(homes[layer]).parent / d)
+        if full not in sys.path:
+            sys.path.insert(0, full)
 
 
 def _entry_point(point):

@@ -19,9 +19,11 @@ command call it, never the files. It merges five layers key by key, later over e
   user      `<WS>/_private/settings.json`, which wins over every other layer
 A file holds `{"coordination": {"announce": {...}, "strategy": {...}}}`; a missing file is no error (a group file that
 is named and missing is), and a key of another top-level object is not read by `effective`. `layered(root, name,
-kb_root=None)` reads one of those objects (`extensions`, `extension_paths`, `backlog`, `gate_checks`, `group`,
-`leak`) the same way and returns `(merged, {key: layer})`. A group file may hold `locked`, a list of keys written as the
-file holds them (`coordination.announce.needs_you_after_min`, `extensions.ranker`; a name that ends before the key
+kb_root=None)` reads one of those keys (`extensions`, `extension_paths`, `backlog`, `gate_checks`, `group`,
+`leak`) the same way and returns `(merged, layers)`: an object's keys with a map from each key to its layer, a list's
+entries (`extension_paths`, `gate_checks`) in layer order with the layer of each entry, a string (`group`) with its
+layer; `layer_path(root, layer, kb_root=None)` is the file of a layer. A group file may hold `locked`, a list of keys
+written as the file holds them (`coordination.announce.needs_you_after_min`, `extensions.ranker`; a name that ends before the key
 locks everything below it): a later layer that sets a locked key raises `SettingsError` naming the key, the file that
 sets it and the group file. An unknown key, or a value outside its closed set, raises `SettingsError` (a ValueError
 whose message names the file, the key and the allowed values); `show` and `explain` print it on stderr and exit 2.
@@ -56,6 +58,8 @@ from pathlib import Path
 
 LAYERS = ("default", "group", "clone", "root", "user")
 OBJECTS = ("extensions", "extension_paths", "backlog", "gate_checks", "group", "leak")
+LIST_KEYS = ("extension_paths", "gate_checks")
+STRING_KEYS = ("group",)
 GROUP_ENV = "KB_GROUP_SETTINGS"
 STRATEGIES = ("wait", "ask", "after", "join", "proceed")
 RUN_STATES = ("working", "landing", "blocked", "returned")
@@ -260,20 +264,50 @@ def effective(root, kb_root=None):
 
 
 def layered(root, name, kb_root=None):
-    """`(merged, layers)` for the top-level object NAME (one of `OBJECTS`) of the settings files of workspace ROOT and
-    the kb root KB_ROOT: its keys merged over the five layers, later over earlier, and a map from each key to the layer
-    that set it last (`group`, `clone`, `root` or `user`; no default holds an object)."""
+    """`(merged, layers)` for the top-level key NAME (one of `OBJECTS`) of the settings files of workspace ROOT and the
+    kb root KB_ROOT, over the five layers, later over earlier. An object (`extensions`, `backlog`, `leak`): its keys
+    merged, and a map from each key to the layer that set it last (`group`, `clone`, `root` or `user`; no default holds
+    an object). A list (`extension_paths`, `gate_checks`): the entries of every layer in layer order, and a list of the
+    layer of each entry, one for one. A string (`group`): the value of the last layer that sets it, and that layer's name.
+    Nothing set gives `{}` and `{}`, `[]` and `[]`, or `""` and `""`. A key of the wrong type raises SettingsError."""
     if name not in OBJECTS:
         raise SettingsError(f"unknown object {name}; allowed: {', '.join(OBJECTS)}")
     root = Path(root)
-    merged, source = {}, {}
+    if name in LIST_KEYS:
+        merged, source = [], []
+    elif name in STRING_KEYS:
+        merged, source = "", ""
+    else:
+        merged, source = {}, {}
     for layer, path, data in layer_files(root, kb_root):
-        body = data.get(name, {})
-        if not isinstance(body, dict):
-            raise SettingsError(f"{shown_path(path, root)}: key {name} must be an object")
-        for key, value in body.items():
-            merged[key], source[key] = value, layer
+        if name not in data:
+            continue
+        body = data[name]
+        shown = shown_path(path, root)
+        if name in LIST_KEYS:
+            if not isinstance(body, list):
+                raise SettingsError(f"{shown}: key {name} must be a list")
+            merged += body
+            source += [layer] * len(body)
+        elif name in STRING_KEYS:
+            if not (isinstance(body, str) and body):
+                raise SettingsError(f"{shown}: key {name} must be a non-empty string")
+            merged, source = body, layer
+        else:
+            if not isinstance(body, dict):
+                raise SettingsError(f"{shown}: key {name} must be an object")
+            for key, value in body.items():
+                merged[key], source[key] = value, layer
     return merged, source
+
+
+def layer_path(root, layer, kb_root=None):
+    """The `Path` of the settings file of LAYER (`group`, `clone`, `root` or `user`) for workspace ROOT and the kb root
+    KB_ROOT, or None when no such layer takes part (no group file named, no kb root given)."""
+    for which, path, _ in layer_files(root, kb_root):
+        if which == layer:
+            return path
+    return None
 
 
 def explain(root, kb_root=None, key=None):
