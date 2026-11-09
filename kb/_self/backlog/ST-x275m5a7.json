@@ -23,5 +23,5 @@
   "links": [
     "parked: SP-p46hofrg close"
   ],
-  "notes": "check to tighten at planning: the command given only proves the tool runs Seen again in SP-moxpl354 (2026-11-09 14:22): land of ST-7ssfgf5c stopped at step stale on kb/_self/code.md and tools.md for _tools/fetch.py, another session's commit; a rerun passed."
+  "notes": "check to tighten at planning: the command given only proves the tool runs Seen again in SP-moxpl354 (2026-11-09 14:22): land of ST-7ssfgf5c stopped at step stale on kb/_self/code.md and tools.md for _tools/fetch.py, another session's commit; a rerun passed. SP-rzwljgxv close evidence: BG-cuqu5jy6's land stopped at step stale on kb/_self/code.md for bl_land.py, a file the item did not change, because the orchestrator's checkout was 19 commits behind origin/main; a fast-forward of the checkout and a rerun landed it."
 }
