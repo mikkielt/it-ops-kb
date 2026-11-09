@@ -18,10 +18,35 @@
   "touches": [
     "_tools/kbroot.py"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does without_paths find the end of an unquoted absolute path that holds a space?",
+      "options": [
+        "end at the next ': ' or end of line",
+        "end at the first space (current behaviour)",
+        "end at a known path-like token pattern"
+      ],
+      "recommendation": "end at the next ': ' or end of line",
+      "reason": "git puts its reason after ': ', so the whole path goes and the reason stays; a line with no ': ' loses its tail, which leaks nothing",
+      "do": {
+        "end at the next ': ' or end of line": "BG-ngtix6e2",
+        "end at the first space (current behaviour)": "BG-ngtix6e2",
+        "end at a known path-like token pattern": "BG-ngtix6e2"
+      },
+      "class": "secrets",
+      "answer": "end at the next ': ' or end of line",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "links": [
     "parked: SP-yisvj7vd review"
   ],
-  "notes": "Premise run on the base 2026-11-09 by precheck of SP-c6tr77jl: the repro and each added check fail on the premise (an assertion), none on a traceback. Planned 2026-11-09 by a headless plan session; left out as off the theme or in a file another live session plans: BG-55zjrwpn and BG-cgbpg3lq (kbfacts.py).",
+  "notes": "Premise run on the base 2026-11-09 by precheck of SP-c6tr77jl: the repro and each added check fail on the premise (an assertion), none on a traceback. Planned 2026-11-09 by a headless plan session; left out as off the theme or in a file another live session plans: BG-55zjrwpn and BG-cgbpg3lq (kbfacts.py). Gate g1 (class secrets, matched the word token in option 3) was answered with its recommendation on the night manager's instruction (ask A84a15ca963): the class is topical, not a real secret choice, and the answer leaks less than the old behaviour. The operator may re-confirm.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-1d0b0461",
   "operator": "op-f618a13e"
