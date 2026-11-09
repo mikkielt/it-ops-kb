@@ -18,7 +18,8 @@
   },
   "repro_reason": "the mod runs only inside an interactive Claude Code session; no headless command drives /clear and the pane refresh, so the repro reads that the hooks module resets lastAlerts on a session reset",
   "touches": [
-    ".claude/skills/kbmon-pane/**"
+    ".claude/skills/kbmon-pane/**",
+    "kb/_self/monitoring.md"
   ],
   "depends_on": [
     "BG-tje2kpiv"
