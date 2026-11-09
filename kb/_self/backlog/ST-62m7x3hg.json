@@ -1,0 +1,23 @@
+{
+  "id": "ST-62m7x3hg",
+  "kind": "story",
+  "title": "coordination.md and tools.md say what the landing lock and claim now do on an interrupt: the transition's own call, the ticket asked again, the handler restored and the lock file removed",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "coordination.md, Who moves it, says claim also puts the run state back on an interrupt in the transition's own call; tools.md names the landing lock's removal of its file, its handler restore and its ticket asked again",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; t = open('kb/_self/tools.md').read(); i = t.index('landing lock'); sys.exit(0 if 'asks again' in t[i:i + 3000] else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/coordination.md",
+    "kb/_self/tools.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
