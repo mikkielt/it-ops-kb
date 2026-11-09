@@ -25,6 +25,26 @@
   "depends_on": [
     "BG-mhlxillg"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does benchmarks.md show the intake-real record?",
+      "options": [
+        "a table of cpu_s, wall_s, spawns for case 'idle hook intake real' (arm A) after the spawns table, with Setup and the intake bullet reworded to point at it",
+        "mention the figures in prose only"
+      ],
+      "recommendation": "a table of cpu_s, wall_s, spawns for case 'idle hook intake real' (arm A) after the spawns table, with Setup and the intake bullet reworded to point at it",
+      "reason": "generated from the csv, so it cannot drift",
+      "do": {
+        "a table of cpu_s, wall_s, spawns for case 'idle hook intake real' (arm A) after the spawns table, with Setup and the intake bullet reworded to point at it": "BG-l3acexb4",
+        "mention the figures in prose only": "BG-l3acexb4"
+      },
+      "class": "design",
+      "answer": "a table of cpu_s, wall_s, spawns for case 'idle hook intake real' (arm A) after the spawns table, with Setup and the intake bullet reworded to point at it",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-m5m67goe review"
   ],
