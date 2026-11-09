@@ -56,7 +56,9 @@
       "class": "push",
       "hold": true,
       "answer": "has_code_lane re-reads the settings file itself and keeps the lane on an unreadable, non-JSON, non-object file or a non-string lane_module",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "filed_in": "clone-0ea70e5c",
