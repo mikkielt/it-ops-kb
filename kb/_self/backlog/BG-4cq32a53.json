@@ -23,6 +23,26 @@
   "depends_on": [
     "BG-c3726dir"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does live_rows treat a --window shorter than one ps listing's pause, which lists once and leaves zero elapsed seconds?",
+      "options": [
+        "divide per-minute figures by at least one LIVE_TICK_S and write the rows",
+        "refuse the window with exit 2"
+      ],
+      "recommendation": "divide per-minute figures by at least one LIVE_TICK_S and write the rows",
+      "reason": "a short window still measures the one listing, and the refusal would need the CLI file, outside the touches",
+      "do": {
+        "divide per-minute figures by at least one LIVE_TICK_S and write the rows": "BG-4cq32a53",
+        "refuse the window with exit 2": "BG-4cq32a53"
+      },
+      "class": "design",
+      "answer": "divide per-minute figures by at least one LIVE_TICK_S and write the rows",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-wv3ob5vy review"
   ],
