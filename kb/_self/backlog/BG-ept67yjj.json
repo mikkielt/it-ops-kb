@@ -1,0 +1,24 @@
+{
+  "id": "BG-ept67yjj",
+  "kind": "bug",
+  "title": "The query log's gap step files a new public gap for a question a closed entry of the same question settled as a _self question",
+  "status": "draft",
+  "parent": "EP-6iiony54",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "querylog.py's gap step keeps no new finding, and writes no new _gaps.md entry, for a question whose lower-cased text matches a _gaps.md entry already closed (a Closed or Resolved note), or that the _self root's pack answers good with a tested question; found 2026-11-09 when 'which coordination strategy does a session suggest when another item touching the same files is working' (asked 4 times) was filed again as F-ed67905154ee hours after F-debac1b47a9e closed it as a _self question",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.exit(1)"
+    ]
+  },
+  "repro_reason": "needs a planted store with a closed entry and a new lookup of the same question; the planner writes the real repro",
+  "touches": [
+    "_tools/ql_gap.py",
+    "kb/_self/querylog.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
