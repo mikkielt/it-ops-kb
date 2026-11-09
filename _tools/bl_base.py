@@ -444,8 +444,34 @@ class Backlog:
                 self.items[p.stem] = item
                 self.raw[p.stem] = text
 
+    def keep_disk_answers(self, item):
+        """A gate field written to the item's file after this run loaded it (an answer the orchestrator committed on a
+        worker's branch while `done` ran its checks) is added to `item` before it is saved, so the save does not wipe
+        it. Only a key the loaded copy lacked and `item` lacks is added: one the run itself removed stays removed."""
+        path, loaded = self.dir / f"{item['id']}.json", self.raw.get(item["id"])
+        if loaded is None or not path.is_file():
+            return
+        try:
+            disk, was = json.loads(path.read_text(encoding="utf-8")), json.loads(loaded)
+        except json.JSONDecodeError:
+            return
+        if not (isinstance(disk, dict) and isinstance(was, dict)) or disk == was:
+            return
+        gates = {g.get("id"): g for g in was.get("gates") or [] if isinstance(g, dict)}
+        for dg in disk.get("gates") or []:
+            if not isinstance(dg, dict):
+                continue
+            old = gates.get(dg.get("id"))
+            mine = next((g for g in item.get("gates") or [] if isinstance(g, dict) and g.get("id") == dg.get("id")), None)
+            if old is None or mine is None:
+                continue
+            for k, v in dg.items():
+                if k not in old and k not in mine:
+                    mine[k] = v
+
     def save(self, item):
         self.dir.mkdir(parents=True, exist_ok=True)
+        self.keep_disk_answers(item)
         text = canonical(item)
         with open(self.dir / f"{item['id']}.json", "w", encoding="utf-8", newline="\n") as f:
             f.write(text)
