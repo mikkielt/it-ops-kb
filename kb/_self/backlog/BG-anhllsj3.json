@@ -16,5 +16,10 @@
     ]
   },
   "repro_reason": "the defect is a stale code comment; no behaviour differs",
+  "touches": [
+    "_tools/kg_hooks.py",
+    "kb/_self/git.md"
+  ],
+  "notes": "Planned in SP-wjrxikw6 2026-11-10: touches, order and repro checked against the base.",
   "filed_in": "clone-0ea70e5c"
 }

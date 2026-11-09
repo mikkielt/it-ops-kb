@@ -15,8 +15,13 @@
       "\nimport json,sys,tempfile,pathlib\nsys.path.insert(0,\"_tools\")\nT=pathlib.Path(tempfile.mkdtemp())\nd=T/\"kb\"/\"odd dir\"; d.mkdir(parents=True)\n(d/\"settings.json\").write_text(json.dumps({\"gate_checks\":[[\"true\"]]}))\nimport kg_sync\nf=kg_sync.group_gate(T)\nsys.exit(0 if not f else \"not yet: \"+str(f)[:300])\n"
     ]
   },
+  "touches": [
+    "_tools/kg_sync.py",
+    "kb/_self/git.md"
+  ],
   "links": [
     "parked: SP-ga3lbnlk review"
   ],
+  "notes": "Planned in SP-wjrxikw6 2026-11-10: touches, order and repro checked against the base.",
   "filed_in": "clone-0ea70e5c"
 }

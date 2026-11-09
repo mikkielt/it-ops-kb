@@ -17,10 +17,13 @@
   },
   "touches": [
     ".claude/hooks/coord_hook.py",
-    "kb/_self/coordination.md"
+    "kb/_self/coordination.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/token-efficiency.md"
   ],
   "links": [
     "parked: SP-yisvj7vd review"
   ],
+  "notes": "Planned in SP-wjrxikw6 2026-11-10: touches, order and repro checked against the base.",
   "filed_in": "clone-0ea70e5c"
 }
