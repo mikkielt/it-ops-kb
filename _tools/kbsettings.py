@@ -194,13 +194,18 @@ def _clone_path(root):
 
 def _leaves(data):
     """The keys a settings file sets, as it holds them: `coordination.group.name` for each coordination key and
-    `object.key` for each key of another named object."""
+    `object.key` for each key of another named object that holds an object; a named key that holds a list or a string
+    (`extension_paths`, `gate_checks`, `group`) is one leaf, its own name."""
     out = []
     for group, body in (data.get("coordination") or {}).items():
         out += [f"coordination.{group}.{name}" for name in body]
     for name in OBJECTS:
-        if isinstance(data.get(name), dict):
+        if name not in data:
+            continue
+        if isinstance(data[name], dict):
             out += [f"{name}.{key}" for key in data[name]]
+        else:
+            out.append(name)
     return out
 
 
