@@ -59,7 +59,12 @@
         "in_land flag on land's Namespace, rev-list per bound": "BG-4goeefyp",
         "read the run key's land process record, merge-base per bound": "BG-4goeefyp"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "in_land flag on land's Namespace, rev-list per bound",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "notes": "2026-11-09 review: (1) bl_land.py:712 moves claimed to landed in cmd_done, which land also calls from its worktree before the push and verify; with no claimed to landing move in the table a failed push leaves landed over an item not on main. (2) delivery_evidence (bl_land.py:52-95, 4fd10f8cb8) ran merge-base --is-ancestor per KB-Auto commit: 27.9 s for one bound in this clone with 2309 such commits; one rev-list BOUND..HEAD set per bound (or stopping at the first failing commit, since the log is newest first) removes it. (3) done without --commit moves the key while the done file is only written: the repro covers it. The worker adds a check for (2) that bounds the git processes delivery_evidence starts on a planted repo with 30 KB-Auto commits, and one for (1) that runs land on a worker-less item whose push fails and reads the key.",
