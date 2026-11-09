@@ -2,7 +2,7 @@
   "id": "BG-b24gsrj7",
   "kind": "bug",
   "title": "An interrupt right after landing_lock installs its SIGTERM handler, before the block that restores it opens, leaves the handler installed",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-luspfajx",
   "priority": "P3",
   "rank": 0,
@@ -27,6 +27,19 @@
     "parked: SP-6aegt3bs review"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-luspfajx",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "e31e2b3375763caf96021e1776b7fe52a44590c7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, signal, subprocess, sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport bl_close\nt = tempfile.mkdtemp()\nsubprocess.run([\"git\", \"init\", \"-q\", t], check=True)\ndef mine(*_):\n    pass\nsignal.signal(signal.SIGTERM, mine)\nreal = signal.signal\ndef interrupt_after_install(num, handler):\n    old = real(num, handler)\n    if handler is not mine and callable(handler):\n        signal.signal = real\n        raise KeyboardInterrupt\n    return old\nsignal.signal = interrupt_after_install\ntry:\n    with bl_close.landing_lock(t, \"ST-aaaaaaaa\"):\n        pass\nexcept BaseException as e:\n    print(\"interrupted by\", type(e).__name__)\nfinally:\n    signal.signal = real\nrestored = signal.getsignal(signal.SIGTERM) is mine\nprint(\"SIGTERM handler restored after an interrupt right after its install:\", restored)\nsys.exit(0 if restored else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "b1bc629f76552ce2"
+      }
+    ]
+  }
 }
