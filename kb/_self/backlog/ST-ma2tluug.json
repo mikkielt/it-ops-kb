@@ -2,7 +2,7 @@
   "id": "ST-ma2tluug",
   "kind": "story",
   "title": "A job placed on a workstation whose executor is offline moves to the fallback its policy names, and only there",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-p4guu2ip",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",
@@ -141,6 +141,37 @@
   ],
   "notes": "Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: a live lease keeps the job on its workstation",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-61c966d6",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "e6494bef48b1408f18226799a68b60ae71a5e6e6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,json,time,tempfile,subprocess,threading,http.server\nclass H(http.server.BaseHTTPRequestHandler):\n    seen=[]; out={}\n    def do_POST(s):\n        n=int(s.headers.get(\"Content-Length\") or 0); H.seen.append((s.path,json.loads(s.rfile.read(n) or b\"{}\")))\n        b=json.dumps(H.out).encode(); s.send_response(200); s.send_header(\"Content-Length\",str(len(b))); s.end_headers(); s.wfile.write(b)\n    def log_message(s,*a): pass\nsrv=http.server.HTTPServer((\"127.0.0.1\",0),H); threading.Thread(target=srv.serve_forever,daemon=True).start()\nOPA=f\"http://127.0.0.1:{srv.server_port}\"\ndec=lambda **k: {\"result\":dict({\"executor\":\"workstation\",\"identity\":\"none\",\"fallback\":None,\"fallback_after_s\":0,\"budget_cap_usd\":None,\"decided_by\":\"default\"},**k)}\nd=tempfile.mkdtemp(); env=dict(os.environ,KB_COORD_STORE=os.path.join(d,\"c.sqlite\"))\nkj=lambda *x,e=None: subprocess.run([sys.executable,\"_tools/kbjob.py\",*x],capture_output=True,text=True,timeout=300,env=e or env)\nH.out=dec(executor=\"workstation\",fallback=\"server\",fallback_after_s=1)\nj=json.loads(kj(\"submit\",\"check\",\"--name\",\"backlog-check\",\"--no-ensure\",\"--opa\",OPA).stdout)[\"job\"]\nH.out=dec(executor=\"workstation\",fallback=None)\nk=json.loads(kj(\"submit\",\"check\",\"--name\",\"tests-changed\",\"--no-ensure\",\"--opa\",OPA).stdout)[\"job\"]\ntime.sleep(2); kj(\"serve\",\"--kind\",\"server\",\"--data\",os.path.join(d,\"srv\"),\"--once\")\na=json.loads(kj(\"status\",j).stdout); b=json.loads(kj(\"status\",k).stdout)\nassert a[\"state\"]!=\"queued\" and a[\"placement\"][\"executor\"]==\"server\" and any(\"offline\" in (e.get(\"reason\") or \"\") for e in a[\"events\"]), a\nassert b[\"state\"]==\"queued\" and \"offline\" in (b.get(\"reason\") or \"\"), b\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,json,time,tempfile,subprocess,platform\nsys.path.insert(0,\"_tools\")\nimport kj_store\nd=tempfile.mkdtemp(); env=dict(os.environ,KB_COORD_STORE=os.path.join(d,\"c.sqlite\"))\nrun=lambda *x: subprocess.run([sys.executable,*x],capture_output=True,text=True,timeout=300,env=env)\nkey=kj_store.exec_key(platform.node(),kj_store.operator_id())\njob=json.loads(run(\"_tools/kbjob.py\",\"submit\",\"check\",\"--name\",\"backlog-check\",\"--no-ensure\").stdout)[\"job\"]\np=subprocess.Popen([sys.executable,\"_tools/kbjob.py\",\"serve\",\"--once\"],env=env,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)\nholders=set()\nwhile p.poll() is None:\n    r=run(\"_tools/coord.py\",\"get\",key); holders.add(json.loads(r.stdout).get(\"holder\") if r.returncode==0 else None); time.sleep(0.2)\nafter=json.loads(run(\"_tools/coord.py\",\"get\",key).stdout)\nassert \"jobexec\" in holders, holders\nassert after[\"holder\"] is None and \"seen\" in json.loads(after[\"value\"]), after\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,json,time,tempfile,subprocess,threading,http.server,platform\nsys.path.insert(0,\"_tools\")\nimport kj_store\nclass H(http.server.BaseHTTPRequestHandler):\n    out={}\n    def do_POST(s):\n        n=int(s.headers.get(\"Content-Length\") or 0); s.rfile.read(n)\n        b=json.dumps(H.out).encode(); s.send_response(200); s.send_header(\"Content-Length\",str(len(b))); s.end_headers(); s.wfile.write(b)\n    def log_message(s,*a): pass\nsrv=http.server.HTTPServer((\"127.0.0.1\",0),H); threading.Thread(target=srv.serve_forever,daemon=True).start()\nH.out={\"result\":{\"executor\":\"workstation\",\"identity\":\"none\",\"fallback\":\"server\",\"fallback_after_s\":0,\"budget_cap_usd\":None,\"decided_by\":\"default\"}}\nd=tempfile.mkdtemp(); env=dict(os.environ,KB_COORD_STORE=os.path.join(d,\"c.sqlite\"))\nrun=lambda *x: subprocess.run([sys.executable,*x],capture_output=True,text=True,timeout=300,env=env)\nkey=kj_store.exec_key(platform.node(),kj_store.operator_id())\nlease=json.loads(run(\"_tools/coord.py\",\"claim\",key,\"--ttl\",\"600\",\"--holder\",\"jobexec\").stdout)\njob=json.loads(run(\"_tools/kbjob.py\",\"submit\",\"check\",\"--name\",\"backlog-check\",\"--no-ensure\",\"--opa\",f\"http://127.0.0.1:{srv.server_port}\").stdout)[\"job\"]\ntime.sleep(1); run(\"_tools/kbjob.py\",\"serve\",\"--kind\",\"server\",\"--data\",os.path.join(d,\"srv\"),\"--once\")\na=json.loads(run(\"_tools/kbjob.py\",\"status\",job).stdout)\nassert a[\"state\"]==\"queued\" and a[\"placement\"][\"executor\"]==\"workstation\" and not a[\"reason\"], a\nrun(\"_tools/coord.py\",\"release\",key,\"--token\",lease[\"token\"]); run(\"_tools/kbjob.py\",\"serve\",\"--kind\",\"server\",\"--data\",os.path.join(d,\"srv\"),\"--once\")\nb=json.loads(run(\"_tools/kbjob.py\",\"status\",job).stdout)\nassert b[\"state\"]!=\"queued\" and b[\"placement\"][\"executor\"]==\"server\", b\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
