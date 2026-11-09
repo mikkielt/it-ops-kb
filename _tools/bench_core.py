@@ -314,7 +314,8 @@ class Bench:
 
     def close(self):
         """Unregister the servers, then remove the run's clones and their bare origins: they are this run's alone and weigh
-        about 1.3 GB each, and the raw logs and data beside them stay."""
+        about 1.3 GB each. The raw logs and data beside them stay while a `.jsonl` log holds a line; a run with none (a
+        `--dry-run`, a scenario that starts no model) removes its scratch directory too, so none is left empty."""
         for c in self.registered:
             for name in ("kb", "microsoft-learn", "claude-code-docs", "mcp-docs"):
                 subprocess.run(["claude", "mcp", "remove", "--scope", "local", name], cwd=c, capture_output=True)
@@ -322,6 +323,8 @@ class Bench:
             for d in (c, c.with_name(c.name + "-origin.git")):
                 shutil.rmtree(d, ignore_errors=True)
         self._clones.clear()
+        if not any(p.is_file() and p.stat().st_size for p in self.scratch.rglob("*.jsonl")):
+            shutil.rmtree(self.scratch, ignore_errors=True)
 
     # -- model runs through agent_bench.py in the lookup clone
 
