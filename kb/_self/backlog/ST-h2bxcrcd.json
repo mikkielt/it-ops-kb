@@ -27,6 +27,29 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does start decide to commit when --commit is absent?",
+      "options": [
+        "commit whenever the root is a git work tree",
+        "commit always and refuse outside git"
+      ],
+      "recommendation": "commit whenever the root is a git work tree",
+      "reason": "a root with no repository keeps starting, as before",
+      "do": {
+        "commit whenever the root is a git work tree": "ST-h2bxcrcd",
+        "commit always and refuse outside git": "ST-h2bxcrcd"
+      },
+      "class": "agents-rule",
+      "answer": "commit whenever the root is a git work tree",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "links": [
     "parked: SP-ga3lbnlk close"
   ],
