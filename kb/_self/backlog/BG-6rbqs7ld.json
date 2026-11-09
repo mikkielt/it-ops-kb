@@ -2,7 +2,7 @@
   "id": "BG-6rbqs7ld",
   "kind": "bug",
   "title": "An interrupt right after claim installs its SIGTERM handler, before the block that restores it opens, leaves the handler installed",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ejeki6bv",
   "priority": "P3",
   "rank": 0,
@@ -24,6 +24,19 @@
     "parked: SP-luspfajx review"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-ev5run01",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "623680c799efca6964569855f0debc3f2426f5ff",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json, os, signal, subprocess, sys, tempfile\nfrom pathlib import Path\nsys.path.insert(0, \"_tools\")\nimport backlog\nr = Path(tempfile.mkdtemp())\ng = lambda *a: subprocess.run([\"git\", \"-C\", str(r), *a], check=True, capture_output=True, text=True).stdout.strip()\ng(\"init\", \"-q\")\n(r / \"backlog.json\").write_text(json.dumps({\"item_dir\": \"items\"}))\n(r / \"items\").mkdir()\nitem = {\"id\": \"ST-aaaaaaaa\", \"kind\": \"story\", \"title\": \"t\", \"status\": \"todo\", \"priority\": \"P3\", \"goal\": \"g\", \"touches\": [\"x.txt\"], \"checks\": [{\"run\": [\"python3\", \"-c\", \"pass\"]}]}\n(r / \"items\" / \"ST-aaaaaaaa.json\").write_text(json.dumps(item, indent=2) + \"\\n\")\ng(\"add\", \"-A\")\ng(\"-c\", \"user.name=x\", \"-c\", \"user.email=x@example.com\", \"commit\", \"-qm\", \"i\")\ndef mine(*_):\n    pass\nsignal.signal(signal.SIGTERM, mine)\nreal = signal.signal\ndef interrupt_after_install(num, handler):\n    old = real(num, handler)\n    if handler is not mine and callable(handler):\n        signal.signal = real\n        raise KeyboardInterrupt\n    return old\nsignal.signal = interrupt_after_install\nos.environ[\"CLAUDE_CODE_SESSION_ID\"] = \"chk\"\nos.environ.pop(\"KB_BACKLOG_CONFIG\", None)\ntry:\n    backlog.main([\"--root\", str(r), \"claim\", \"ST-aaaaaaaa\", \"--by\", \"w\"])\nexcept BaseException as e:\n    print(\"claim ended with\", type(e).__name__)\nfinally:\n    signal.signal = real\nrestored = signal.getsignal(signal.SIGTERM) is mine\nprint(\"SIGTERM handler restored after an interrupt right after claim installed it:\", restored)\nsys.exit(0 if restored else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "c74c1540e41baf8f"
+      }
+    ]
+  }
 }
