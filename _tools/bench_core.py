@@ -239,6 +239,23 @@ def today():
     return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
 
 
+def run_commit():
+    """The commit a run records: the merge-base of HEAD and origin/main when HEAD's `_tools` and `.claude` trees equal
+    that commit's (the run measures what main holds, and the commit stays on main when `land` rebases the worker's
+    branch), else HEAD, said on stderr to be the branch's, which a rebase rewrites."""
+    head = git("rev-parse", "--short=7", "HEAD", cwd=HOME)
+    base = subprocess.run(["git", "merge-base", "HEAD", "origin/main"], cwd=str(HOME), capture_output=True, text=True,
+                          encoding="utf-8").stdout.strip()
+    if not base:
+        return head
+    same = subprocess.run(["git", "diff", "--quiet", base, "HEAD", "--", "_tools", ".claude"], cwd=str(HOME)).returncode == 0
+    if same:
+        return git("rev-parse", "--short=7", base, cwd=HOME)
+    print(f"bench: the record's commit {head} is the branch's HEAD, whose _tools or .claude differ from origin/main's "
+          "merge-base; a rebase (land) rewrites it", file=sys.stderr)
+    return head
+
+
 class Bench:
     """One `run`: the record's identity (date, commit, Claude Code version, kb size), the scratch directory and its
     clones, and the rows written so far. The date is read once, here, and stamps every row and every file name of the
@@ -250,7 +267,7 @@ class Bench:
         self.date = today()
         self.record = self.date
         self.status = 0  # the exit code a scenario asks for (1: `pool` stopped at its --max-usd)
-        self.commit = git("rev-parse", "--short=7", "HEAD", cwd=HOME)
+        self.commit = run_commit()
         self.cc = (subprocess.run(["claude", "--version"], capture_output=True, text=True).stdout.split() or ["?"])[0]
         import kbfacts
         self.topics = str(len(kbfacts.articles()))
