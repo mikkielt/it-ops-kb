@@ -2,7 +2,7 @@
   "id": "BG-agossgpb",
   "kind": "bug",
   "title": "agent.run marks a run failed when its answer merely opens with the words API Error, and a run with no closing text as ok",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-osevumx6",
   "priority": "P3",
   "rank": 0,
@@ -70,6 +70,28 @@
     "parked: SP-c7oav2vn review"
   ],
   "notes": "Planned 2026-11-09 in SP-osevumx6: items that share a file wait on each other (kbcommon.py, redact.py then kbask.py, ql_capture.py then ql_deliver.py); no open item of the other live sprints touches this item's code files.",
-  "claimed_by": "claude-cdcea91c",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "c27522d0faf7d1752eccce1ac808878d87a0e868",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import ql_capture as q;r=q.agent_row({'hook_event_name':'SubagentStop','agent_id':'a1','agent_type':'x'},'sid1');print('exit of a stop row with no closing text:',r.get('exit'));sys.exit(1 if r.get('exit')==0 else 0)"
+        ],
+        "exit": 0,
+        "sha256": "67f827267d02ba8f"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import ql_capture;t='API Error handling in coord.py is fixed.';f=t.startswith(ql_capture.AGENT_FAILED_TEXT);print('plain answer read as failed:',f);sys.exit(1 if f else 0)"
+        ],
+        "exit": 0,
+        "sha256": "ef98bf7063fa7875"
+      }
+    ]
+  }
 }
