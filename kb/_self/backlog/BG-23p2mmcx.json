@@ -2,7 +2,7 @@
   "id": "BG-23p2mmcx",
   "kind": "bug",
   "title": "kbtail.py --once --history 0 prints a skipped count of a window it did not read",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-booflukv",
   "sprint": "SP-zobzdhwi",
   "priority": "P3",
@@ -28,5 +28,7 @@
     "parked: SP-wurbmsid review"
   ],
   "notes": "The reviewer also found the history read re-reading from scratch in windows growing x4, up to the whole file, when the tail holds few displayable entries. Planner 2026-11-09: the reviewer's second finding (the history read re-reads in windows growing x4, up to the whole file, when the tail holds few displayable entries) is left out of this item's goal for want of a measured bound; the worker may bound it as part of the fix but no check reads it.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-0f9262ec",
+  "operator": "op-f618a13e"
 }
