@@ -2,7 +2,7 @@
   "id": "ST-3oan6bbu",
   "kind": "story",
   "title": "Research sprint goal: Workers and dispatch are safe: no paid claude from a worker, runner watch spares live workers, stage-back and claim survive interrupts, briefs and usage tell the truth",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rzwljgxv",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev1run01",
+  "operator": "op-f618a13e"
 }
