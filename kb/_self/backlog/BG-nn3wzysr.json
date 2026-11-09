@@ -39,6 +39,27 @@
   "depends_on": [
     "BG-ff6fhfoo"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does contribute detect a git without merge-tree --write-tree?",
+      "options": [
+        "read git --version and refuse below 2.38",
+        "probe git merge-tree --write-tree on an empty tree"
+      ],
+      "recommendation": "read git --version and refuse below 2.38",
+      "reason": "one cheap call that names the version, and git reports it the same on every platform",
+      "do": {
+        "read git --version and refuse below 2.38": "BG-nn3wzysr",
+        "probe git merge-tree --write-tree on an empty tree": "BG-nn3wzysr"
+      },
+      "class": "push",
+      "hold": true,
+      "answer": "read git --version and refuse below 2.38",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-qinvdomv review"
   ],

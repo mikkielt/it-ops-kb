@@ -4,6 +4,8 @@ Nothing is pushed and the working tree and index are never touched: a commit is 
 written with `git commit-tree`. Runs git in KB, this module's own copy of the repository directory. Standard library
 only; kbgit.py imports it, and it imports no facade.
 """
+import re
+
 import kbcommon
 import kbpublic
 from kg_base import KB
@@ -124,6 +126,15 @@ def write_commit(tree, tip, sha):
     return (o.decode().strip(), "") if code == 0 else (None, e.strip()[-300:])
 
 
+def old_git():
+    """Why this git cannot apply a commit (`merge-tree --write-tree` came with git 2.38), naming its version, else ''."""
+    version = out("--version") or ""
+    m = re.search(r"(\d+)\.(\d+)", version)
+    if m and (int(m.group(1)), int(m.group(2))) < (2, 38):
+        return f"{version} has no merge-tree --write-tree; git 2.38 or later is needed"
+    return ""
+
+
 def refuse_branch(branch):
     """Why BRANCH may not be written (the checked-out branch of any worktree, `main`, an invalid name), else ''."""
     if out("check-ref-format", "--branch", branch) is None:
@@ -148,6 +159,10 @@ def cmd_contribute(a):
         return 2
     if out("remote", "get-url", up_name) is None:
         print(f"refused: no upstream remote {up_name!r}")
+        return 2
+    why = old_git()
+    if why:
+        print(f"refused: {why}")
         return 2
     why = refuse_branch(branch)
     if why:
