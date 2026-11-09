@@ -6,7 +6,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "Every wall-clock time kbmon prints in the needs-you line, the sprint panel's landing row and the kb.eval alert carries UTC, as mon_status.when and mon_querylog.when now do.",
+  "goal": "The kb.eval alert's since and the sprint panel's landing row carry UTC, as mon_status.when and mon_querylog.when now do",
   "repro": {
     "run": [
       "python3",
@@ -14,5 +14,20 @@
       "import sys;sys.path.insert(0,'_tools');import mon_kb;sys.exit('UTC' not in mon_kb.alerts({'eval':{'state':'failed','when':'2026-11-08T22:56:00Z'}})[0]['since'])"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,\"_tools\");import mon_sprint;r=mon_sprint.lines({\"sprints\":[],\"landings\":[{\"item\":\"BG-x\",\"step\":\"rebase\",\"since\":\"2026-11-08T22:56:00Z\"}]});sys.exit(0 if any(\"landing\" in x and \"UTC\" in x for x in r) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/mon_kb.py",
+    "_tools/mon_sprint.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
+  ],
   "filed_in": "clone-0ea70e5c"
 }
