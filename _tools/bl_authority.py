@@ -110,6 +110,12 @@ TOKEN_IDENT = re.compile(r"\b(?:[A-Z0-9]+_)+TOKENS(?:_[A-Z0-9]+)*\b(?!\.\w)")
 # an identifier in upper case (`GITLAB_TOKEN`) or in mixed case, or after a credential word (`API bare_token`).
 SNAKE_TOKEN_IDENT = re.compile(r"\b(?:[a-z0-9]+_)+tokens?\b(?!\.\w)")
 CODE_PARTS = frozenset(("bare", "def", "read"))
+# A model's usage field or token-count function (`cache_read_input_tokens`, `cache_creation_input_tokens`,
+# `output_tokens`, `count_tokens`, `max_tokens`): an identifier in the plural `tokens` whose every part before it is on
+# the closed list USAGE_PARTS. It counts tokens, no credential; the singular and any other part keep the class.
+USAGE_PARTS = frozenset((
+    "cache", "cached", "read", "creation", "input", "output", "prompt", "completion", "reasoning", "total", "count",
+    "num", "max"))
 SERVICE_PART = re.compile(r"^(?:gitlab|github|glab|slack|npm|pypi|aws|azure|bot|service|deploy|runner|registry|user|admin)$")
 # A credential word inside a matched phrase (`overlap of the API tokens`, `overlap of the deploy tokens`) keeps the
 # class, as one right before it does.
@@ -161,6 +167,13 @@ def without_unit_lists(text, question_cred=False):
         lambda m: " " if unit_list_without_credential(text, m, question_cred) else m.group(0), text)
 
 
+def code_identifier(ident):
+    """Whether the snake_case identifier `ident` (it ends in `token` or `tokens`) names code, no credential: every part
+    before the ending is on CODE_PARTS, or the ending is the plural `tokens` and every part is on USAGE_PARTS."""
+    *parts, last = ident.split("_")
+    return all(p in CODE_PARTS for p in parts) or last == "tokens" and all(p in USAGE_PARTS for p in parts)
+
+
 def without_token_counts(text):
     """The text with each token-count phrase, each upper-case identifier of token counts, each snake_case code
     identifier such as `bare_token`, each Markdown doc name that holds `token` and each word of the Python `tokenize` module and each
@@ -175,8 +188,7 @@ def without_token_counts(text):
     text = TOKEN_DOC.sub(
         lambda m: m.group(0) if names_secret(m.group(0)) or DOC_SECRET.search(m.group(0)) else " ", text)
     text = SNAKE_TOKEN_IDENT.sub(
-        lambda m: m.group(0) if CRED_BEFORE.search(text[:m.start()]) or not all(
-            q in CODE_PARTS for q in m.group(0).split("_")[:-1]) else " ", text)
+        lambda m: m.group(0) if CRED_BEFORE.search(text[:m.start()]) or not code_identifier(m.group(0)) else " ", text)
     text = TOKEN_IDENT.sub(
         lambda m: m.group(0) if any(CRED_PART.match(p) for p in m.group(0).split("_")) else " ", text)
     return TOKEN_COUNT.sub(lambda m: m.group(0) if m.group("cred") or CRED_INSIDE.search(m.group(0)) else " ", text)
