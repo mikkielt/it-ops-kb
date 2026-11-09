@@ -59,7 +59,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "Hold the ticket name before the file is made, one try/finally covers the ticket and the SIGTERM handler, a ticket whose write fails is removed",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
