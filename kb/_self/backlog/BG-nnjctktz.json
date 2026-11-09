@@ -15,6 +15,9 @@
       "import sys;sys.path.insert(0,'_tools');import mon_needs as m;last={'outcome':'refused','why':'sync exit 2'};r=m.delivery_entries({'last_delivery':last,'undelivered':0});print(len(r));sys.exit(1 if r else 0)"
     ]
   },
+  "touches": [
+    "_tools/mon_needs.py"
+  ],
   "links": [
     "parked: SP-osevumx6 review"
   ],
