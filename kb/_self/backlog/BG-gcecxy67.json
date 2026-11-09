@@ -87,7 +87,9 @@
       },
       "class": "design",
       "answer": "leave it out with a stderr line",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
