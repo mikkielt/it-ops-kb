@@ -2,7 +2,7 @@
   "id": "BG-beym5b55",
   "kind": "bug",
   "title": "kblane.path_lane classes any top-level file kb/<file> as content, not only a submodule root's gitlink",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-mut2pmu3",
   "priority": "P3",
@@ -39,6 +39,28 @@
     "parked: SP-c6w5hjmc review"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-ev3run01",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "baeb9243a7f0afdb4db84e5c6c3c59ef5b6e8bb6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,subprocess as s,tempfile;sys.path.insert(0,\"_tools\");import kblane as k;d=tempfile.mkdtemp();g=lambda *a:s.run([\"git\",\"-C\",d,*a],check=True,capture_output=True);g(\"init\",\"-q\");open(d+\"/a\",\"w\").write(\"x\");g(\"add\",\"-A\");c=[\"-c\",\"user.name=t\",\"-c\",\"user.email=t\"+chr(64)+\"example.com\",\"commit\",\"-qm\"];g(*c,\"base\");sha=s.run([\"git\",\"-C\",d,\"rev-parse\",\"HEAD\"],capture_output=True,text=True).stdout.strip();g(\"update-index\",\"--add\",\"--cacheinfo\",\"160000,\"+sha+\",kb/team\");g(*c,\"gitlink\");p=k.commit_paths(d,\"HEAD\");print(p,k.paths_lane(p or []));sys.exit(0 if p is not None and \"kb/team\" not in p and k.paths_lane(p)[0]==k.CONTENT and k.path_lane(\"kb/foo.md\")==k.CODE else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e84ba8c31d1336a6"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport sys\nsys.path.insert(0, \"_tools\")\nimport kblane\nlane = kblane.path_lane(\"kb/foo.md\")\nprint(\"lane of a top-level file kb/foo.md:\", lane)\nsys.exit(0 if lane == \"code\" else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "f618fff025189516"
+      }
+    ]
+  }
 }
