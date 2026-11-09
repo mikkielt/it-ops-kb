@@ -39,6 +39,26 @@
     "kb/_self/monitoring.md",
     "_tools/kbmon.py"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does kbmon keep the shared snapshot when git cannot name a main checkout (no git, a bare clone, a common directory not named .git)?",
+      "options": [
+        "the checkout's own _cache (--root)",
+        "refuse the run"
+      ],
+      "recommendation": "the checkout's own _cache (--root)",
+      "reason": "the pane still works and the snapshot is shared among sessions of that one checkout",
+      "do": {
+        "the checkout's own _cache (--root)": "BG-bpy4x4os",
+        "refuse the run": "BG-bpy4x4os"
+      },
+      "class": "design",
+      "answer": "the checkout's own _cache (--root)",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-wpttdu7u review"
   ],
