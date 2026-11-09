@@ -2,7 +2,7 @@
   "id": "BG-mkdeuhpj",
   "kind": "bug",
   "title": "The session-load table joins a replay record's cell and a paid record's cell of one case with an arrow and a percentage change",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-bpjqqauu",
   "priority": "P2",
   "rank": 0,
@@ -27,5 +27,7 @@
     "BG-uoqtn67j"
   ],
   "notes": "Premise: the bug's repro fails on the base (origin/main at the planning commit, 2026-11-09); precheck ran it through the landing's check runner. Sprint order: items that share one file are chained with depends_on.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-bdc0a493",
+  "operator": "op-f618a13e"
 }
