@@ -2,7 +2,7 @@
   "id": "BG-7b53bpeh",
   "kind": "bug",
   "title": "A job run by a server or CI executor names the executor's operator, not the submitter, in its KB-Operator trailer and operator credential",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-lwkdljxg",
   "priority": "P1",
   "rank": 0,
@@ -50,6 +50,19 @@
     }
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-432be86e",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "14806b6e224ce5184b2e360bdaf03a7ff71240ef",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "s=open('_tools/kj_exec.py').read(); assert 'mirrored.update(host=self.host, clone=self.clone, operator=self.operator)' not in s"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
