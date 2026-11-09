@@ -1,0 +1,23 @@
+{
+  "id": "BG-2gltgypz",
+  "kind": "bug",
+  "title": "The reducer change of BG-hfakjbdf moves the doc hash of every github.com page row once, and web-sources.md says nothing of the one false change",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/_self/web-sources.md names that the reducer's skipping of role=tooltip and visually hidden elements changes the stored doc_sha256 of a github.com page row once without the page changing, or the rows are re-baselined, so the first detect after the change is not read as a source change. Found by the SP-c6tr77jl review (S3; 110 github.com rows of kb/public/_fetch_state.csv hold a doc_sha256).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open(\"kb/_self/web-sources.md\",encoding=\"utf-8\").read().lower();sys.exit(0 if \"role=tooltip\" in t and \"once\" in t and \"doc_sha256\" in t else 1)"
+    ]
+  },
+  "repro_reason": "the false change shows only on a live detect of a github.com page, which needs the network; the repro reads that web-sources.md names the one-time change",
+  "touches": [
+    "kb/_self/web-sources.md",
+    "kb/public/_fetch_state.csv"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
