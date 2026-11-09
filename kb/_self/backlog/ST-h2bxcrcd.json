@@ -42,7 +42,12 @@
         "commit whenever the root is a git work tree": "ST-h2bxcrcd",
         "commit always and refuse outside git": "ST-h2bxcrcd"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "commit whenever the root is a git work tree",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "links": [
