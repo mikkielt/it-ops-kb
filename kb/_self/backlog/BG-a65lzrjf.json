@@ -2,7 +2,7 @@
   "id": "BG-a65lzrjf",
   "kind": "bug",
   "title": "The delete class misses removed, removes and removal, and the execute signal misses program and run once a file name's dot ends the clause",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-pww4aqis",
   "priority": "P3",
   "rank": 0,
@@ -29,6 +29,19 @@
   ],
   "notes": "Order: same files bl_authority.py and test_authority.py as BG-zmwnp3hh. Premise reproduces on origin/main (precheck 2026-11-09). Review gaps G4 and G5 of SP-lmpjclxz.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-6b037793",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "c91339f9216c44428b877a247a51593ebda41077",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess as s,sys,tempfile as t,os; d=t.mkdtemp(); r=lambda *a, env=None: s.run([sys.executable,\"_tools/backlog.py\",\"--root\",d,*a],capture_output=True,text=True,env=env); i=r(\"new\",\"story\",\"--title\",\"S\",\"--goal\",\"g\",\"--touch\",\"src/a.py\").stdout.split()[2]; a=r(\"gate\",\"add\",i,\"--kind\",\"provisional\",\"--question\",\"Should the old rows be removed from kb history?\",\"--option\",\"yes\",\"--option\",\"no\",\"--recommendation\",\"yes\"); b=r(\"gate\",\"add\",i,\"--kind\",\"provisional\",\"--question\",\"Should the worker run foo.py as a program on the input file?\",\"--option\",\"yes\",\"--option\",\"no\",\"--recommendation\",\"yes\"); bad=[x.stdout[-120:] for x in (a,b) if \"(blocking)\" not in x.stdout]; sys.exit(\"not blocking: %r\" % bad if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
