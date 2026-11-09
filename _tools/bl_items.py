@@ -888,6 +888,25 @@ def plan_set(bl, a, iid):
     return edits, named
 
 
+def check_commit_trailer(a):
+    """--trailer goes with --commit, and each trailer passes `trailer_problem`: refused before the command writes."""
+    if not a.trailer:
+        return
+    if not a.commit:
+        raise Refused("--trailer goes with --commit")
+    why = next(filter(None, map(trailer_problem, a.trailer)), None)
+    if why:
+        raise Refused(why)
+
+
+def add_commit_args(p, what):
+    """--commit and --trailer for a command that writes item files and is not one of `bl_base.COMMITS`."""
+    p.add_argument("--commit", action="store_true",
+                   help=f"commit the item files this {what} wrote, alone, with a fixed subject and KB-Work")
+    p.add_argument("--trailer", action="append", default=[], metavar="'KEY: VALUE'",
+                   help="a trailer of the session's own after KB-Work in the --commit commit (repeatable)")
+
+
 def cmd_set(bl, a):
     """set: the options on one item, or on every id given (one write and one --commit for the batch: an id set
     refuses leaves every item unchanged)."""
@@ -903,12 +922,7 @@ def cmd_set(bl, a):
             if bl.is_upstream(iid):
                 raise Refused(f"{bl.label(iid)} arrived from the upstream main (git config kb.upstreamRemote) and is "
                               "read-only in this clone: set refuses it")
-    if a.trailer:
-        if not a.commit:
-            raise Refused("--trailer goes with --commit")
-        why = next(filter(None, map(trailer_problem, a.trailer)), None)
-        if why:
-            raise Refused(why)
+    check_commit_trailer(a)
     edits, named = {}, []
     for iid in ids:
         try:
@@ -931,6 +945,7 @@ def cmd_set(bl, a):
 
 def cmd_move(bl, a):
     """move: a story's or bug's sprint, with the status that sprint's state gives it and its tasks."""
+    check_commit_trailer(a)
     iid = need(bl, a.id)
     it = bl.items[iid]
     label = bl.label(iid)
@@ -983,6 +998,7 @@ def cmd_move(bl, a):
                 f"close --summary would name no item for it; rescope the goal: set {old} --goal G --by operator")
     else:
         say(f"move {label}: unchanged")
+    commit_written(bl, a, "move", iid, ids=[iid] + [c for c in kids if c in edits])
     return 0
 
 
@@ -1013,6 +1029,7 @@ def was_done(bl, iid):
 
 def cmd_reopen(bl, a):
     """reopen: a done item back to work, its evidence and claim cleared; the reason is printed, never stored."""
+    check_commit_trailer(a)
     iid = need(bl, a.id)
     it = bl.items[iid]
     label = bl.label(iid)
@@ -1040,6 +1057,7 @@ def cmd_reopen(bl, a):
     if gone:
         say("  " + "\n  ".join(gone) + f"\n  keep a touch the item's own work commits changed (done needs it in touches) and repoint only its checks: "
             f"backlog.py set {iid} --check CMD\n  (only a touch none of its work commits changed is dropped, with set --touch)")
+    commit_written(bl, a, "reopen", iid)
     return 0
 
 
@@ -1300,8 +1318,10 @@ def sprint_leftovers(bl, sid):
 
 
 def cmd_drop(bl, a):
+    check_commit_trailer(a)
     iid = need(bl, a.id)
     it = bl.items[iid]
+    title = it.get("title", "")  # read before a delete removes the item
     live = [c for c in bl.descendants(iid) if bl.items[c].get("status") not in ("done", "dropped")]
     if live:
         raise Refused(f"{bl.label(iid)} has open children: " + ", ".join(bl.label(c) for c in live[:5]))
@@ -1348,12 +1368,14 @@ def cmd_drop(bl, a):
         else:
             say(f"dropped and deleted {label} (not in a sprint; git keeps it): {a.why}")
         prune_reopened_refs(bl)
+        commit_written(bl, a, "drop", iid, ids=[iid] + sorted(gone - {iid}), title=title)
         return 0
     it.update(status="dropped", notes=(it.get("notes", "") + " Dropped: " + a.why).strip()[:TEXT_MAX])
     it.pop("claimed_by", None)
     it.pop("operator", None)
     bl.save(it)
     say(f"dropped {bl.label(iid)}: {a.why}")
+    commit_written(bl, a, "drop", iid, title=title)
     return 0
 
 
@@ -1583,11 +1605,13 @@ def args_set(p):
 def args_move(p):
     p.add_argument("id")
     p.add_argument("--sprint", required=True, metavar="SP|none")
+    add_commit_args(p, "move")
 
 
 def args_reopen(p):
     p.add_argument("id")
     p.add_argument("--why", required=True)
+    add_commit_args(p, "reopen")
 
 
 def args_gate(p):
@@ -1623,6 +1647,7 @@ def args_fire(p):
 def args_drop(p):
     p.add_argument("id")
     p.add_argument("--why", required=True)
+    add_commit_args(p, "drop")
 
 
 def args_host_check(p):
