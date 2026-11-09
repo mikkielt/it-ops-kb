@@ -20,5 +20,8 @@
     "kb/_self/benchmarks.md",
     "kb/_self/tools.md"
   ],
+  "depends_on": [
+    "BG-3ji4fsfo"
+  ],
   "filed_in": "clone-0ea70e5c"
 }
