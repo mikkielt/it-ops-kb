@@ -2,8 +2,8 @@
 topic: security/management-plane-hardening
 priority: P1
 applies_to: "ConfigMgr current branch 2603; SQL Server 2022/2025; GitLab self-managed; Windows GitLab Runner"
-retrieved_utc: 2026-10-21
-sources: [S1480, S1481, S1482, S1483, S1484, S1485, S1486, S1487, S1488, S1489, S1490, S1491, S-thjpegto, S-psoai6ce, S-uixd54ua, S-56n7jfkc, S-7nbamxyc]
+retrieved_utc: 2026-11-09
+sources: [S1480, S1481, S1482, S1483, S1484, S1485, S1486, S1487, S1488, S1489, S1490, S1491, S-thjpegto, S-psoai6ce, S-uixd54ua, S-56n7jfkc, S-7nbamxyc, S-iczdy3dw]
 status: complete
 ---
 
@@ -29,7 +29,8 @@ ConfigMgr, its SQL Server site database, GitLab (a configuration repository) and
 - No CIS benchmark for Configuration Manager itself was found on the public CIS benchmark list. [DER S1485: no Configuration Manager entry on the CIS Benchmarks list, read 2026-09-27]
 - Microsoft's cloud security benchmark privileged-access guidance (PA-1) says to limit the number of privileged accounts in the control, management and data/workload planes, and to restrict privileged accounts in system management tools with agents installed on business-critical systems, because attackers who compromise such tools can weaponize them; PA-4 calls for regular review that granted access is valid for each plane. [DOC S1491]
 - A ConfigMgr site is such a system management tool (its client agent runs on managed devices), so its administrative accounts fall under PA-1's restriction. [DER S1491: PA-1's "system management tools with agents" applied to ConfigMgr]
-- No Microsoft page names ConfigMgr as "Tier 0", but the AD DS tier model puts systems that patch or run agents on Tier 0 identity systems in Tier 0 and IT management of Tier 1 servers in Tier 1, so a ConfigMgr site that manages domain controllers is Tier 0; see [[enterprise-access-model]]. [DER S-7nbamxyc: tier definitions applied to ConfigMgr]
+- No Microsoft page names ConfigMgr as "Tier 0" in the AD DS tier model or the enterprise access model, but the AD DS tier model puts systems that patch or run agents on Tier 0 identity systems in Tier 0 and IT management of Tier 1 servers in Tier 1, so a ConfigMgr site that manages domain controllers is Tier 0; see [[enterprise-access-model]]. [DER S-7nbamxyc: tier definitions applied to ConfigMgr]
+- One Microsoft page does name the product by tier: the Microsoft Identity Manager page "Define privileged roles for PAM" lists "SCCM admins for Tier 0 SCCM" among the example roles for the Tier 0 production forest and "SCCM admins for Tier 1 SCCM" among those for Tier 1, so a site is placed by the tier of the servers it manages. The page says its model is only for isolated Active Directory environments using MIM PAM, and points hybrid environments to the enterprise access model. [DOC S-iczdy3dw]
 
 ### SQL Server (constrains the database)
 - Prefer Windows/Entra authentication over SQL authentication; if SQL logins are unavoidable, require strong unique passwords. [DOC S1488]

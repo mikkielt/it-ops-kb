@@ -2,8 +2,8 @@
 topic: intune/network-profiles
 priority: P2
 applies_to: "Microsoft Intune service 2026-09, Windows 10/11 device configuration profiles (Wi-Fi, wired network, VPN), Microsoft Tunnel, Microsoft Entra Private Access"
-retrieved_utc: 2026-10-21
-sources: [S-t6z76jtq, S-qftwfatf, S-pp7wx433, S-j3m2icav, S-2ne6yzmx, S-qbkbk5wb, S-y3enttcg, S-sq5keqpx, S-3xdtjgi4, S-kdhgvxwh, S-lkrznc4c, S-aprlzyvz, S-eyziqbja, S-wu3jl52b]
+retrieved_utc: 2026-11-09
+sources: [S-t6z76jtq, S-qftwfatf, S-pp7wx433, S-j3m2icav, S-2ne6yzmx, S-qbkbk5wb, S-y3enttcg, S-sq5keqpx, S-3xdtjgi4, S-kdhgvxwh, S-lkrznc4c, S-aprlzyvz, S-eyziqbja, S-wu3jl52b, S-sqlfmdrc]
 status: complete
 ---
 
@@ -74,6 +74,9 @@ platforms, using per-app or "Quick Access" broad-segment tunneling instead of a 
 - **Microsoft Entra Private Access** lets you mark FQDNs and IP addresses as private and is positioned as a quick way to replace your VPN: remote workers with the **Global Secure Access client** reach those resources without a VPN, with Conditional Access applied. [DOC S-lkrznc4c]
 - Two configuration models: **Quick Access** (broad IP-range/FQDN segments giving VPN-equivalent access — the suggested starting point for moving off VPN, feeding traffic into the Application Discovery report) and **per-app access** (Global Secure Access application for a subset of resources with its own Conditional Access — the least-privilege next step). [DOC S-lkrznc4c, S-wu3jl52b]
 - The **Global Secure Access client** uses a lightweight filter (LWF) driver rather than a VPN stack, whereas many other Security Service Edge solutions integrate as a VPN connection, so it can coexist with them; clients are available for **Windows, Android, macOS, and iOS**. [DOC S-aprlzyvz]
+- **Quick Access setup** needs the Entra roles **Global Secure Access Administrator** and **Application Administrator**, a Global Secure Access licence, and (for the private network connector groups it depends on) Application Administrator plus Entra ID P1 or P2. The sequence is: a connector group with at least one active private network connector (minimum connector version 1.5.3417.0), the Quick Access configuration, assigning users and groups, Conditional Access policies, then enabling the Private access traffic forwarding profile. Quick Access is described as a transition state before per-app access. [DOC S-sqlfmdrc]
+- The first Quick Access configuration creates an enterprise application named **Quick Access**, bound to the chosen connector group; segments can be added later. A segment is an FQDN (a wildcard only as `*.contoso.com`), an IPv4 address, a CIDR range or an IP-to-IP range, each with ports and ranges (a comma separates ports, a hyphen a range); an app takes up to 500 segments. [DOC S-sqlfmdrc]
+- **Private DNS** is enabled in the Quick Access app's Private DNS tab with one or more DNS suffixes, so the client resolves short internal names (the page's example is `https://benefits` for an address inside a configured range) through your internal DNS servers, and Kerberos single sign-on to domain controllers rides on it. Access is granted only to users directly assigned to the app or to a group assigned to it; nested groups are not supported. [DOC S-sqlfmdrc]
 
 ## Reference
 - `intune/certificates-pki.md` — SCEP and PKCS certificate profiles referenced by name from every Enterprise Wi-Fi, 802.1X wired, and certificate-authenticated VPN profile above (subject/SAN variables, connector, Cloud PKI). Back-link added there.

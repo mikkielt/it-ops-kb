@@ -136,7 +136,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `auth/windows-hello-for-business` | P1 | complete | `auth/windows-hello-for-business.md`, `auth/passportforwork-csp.csv` | 10 |
 | `auth/audit-log-apis` | P2 | complete | `auth/audit-log-apis.md` | 19 |
 | `auth/delegation-kcd-obo` | P2 | complete | `auth/delegation-kcd-obo.md` | 16 |
-| `auth/enterprise-access-model` | P2 | complete | `auth/enterprise-access-model.md` | 7 |
+| `auth/enterprise-access-model` | P2 | complete | `auth/enterprise-access-model.md` | 8 |
 | `auth/threats` | P2 | complete | `auth/threats.md`, `auth/threats.csv` | 10 |
 | `auth/transport-crypto` | P2 | complete | `auth/transport-crypto.md` | 14 |
 | `auth/enrolment-tokens` | P3 | complete | `auth/enrolment-tokens.md` | 7 |
@@ -252,13 +252,13 @@ Every topic of this root with its priority (the research order, not importance),
 | `intune/remote-actions` | P1 | complete | `intune/remote-actions.md`, `intune/remote-actions.csv` | 27 |
 | `intune/tenant-attach` | P1 | complete | `intune/tenant-attach.md` | 5 |
 | `intune/app-protection-mam` | P2 | complete | `intune/app-protection-mam.md` | 25 |
-| `intune/certificates-pki` | P2 | complete | `intune/certificates-pki.md`, `intune/certificate-variables.csv` | 11 |
+| `intune/certificates-pki` | P2 | complete | `intune/certificates-pki.md`, `intune/certificate-variables.csv` | 12 |
 | `intune/compliance-policies` | P2 | complete | `intune/compliance-policies.md`, `intune/compliance-policies.csv` | 14 |
 | `intune/configuration-policies` | P2 | partial | `intune/configuration-policies.md` | 24 |
 | `intune/device-inventory-analytics` | P2 | complete | `intune/device-inventory-analytics.md` | 21 |
 | `intune/ios-android-management` | P2 | complete | `intune/ios-android-management.md` | 16 |
 | `intune/macos-management` | P2 | complete | `intune/macos-management.md` | 17 |
-| `intune/network-profiles` | P2 | complete | `intune/network-profiles.md` | 14 |
+| `intune/network-profiles` | P2 | complete | `intune/network-profiles.md` | 15 |
 | `intune/platform-scripts` | P2 | complete | `intune/platform-scripts.md` | 6 |
 | `intune/remote-help` | P2 | complete | `intune/remote-help.md`, `intune/remote-help.csv` | 5 |
 | `intune/reports-export-api` | P2 | complete | `intune/reports-export-api.md`, `intune/export-report-names.csv` | 13 |
@@ -376,13 +376,13 @@ Every topic of this root with its priority (the research order, not importance),
 | `security/policy-precedence` | P0 | complete | `security/policy-precedence.md` | 13 |
 | `security/settings-crosswalk` | P0 | complete | `security/settings-crosswalk.md`, `security/settings-crosswalk.csv`, `security/artifacts/disa/`, `security/artifacts/microsoft/`, `security/artifacts/osconfig/` | 24 |
 | `security/logging-monitoring` | P1 | complete | `security/logging-monitoring.md` | 15 |
-| `security/management-plane-hardening` | P1 | complete | `security/management-plane-hardening.md` | 17 |
+| `security/management-plane-hardening` | P1 | complete | `security/management-plane-hardening.md` | 18 |
 | `security/script-and-code-signing` | P1 | complete | `security/script-and-code-signing.md` | 13 |
 | `security/supply-chain` | P1 | complete | `security/supply-chain.md` | 25 |
 | `security/ai-agent-guidelines` | P2 | complete | `security/ai-agent-guidelines.md` | 20 |
 | `security/framework-control-map` | P2 | complete | `security/framework-control-map.md`, `security/framework-control-map.csv` | 9 |
 | `security/privacy-compliance` | P2 | complete | `security/privacy-compliance.md` | 24 |
-| `security/secret-shapes-in-text` | P2 | partial | `security/secret-shapes-in-text.md` | 26 |
+| `security/secret-shapes-in-text` | P2 | partial | `security/secret-shapes-in-text.md` | 27 |
 | `security/threat-model-inputs` | P2 | complete | `security/threat-model-inputs.md`, `security/artifacts/mitre/attack-subset.csv`, `security/artifacts/mitre/attack-subset.md` | 12 |
 | `security/vulnerability-prioritization` | P2 | complete | `security/vulnerability-prioritization.md`, `security/vuln-data-apis.csv` | 18 |
 | `security/almalinux-elevate` | P3 | partial | `security/almalinux-elevate.md` | 5 |

@@ -2,8 +2,8 @@
 topic: security/secret-shapes-in-text
 priority: P2
 applies_to: "free text (a command line, a log line, a pasted note) that a redactor or scanner reads for credentials: HTTP Authorization headers, URL userinfo, PEM, OpenSSH and OpenPGP private key blocks, key=value assignments, SQL Server connection strings, vendor-prefixed API keys (Google, Stripe, npm, SendGrid) and the Entra client secret"
-retrieved_utc: 2026-10-27
-sources: [S-wct3uoax, S-neu52zjd, S-3mhhoprh, S-bs6jgunr, S-kskf5yv7, S-as3c23xb, S-cr2wj4s2, S-xnlryf7y, S-lglgs6wg, S-k57sryj7, S-spzetxhy, S-d2kitjup, S-imedhmhc, S-bcbpadtc, S-4rjxcq6v, S-jkdywrys, S-vstqd426, S-mi4dlpr3, S-4tr3garn, S-cbxnheng, S-qo44eri2, S-5zkihk4v, S-h2ms2nek, S-qf2l6w5a, S-bnaqck42, S-crezzacp]
+retrieved_utc: 2026-11-09
+sources: [S-fc2tgrez, S-wct3uoax, S-neu52zjd, S-3mhhoprh, S-bs6jgunr, S-kskf5yv7, S-as3c23xb, S-cr2wj4s2, S-xnlryf7y, S-lglgs6wg, S-k57sryj7, S-spzetxhy, S-d2kitjup, S-imedhmhc, S-bcbpadtc, S-4rjxcq6v, S-jkdywrys, S-vstqd426, S-mi4dlpr3, S-4tr3garn, S-cbxnheng, S-qo44eri2, S-5zkihk4v, S-h2ms2nek, S-qf2l6w5a, S-bnaqck42, S-crezzacp]
 status: partial
 ---
 
@@ -83,7 +83,8 @@ A credential in free text has a grammar its specification fixes, and that gramma
 - Microsoft's Purview detector for a Microsoft Entra client secret matches up to 40 characters from `a-z` (not case-sensitive), `0-9`, dashes, underlines, dots and tildes; the page's example is `Bb2Cc~3Dd4.-Ee5Ff6Gg7Hh8Ii9Jj0_Kk1Ll2Mm3`. [DOC S-qo44eri2]
 - The same page rates a match by its context: a value after `AppSecret=` beside an `AppId` and a tenant id is High confidence, one after `AppSecret=` beside an `AppId` is Medium, and a bare value has no Low band ("N/A"); its keywords are `secret`, `password` and `key`, and it does not match mockup values, redacted values or placeholders. [DOC S-qo44eri2]
 - The alphabet of that value (letters, digits, `- _ . ~`) is also the alphabet of an identifier or a file name, so the shape alone does not mark an Entra secret: a redactor has to key on the assignment (`key=` or `key:` before the value) and on the value having both a letter and a digit, as Microsoft's detector keys on its keywords. [DER S-qo44eri2: the alphabet, the 40-character ceiling and the context bands above]
-- The Entra pages read for this change (app registration and credential pages on Learn) say the secret value is shown once and give a lifetime, but state no length or alphabet of the value: the 40-character shape is a Microsoft detector's pattern, not a statement of what Entra issues. [UNK: looked 2026-10-27 in the Learn pages for adding a client secret; only the Purview definition gives a shape]
+- The Microsoft Graph `passwordCredential` resource says `secretText` holds the strong password Entra generates, 16 to 64 characters long, returned only in the response to `addPassword` and never retrievable later; it names no alphabet. [DOC S-fc2tgrez]
+- Entra can therefore issue a client secret longer than the 40 characters the Purview detector's pattern allows (the detector's page says "up to 40"), so a redactor that copies the detector's ceiling misses a 41 to 64 character value; the alphabet stays the detector's, as no Entra page states one. [DER S-fc2tgrez, S-qo44eri2: 16 to 64 characters against the detector's 40-character ceiling]
 - Microsoft's Purview detector for a Google API key matches the case-sensitive token prefix `AIza` followed by 35 characters from `a-z` (not case-sensitive), `0-9`, a hyphen, an underline or a backslash, and the page gives the whole as 39 characters. [DOC S-5zkihk4v]
 - Stripe sandbox keys start with `pk_test_` (publishable), `rk_test_` (restricted) and `sk_test_` (secret); live mode keys start with `pk_live_`, `rk_live_` and `sk_live_`. [DOC S-h2ms2nek]
 - Stripe says only publishable keys are safe to expose outside an application's backend, so a `pk_` key is no secret and an `sk_` or `rk_` key is, in either mode. [DOC S-h2ms2nek]

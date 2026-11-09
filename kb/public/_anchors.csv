@@ -10460,13 +10460,9 @@ c7043d552115,graph/delta-query.md,S510,unlocated:no-match,,,,,2026-10-10
 0be28b031a37,graph/microsoft365dsc.md,S-zmngjhe5,located,Installing Microsoft365DSC¶ > Dependencies¶,availabl;get-modul;listavailabl;modulebas;select;base;list;version,05ec7a97e03ad3ec,"Get-Module Microsoft365DSC -ListAvailable | select ModuleBase, Version",2026-10-21
 10f6947eff8d,graph/microsoft365dsc.md,S-3aphi7n2,unlocated:no-match,,,,,2026-10-10
 10f6947eff8d,graph/microsoft365dsc.md,S-fylt7wwn,unlocated:no-match,,,,,2026-10-21
-252653cccdba,graph/microsoft365dsc.md,S-5htwkeoz,unlocated:no-match,,,,,2026-10-21
-252653cccdba,graph/microsoft365dsc.md,S-f7j4lqgl,unlocated:no-match,,,,,2026-10-21
-252653cccdba,graph/microsoft365dsc.md,S-n6v6mw4o,unlocated:no-match,,,,,2026-10-21
 2969ba7946b9,graph/microsoft365dsc.md,S-2fvvbt5t,located,Drift Monitoring¶,apply;applyandautocorrect;automatically;configur;stat;engin;mode;dsc,db087d3124babf52,"Configuration Mode¶ Just like for any DSC module, you can also configure the DSC engine to automatically attempt to automatically fix a detected drift and",2026-11-09
 3a70b0d1a38b,graph/microsoft365dsc.md,S-ahgkqifj,unlocated:no-match,,,,,2026-10-21
 3c4e752989ea,graph/microsoft365dsc.md,S-c6kla37l,located,Comparing Configurations,one;export;another;html;tenant;two;report;compar,f5c0dc7beee6bc59,The Microsoft365DSC solution includes a built-in engine to compare two configurations and generate a delta report in HTML that reveals any discrepancies between them. You,2026-10-10
-44bd76bc865e,graph/microsoft365dsc.md,S-q7dr7aea,located,,m365dscresourcebas;base;class;aaduser;resourc;dsc,10f7031c9f87da35,class AADUser : M365DSCResourceBase,2026-10-21
 49a682e1b12f,graph/microsoft365dsc.md,S-44mrima5,located,"For Service Principals, the command looks a little bit different > Microsoft Graph Permissions¶ > Determine Required Permissions¶",fail;includ;initializ;without;alway;manually;organization.read.all;client,6af90ea87a5e50cb,"Get-M365DSCCompiledPermissionList always includes it, but the permission list on each resource page does not. If you grant permissions manually from a resource page, add Organization.Read.All",2026-11-09
 5ef474878cda,graph/microsoft365dsc.md,S-44mrima5,located,"For Service Principals, the command looks a little bit different > Microsoft Graph Permissions¶ > Creating a custom Service Principal¶",createselfsignedcertificat;self;sign;adminconsent;certificatepath;managedidentity;client;display,2a870c856593c99b,Update-M365DSCAzureAdApplication -ApplicationName 'Microsoft365DSC' -Permissions @(@{Api='SharePoint';PermissionName='Sites.FullControl.All'}) -AdminConsent -Type Certificate -CreateSelfSignedCertificate -CertificatePath c:\Temp\M365DSC.cer -Credential (Get-Credential) The same cmdlet assigns the permissions to an existing managed identity when,2026-11-09
 641a2fa5d1c6,graph/microsoft365dsc.md,S-zmngjhe5,located,Installing Microsoft365DSC¶ > Dependencies¶,assistant;authentication;both;cloud;component;core;exampl;login,1a6ebd4d4e792485,"For example, it uses the MSCloudLoginAssistant module to delegate all authentication logic to the various workloads and many more modules from the PowerShell Gallery. When",2026-10-21
@@ -10483,6 +10479,9 @@ c7043d552115,graph/delta-query.md,S510,unlocated:no-match,,,,,2026-10-10
 98a2644322ab,graph/microsoft365dsc.md,S-tys27tu5,located,,2.26.1104.1,560703be2b0044f3,2.26.1104.1,2026-11-09
 9d9df6d2e5b9,graph/microsoft365dsc.md,S-44mrima5,unlocated:no-match,,,,,2026-11-09
 a6286d651e4a,graph/microsoft365dsc.md,S-ahgkqifj,unlocated:no-match,,,,,2026-10-21
+a70aeb53c859,graph/microsoft365dsc.md,S-5htwkeoz,unlocated:no-match,,,,,2026-11-09
+a70aeb53c859,graph/microsoft365dsc.md,S-f7j4lqgl,unlocated:no-match,,,,,2026-11-09
+a70aeb53c859,graph/microsoft365dsc.md,S-n6v6mw4o,unlocated:no-match,,,,,2026-11-09
 a80207eb3986,graph/microsoft365dsc.md,S-44mrima5,unlocated:no-match,,,,,2026-11-09
 bb1ee8cd9e5a,graph/microsoft365dsc.md,S-jya6izpo,unlocated:no-match,,,,,2026-10-21
 bb1ee8cd9e5a,graph/microsoft365dsc.md,S-l6j5dpwj,unlocated:no-match,,,,,2026-10-21
@@ -10490,6 +10489,7 @@ bbe2013af3fc,graph/microsoft365dsc.md,S-prjyny3b,unlocated:no-match,,,,,2026-10-
 bf25383d3971,graph/microsoft365dsc.md,S-ahgkqifj,unlocated:no-match,,,,,2026-10-21
 bf864dbd7dd1,graph/microsoft365dsc.md,S-zmngjhe5,located,Installing Microsoft365DSC¶,5.1;elevat;scop;user;work;window;current;run,357d520c0350af5e,NOTE: Make sure you run the above command in an elevated Windows PowerShell 5.1 window. In a regular window the module will be installed in,2026-10-10
 c361f82f76f4,graph/microsoft365dsc.md,S-ahgkqifj,located,Snapshot of an Existing Tenant¶ > Available Parameters¶ > Components¶,list;omit;resourc;default;component;captur,93579c41b3d04e56,Omitting this parameter will default the capture process to capture all components that are part of the default components list (see parameter Mode). Example of,2026-10-10
+cb473dd42395,graph/microsoft365dsc.md,S-q7dr7aea,located,,m365dscresourcebas;base;class;aaduser;resourc;dsc,10f7031c9f87da35,class AADUser : M365DSCResourceBase,2026-11-09
 d240fe813b15,graph/microsoft365dsc.md,S-ahgkqifj,located,Snapshot of an Existing Tenant¶ > Available Parameters¶ > Path¶,destination;end;path;prompt;omit;captur,7570f39e370846b6,Omitting to specify this parameter will prompt the user to provide the destination path at the end of the capture process.,2026-10-10
 d404314235aa,graph/microsoft365dsc.md,S-ahgkqifj,located,Snapshot of an Existing Tenant¶ > Available Parameters¶ > Mode¶,data;full;object;mode;default;configuration;export,8ed2d20b8917e2a0,"Full (Configuration and data objects) Omitting this parameter will default to the Default mode. To keep track of what resources are available in what mode,",2026-10-10
 e7a1e8ac1df0,graph/microsoft365dsc.md,S-44mrima5,located,"For Service Principals, the command looks a little bit different > Power Apps Permissions¶",key;privat;cert;currentuser;pfx;underly;apps;stor,b061c090b8563a6e,"Additionally, to be able to authenticate using a Certificate Thumbprint, the underlying Power Apps PowerShell module used by Microsoft365DSC requires the certificate's private key (.pfx)",2026-11-09

@@ -91,11 +91,11 @@ and the PowerShell Gallery package page: **2.26.1104.1**, released 2026-11-05 (t
 - In release 1.26.909.1 each Microsoft365DSC resource follows classic PowerShell DSC's `Get-TargetResource`/`Test-TargetResource`/
   `Set-TargetResource` (MOF-based) pattern rather than DSC v3's resource-manifest model, so `Test-DscConfiguration`
   reports drift without applying `Set`, matching the report-only mode covered in `prior-art/drift-detection.md`. [DER S-3aphi7n2, S-fylt7wwn: MSFT_AADUser at the release tag has a `.schema.mof` and Get/Set/Test-TargetResource functions; Test-DscConfiguration only tests]
-- On the default branch (commit `ec5bf30ecd96`) `MSFT_AADUser` is a class-based DSC resource: `class AADUser : M365DSCResourceBase` with `Get()`, `Set()`, `Test()` and `Export()` methods and no `Get-TargetResource` function. [CODE S-q7dr7aea: Modules/Microsoft365DSC/DscResources/MSFT_AADUser/MSFT_AADUser.psm1#AADUser]
+- On the default branch (commit `ec5bf30ecd96`, which is also the commit of release tag 2.26.1015.1) `MSFT_AADUser` is a class-based DSC resource: `class AADUser : M365DSCResourceBase` with `Get()`, `Set()`, `Test()` and `Export()` methods and no `Get-TargetResource` function. The same file read through the tag path shows `[DscResource()]` above that class and `using module ..\_Base\M365DSCResourceBase.psm1` on its first line. [CODE S-q7dr7aea: Modules/Microsoft365DSC/DscResources/MSFT_AADUser/MSFT_AADUser.psm1#AADUser]
 - The development line converts resources to class-based `[DscResource()]` classes deriving from a shared `M365DSCResourceBase`
   (`DscResources/_Base/M365DSCResourceBase.psm1`, defining `M365DSCResourceBase` plus property/resource metadata classes; at commit 7c2e9790e17b it is source-only and
   emitted into a generated `Classes/_Shared.psm1`). The 2.26.1015.1 release tree also contains the `_Base` directory and its agent check requires PowerShell 7.6, so 2.x releases are
-  probably not the MOF-based, Windows PowerShell 5.1 shape described for 1.26.909.1; this was not confirmed from a resource file at the release tag, and the install docs still say Windows PowerShell 5.1. [COMMUNITY S-f7j4lqgl, S-5htwkeoz, S-n6v6mw4o]
+  not the MOF-based, Windows PowerShell 5.1 shape described for 1.26.909.1: the `MSFT_AADUser` file at the release tag is class-based (previous fact), while the install docs still say Windows PowerShell 5.1. [COMMUNITY S-f7j4lqgl, S-5htwkeoz, S-n6v6mw4o]
 - Release 2.26.1015.1 ships 168 Intune resources named `MSFT_Intune*` (for example `MSFT_IntuneAccountProtectionLocalAdministratorPasswordSolutionPolicy`, `MSFT_IntuneAntivirusPolicyLinux`; 1.26.909.1 had 166). [DER S-n6v6mw4o, S-qkxsdf32: count of the `DscResources` directory at each release commit]
 
 ## Reference

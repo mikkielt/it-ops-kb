@@ -3,14 +3,14 @@ topic: auth/enterprise-access-model
 priority: P2
 applies_to: "Microsoft Enterprise Access Model (current guidance)"
 retrieved_utc: 2026-10-21
-sources: [S1210, S1212, S1225, S1226, S-gigu3bqb, S-7nbamxyc, S-siubn3in]
+sources: [S1210, S1212, S1225, S1226, S-gigu3bqb, S-7nbamxyc, S-siubn3in, S-iczdy3dw]
 status: complete
 ---
 
 # Enterprise access model: tiering, PAWs, LAPS, KB5014754, and ConfigMgr
 
 ## Summary
-- Microsoft's enterprise access model defines a control plane (Tier 0), management plane, and data/workload plane; PAW device guidance and Windows LAPS are separate pages; no page names ConfigMgr as Tier 0, but the AD DS tier model puts systems that patch or run agents on Tier 0 identity systems in Tier 0, so ConfigMgr's tier follows what it manages. [DER S1210, S-7nbamxyc]
+- Microsoft's enterprise access model defines a control plane (Tier 0), management plane, and data/workload plane; PAW device guidance and Windows LAPS are separate pages; neither this model nor the AD DS tier model names ConfigMgr as Tier 0, but the AD DS tier model puts systems that patch or run agents on Tier 0 identity systems in Tier 0, so ConfigMgr's tier follows what it manages, and the MIM PAM role page lists "SCCM admins for Tier 0 SCCM" and "SCCM admins for Tier 1 SCCM" as example roles. [DER S1210, S-7nbamxyc, S-iczdy3dw]
 - KB5014754's certificate strong-mapping enforcement reached **Full Enforcement mode on 2025-02-11**: domain controllers deny authentication for certificates that fail strong (secure) mapping, unless an admin has explicitly kept Compatibility mode (the option to return to it ended with the 2025-09-09 update, after which the StrongCertificateBindingEnforcement key is no longer supported) or moved to Enforcement mode earlier. [DOC S-siubn3in]
 
 ## Facts
@@ -21,7 +21,7 @@ status: complete
 - KB5014754 timeline: Compatibility mode began 2022-05-10 (audit only, no impact on existing certificates); **Full Enforcement mode began with the 2025-02-11 update** — authentication is denied for a certificate that fails strong-mapping criteria unless it was explicitly held back; the option to stay in Compatibility mode was removed with the 2025-09-09 update (the KB changelog of 2025-09-10 corrected the date from September 10). [DOC S-siubn3in]
 - The AD DS tier model (2026) puts in Tier 0 the systems that operate or manage Tier 0 identity systems, including backup, monitoring, patching, hypervisor, antivirus and EDR solutions; IT infrastructure management solutions that control Tier 1 servers are Tier 1; it warns against collapsing everything into Tier 0. [DOC S-7nbamxyc]
 - So ConfigMgr is Tier 0 when it patches or has agents on domain controllers or other Tier 0 systems, and Tier 1 when it manages only member servers and workstations. [DER S-7nbamxyc: tier definitions applied to ConfigMgr]
-- No page reviewed (S1210, S1212, S1225, S1226, S-7nbamxyc) names ConfigMgr/SCCM itself; the enterprise access model defines the control plane as access control based on centralized enterprise identity systems and the management plane as enterprise-wide IT management functions, so on that page's wording alone a device-management system like ConfigMgr reads as management plane; the tier model above is the more specific test. [DER S1210: plane definitions applied to ConfigMgr; no explicit ConfigMgr statement found]
+- No page among S1210, S1212, S1225, S1226 and S-7nbamxyc names ConfigMgr/SCCM itself (the MIM PAM role page S-iczdy3dw does, as an example role for Tier 0 and for Tier 1 SCCM); the enterprise access model defines the control plane as access control based on centralized enterprise identity systems and the management plane as enterprise-wide IT management functions, so on that page's wording alone a device-management system like ConfigMgr reads as management plane; the tier model above is the more specific test. [DER S1210: plane definitions applied to ConfigMgr; no explicit ConfigMgr statement found]
 - MFA for SMS Provider calls has been available since ConfigMgr current branch version 1702, as the concrete lever if an organization chooses to treat ConfigMgr as control-plane-equivalent. [DOC S1212]
 
 ## Reference

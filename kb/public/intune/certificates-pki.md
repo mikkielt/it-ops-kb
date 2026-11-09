@@ -2,8 +2,8 @@
 topic: intune/certificates-pki
 priority: P2
 applies_to: "Microsoft Intune service 2026-09, Certificate Connector for Microsoft Intune, Microsoft Cloud PKI (Intune Suite/standalone add-on)"
-retrieved_utc: 2026-10-21
-sources: [S-h44fxget, S-lcamnncm, S-hxbyw5pm, S-qe32ky2d, S-6fwniw6n, S-weleekge, S-4txttdx2, S-7war6bpq, S-wlkxstj4, S-hv24mjpy, S-siubn3in]
+retrieved_utc: 2026-11-09
+sources: [S-h44fxget, S-lcamnncm, S-hxbyw5pm, S-qe32ky2d, S-6fwniw6n, S-weleekge, S-4txttdx2, S-7war6bpq, S-wlkxstj4, S-hv24mjpy, S-siubn3in, S-juojsiqq]
 status: complete
 files: [intune/certificate-variables.csv]
 ---
@@ -52,6 +52,13 @@ authority.
 - **KB5014754 strong mapping for PKCS**: requires certificate connector **6.2406.0.1001** or later, plus a registry change on the connector server — `HKLM\Software\Microsoft\MicrosoftIntune\PFXCertificateConnector` DWORD `EnableSidSecurityExtension` = **1** — then restart the **PFX Create Legacy Connector** and **PFX Create Certificate Connector** services; applies to new and renewed PKCS certificates; rollback restores the registry value, restarts the same services, and requires reissuing a fresh PKCS profile without the SID attribute. DigiCert CAs need separate templates for users with vs. without the SID attribute. [DOC S-qe32ky2d]
 - Android Enterprise PKCS-deployed certificates are not visible on the device; confirm delivery via the Intune admin center profile status instead. [DOC S-qe32ky2d]
 - macOS-only **Allow all apps access to private key** setting (`AllowAllAppsAccess` in Apple's Certificate Payload) grants every configured app access to the PKCS certificate's private key. [DOC S-qe32ky2d]
+
+### PKCS imported certificate profiles (imported PFX)
+- Imported PFX certificates exist so every device of a user holds the same certificate, mainly for S/MIME email encryption and signing; SCEP and PKCS profiles cannot do that because they deliver a unique certificate per device, and the page says renewal of these certificates is not supported. Platforms: Android device administrator (deprecated on devices with Google Mobile Services), Android Enterprise (fully managed, corporate-owned work profile, personally-owned work profile), iOS/iPadOS, macOS and Windows. [DOC S-juojsiqq]
+- The PFX files are imported through Microsoft Graph, by the `PFXImport` PowerShell project (built by you in Visual Studio from the Intune-Resource-Access repository) or by your own code on the `userPFXCertificate` resource, a beta Graph type. The password of each private key is encrypted with a public key held on-premises (Windows cryptography or an HSM), so Intune cannot read the key; the certificate connector decrypts the password and re-encrypts it with the device key at delivery, so the connector server needs the private key (each connector server must import it). [DOC S-juojsiqq]
+- Import options: **Intended purpose** (`unassigned`, `smimeEncryption`, `smimeSigning`; VPN is not supported) and padding scheme (`oaepSha256`, `oaepSha384`, `oaepSha512`). GCC High and DoD tenants edit the module's `AuthURI` and `GraphURI` to the `.us` endpoints before running it. [DOC S-juojsiqq]
+- The **PKCS imported certificate** profile has two settings, **Intended purpose** (a grouping tag that picks the imported certificates for the profile and does not prove the certificate suits the purpose; with several certificates for one user Intune picks the latest start date) and, for Windows, **Key storage provider**; after creation both are read-only, so a change means a new profile. Android Enterprise fully managed, dedicated and corporate-owned work profile add **Certificate access** (user approval for apps by default, or silent grant for chosen apps); Windows adds applicability rules. [DOC S-juojsiqq]
+- Partners that import PFX files on the admin's behalf, replacing the manual import: DigiCert (Import Tool for Intune S/MIME Certificates), EverTrust (Horizon) and KeyTalk. The page gives no partner SAN mapping table; those live in the partners' own documentation. [DOC S-juojsiqq]
 
 ### Certificate Connector for Microsoft Intune
 - Beginning 2021-07-29 it replaces the separate *PFX Certificate Connector* and *Microsoft Intune Connector*; with the release of version 6.2109.51.0 those legacy connectors are no longer supported. [DOC S-hxbyw5pm]
