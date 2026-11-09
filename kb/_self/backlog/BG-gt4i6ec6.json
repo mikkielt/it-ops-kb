@@ -48,7 +48,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "any status but done (an item file that exists), and no event for none",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
