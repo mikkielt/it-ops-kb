@@ -2,7 +2,7 @@
   "id": "BG-mkdeuhpj",
   "kind": "bug",
   "title": "The session-load table joins a replay record's cell and a paid record's cell of one case with an arrow and a percentage change",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-bpjqqauu",
   "priority": "P2",
   "rank": 0,
@@ -48,6 +48,19 @@
   ],
   "notes": "Premise: the bug's repro fails on the base (origin/main at the planning commit, 2026-11-09); precheck ran it through the landing's check runner. Sprint order: items that share one file are chained with depends_on.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-bdc0a493",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "16560e4e2f60c9aadb7144ee7f4c7641af1b030f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv,collections,sys; sys.path.insert(0,\"_tools\"); import bench_report as br; rows=[r for r in csv.DictReader(open(\"kb/_self/reports/benchmarks.csv\",encoding=\"utf-8\"))]; d=collections.defaultdict(set); [d[(r[\"case\"],r[\"arm\"],r[\"metric\"])].add(bool(r[\"model\"])) for r in rows if r[\"scenario\"]==\"session-load\"]; bad=[k for k,v in d.items() if len(v)>1]; fails=[]\nfor c,a,m in bad:\n    ls=br.table(rows,\"session-load\",[m],cases=[c],arms=[a]).splitlines()[2:]\n    if len(ls)<2 and \" -> \" in ls[0]: fails.append((c,a,m))\nprint(len(bad),fails[:3]); sys.exit(1 if fails else 0)"
+        ],
+        "exit": 0,
+        "sha256": "318c0aca1d587347"
+      }
+    ]
+  }
 }
