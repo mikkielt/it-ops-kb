@@ -2,7 +2,7 @@
   "id": "ST-z5vz3o3m",
   "kind": "story",
   "title": "Review sprint: Providers, fetch and source registry give the right publisher, licence and change signal",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-c6tr77jl",
   "review": true,
   "priority": "P1",
@@ -39,5 +39,7 @@
     }
   ],
   "notes": "Planned 2026-11-09 by a headless plan session; left out as off the theme or in a file another live session plans: BG-55zjrwpn and BG-cgbpg3lq (kbfacts.py).",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-1d0b0461",
+  "operator": "op-f618a13e"
 }
