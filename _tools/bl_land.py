@@ -2210,6 +2210,40 @@ def merged_on_main(root, remote, shas):
                               capture_output=True).returncode == 0 for sha in shas)
 
 
+def pending_merge(root, iid):
+    """(shas, branch) of the merge request a code item's first pass left, read from git alone (what LAND_OPS['pending']
+    holds in the run that pushed it): the tip of the pushed code/<id> branch on the integration remote, fetched, while it
+    is not on the integration main. The branch is the item's own code/<id>, else one named for a descendant (sync names
+    it for the first item that owns a late commit). None when no such branch is pushed (a content landing leaves none),
+    when it has merged, or when git cannot be read: nothing is said, so a content landing's second look stays quiet."""
+    import kbpublic
+    import kg_lock
+    remote = kbpublic.integration_remote(root)
+    ids = [iid]
+    for one in ids:
+        branch = f"code/{one}"
+        tracking = f"refs/remotes/{remote}/{branch}"
+        try:
+            fetched = kg_lock.run_git_bounded(("fetch", "--quiet", remote, f"+refs/heads/{branch}:{tracking}"), root, "wait-merge")
+        except (kg_lock.GitNetworkTimeout, OSError):
+            return None
+        if fetched.returncode == 0:
+            tip = subprocess.run(["git", "rev-parse", "-q", "--verify", tracking], cwd=root, capture_output=True, text=True,
+                                 encoding="utf-8", errors="replace").stdout.strip()
+            if tip:
+                try:
+                    done = merged_on_main(root, remote, [tip])
+                except Refused:  # the main could not be read: the request still counts as pending
+                    done = False
+                return None if done else ([tip], branch)
+        if one == iid:
+            try:
+                ids += Backlog(root).descendants(iid)
+            except Exception:  # noqa: BLE001 - a tree that cannot be read has no descendants to look for
+                pass
+    return None
+
+
 def wait_merge(root, remote, shas, bound, poll=WAIT_POLL, sleep=time.sleep):
     """The number of reads of the integration main it took for SHAS to be on it, reading every POLL seconds for at
     most BOUND seconds; None when they are not on it by then."""

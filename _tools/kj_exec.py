@@ -24,6 +24,14 @@ the CLI a job runs does, so a hand-run land or sync in a session serialises with
 the executor (`lock_holders` less its own children) is moved to waiting-lock, its event step naming the lock only (`lock:host-main`, `lock:landing`, `lock:tests`) and the
 record's member `holder` the holder's pid, clone and step (dropped at the next move), and starts when the lock is free, so no child burns the main lock's wait.
 
+A land job runs as `kj_land.drive` in a thread of the executor (`LandRun`): its first pass is `backlog.py land ID --wait-merge 0` as
+a child like any job's; a code item's pass that left a merge request moves the job to waiting-merge (event step `merge:<branch>`,
+the record's member `pending` holding the shas and the branch) and the thread reads the integration main every 60 s for up to
+the job's `wait_merge` option while no child runs, so the wait holds neither a slot nor the landing lock; once the shas are on the
+main the thread asks the executor for a slot and the class's turn, moves the job to running and runs the second pass, the same
+command, which finishes the item. The job never merges the request. A job found in waiting-merge with a recorded `pending`
+(an executor restarted: `recover` leaves it) is taken again by `drain`, which polls from that record without a first pass.
+
 A job is taken with the lease `jobrun/<job id>` (JOB_LEASE_TTL_S, renewed every JOB_LEASE_RENEW_S while the child runs), moved
 queued to running, and run as `python <argv of kj_ops.OPS>` in the job's clone: the leader of a process group of its own, stdin
 closed, stdout and stderr appended to the job's `kb-jobs/<job id>/output.log` under the clone's common git directory. Every
@@ -48,6 +56,7 @@ import signal
 import sqlite3
 import subprocess
 import sys
+import threading
 import time
 from argparse import Namespace
 from pathlib import Path
@@ -55,6 +64,7 @@ from pathlib import Path
 import coord
 import kg_lock
 import kj_follow
+import kj_land
 import kj_ops
 import kj_store
 
@@ -188,7 +198,10 @@ def start_child(record, clone, log):
     appended to LOG: (the process, the size LOG had before it: where this run's output begins)."""
     log.parent.mkdir(parents=True, exist_ok=True)
     start = log.stat().st_size if log.exists() else 0
-    argv = [sys.executable] + kj_ops.argv(record["op"], record.get("subject", ""), record.get("options"))
+    options = record.get("options")
+    if record["op"] == "land":  # a land job's passes never wait inside the CLI: the job waits for the merge request (`LandRun`)
+        options = {**(options or {}), "wait_merge": 0}
+    argv = [sys.executable] + kj_ops.argv(record["op"], record.get("subject", ""), options)
     group = {"start_new_session": True} if os.name == "posix" else {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
     with open(log, "ab") as sink:
         proc = subprocess.Popen(argv, cwd=clone, stdin=subprocess.DEVNULL, stdout=sink, stderr=subprocess.STDOUT, **group)
@@ -350,7 +363,7 @@ def settle_lost(store, job, record):
 
 def recover(root, store=None, alive=None, leased=None):
     """One recovery pass over the jobs of this host, clone and operator that a dead executor left in running, waiting-lock,
-    waiting-merge or lost. A job whose lease `jobrun/<job id>` is held is left alone (`leased(key)`, by default the store's
+    waiting-merge or lost, except a land job in waiting-merge with a recorded `pending`, which `drain` resumes. A job whose lease `jobrun/<job id>` is held is left alone (`leased(key)`, by default the store's
     lease). One whose recorded pid still runs (`alive(pid)`, by default `child_runs`: the pid runs and its command line names
     the job's operation) is adopted: the lease is taken again and the move `adopted` returned with its pid and lease token.
     Any other moves to lost (step lost; a waiting job through running, as coord's table has it), then settle_lost. Returns the
@@ -376,6 +389,8 @@ def recover(root, store=None, alive=None, leased=None):
         one = {"job": job, "op": record.get("op"), "subject": record.get("subject", "")}
         if leased(lease_key(job)):
             continue
+        if state == "waiting-merge" and record.get("op") == "land" and kj_land.recorded_pending(record):
+            continue  # a land job in its wait: `drain` takes it again and polls from its recorded pending, no first pass
         try:
             if state != "lost":
                 pid = record.get("pid")
@@ -444,6 +459,171 @@ def recovery_pass(root, store, out):
                 failed.append(done["job"])
             print(note, file=out, flush=True)
     return failed
+
+
+class Stopped(Exception):
+    """The executor is ending: a land thread leaves its job as it is (a job in the wait stays in waiting-merge for the next serve)."""
+
+
+class Cancelled(Exception):
+    """The job was cancelled (kbjob.py cancel) while its thread ran."""
+
+
+class Ended(Exception):
+    """The job already moved to a final state (args[0]) before `kj_land.drive` posted one: a process that could not start."""
+
+
+class LandRun(threading.Thread):
+    """One land job in a thread of the executor, run by `kj_land.drive`: the passes are children as any job's (the thread waits
+    for them with the lease renewed), the wait for the merge request is a read of the integration main every `kj_land.POLL_S`
+    seconds with no child, and `passing` says whether the job holds a slot and its class (a pass runs; the wait does not).
+    The drain places it: `want` is set when the shas are on the main and the second pass asks for its turn, `granted` is
+    what the drain sets when `next_runnable` gives it. `state` is the job's end (succeeded, refused, failed, lost,
+    cancelled) once the thread is over, None when the executor left a waiting job as it was."""
+
+    CHECK_S = 5.0  # the wait between two looks at whether the job was cancelled
+
+    def __init__(self, store, clone, record, token, out):
+        super().__init__(daemon=True)
+        self.store, self.clone, self.record, self.token, self.out = store, clone, record, token, out
+        self.job = record["job"]
+        self.log = kj_store.log_path(clone, self.job)
+        self.at = "waiting-merge" if record.get("state") == "waiting-merge" else "running"  # the state the job table holds
+        self.passing, self.want, self.state, self.proc, self.text = self.at == "running", False, None, None, ""
+        self.halt, self.granted = threading.Event(), threading.Event()
+        self.renewed = self.checked = time.monotonic()
+
+    def label(self):
+        return f"{self.job} land {self.record.get('subject') or '-'}"
+
+    def keep(self):
+        """Renew the lease when due and look whether the job was cancelled (Cancelled)."""
+        now = time.monotonic()
+        if now - self.renewed >= JOB_LEASE_RENEW_S:
+            with contextlib.suppress(coord.Refused):
+                coord.renew(Namespace(key=lease_key(self.job), token=self.token, ttl=None, store=self.store), time.time)
+            self.renewed = now
+        if now - self.checked >= self.CHECK_S:
+            self.checked = now
+            if (kj_store.read_record(self.store, self.job) or {}).get("state") == "cancelled":
+                raise Cancelled
+
+    def sleep(self, seconds):
+        until = time.monotonic() + seconds
+        while time.monotonic() < until:
+            if self.halt.wait(min(until - time.monotonic(), 1.0)):
+                raise Stopped
+            self.keep()
+
+    def place(self):
+        """Wait until the drain gives the second pass its slot and its class's turn."""
+        self.want = True
+        while not self.granted.wait(0.2):
+            if self.halt.is_set():
+                raise Stopped
+            self.keep()
+        self.granted.clear()
+        self.want, self.passing = False, True
+
+    def merged(self, shas):
+        """Whether SHAS are on the integration main (a fetch, as `land` reads it); when they are, the second pass's place is taken first."""
+        import bl_land
+        import kbpublic
+        try:
+            on_main = bl_land.merged_on_main(self.clone, kbpublic.integration_remote(self.clone), shas)
+        except bl_land.Refused:  # a fetch that timed out: read again at the next poll
+            return False
+        if on_main:
+            self.place()
+        return on_main
+
+    def pending(self):
+        import bl_land
+        return bl_land.pending_merge(self.clone, self.record.get("subject", ""))
+
+    def run_pass(self, second):
+        """One pass of the CLI as a child: (exit, its output, the merge request a first pass left, or None)."""
+        proc, start = start_job(self.store, self.job, self.record, self.clone, self.log, self.out)
+        if proc is None:
+            raise Ended("failed")
+        self.proc = proc
+        try:
+            while True:
+                try:
+                    code = proc.wait(timeout=0.5)
+                    break
+                except subprocess.TimeoutExpired:
+                    if self.halt.is_set():
+                        raise Stopped from None
+                    self.keep()
+        except BaseException:
+            kg_lock.end_group(proc)
+            raise
+        finally:
+            self.proc = None
+        self.text = finish_text(self.log, start)
+        code = exit_number(code)
+        wait = (self.record.get("options") or {}).get("wait_merge", kj_land.WAIT_MERGE_S)
+        return code, self.text, (self.pending() if not second and code == 0 and wait else None)
+
+    def post(self, state, **fields):
+        """Move the job to STATE through the job table (`pending` in FIELDS: the merge request the waiting-merge move records)."""
+        pending = fields.pop("pending", None)
+        if state == "running" and self.at == "running":  # the drain moved it before the first pass
+            return
+        if state == "waiting-merge":
+            amend(self.store, self.job, pending={"shas": list(pending[0]), "branch": pending[1]}, pid=None)
+        try:
+            if self.at == "waiting-merge" and state not in ("running", "waiting-merge"):  # the table ends a job from running only
+                move(self.store, self.job, "running")
+                self.at = "running"
+            move(self.store, self.job, state, **fields)
+        except coord.Refused as refusal:
+            if refusal.body.get("state") == "cancelled":
+                raise Cancelled from None
+            raise
+        self.at = state
+        if state == "waiting-merge":
+            self.passing = False
+            print(f"{self.label()}: waiting-merge, {fields['step'][len('merge:'):]} not merged yet", file=self.out, flush=True)
+            return
+        with contextlib.suppress(sqlite3.Error):
+            amend(self.store, self.job, pending=None)
+        if state in ("succeeded", "refused", "failed"):
+            note = f"{self.label()}: {state}"
+            if state == "refused":
+                note += f" at step {fields.get('step')}"
+            elif state == "failed":
+                note += f", exit {fields.get('exit')}: {last_line(self.text)}"
+            print(note, file=self.out, flush=True)
+
+    def lose(self):
+        """The executor ended while a pass ran (the child's group is ended): the job moves to lost, as any running job's does."""
+        with contextlib.suppress(coord.Refused):
+            if self.at == "running":
+                move(self.store, self.job, "lost")
+        self.state = "lost"
+
+    def run(self):
+        try:
+            self.log.parent.mkdir(parents=True, exist_ok=True)
+            with open(self.log, "a", encoding="utf-8", newline="\n") as sink:
+                _, self.state = kj_land.drive(self.record, self.run_pass, self.merged, self.sleep, self.post, out=sink)
+        except Cancelled:
+            self.state = "cancelled"
+            print(f"{self.label()}: cancelled", file=self.out, flush=True)
+        except Ended as ended:
+            self.state = ended.args[0]
+        except Stopped:
+            if self.at == "running":
+                self.lose()
+        except BaseException as error:  # noqa: BLE001 - a thread's failure ends its job, never the executor
+            self.state = "failed"
+            with contextlib.suppress(Exception):
+                if self.at != "running":
+                    move(self.store, self.job, "running")
+                move(self.store, self.job, "failed", exit=1)
+            print(f"{self.label()}: failed, exit 1: {type(error).__name__}: {str(error)[:200]}", file=self.out, flush=True)
 
 
 def serial_key(job):
@@ -573,6 +753,11 @@ def drain(store, clone, host, operator, out, slots=SLOTS):
         except coord.Refused:
             release(job, token)
             return False
+        if record.get("op") == "land":  # a thread of its own drives the passes and the wait (`LandRun`)
+            run = LandRun(store, clone, {**record, "state": "running"}, token, out)
+            active[job] = {"record": record, "token": token, "run": run, "renewed": time.monotonic()}
+            run.start()
+            return True
         proc, start = start_job(store, job, record, clone, kj_store.log_path(clone, job), out)
         if proc is None:
             failed.append(job)
@@ -583,7 +768,15 @@ def drain(store, clone, host, operator, out, slots=SLOTS):
 
     try:
         while True:
-            for job, one in list(active.items()):  # the children that ended
+            for job, one in list(active.items()):  # the children that ended, the land threads that ended
+                run = one.get("run")
+                if run is not None:  # the thread renews its own lease
+                    if not run.is_alive():
+                        del active[job]
+                        if run.state in ("failed", "lost"):
+                            failed.append(job)
+                        release(job, one["token"])
+                    continue
                 code = one["proc"].poll()
                 if code is None:
                     renew(job, one["token"], one)
@@ -603,14 +796,27 @@ def drain(store, clone, host, operator, out, slots=SLOTS):
                     release(job, one["token"])
                 else:
                     renew(job, one["token"], one)
-            queued = [(j, r) for j, r in pending(store, clone, host, operator) if j not in passed and j not in waiting]
+            seen = [(j, r) for j, r in pending(store, clone, host, operator, ("queued", "waiting-merge")) if j not in passed]
+            for job, record in seen:  # a land job a dead executor left in its wait: polled again from its recorded pending
+                if record["state"] == "waiting-merge" and job not in active and record.get("op") == "land" and kj_land.recorded_pending(record):
+                    token = take_job(store, job)
+                    if token is None:
+                        passed.add(job)
+                        continue
+                    run = LandRun(store, clone, record, token, out)
+                    active[job] = {"record": record, "token": token, "run": run, "renewed": time.monotonic()}
+                    run.start()
+            queued = [(j, r) for j, r in seen if r["state"] == "queued" and j not in waiting]
             if not (queued or waiting or active):
                 return failed
-            candidates = [{**one["record"], "state": "waiting-lock"} for one in waiting.values()] + [r for _, r in queued]
+            asking = [{**one["record"], "state": "waiting-lock"} for one in active.values() if one.get("run") and one["run"].want]
+            candidates = [{**one["record"], "state": "waiting-lock"} for one in waiting.values()] + asking + [r for _, r in queued]
             candidates.sort(key=lambda r: (r.get("submitted_ts", 0), r["job"]))
-            mine = {os.getpid()} | {one["proc"].pid for one in active.values()}
+            mine = {os.getpid()} | {one["proc"].pid for one in active.values() if one.get("proc")}
+            mine |= {one["run"].proc.pid for one in active.values() if one.get("run") and one["run"].proc}
             holders = outside(lock_holders(clone), mine)
-            run, wait = next_runnable(candidates, [one["record"] for one in active.values()], holders, slots)
+            running = [one["record"] for one in active.values() if one.get("run") is None or one["run"].passing]
+            run, wait = next_runnable(candidates, running, holders, slots)
             for record, lock, held in wait:
                 job = record["job"]
                 token = take_job(store, job)
@@ -629,6 +835,10 @@ def drain(store, clone, host, operator, out, slots=SLOTS):
                       f"(clone {held['clone']}, step {held['step']})", file=out, flush=True)
             for record in run:
                 job = record["job"]
+                if job in active:  # a land thread's second pass: its slot and its class's turn
+                    active[job]["run"].passing, active[job]["run"].want = True, False
+                    active[job]["run"].granted.set()
+                    continue
                 if job in waiting:
                     one = waiting.pop(job)
                     begin(job, record, one["token"])
@@ -642,9 +852,15 @@ def drain(store, clone, host, operator, out, slots=SLOTS):
                 time.sleep(TICK_S)
     except BaseException:
         for job, one in list(active.items()):
+            if one.get("run") is not None:  # the thread ends its own child and moves a running job to lost; a waiting one stays
+                one["run"].halt.set()
+                continue
             kg_lock.end_group(one["proc"])
             with contextlib.suppress(coord.Refused):
                 move(store, job, "lost")
+        for one in list(active.values()):
+            if one.get("run") is not None:
+                one["run"].join(timeout=JOB_LEASE_RENEW_S)
         for job in waiting:
             with contextlib.suppress(coord.Refused):
                 move(store, job, "running")
