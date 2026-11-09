@@ -40,6 +40,29 @@
     "ST-vxwngvv7",
     "ST-zom563hs"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which values does opa-config --print fix that the goal leaves open: the polling delays, the paths of the configuration, environment file and opa binary, the OPA address, the persistence directory, and the bundle resource form?",
+      "options": [
+        "polling 10 to 60 s, /etc/opa/kbjobs.yaml and kbjobs.env, /usr/local/bin/opa, 127.0.0.1:8181, StateDirectory opa-kbjobs, resource v1/bundles/NAME.tar.gz, no flags to change them",
+        "one flag for each value"
+      ],
+      "recommendation": "polling 10 to 60 s, /etc/opa/kbjobs.yaml and kbjobs.env, /usr/local/bin/opa, 127.0.0.1:8181, StateDirectory opa-kbjobs, resource v1/bundles/NAME.tar.gz, no flags to change them",
+      "reason": "the operator edits the printed text, which writes nothing and installs nothing",
+      "do": {
+        "polling 10 to 60 s, /etc/opa/kbjobs.yaml and kbjobs.env, /usr/local/bin/opa, 127.0.0.1:8181, StateDirectory opa-kbjobs, resource v1/bundles/NAME.tar.gz, no flags to change them": "ST-liejtnnc",
+        "one flag for each value": "ST-liejtnnc"
+      },
+      "class": "secrets",
+      "answer": "polling 10 to 60 s, /etc/opa/kbjobs.yaml and kbjobs.env, /usr/local/bin/opa, 127.0.0.1:8181, StateDirectory opa-kbjobs, resource v1/bundles/NAME.tar.gz, no flags to change them",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "notes": "Research 2026-11-08: OPA bundle manifest roots, resource default bundles/<name>, Etag/304, bearer token_path, ${NAME} substitution only under opa run and only for defined variables, persistence_directory default $PWD/.opa, and test discovery by the test_ prefix are in kb public/agents/policy-as-code.md (QK-operations-placement-stories-need-opa-bundles).",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-61c966d6",
