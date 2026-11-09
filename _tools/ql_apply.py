@@ -13,7 +13,7 @@ from ql_base import one_line, places, restore, write_text
 from ql_distill import spool_claims
 from ql_learn import (Gate, bare_token, domain_article, feedback_reports, held_article, passes, pasted_text, report_claim,
                       unknown_words)
-from ql_research import add_under, fact_lines, quotecheck, research_one
+from ql_research import NOTE, SETTLED, add_under, asked_key, fact_lines, quotecheck, research_one
 from ql_store import (APPLY_STATES, FIX_KINDS, failed_counts, finding_states, store_entries, write_findings)
 
 FAILED_RETRIES = 0  # times a finding recorded apply-failed is applied again: never
@@ -369,13 +369,42 @@ def tool_question(question):
     return isinstance(question, str) and bool(TOOL_QUESTION.search(question))
 
 
+GAP_ENTRY = re.compile(r"^- \*\*(.+?)\*\*(?:\s|$)")  # the top-level bullet of a _gaps.md entry: its question in bold
+
+
+def closed_gap_entry(question):
+    """`root/_gaps.md:line` of a `_gaps.md` entry, in any root, that asks `question` (its lower-cased, whitespace-folded
+    text, as `plain_question` and the gap step quote it) and is already closed by a dated note of `SETTLED` (a
+    `Closed`, `Resolved` or `Superseded` note under it), else None: the question was settled, as a `_self`
+    question or by a source, so no new entry or finding is made for it."""
+    import kbcommon
+    key = asked_key(plain_question(one_line(question).replace("**", "")))
+    for r in kbcommon.roots():
+        path = Path(r.path) / "_gaps.md"
+        if not path.is_file():
+            continue
+        lines = path.read_text(encoding="utf-8").split("\n")
+        for i, ln in enumerate(lines):
+            m = GAP_ENTRY.match(ln)
+            if not m or asked_key(m.group(1)) != key:
+                continue
+            end = i + 1
+            while end < len(lines) and lines[end][:1] in (" ", "\t") and lines[end].strip():
+                end += 1
+            if any((n := NOTE.match(x)) and n.group(1) in SETTLED for x in lines[i + 1:end]):
+                return f"{r.name}/_gaps.md:{i + 1}"
+    return None
+
+
 def gap_decision(question, gate):
     """(pack result, article, decision) of the gap step for one question, packed on the working tree, writing
     nothing: `passes` (it passes now), `held` (a `none` lead holds the words the pack lacks: an eval finding, the
     article is that lead), `reject` (off the kb's domains: no lead article, a stray `none` lead, a `weak` lead
     without the subject), `pasted` (pasted text, not a question: a backlog goal or a worker's brief, packed
-    nothing), `tool` (a count or list of what the kb holds, which a tool answers: packed nothing) or `keep` (a
-    _gaps.md entry under the article's topic). `gap_one` acts on it and `gap_replay` prints it."""
+    nothing), `tool` (a count or list of what the kb holds, which a tool answers: packed nothing), `closed` (a
+    `_gaps.md` entry of the same question is already closed by a `Closed`, `Resolved` or `Superseded` note, and the
+    pack neither passes nor holds the words: `closed_gap_entry`) or `keep` (a _gaps.md entry under the article's
+    topic). `gap_one` acts on it and `gap_replay` prints it."""
     if pasted_text(question):
         return {}, None, "pasted"
     if tool_question(question):
@@ -386,6 +415,8 @@ def gap_decision(question, gate):
     held = held_article(res, gate.article_of, gate.facts)
     if held:
         return res, held, "held"
+    if closed_gap_entry(question):
+        return res, None, "closed"
     article = domain_article(res, gate.article_of)
     if not article or weak_off_topic(res, article, gate):
         return res, article, "reject"
@@ -423,7 +454,7 @@ def gap_one(g, entry, gate, day):
     a _gaps.md entry under the article's topic, in the article's root, dated `day`, and the finding promoted from
     candidate-gap to gap (`applied`). Off the kb's domains (no lead, a lead no article holds, a `none` lead with half
     the key words or fewer, a `weak` lead without the subject) it is `rejected` at candidate-gap: no topic can take its
-    entry; so is pasted text (`gap_decision`), and an entry that adds an error to the root's ledgers (`Gate.ledger_errors`:
+    entry; so is pasted text, a question a closed entry settled (`gap_decision`), and an entry that adds an error to the root's ledgers (`Gate.ledger_errors`:
     a citation, a topic mark or a source, decision or log tag the question carries; the entry quotes the question
     without its citations' line numbers; the ledger is put back as it was when one is left). []
     when it passes now or a `none` pack's lead article holds the words it lacks (`held_article`): learn records both,
@@ -437,6 +468,9 @@ def gap_one(g, entry, gate, day):
     if decision == "tool":
         return [{**without_observed(g), "state": "rejected",
                  "observed": {"gate": ["a tool answers it, not a kb fact"]}}]
+    if decision == "closed":
+        return [{**without_observed(g), "state": "rejected",
+                 "observed": {"gate": ["a closed _gaps.md entry settled the same question"]}}]
     if decision == "reject":
         return [{**without_observed(g), "state": "rejected",
                  "observed": {"verdict": res.get("verdict"), "gate": ["off the kb's domains"]}}]
