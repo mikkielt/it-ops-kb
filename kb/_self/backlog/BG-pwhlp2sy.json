@@ -1,0 +1,19 @@
+{
+  "id": "BG-pwhlp2sy",
+  "kind": "bug",
+  "title": "The leak scan passes a url password that holds an angle bracket, because URL_USERINFO's password class excludes < and > and _value reads any < or > as a placeholder",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbcommon.structured_secrets reports a url whose password holds an angle bracket but is not a placeholder whole, as redact.redact now takes it",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,\"_tools\"); import kbcommon; r=kbcommon.structured_secrets(\"https://jan:a<b>cccccc@srv01.corp.contoso.com/x\"); print(r); sys.exit(0 if r else 1)"
+    ]
+  },
+  "notes": "Found while fixing BG-5dcfyrks (redact side, a redact-only URL_USERINFO_ANGLE shape in _tools/redact.py). The fix is in kbcommon.py, which the in-flight BG-fwqcimiv also changes: order it after that item.",
+  "filed_in": "clone-0ea70e5c"
+}
