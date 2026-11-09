@@ -95,7 +95,8 @@ URL_USERINFO_ANGLE = re.compile(r"""(\b[A-Za-z][A-Za-z0-9+.-]*://[^\s/:@"'<>]*:)
 # is a value, and so is a word of the list inside a URL's user:password@ part.
 PROSE_WORDS = frozenset("where in is it the see for to of".split())
 # A private key block whole, BEGIN line through END line; with no END line (cut off), BEGIN line to the end of the text
-# (the BEGIN line alone is a kbcommon.SECRETS shape, except the EC one, which is a shape only with key material after it).
+# (the BEGIN line alone is a kbcommon.SECRETS shape, except the EC PRIVATE KEY and PGP PRIVATE KEY BLOCK lines, which are
+# a shape only with key material after them).
 KEY_BLOCK = re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY(?: BLOCK)?-----(?:.*?-----END [A-Z ]*PRIVATE KEY(?: BLOCK)?-----|.*)", re.S)
 
 
