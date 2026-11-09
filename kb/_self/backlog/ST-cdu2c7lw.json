@@ -41,6 +41,6 @@
   "links": [
     "parked: SP-ep7ck2ab close"
   ],
-  "notes": "Parked draft from the SP-ep7ck2ab close retrospective (night manager c9419db9, operator-delegated, 2026-11-09). Its check reads the rule text only: the planner adds a check that runs the behaviour on a planted input before the start gate. Retrospective item R3.",
+  "notes": "Parked draft from the SP-ep7ck2ab close retrospective (night manager c9419db9, operator-delegated, 2026-11-09). Its check reads the rule text only: the planner adds a check that runs the behaviour on a planted input before the start gate. Retrospective item R3. Premise (planner, 2026-11-09, base): reproduced. Check 0 plants a review story and a done item with a provisional gate answered by an agent and not held: show of the review story and horizon --sprint both omit it (held_answers keeps only hold:true gates). Choice settled in the goal: the unheld answers are listed beside the held ones, under their own wording.",
   "filed_in": "clone-0ea70e5c"
 }
