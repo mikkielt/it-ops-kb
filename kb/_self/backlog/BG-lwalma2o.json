@@ -2,7 +2,7 @@
   "id": "BG-lwalma2o",
   "kind": "bug",
   "title": "bench_core.run_commit compares only _tools and .claude, so a branch that changes kb articles records the merge-base commit whose kb is not what the scenarios measured",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-hyfyn22d",
   "priority": "P3",
   "rank": 0,
@@ -26,5 +26,7 @@
   "links": [
     "parked: SP-bpjqqauu review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev4run01",
+  "operator": "op-f618a13e"
 }
