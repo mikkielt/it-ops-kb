@@ -1,0 +1,22 @@
+{
+  "id": "SP-rzwljgxv",
+  "kind": "sprint",
+  "title": "Workers and dispatch are safe: no paid claude from a worker, runner watch spares live workers, stage-back and claim survive interrupts, briefs and usage tell the truth",
+  "status": "planned",
+  "goal": "dispatch gives a worker a PATH whose claude is a stub that exits 2 unless its item has an answered money gate; runner watch counts a report file only once it holds output; a stage-back rerun after a kill commits a new file the dead run copied in; claim restores the SIGTERM handler on an early interrupt; Backlog.save gives no old answer back to a reworded gate; dispatch starts a worker with the plugins backlog.json lists switched off; the worker brief clamps its commit-by turn above the cap's margin and tells the staged-skill worker which docs to name for stage-back --self-reviewed; the dispatch usage text gives the real turn caps and names --max-budget-usd; fresh_pids counts a process fresh only by a transcript it can have written; the sprint skill puts the move to an own worktree before the first claim and says precheck runs a bug's repro",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e",
+  "filed_in": "clone-0ea70e5c"
+}
