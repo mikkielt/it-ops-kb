@@ -20,11 +20,15 @@
     "_tools/ql_capture.py",
     "_tools/ql_deliver.py",
     "_tools/ql_base.py",
-    "kb/_self/querylog.md"
+    "kb/_self/querylog.md",
+    "kb/_self/usage.md"
+  ],
+  "depends_on": [
+    "BG-agossgpb"
   ],
   "links": [
     "parked: SP-vmtfnkim review"
   ],
-  "notes": "Found by the SP-vmtfnkim review on 2026-10-26. It changes the provisional answer BG-zoaoahj4 g1 took (the guard in ops_row and record_pipeline only; the other option, a guard in ql_capture.record, was not taken): kg_sync.record_gate (sync.gate) and ql_capture.census_phase (census.phase) call ql_capture.record directly, so a probe that imports the clone's tools from another directory still writes those rows to the clone's spool. The repro runs a census phase from a temporary clone and counts the rows left in the owning clone's spool. The operator decides whether the gate's other option is meant.",
+  "notes": "Found by the SP-vmtfnkim review on 2026-10-26. It changes the provisional answer BG-zoaoahj4 g1 took (the guard in ops_row and record_pipeline only; the other option, a guard in ql_capture.record, was not taken): kg_sync.record_gate (sync.gate) and ql_capture.census_phase (census.phase) call ql_capture.record directly, so a probe that imports the clone's tools from another directory still writes those rows to the clone's spool. The repro runs a census phase from a temporary clone and counts the rows left in the owning clone's spool. The operator decides whether the gate's other option is meant. Planned 2026-11-09 in SP-osevumx6: items that share a file wait on each other (kbcommon.py, redact.py then kbask.py, ql_capture.py then ql_deliver.py); no open item of the other live sprints touches this item's code files.",
   "filed_in": "clone-0ea70e5c"
 }

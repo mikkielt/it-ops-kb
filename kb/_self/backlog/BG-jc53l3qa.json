@@ -18,9 +18,11 @@
   "repro_reason": "a stored entry whose fetch host the current public root names is needed to fail the gate for real; the marks tuple is what check matches problem lines against",
   "touches": [
     "_tools/ql_store.py",
-    "kb/_self/querylog.md"
+    "kb/_self/querylog.md",
+    "kb/_self/usage.md"
   ],
   "links": [
     "parked: SP-vx6eufpj review"
-  ]
+  ],
+  "notes": "Planned 2026-11-09 in SP-osevumx6: items that share a file wait on each other (kbcommon.py, redact.py then kbask.py, ql_capture.py then ql_deliver.py); no open item of the other live sprints touches this item's code files."
 }

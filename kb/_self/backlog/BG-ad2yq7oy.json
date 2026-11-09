@@ -20,7 +20,11 @@
     "_tools/redact.py",
     "kb/_self/querylog.md"
   ],
+  "depends_on": [
+    "BG-5dcfyrks"
+  ],
   "links": [
     "parked: SP-evq2flqc review"
-  ]
+  ],
+  "notes": "Planned 2026-11-09 in SP-osevumx6: items that share a file wait on each other (kbcommon.py, redact.py then kbask.py, ql_capture.py then ql_deliver.py); no open item of the other live sprints touches this item's code files."
 }

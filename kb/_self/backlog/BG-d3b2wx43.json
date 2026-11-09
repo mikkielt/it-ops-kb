@@ -7,7 +7,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "ql_capture.read_user_report stops a negation's reach at a clause word (and, but, or) as at a comma, so 'it is not correct and wrong PATH:LINE' records outcome misled with the line's issue wrong, and 'not only wrong but stale: PATH:LINE' keeps both words. Found by the SP-3g3egfll review (S3, BG-uo4sz2ed \"kb!: reads a negated word as the issue\", gate g1 confirmed).",
+  "goal": "ql_capture.read_user_report stops a negation's reach at a clause word (and, but, or) as at a comma, so 'it is not correct and wrong PATH:LINE' records outcome misled with the line's issue wrong while 'nothing wrong with PATH:LINE, it is right' still records no misled outcome",
   "repro": {
     "run": [
       "python3",
@@ -17,9 +17,14 @@
   },
   "touches": [
     "_tools/ql_capture.py",
-    "kb/_self/querylog.md"
+    "kb/_self/querylog.md",
+    "kb/_self/usage.md"
+  ],
+  "depends_on": [
+    "BG-vry5r7pe"
   ],
   "links": [
     "parked: SP-3g3egfll review"
-  ]
+  ],
+  "notes": "Planning 2026-11-09: premise reproduces on the base (repro: outcome unclassified, no issue). The old second clause ('not only wrong but stale: PATH:LINE' keeps both words) already holds on the base (the comment keeps both words, the issue is the last one, stale) and was dropped. Found by the SP-3g3egfll review (S3, BG-uo4sz2ed, gate g1 confirmed). Planned 2026-11-09 in SP-osevumx6: items that share a file wait on each other (kbcommon.py, redact.py then kbask.py, ql_capture.py then ql_deliver.py); no open item of the other live sprints touches this item's code files."
 }

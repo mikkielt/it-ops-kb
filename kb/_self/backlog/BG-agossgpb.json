@@ -16,6 +16,25 @@
     ]
   },
   "repro_reason": "the agent.run path needs a live subagent stop event to run; the repro applies the module's own failed-text test to a planted answer",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import ql_capture as q;r=q.agent_row({'hook_event_name':'SubagentStop','agent_id':'a1','agent_type':'x'},'sid1');print('exit of a stop row with no closing text:',r.get('exit'));sys.exit(1 if r.get('exit')==0 else 0)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "ql_capture records an agent.run exit only from a signal Claude Code documents for a failed subagent run, so an answer that opens with 'API Error handling' is not a failed run",
+      "check": 1
+    },
+    {
+      "clause": "a run with no closing text leaves exit unset rather than 0",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/ql_capture.py",
     "kb/_self/querylog.md",
@@ -23,7 +42,11 @@
     "kb/_self/tools.md",
     "kb/_self/usage.md"
   ],
+  "depends_on": [
+    "BG-d3b2wx43"
+  ],
   "links": [
     "parked: SP-c7oav2vn review"
-  ]
+  ],
+  "notes": "Planned 2026-11-09 in SP-osevumx6: items that share a file wait on each other (kbcommon.py, redact.py then kbask.py, ql_capture.py then ql_deliver.py); no open item of the other live sprints touches this item's code files."
 }

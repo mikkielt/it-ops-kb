@@ -7,7 +7,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "a session can give another session the id to address it by through coord: kbask ask keeps a coord session id it can resolve to a live session/<id> presence lease, or coord offers a short addressable name per session, while redact still replaces every other UUID in ask text",
+  "goal": "kbask ask keeps in its text a UUID that names a live session/<id> presence lease of the store, while it still replaces every other UUID, a token and a key=value secret in ask text",
   "repro": {
     "run": [
       "python3",
@@ -15,15 +15,35 @@
       "import sys;sys.path.insert(0,'_tools');import redact;s='-'.join(['396fb440','d928','4c33','9f3a','b375f1a2bc1d']);o=redact.redact('address me as '+s);print(o);sys.exit(0 if s in o else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess as s,sys,tempfile as t,os,json;st=os.path.join(t.mkdtemp(),'coord.db');J=lambda *a:'-'.join(a);sid=J('396fb440','d928','4c33','9f3a','b375f1a2bc1d');o2=J('11111111','2222','4333','8444','555555555555');tok='gh'+'p_'+'a1B2c3D4e5'*3+'xyz123';pw='Pass'+'12345x';kv='pass'+'word='+pw;s.run([sys.executable,'_tools/coord.py','--store',st,'claim','session/'+sid,'--ttl','600'],check=True,capture_output=True);r=s.run([sys.executable,'_tools/kbask.py','ask','--store',st,'any','address me as '+sid+' not '+o2+' '+tok+' '+kv],capture_output=True,text=True);v=s.run([sys.executable,'_tools/coord.py','--store',st,'get','ask/'+json.loads(r.stdout)['id']],capture_output=True,text=True).stdout;print(v);sys.exit(0 if sid in v and o2 not in v and tok not in v and pw not in v else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbask ask keeps in its text a UUID that names a live session/<id> presence lease of the store, while it still replaces every other UUID, a token and a key=value secret in ask text",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kbask.py",
     "_tools/redact.py",
     "kb/_self/coordination.md",
-    "kb/_self/querylog.md"
+    "kb/_self/querylog.md",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-jtnkjxsc"
   ],
   "links": [
     "parked: SP-3trnelzv work"
   ],
-  "notes": "Found 2026-10-24 by the SP-3trnelzv orchestrator: an ask to any that named its coord session id reached the other session with the id as 00000000-0000-0000-0000-000000000000 (redact reads a UUID as an object id), and cross-session messages between the two were held by different permission modes, so coord asks were the only channel and carried no address.",
+  "notes": "Found 2026-10-24 by the SP-3trnelzv orchestrator: an ask to any that named its coord session id reached the other session with the id as 00000000-0000-0000-0000-000000000000 (redact reads a UUID as an object id), and cross-session messages between the two were held by different permission modes, so coord asks were the only channel and carried no address. Planning 2026-11-09: goal narrowed to the first option the bug names (keep a UUID that names a live presence lease), so the check can run it; the check plants a lease with coord.py claim and a token and a password assignment built at run time. Premise reproduces on the base (the ask text holds only zero UUIDs). Planned 2026-11-09 in SP-osevumx6: items that share a file wait on each other (kbcommon.py, redact.py then kbask.py, ql_capture.py then ql_deliver.py); no open item of the other live sprints touches this item's code files.",
   "filed_in": "clone-0ea70e5c"
 }

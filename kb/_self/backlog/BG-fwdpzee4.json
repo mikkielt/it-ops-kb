@@ -7,7 +7,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "kbcommon.leak_hits does not flag a same-line table row with an armor label, a Name: value cell and a lower-camel or digit-bearing identifier cell of 20 or more characters that holds no key material, and still flags every key block planted by earlier reviews",
+  "goal": "kbcommon.leak_hits does not flag a same-line table row with an armor label, a Name: value cell and a lower-camel or digit-bearing identifier cell of 20 or more characters that holds no key material, and still flags a multi-line EC key block and a table row whose identifier cell holds key material",
   "repro": {
     "run": [
       "python3",
@@ -15,11 +15,36 @@
       "import sys;sys.path.insert(0,\"_tools\");import kbcommon;L=\"-\"*5+\"BEGIN EC PRIVATE KEY\"+\"-\"*5;bad=[i for i in (\"deviceManagementConfigurationPolicy\",\"windowsAutopilotDeploymentProfile\",\"Win32LobAppAssignmentSettings\") if any(k==\"secret\" for k,_ in kbcommon.leak_hits(\"| \"+L+\" | Note: PEM label | \"+i+\" |\"))];print(\"rows flagged:\",bad);sys.exit(1 if bad else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import kbcommon as k;L='-'*5+'BEGIN EC PRIVATE KEY'+'-'*5;E='-'*5+'END EC PRIVATE KEY'+'-'*5;t=[L+chr(10)+'MHcCAQEEIA7r/Gk3lq9x2Zp0aB1cD2eF3gH4iJ5kL6mN7oP8qR9sT0uV1wX2yZ3a'+chr(10)+E,'| '+L+' | Note: PEM label | MHcCAQEEIA7r/Gk3lq9x2Zp0aB1c |'];r=[bool([h for h in k.leak_hits(x) if h[0]=='secret']) for x in t];print(r);sys.exit(0 if all(r) else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbcommon.leak_hits does not flag a same-line table row with an armor label, a Name: value cell and a lower-camel or digit-bearing identifier cell of 20 or more characters that holds no key material",
+      "check": 1
+    },
+    {
+      "clause": "still flags a multi-line EC key block and a table row whose identifier cell holds key material",
+      "check": 0
+    }
+  ],
   "touches": [
-    "_tools/kbcommon.py"
+    "_tools/kbcommon.py",
+    "kb/_self/plugin.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-c3vnscx7"
   ],
   "links": [
     "parked: SP-mk6ikval review"
   ],
+  "notes": "Planned 2026-11-09 in SP-osevumx6: items that share a file wait on each other (kbcommon.py, redact.py then kbask.py, ql_capture.py then ql_deliver.py); no open item of the other live sprints touches this item's code files.",
   "filed_in": "clone-0ea70e5c"
 }
