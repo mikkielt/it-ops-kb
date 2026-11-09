@@ -1,0 +1,22 @@
+{
+  "id": "BG-5b35ssgk",
+  "kind": "bug",
+  "title": "A landing ticket of a dead process whose pid another process now holds is waited for until the lock's bound, so every later landing ends refused at step landing lock",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "a landing does not wait for a ticket asked before its process started or older than the lock's wait bound, so a ticket left by a killed landing whose pid was reused holds nobody up",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os, subprocess, sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport bl_close\nt = tempfile.mkdtemp()\nsubprocess.run([\"git\", \"init\", \"-q\", t], check=True)\nqdir = bl_close.landing_queue_dir(bl_close.landing_lock_path(t))\nqdir.mkdir()\n# a ticket asked at time 1 (1970) by a pid that is alive now, an unrelated long-lived process: the host rebooted and the pid was reused\nold = qdir / (\"%020d-%d\" % (1, os.getppid()))\nold.write_text(\"pid=%d\\nclone=%s\\nstarted=1970-01-01T00:00:01Z\\nitem=ST-aaaaaaaa\\n\" % (os.getppid(), t))\nmine = \"%020d-%d\" % (2 * 10 ** 18, os.getpid())\nahead = bl_close.landing_tickets_ahead(qdir, mine)\nprint(\"tickets a landing waits for:\", [a[0] for a in ahead])\nsys.exit(0 if not ahead else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_close.py",
+    "kb/_self/backlog.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
