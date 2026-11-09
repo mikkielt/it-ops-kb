@@ -7,7 +7,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
-  "goal": "kg_hooks names a key as unset only when git config --unset returned success, and refuses with exit 1 when core.hooksPath could not be unset",
+  "goal": "kg_hooks names a key as unset only when git config --unset returned success and refuses with exit 1 when core.hooksPath could not be unset",
   "repro": {
     "run": [
       "python3",
@@ -17,7 +17,11 @@
   },
   "repro_reason": "needs a read-only git config to fail the unset; the planted input is in the notes",
   "touches": [
-    "_tools/kg_hooks.py"
+    "_tools/kg_hooks.py",
+    "kb/_self/git.md"
+  ],
+  "depends_on": [
+    "BG-anhllsj3"
   ],
   "links": [
     "parked: SP-mut2pmu3 review"

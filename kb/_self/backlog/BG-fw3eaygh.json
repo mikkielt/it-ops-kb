@@ -7,7 +7,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S4",
-  "goal": "kb/_self/extending.md, The leak point, says kbpublic.file_hits passes root to an extender whose signature takes it and calls a four-argument extender without it, and no longer says root is None there",
+  "goal": "kb/_self/extending.md, The leak point, no longer says that kbpublic.file_hits passes a leak_scan extender no root, so root is None there",
   "repro": {
     "run": [
       "python3",
@@ -16,5 +16,9 @@
     ]
   },
   "repro_reason": "a doc sentence about an extension point's call has no behaviour to run; the text match is the only proof",
+  "touches": [
+    "kb/_self/extending.md",
+    "kb/_self/git.md"
+  ],
   "filed_in": "clone-0ea70e5c"
 }
