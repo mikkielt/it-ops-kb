@@ -62,7 +62,12 @@
         "a single id as before, or ids joined by / up to 200 characters": "ST-p7oslxrl",
         "a single id only, the job's operator path cut to its last segment": "ST-p7oslxrl"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "a single id as before, or ids joined by / up to 200 characters",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     },
     {
       "id": "g2",
