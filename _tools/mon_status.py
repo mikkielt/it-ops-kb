@@ -479,15 +479,29 @@ def run_summary(s):
                      for state, xs in states.items())
 
 
-def compact_lines(rows, r):
-    """The sprints topic for the `all` answer: one line for each of the ROWS first sprints, the first one led by `Sprints:`,
-    each with its items done of all and the run states of its open items."""
+def compact_text(s):
+    """The run states of the sprint row S for a compact row: its `run_summary`, else what its state says."""
+    state = str(s.get("state"))
+    return run_summary(s) or ("no run states" if state == "active" else "not started" if state == "approved" else "waits for start gate")
+
+
+def compact_lines(rows, r, budget=ALL_LINES):
+    """The sprints topic for the `all` answer, at most BUDGET lines: one line for each sprint, the first one led by `Sprints:`,
+    each with its items done of all and the run states of its open items. With more sprints than lines, the first BUDGET - 1
+    keep a line each and the last line holds the rest as `+N more: NAME STATES; ...`, each sprint that has run states by its
+    name (the sprints with none are counted, `M without run states`), so every sprint's run states are named."""
     lines = []
-    for s in rows[:ROWS]:
+    keep = rows if len(rows) <= budget else rows[:budget - 1]
+    for s in keep:
         done, total = sprint_counts(s)
-        state = str(s.get("state"))
-        text = run_summary(s) or ("no run states" if state == "active" else "not started" if state == "approved" else "waits for start gate")
-        lines.append(("Sprints: " if not lines else "  ") + f"{short_name(s.get('title') or r.item(s.get('id'))):<{NAME_CHARS}}  {f'{done}/{total}':>5}  {text}")
+        lines.append(("Sprints: " if not lines else "  ") + f"{short_name(s.get('title') or r.item(s.get('id'))):<{NAME_CHARS}}  {f'{done}/{total}':>5}  {compact_text(s)}")
+    rest = rows[len(keep):]
+    if rest:
+        named = [s for s in rest if run_summary(s)]
+        plain = len(rest) - len(named)
+        parts = [f"{short_name(s.get('title') or r.item(s.get('id')))} {run_summary(s)}" for s in named]
+        parts += [f"{plain} without run states"] if plain else []
+        lines.append(f"  +{len(rest)} more: " + "; ".join(parts))
     return lines or ["Sprints: none active or planned."]
 
 

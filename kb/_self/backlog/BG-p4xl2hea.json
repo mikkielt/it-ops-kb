@@ -23,6 +23,26 @@
   "depends_on": [
     "BG-lpxhiubn"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the all answer keep the run states of every active sprint within its four-line sprints budget?",
+      "options": [
+        "Fold the sprints past the third into one last line that names each by short title with its run states",
+        "Raise the sprints topic's lines in all"
+      ],
+      "recommendation": "Fold the sprints past the third into one last line that names each by short title with its run states",
+      "reason": "all already fills the 25-line cap, so a larger budget would cut the load lines",
+      "do": {
+        "Fold the sprints past the third into one last line that names each by short title with its run states": "BG-p4xl2hea",
+        "Raise the sprints topic's lines in all": "BG-p4xl2hea"
+      },
+      "class": "design",
+      "answer": "Fold the sprints past the third into one last line that names each by short title with its run states",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ymnz7b4n review"
   ],
