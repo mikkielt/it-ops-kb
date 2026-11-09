@@ -79,6 +79,16 @@ names the host that has it otherwise, and `cancel` moves the job to cancelled on
                                         stays here, in the clone's kb-jobs). --data DIR holds the executor's mirror store instead of the
                                         clone's kb-jobs. Other flags as above. `ping`, `ensure`, `login-item` and `stats` take no --url
 
+  kbjob.py place OP [SUBJECT] [--opa URL]
+                                        ask an OPA placement policy where and as whom OP runs and print one JSON decision, {executor,
+                                        identity, fallback, fallback_after_s, budget_cap_usd, decided_by, reason}, exit 0 (OP is one of
+                                        `coord.PLACEMENT_OPS`). It sends `POST URL/v1/data/kbjobs/placement` with the input {op, subject,
+                                        roots, root_groups, operator, groups, host, capabilities: {paid, push}} (`kj_place.build_input`);
+                                        URL is --opa, else KB_OPA_URL. An unreachable policy, a reply with no `result` and an executor,
+                                        identity or fallback outside the tables (workstation|server|ci, none|group-bot|operator) decide
+                                        the workstation with identity none and a reason naming the cause; with no URL the reason is `no policy`.
+                                        With --url and --key-file the operator and its groups are the central coord's (`kj_place.group_paths`)
+
 OP is one of the closed table `kj_ops.OPS`, so `publish`, `answer` and any operator-only command are no operation:
   land SUBJECT          options wait_merge=SECONDS, trailer='Key: value' (repeatable)
   done SUBJECT          options commit=true, trailer='Key: value' (repeatable)
@@ -105,6 +115,7 @@ import coord
 import kj_exec
 import kj_follow
 import kj_ops
+import kj_place
 import kj_store
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -124,6 +135,10 @@ def build_parser():
     p.add_argument("--option", action="append", default=[], metavar="KEY=VALUE", help="an option of the operation, repeatable")
     p.add_argument("--name", default=None, help="the check of the operation check")
     p.add_argument("--no-ensure", action="store_true", help="queue the job without starting an executor when none runs")
+    pl = sub.add_parser("place", help="ask the OPA placement policy where and as whom an operation runs; any failure to answer decides the workstation")
+    pl.add_argument("op", help="one of " + ", ".join(coord.PLACEMENT_OPS))
+    pl.add_argument("subject", nargs="?", default="", help="the backlog id, or the name of a check")
+    pl.add_argument("--opa", default=None, metavar="URL", help="the OPA server to ask (default: KB_OPA_URL; with neither, the workstation)")
     sub.add_parser("ping", help="print the pid of this host's executor and exit 0, or exit 1 when none runs")
     sub.add_parser("ensure", help="start the executor detached when none runs, wait for it, print `kbjob: serving pid N`")
     li = sub.add_parser("login-item", help="print a macOS LaunchAgent plist and a systemd user unit that run serve at login")
@@ -236,8 +251,8 @@ def central(args):
         return None
     if args.store:
         raise kj_ops.Refusal("--url and --store name two queues: pass one")
-    if args.command not in ("submit", "follow", "status", "log", "cancel", "serve"):
-        raise kj_ops.Refusal(f"{args.command} takes no --url: a central queue is reached by submit, follow, status, log, cancel and serve")
+    if args.command not in ("submit", "follow", "status", "log", "cancel", "serve", "place"):
+        raise kj_ops.Refusal(f"{args.command} takes no --url: a central queue is reached by submit, follow, status, log, cancel, serve and place")
     return kj_store.Remote(args.url, args.key_file, args.plain_http)
 
 
@@ -257,8 +272,27 @@ def run_central(args, remote):
     return kj_store.cancel_remote(remote, args.job, sys.stdout)
 
 
+def place_command(args, remote):
+    """`kbjob.py place OP [SUBJECT] [--opa URL]`: 0 printing the one JSON decision of `kj_place.place`. With --url and --key-file
+    the operator is the one the central coord names for the key file and its groups follow from that path; else the local operator id, no group."""
+    if args.op not in coord.PLACEMENT_OPS:
+        raise kj_ops.Refusal(f"operation {args.op[:40]!r} is none of {', '.join(coord.PLACEMENT_OPS)}")
+    operator = None
+    if remote is not None:
+        try:
+            operator = remote.operator()
+        except kj_ops.Refusal:  # a coord that names no operator is no reason to refuse a placement: the local one stands
+            operator = None
+    groups = kj_place.group_paths(operator)
+    operator = operator or kj_store.operator_id()
+    print(json.dumps(kj_place.place(str(ROOT), args.op, args.subject, args.opa, operator, groups), sort_keys=True, ensure_ascii=False))
+    return 0
+
+
 def run(args, parser):
     remote = central(args)
+    if args.command == "place":
+        return place_command(args, remote)
     if remote is not None and args.command == "serve":
         return kj_exec.serve(str(ROOT), None, once=args.once, idle_exit=args.idle_exit, slots=args.parallel,
                              kind=args.kind or kj_store.WORKSTATION, remote=remote, data=args.data)
