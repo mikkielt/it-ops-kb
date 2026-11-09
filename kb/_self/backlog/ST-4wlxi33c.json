@@ -16,6 +16,12 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "kb-sprint plan step 2 asks, for each item that calls into another tool module, which public helper the change needs in the module that owns it and puts that module in the item's touches before the start gate",
+      "check": 0
+    }
+  ],
   "touches": [
     "skills/sprint/SKILL.md"
   ],
