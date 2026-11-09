@@ -21,6 +21,9 @@
     "_tools/kg_contrib.py",
     "kb/_self/git.md"
   ],
+  "depends_on": [
+    "BG-ff6fhfoo"
+  ],
   "links": [
     "parked: SP-qinvdomv review"
   ]
