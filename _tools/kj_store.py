@@ -24,10 +24,11 @@ events only: the output log stays on the executor's host. A queued job placed on
 unheld) is the executor's of its fallback kind (`kj_exec.Sync.offline`): its `status` has the member `reason`, `executor offline since T`.
 
 A paid job (`kj_ops.PAID`) carries its `budget` (USD) in its options. When the placement decision has a `budget_cap_usd`, `submit`
-queues the job only if the spend of its group's finished jobs of the UTC day it is submitted on (`bl_cost.spend_usd` of each
-finished job's item, once per item), the budgets of the group's live jobs and this budget stay within the cap, else it raises
-`kj_ops.OverCap` naming the three figures and the cap and queues nothing; a group is the jobs placed by the same `decided_by`.
-The live budgets are read in the transaction that writes the job, so racing submits meet one cap. Nothing running is stopped.
+queues the job only if the spend of its group's finished jobs of the UTC day it is submitted on (the `spent_usd` of each finished job's
+record, which the executor writes when the job ends, whether or not the job's subject is a backlog item), the budgets of the group's
+live jobs and this budget stay within the cap, else it raises `kj_ops.OverCap` naming the three figures and the cap and queues
+nothing; a group is the jobs placed by the same `decided_by`. The spend and the live budgets are read in the transaction that writes
+the job, so racing submits meet one cap. Nothing running is stopped.
 """
 import base64
 import hashlib
@@ -139,18 +140,19 @@ def utc_day(ts):
     return time.strftime("%Y-%m-%d", time.gmtime(ts))
 
 
+def spent_of(record):
+    """The USD RECORD's `spent_usd` holds (the executor writes it when the job ends), 0 for a job with none."""
+    value = record.get("spent_usd")
+    return value if isinstance(value, (int, float)) and not isinstance(value, bool) and value > 0 else 0
+
+
 def finished_spend(root, records, group, now):
-    """USD the query log holds for the items of the finished jobs of GROUP submitted on the UTC day of NOW (`bl_cost.spend_usd`,
-    once per item: a scenario or a job with no item adds nothing)."""
-    import bl_cost
+    """USD the finished jobs of GROUP submitted on the UTC day of NOW spent: the sum of their records' `spent_usd`, whether or not a job's
+    subject is a backlog item (a scenario's job counts too). RECORDS are the store's job records, read by the caller; ROOT is not read
+    (the callers pass the clone they submit for)."""
     day = utc_day(now)
-    items = sorted({r.get("subject") for r in records if group_of(r) == group and r.get("state") in TERMINAL
-                    and utc_day(r.get("submitted_ts", 0)) == day and kj_ops.ITEM.fullmatch(r.get("subject") or "")})
-    if not items:
-        return 0.0
-    bl_base.load_settings(root)
-    backlog = bl_base.Backlog(Path(root))
-    return round(sum(bl_cost.spend_usd(backlog, item)[0] for item in items), 6)
+    return round(sum(spent_of(r) for r in records if group_of(r) == group and r.get("state") in TERMINAL
+                     and utc_day(r.get("submitted_ts", 0)) == day), 6)
 
 
 def read_records(store):
@@ -163,15 +165,17 @@ def read_records(store):
         con.close()
 
 
-def cap_guard(placement, budget, spent):
+def cap_guard(placement, budget):
     """The function the transaction calls with the records of the store before it writes a paid job: it raises `kj_ops.OverCap` when
-    SPENT, the group's live budgets and BUDGET pass the placement's `budget_cap_usd`; None when PLACEMENT has no cap."""
+    the group's spend of the UTC day (`finished_spend`), its live jobs' budgets and BUDGET pass the placement's `budget_cap_usd`, the
+    three read from the same records; None when PLACEMENT has no cap."""
     cap = placement.get("budget_cap_usd") if isinstance(placement, dict) else None
     if cap is None or not budget:
         return None
     group = placement.get("decided_by")
 
     def guard(records):
+        spent = finished_spend(None, records, group, time.time())
         live = sum(budget_of(r) for r in records if group_of(r) == group and r.get("state") in LIVE)
         if spent + live + budget > cap:
             raise kj_ops.OverCap(f"the budget {budget:g} USD would take {group} past its cap of {cap:g} USD a day: spend today {spent:g} USD "
@@ -239,10 +243,7 @@ def submit(root, op, subject, by, options=None, store=None, placement=None):
               "by": by, "options": given, "attempt": 1, "submitted_ts": round(time.time(), 3)}
     if placement is not None:
         record["placement"] = placed(placement)
-    guard = None
-    if op in kj_ops.PAID:
-        spent = finished_spend(root, read_records(store), (placement or {}).get("decided_by"), time.time()) if (placement or {}).get("budget_cap_usd") is not None else 0
-        guard = cap_guard(placement, given["budget"], spent)
+    guard = cap_guard(placement, given["budget"]) if op in kj_ops.PAID else None
     job, deduped = enqueue(store, triple_key(clone, op, key_subject(subject, given)), record, guard)
     have = read_record(store, job) or {}
     if have.get("state", "none") == "none":
@@ -587,9 +588,7 @@ def submit_remote(root, remote, op, subject, by, options=None, placement=None):
                 attempt = int(have.get("attempt", 1)) + 1
         if not deduped:
             if op in kj_ops.PAID and (placement or {}).get("budget_cap_usd") is not None:  # not atomic: the central store has no transaction to read in
-                records = remote.records()
-                group = placement.get("decided_by")
-                cap_guard(placement, given["budget"], finished_spend(root, records, group, time.time()))(records)
+                cap_guard(placement, given["budget"])(remote.records())
             job = new_id()
             if not remote.put(key, job, revision):
                 continue  # another submit won the key

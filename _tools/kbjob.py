@@ -9,7 +9,8 @@
                                         state queued, `follow` the command line `python3 _tools/kbjob.py follow JOB`. A paid operation
                                         (bench, dispatch, begin) needs --budget USD, its most spend (exit 2 naming --budget without it);
                                         when the decision has a `budget_cap_usd`, a new job whose budget plus the group's live jobs'
-                                        budgets plus the group's spend of the UTC day passes it queues nothing and exits 1 naming the
+                                        budgets plus the group's spend of the UTC day (the `spent_usd` its finished jobs' records keep)
+                                        passes it queues nothing and exits 1 naming the
                                         three figures and the cap (`kj_store.cap_guard`). Before it queues,
                                         it asks `kj_place` (the policy at --opa, else KB_OPA_URL) where and as whom OP runs and keeps the
                                         decision in the job's record as `placement`, with `host`; a decision that cannot be had is the
