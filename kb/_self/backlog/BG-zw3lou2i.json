@@ -12,7 +12,7 @@
     "run": [
       "python3",
       "-c",
-      "import sys;sys.exit(1)"
+      "\nimport subprocess,sys,tempfile,os,io,types,contextlib\nsys.path.insert(0,\"_tools\")\nimport kg_base,kg_hooks\nd=tempfile.mkdtemp()\nsubprocess.run([\"git\",\"init\",\"-q\"],cwd=d,check=True,capture_output=True)\nsubprocess.run([\"git\",\"config\",\"core.hooksPath\",kg_hooks.HOOKS_DIR],cwd=d,check=True,capture_output=True)\nos.chmod(d+\"/.git/config\",0o444);os.chmod(d+\"/.git\",0o555)\nkg_base.KB=d;kg_hooks.KB=d\nb=io.StringIO()\ntry:\n    with contextlib.redirect_stdout(b): rc=kg_hooks.cmd_install_hooks(types.SimpleNamespace(uninstall=True))\nfinally:\n    os.chmod(d+\"/.git\",0o755);os.chmod(d+\"/.git/config\",0o644)\nsys.exit(0 if rc==1 and \"unset (\" not in b.getvalue() else 1)\n"
     ]
   },
   "repro_reason": "needs a read-only git config to fail the unset; the planted input is in the notes",
