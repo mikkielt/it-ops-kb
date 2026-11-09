@@ -7,7 +7,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "One duplicate fact pair gives one duplicate-research line however many live keys its owner holds on that article, and the check_failures count and the N duplicate research text count duplicate facts. Found by the SP-n7f53pgv review (S3 on ST-f5lbn3aw).",
+  "goal": "One duplicate fact pair gives one duplicate-research line however many live keys its owner holds on that article, so the check_failures count and the N duplicate research text count duplicate facts",
   "repro": {
     "run": [
       "python3",
