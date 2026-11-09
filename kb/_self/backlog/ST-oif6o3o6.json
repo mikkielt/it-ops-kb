@@ -141,7 +141,12 @@
         "the item's own code/ID, else one named for a descendant; the executor always runs land ID --wait-merge 0 and ignores wait_merge for the CLI (it is the job's wait bound)": "ST-oif6o3o6",
         "only the item's own code/ID; the CLI gets the job's wait_merge unchanged": "ST-oif6o3o6"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "the item's own code/ID, else one named for a descendant; the executor always runs land ID --wait-merge 0 and ignores wait_merge for the CLI (it is the job's wait bound)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "notes": "Premise (reproduces today): a code item's land is one command that waits inside the session's call: bl_land.land_pass (bl_land.py:2404) runs pass one, polls wait_merge (bl_land.py:2206, every WAIT_POLL 60 s, bound --wait-merge default 1800) and runs land_once again; the orchestrator's call, or its background shell, is held for all of it. Measured 2026-11-08 from kb/_querylog/ops (real items, 2026-10-02..11-08): wait-merge step median 2.6 s but p90 240 s, p95 458 s, max 1736 s (n=1157); a code landing's land.end median 430 s (n=133, p90 1409 s) against 103 s for a content landing (n=1701); 133 code landings ended exit 0 and 133 exit 1, the exit-1 ones median 168 s (p95 2282 s), many of them the wait-merge stop. Choice: poll in the executor with merged_on_main (read from git, not the forge CLI, as land does), because the executor can hold a thousand waiting jobs for the price of one poll loop, where today each wait holds a process; the job never merges the request: backlog.py merge ID stays the one agent merge (bl_land.py:2462 cmd_merge) and the operator's, the job only reports waiting-merge so the session can run backlog.py merge or tell the operator, then go on. The second pass is the same land command: it already finishes a merged code item as content (bl_land.py:1973 docstring), and the run-state moves landing/landed/refused stay the CLI's (bl_land.py:2378). bl_land.pending_merge reads what LAND_OPS['pending'] holds from git (the code/ID branch pushed and its commits not on the main), so a restarted executor needs no memory. Related drafts: ST-igkt3vsr (wait-merge does not count landing-lock wait, which the executor's queue removes), ST-yh5ivly4 (a request stuck preparing), ST-5l6ldosq (branch gone because it merged), ST-ep7loyre (second pass stops at fetch with no line) share the same step; none is duplicated here. Order 2026-11-08 (ask A1e21b0d155): map.csv, bl_land.py by first claim; rebase.",
