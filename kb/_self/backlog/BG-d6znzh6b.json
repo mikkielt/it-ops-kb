@@ -2,7 +2,7 @@
   "id": "BG-d6znzh6b",
   "kind": "bug",
   "title": "selfcheck and backlog.py procs still call a fresh-transcript claude session an orphan: no caller passes fresh= to bl_procs.classify",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-zobzdhwi",
   "priority": "P2",
@@ -53,6 +53,19 @@
     "parked: SP-fn7letri review"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-0f9262ec",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "e0f27f863f8245feec166ce50a57404c4504da11",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport json, os, shutil, subprocess, sys, tempfile, time, uuid\nif os.name == \"nt\":\n    print(\"check skipped: a fake claude process needs a POSIX host\"); sys.exit(0)\nR = os.getcwd(); T = os.path.realpath(tempfile.mkdtemp()); C = os.path.join(T, \"cfg\")\nenv = {k: v for k, v in os.environ.items() if not k.startswith(\"GIT_\")}\nenv.update(CLAUDE_CONFIG_DIR=C, KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"))\ndef sh(*a, cwd=T):\n    return subprocess.run(a, cwd=cwd, env=env, capture_output=True, text=True, timeout=120)\nK = os.path.join(T, \"clone\"); os.makedirs(K)\nsh(\"git\", \"init\", \"-q\", \".\", cwd=K)\nsh(\"git\", \"-c\", \"user.email=a@example.com\", \"-c\", \"user.name=n\", \"commit\", \"-q\", \"--allow-empty\", \"-m\", \"i\", cwd=K)\nshutil.copy(os.path.join(R, \"backlog.json\"), K); os.makedirs(os.path.join(K, \"kb\", \"_self\", \"backlog\"))\nos.makedirs(os.path.join(T, \"bin\")); FAKE = os.path.join(T, \"bin\", \"claude\"); os.symlink(\"/bin/sleep\", FAKE)\nWT = os.path.join(K, \".claude\", \"worktrees\", \"agent-ST-aaaaaaaa\")\nsh(\"git\", \"worktree\", \"add\", \"-q\", \"-b\", \"work/ST-aaaaaaaa\", WT, cwd=K)\nsid = str(uuid.uuid4())\npdir = os.path.join(C, \"projects\", \"\".join(c if c.isalnum() else \"-\" for c in WT)); os.makedirs(pdir)\nwith open(os.path.join(pdir, sid + \".jsonl\"), \"w\") as f:\n    f.write(json.dumps({\"type\": \"user\", \"cwd\": WT, \"sessionId\": sid, \"timestamp\": \"2026-10-26T10:00:00Z\", \"message\": {\"role\": \"user\", \"content\": \"planted-line\"}}) + \"\\n\")\nsubprocess.run([\"sh\", \"-c\", FAKE + \" 60 &\"], cwd=WT, env=env)\ntime.sleep(1.0)\ntry:\n    r = subprocess.run([sys.executable, os.path.join(R, \"_tools\", \"backlog.py\"), \"procs\"], cwd=K, env=env, capture_output=True, text=True, timeout=120)\n    rows = [x for x in r.stdout.splitlines() if \" claude \" in x]\n    print(\"\\n\".join(rows) or r.stdout[-300:] + r.stderr[-300:])\nfinally:\n    subprocess.run([\"pkill\", \"-f\", FAKE])\nsys.exit(0 if rows and all(\"orphan\" not in x for x in rows) else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "547ed68ec0a5b63e"
+      }
+    ]
+  }
 }
