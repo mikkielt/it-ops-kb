@@ -63,6 +63,11 @@ argument list there as the CLI does on a workstation, and gives a land job the w
 where `backlog.py land` finds the pushed worker branch; the jobs of one url run one at a time (`serial_key`). A job that tests.py refused over the
 seconds of its test ceiling ends failed with the reason `host condition` (`host_condition`, `note_condition`) and is not run again.
 
+A job runs as the identity its placement names (`job_env`, `kj_cred.resolve`): `none` disables every push, `group-bot` and `operator` give git a
+credential file or CI variable through a GIT_ASKPASS helper, never an argument or an environment value. A job whose identity has no usable
+credential starts no process and ends refused at the step `credential` (`refuse_credential`), the `kj_cred.Refused` message its record's `reason`.
+A job with no placement, or the decision of no policy (`decided_by` `default`), runs in the executor's environment.
+
 The job's record keeps the pid of its child (the member `pid`, written after the child starts, dropped when the job is queued
 again). Serve runs `recover` at its start and every RECOVER_S seconds, and follows each adopted child (the lease renewed
 until its pid ends) instead of starting a second process. An adopted child's exit is not known to serve, so its end is a
@@ -86,6 +91,7 @@ from pathlib import Path
 
 import coord
 import kg_lock
+import kj_cred
 import kj_follow
 import kj_land
 import kj_ops
@@ -509,9 +515,28 @@ def last_line(text):
     return lines[-1][:200] if lines else ""
 
 
+CRED_STEP = "credential"  # the step of a job refused because its identity has no usable credential
+POLICY_LESS = "default"  # the `decided_by` of the decision `kj_place` gives when no policy answered: the job runs as it did before placements
+
+
+def job_env(record, environ=None):
+    """The environment of the process of the job RECORD: ENVIRON (this process's by default) without the names an earlier job's
+    credential set, plus what `kj_cred.resolve` gives for the identity the record's placement names (a job whose placement is
+    absent, or is the decision of no policy (`decided_by` `default`), keeps the environment as it is). `kj_cred.Refused` when the
+    identity has no usable credential."""
+    environ = kj_cred.clean(dict(os.environ if environ is None else environ))
+    placed = record.get("placement")
+    if not isinstance(placed, dict) or placed.get("decided_by") == POLICY_LESS or "identity" not in placed:
+        return environ
+    return {**environ, **kj_cred.resolve(placed["identity"], placed.get("decided_by"), record.get("operator"),
+                                         kj_cred.cred_dir(environ), environ)}
+
+
 def start_child(record, clone, log):
     """Start the job's process in CLONE as the leader of a process group of its own, stdin closed, its stdout and stderr
-    appended to LOG: (the process, the size LOG had before it: where this run's output begins)."""
+    appended to LOG, in the environment `job_env` gives: (the process, the size LOG had before it: where this run's output
+    begins). `kj_cred.Refused` before anything starts when the job's identity has no usable credential."""
+    env = job_env(record)
     log.parent.mkdir(parents=True, exist_ok=True)
     start = log.stat().st_size if log.exists() else 0
     options = record.get("options")
@@ -520,7 +545,7 @@ def start_child(record, clone, log):
     argv = [sys.executable] + kj_ops.argv(record["op"], record.get("subject", ""), options)
     group = {"start_new_session": True} if os.name == "posix" else {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
     with open(log, "ab") as sink:
-        proc = subprocess.Popen(argv, cwd=clone, stdin=subprocess.DEVNULL, stdout=sink, stderr=subprocess.STDOUT, **group)
+        proc = subprocess.Popen(argv, cwd=clone, env=env, stdin=subprocess.DEVNULL, stdout=sink, stderr=subprocess.STDOUT, **group)
     return proc, start
 
 
@@ -576,11 +601,46 @@ def record_run(store, job, record, state):
         pass
 
 
+def refuse_credential(store, job, record, log, reason, out):
+    """End JOB, in running and started no process, refused at the step CRED_STEP with REASON (the `kj_cred.Refused` message, naming the
+    identity and the path or variable): kept as the member `reason` of the job's record, here and on the queue, as one line of its
+    output log and as one line printed. A job cancelled meanwhile stays cancelled."""
+    try:
+        move(store, job, "refused", step=CRED_STEP)
+    except coord.Refused as refusal:
+        if refusal.body.get("state") != "cancelled":
+            raise
+        record_run(store, job, record, "cancelled")
+        print(f"{job} {record['op']} {record.get('subject') or '-'}: cancelled", file=out, flush=True)
+        return
+    with contextlib.suppress(sqlite3.Error):
+        amend(store, job, reason=reason)
+    remote = getattr(store, "remote", None)
+    if remote is not None:
+        with contextlib.suppress(kj_ops.Refusal, coord.Refused):
+            remote.amend(job, reason=reason)
+    with contextlib.suppress(OSError):
+        log.parent.mkdir(parents=True, exist_ok=True)
+        with open(log, "a", encoding="utf-8", newline="\n") as f:
+            f.write(f"{record['op']} stopped at step {CRED_STEP}: {reason}\n")
+    record_run(store, job, record, "refused")
+    print(f"{job} {record['op']} {record.get('subject') or '-'}: refused at step {CRED_STEP}: {reason}", file=out, flush=True)
+
+
+def unstarted(store, job):
+    """The end of a job whose process did not start (`start_job` gave None): refused for a credential, else failed."""
+    return "refused" if (kj_store.read_record(store, job) or {}).get("state") == "refused" else "failed"
+
+
 def start_job(store, job, record, clone, log, out):
     """Start the child of a job already in running: (the process, the size LOG had before it) and the pid recorded in the job's record.
-    A process that cannot start moves the job to failed (exit 127), prints one line and returns (None, 0)."""
+    A process that cannot start moves the job to failed (exit 127), prints one line and returns (None, 0); a job whose identity has no
+    usable credential (`kj_cred.Refused`) starts no process and ends refused (`refuse_credential`), the same return."""
     try:
         proc, start = start_child(record, clone, log)
+    except kj_cred.Refused as error:
+        refuse_credential(store, job, record, log, str(error), out)
+        return None, 0
     except OSError as error:
         move(store, job, "failed", exit=127)
         record_run(store, job, record, "failed")
@@ -651,7 +711,7 @@ def run_job(store, job, record, clone, log, token, out):
     (kbjob.py cancel) stays cancelled, one line says so and cancelled is returned. `drain` runs its jobs by the same two steps."""
     proc, start = start_job(store, job, record, clone, log, out)
     if proc is None:
-        return "failed"
+        return unstarted(store, job)
     try:
         while True:
             try:
@@ -930,7 +990,7 @@ class LandRun(threading.Thread):
         """One pass of the CLI as a child: (exit, its output, the merge request a first pass left, or None)."""
         proc, start = start_job(self.store, self.job, self.record, self.clone, self.log, self.out)
         if proc is None:
-            raise Ended("failed")
+            raise Ended(unstarted(self.store, self.job))
         self.proc = proc
         try:
             while True:
@@ -1187,7 +1247,8 @@ def drain(store, clone, host, operator, out, slots=SLOTS, tick=None, home=None):
         log = kj_store.log_path(where, job)
         proc, start = start_job(store, job, record, where, log, out)
         if proc is None:
-            failed.append(job)
+            if unstarted(store, job) == "failed":
+                failed.append(job)
             release(job, token)
             return True
         active[job] = {"record": record, "token": token, "proc": proc, "start": start, "log": log, "renewed": time.monotonic()}
