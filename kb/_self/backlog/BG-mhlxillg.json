@@ -23,6 +23,28 @@
     "kb/_self/tools.md",
     "_tools/bench_report.py"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the records table name the paid rows' commit beside the spend?",
+      "options": [
+        "spend cell '$0.56 (at 1f6011b)' when the spend rows share one commit that is not the first row's",
+        "a separate column for the spend rows' commit"
+      ],
+      "recommendation": "spend cell '$0.56 (at 1f6011b)' when the spend rows share one commit that is not the first row's",
+      "reason": "no new column, other records unchanged",
+      "do": {
+        "spend cell '$0.56 (at 1f6011b)' when the spend rows share one commit that is not the first row's": "BG-mhlxillg",
+        "a separate column for the spend rows' commit": "BG-mhlxillg"
+      },
+      "class": "design",
+      "answer": "spend cell '$0.56 (at 1f6011b)' when the spend rows share one commit that is not the first row's",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-wv3ob5vy review"
   ],
