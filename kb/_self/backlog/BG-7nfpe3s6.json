@@ -4,6 +4,7 @@
   "title": "kbmon_otel --check-rules misses a kbmon_ name inside a YAML-quoted expr or a __name__ matcher and misreads a recording-rule name",
   "status": "draft",
   "parent": "EP-wqgicmmj",
+  "sprint": "SP-qho2eyk2",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

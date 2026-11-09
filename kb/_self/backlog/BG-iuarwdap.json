@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "The fold line of kbmon --status all for more than four sprints is one unbounded line, over 300 characters for five folded sprints, where every other row is about 100",
   "status": "draft",
+  "sprint": "SP-qho2eyk2",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

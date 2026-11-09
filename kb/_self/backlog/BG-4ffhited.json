@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "bench_retrieval.py's no-pool hint names pool build without --ask, which now lists the rows and exits 1",
   "status": "draft",
+  "sprint": "SP-qho2eyk2",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

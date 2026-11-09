@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "coord.py wait on an item's progress returns at each non-final move (working, landing), so a wait for a landing wakes the orchestrator once per intermediate state",
   "status": "draft",
+  "sprint": "SP-qho2eyk2",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",

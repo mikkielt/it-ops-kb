@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "The kbmon-pane mod's refresh in flight when /clear fires sets lastAlerts after the reset, so the new session gets no receipt until the alert set changes",
   "status": "draft",
+  "sprint": "SP-qho2eyk2",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

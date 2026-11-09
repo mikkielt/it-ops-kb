@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "coord.py digest labels a two-item intent state=done when asked by its touch or topic key and only one item is done",
   "status": "draft",
+  "sprint": "SP-qho2eyk2",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
