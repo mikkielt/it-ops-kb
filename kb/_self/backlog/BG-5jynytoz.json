@@ -2,7 +2,8 @@
   "id": "BG-5jynytoz",
   "kind": "bug",
   "title": "The pre-push hook hands guard_push the local ref only, so a push of any local branch to work/<id> on the public home passes the work-branch refusal",
-  "status": "draft",
+  "status": "todo",
+  "sprint": "SP-lwkdljxg",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -14,5 +15,11 @@
       "import os,sys,subprocess,tempfile\nsys.path.insert(0,os.path.abspath(\"_tools\"))\nimport kg_hooks, kbpublic\nd=tempfile.mkdtemp(); w=os.path.join(d,\"w\"); p=os.path.join(d,\"pub.git\"); g=lambda *x: subprocess.run([\"git\",*x],cwd=w,capture_output=True,text=True)\nsubprocess.run([\"git\",\"init\",\"-q\",\"--bare\",p],check=True); subprocess.run([\"git\",\"init\",\"-q\",w],check=True)\ng(\"config\",\"user.email\",\"jan.kowalski@corp.example.com\"); g(\"config\",\"user.name\",\"jan.kowalski\"); g(\"commit\",\"-q\",\"--allow-empty\",\"-m\",\"base\"); g(\"remote\",\"add\",\"pub\",p); g(\"config\",\"kb.publishRemote\",\"pub\")\nsha=g(\"rev-parse\",\"HEAD\").stdout.strip()\nkg_hooks.KB=w\nr=kg_hooks.hook_pre_push([\"pub\",p], f\"refs/heads/feature {sha} refs/heads/work/ST-aaaaaaaa {'0'*40}\\n\", lambda *a, **k: 0, lambda: [])\nassert r==1, f\"a push of refs/heads/feature to refs/heads/work/ST-aaaaaaaa on the public home is not refused (hook returned {r})\"\n"
     ]
   },
+  "touches": [
+    "_tools/kg_hooks.py",
+    "_tools/kbpublic.py",
+    "kb/_self/git.md"
+  ],
+  "notes": "Taken into SP-lwkdljxg 2026-11-09: ST-ugkw5mt3 added the work-branch refusal to guard_push; this bug closes the gap in the hook that feeds it. Touches from referrers guard_push (kg_hooks.py:132, kbpublic.py:1174) plus git.md, which describes the pre-push guard.",
   "filed_in": "clone-0ea70e5c"
 }
