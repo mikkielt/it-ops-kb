@@ -23,6 +23,27 @@
   "depends_on": [
     "BG-nglu4rg4"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does is_whole_suite reuse the one helper for what narrows a tests.py run?",
+      "options": [
+        "tests.run_scope",
+        "bl_intake.heavy_check"
+      ],
+      "recommendation": "tests.run_scope",
+      "reason": "it is the function that gives the test.run mode, so a named file, -k and --changed agree with it, and heavy_check does not see named files or -m",
+      "do": {
+        "tests.run_scope": "BG-kcfbcll2",
+        "bl_intake.heavy_check": "BG-kcfbcll2"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "tests.run_scope",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-qlpfcgs2 review"
   ],

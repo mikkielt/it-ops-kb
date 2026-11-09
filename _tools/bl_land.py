@@ -508,10 +508,18 @@ def land_siblings(bl, iid):
 
 
 def is_whole_suite(argv):
-    """True when the check is a whole-suite tests.py run: the script with no selection (-k, named files, --changed)."""
+    """True when the check is a whole-suite tests.py run: the script whose own `tests.run_scope` gives mode `full` (no
+    -k, named file or --changed) and that selects no test by -m and is no report-only form (--ceiling, --show-profile,
+    --set-profile, --write-lint-baseline), so a worker count (-n 2), -x or --durations=5 is still a whole run."""
     argv = [str(x) for x in argv]
-    return (len(argv) > 1 and Path(argv[1]).name == "tests.py"
-            and all(x == "--no-reuse" for x in argv[2:]))
+    if len(argv) < 2 or Path(argv[1]).name != "tests.py":
+        return False
+    args = argv[2:]
+    if any(x in ("-m", "--ceiling", "--show-profile", "--set-profile", "--write-lint-baseline")
+           or (x.startswith("-m") and len(x) > 2 and not x.startswith("--")) for x in args):
+        return False
+    import tests  # imported where `done` reads it: the one copy of what narrows a run (run_scope, path_args)
+    return tests.run_scope([x for x in args if x != "--no-reuse"], "--changed" in args, False) == "full"
 
 
 def loaded_host_for_suite(checks, load=None, cores=None):
