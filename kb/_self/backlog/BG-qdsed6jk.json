@@ -2,7 +2,7 @@
   "id": "BG-qdsed6jk",
   "kind": "bug",
   "title": "A server executor clones any url a job names and runs that repository's tools with the placed identity",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-lwkdljxg",
   "priority": "P1",
   "rank": 0,
@@ -94,6 +94,19 @@
     }
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-432be86e",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "e236c972d24b0fb359f1650023424a07f08d607f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,inspect; sys.path.insert(0,'_tools'); import kj_exec; assert 'allowed' in inspect.signature(kj_exec.Home).parameters"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
