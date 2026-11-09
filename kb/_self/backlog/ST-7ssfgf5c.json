@@ -6,7 +6,7 @@
   "sprint": "SP-moxpl354",
   "priority": "P3",
   "rank": 0,
-  "goal": "planning a story that changes the leak scan or a guard lists every path that hands content outside the clone (each caller of kbpublic.file_hits and kbcommon.leak_hits, and whether it passes shipped=True) in the item's notes, and a gate is asked for each path the goal leaves open, before the start gate",
+  "goal": "planning a story that changes the leak scan or a guard lists every outbound path, each path that hands content outside the clone (each caller of kbpublic.file_hits and of kbcommon.leak_hits, with whether it passes shipped=True), in the item's notes; a gate is asked for each outbound path the goal leaves open, before the start gate",
   "checks": [
     {
       "run": [
@@ -18,17 +18,18 @@
     {
       "run": [
         "python3",
+        "-c",
+        "import sys,pathlib\nt=pathlib.Path('skills/sprint/SKILL.md').read_text(encoding='utf-8')\ns=t.split('## plan',1)[1].split('## start',1)[0].lower()\nmiss=[w for w in ['outbound path the goal leaves open'] if w not in s]\nsys.exit('not yet: plan section lacks '+', '.join(miss) if miss else 0)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
         "_tools/backlog.py",
         "referrers",
         "file_hits",
         "leak_hits"
       ]
-    }
-  ],
-  "clauses": [
-    {
-      "clause": "planning a story that changes the leak scan or a guard lists every path that hands content outside the clone (each caller of kbpublic.file_hits and kbcommon.leak_hits",
-      "check": 0
     }
   ],
   "touches": [
