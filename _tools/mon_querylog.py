@@ -128,8 +128,8 @@ def collect(ctx):
 
 
 def when(text):
-    """`2026-10-18T10:20:30Z` as `2026-10-18 10:20`."""
-    return str(text)[:16].replace("T", " ") if text else "-"
+    """`2026-10-18T10:20:30Z` as `2026-10-18 10:20 UTC`."""
+    return str(text)[:16].replace("T", " ") + " UTC" if text else "-"
 
 
 def spool_row(data):
@@ -161,8 +161,8 @@ def alerts(data):
     """The alerts of the panel's data: one `delivery` alert (id `querylog.delivery`) while the log's last apply outcome that
     tried a push is a refused run or a failed gate, whatever lines of other runs follow it, unless the panel counts no
     undelivered entry (a concurrent run's push delivered the rows, so the refusal left nothing waiting). A fetch that failed is a `! `
-    row only, and a later push that delivered clears it (the outcome is then `pushed`). `since` is the time (UTC, as
-    `YYYY-MM-DD HH:MM`) of the oldest run file the delivery ref lacks, which a refusal keeps undelivered and so does not
+    row only, and a later push that delivered clears it (the outcome is then `pushed`). `since` is the time (as
+    `YYYY-MM-DD HH:MM UTC`) of the oldest run file the delivery ref lacks, which a refusal keeps undelivered and so does not
     move while it stands; else the log's last write."""
     last = data.get("last_delivery")
     if not isinstance(last, dict) or last.get("outcome") != "refused" or data.get("undelivered") == 0:
