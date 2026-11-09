@@ -794,16 +794,16 @@ _azurerm_tag = {}
 
 def azurerm_latest_tag():
     """The git tag of the newest azurerm release (`v5.10.0`), from the registry's provider document, asked once for the
-    process after it answered; "" when the registry does not answer with one."""
-    if not _azurerm_tag:
+    process whether it answered with one or failed; "" when the registry does not answer with one."""
+    if "tag" not in _azurerm_tag:
         r = request("https://registry.terraform.io/v1/providers/hashicorp/azurerm")
         try:
             tag = json.loads(r["body"].decode("utf-8")).get("tag") if r["status"] == 200 else ""
-        except ValueError:
+        except (ValueError, AttributeError):
             tag = ""
-        if isinstance(tag, str) and re.fullmatch(r"v\d+(?:\.\d+)*", tag):
-            _azurerm_tag["tag"] = tag
-    return _azurerm_tag.get("tag", "")
+        ok = isinstance(tag, str) and re.fullmatch(r"v\d+(?:\.\d+)*", tag)
+        _azurerm_tag["tag"] = tag if ok else ""
+    return _azurerm_tag["tag"]
 
 
 def raw_url(url, row):
