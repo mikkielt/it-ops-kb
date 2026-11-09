@@ -7,7 +7,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "gate remove refuses a gate of a TERMINAL_CLASSES class (ceiling) in an agent session (bl_authority.in_agent_session) whatever --by says, as answer does, naming the terminal route; review gap G8.",
+  "goal": "gate remove refuses a gate of a TERMINAL_CLASSES class (ceiling) in an agent session (bl_authority.in_agent_session) whatever --by says, as answer does",
   "repro": {
     "run": [
       "python3",
@@ -28,6 +28,6 @@
   "links": [
     "parked: SP-lmpjclxz review"
   ],
-  "notes": "Order: same file bl_items.py as BG-s7smga3g and same test_authority.py as BG-a65lzrjf.",
+  "notes": "Order: same file bl_items.py as BG-s7smga3g and same test_authority.py as BG-a65lzrjf. Premise reproduces on origin/main (precheck 2026-11-09). Review gap G8 of SP-lmpjclxz. Same fix as the draft story ST-jiz53bwh (gate remove of a ceiling-class gate): the story is left to the operator to merge or drop after this lands; its check names an existing test selection.",
   "filed_in": "clone-0ea70e5c"
 }
