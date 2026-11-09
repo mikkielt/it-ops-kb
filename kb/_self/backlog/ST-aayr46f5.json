@@ -1,0 +1,25 @@
+{
+  "id": "ST-aayr46f5",
+  "kind": "story",
+  "title": "A source a refresh read by hand is dated through one factdiff command, not a scratch census log",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "factdiff.py (or census.py) takes a source id and the fact lines a person or agent read on its current page and dates the source as confirmed, writing the same log row a census writes; found 2026-11-09 when a refresh run had to write a scratch census log and run census.py confirm to date 8 sources it had read by hand",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/factdiff.py",
+        "confirm",
+        "-h"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "kb/_self/web-sources.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
