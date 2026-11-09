@@ -1,0 +1,22 @@
+{
+  "id": "BG-d6ku6pkl",
+  "kind": "bug",
+  "title": "The session-load Setup of the benchmarks report says arm B replays kbmon.py --once and --status all, though PANE_COMMANDS is now --once --shared --max-age 55, and does not say the recorded arm B figures used plain --once",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/_self/reports/benchmarks.md Setup names the pane commands arm B replays as PANE_COMMANDS holds them and says the figures recorded before 2026-11-09 were taken with plain --once",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; t=open(\"kb/_self/reports/benchmarks.md\",encoding=\"utf-8\").read(); ok=\"--max-age 55\" in t; print(ok); sys.exit(0 if ok else 1)"
+    ]
+  },
+  "repro_reason": "the defect is the report's Setup text, which a text check reads",
+  "touches": [
+    "kb/_self/reports/benchmarks.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
