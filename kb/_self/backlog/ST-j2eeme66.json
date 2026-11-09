@@ -23,7 +23,9 @@
     }
   ],
   "touches": [
-    ".claude/skills/kb-sprint/SKILL.md"
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/maintaining.md"
   ],
   "links": [
     "parked: SP-6jfnx5i3 close"
