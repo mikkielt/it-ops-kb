@@ -46,7 +46,12 @@
         "done moves a key at claimed to landed; reconcile reads the deleting commit's parent": "BG-wcgmj4zu",
         "done moves every item's key to landed, reconcile reads the close commit message": "BG-wcgmj4zu"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "done moves a key at claimed to landed; reconcile reads the deleting commit's parent",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "links": [
