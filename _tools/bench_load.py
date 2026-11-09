@@ -31,7 +31,8 @@ WORKER_ARMS = ("worker",)  # the arms whose hooks run in the environment bl_disp
 SESSION_LEASE = "session/"  # coord.py's key prefix of a session's presence lease
 WORKER_KEYS = ("KB_OPERATOR", "KB_ROLE", "KB_UNWATCHED")  # what that environment sets on top of the host's own
 PANE_MOD = ".claude/skills/kbmon-pane/hooks/register.tsx"  # the mod whose FIRST_MS and REFRESH_MS the pane commands follow
-PANE_COMMANDS = (("--once",), ("--status", "all"))  # what the mod's refresh runs, in order, as `python3 _tools/kbmon.py ...`
+PANE_COMMANDS = (("--once", "--shared", "--max-age", "55"), ("--status", "all"))  # what the mod's refresh runs, in order, as `python3 _tools/kbmon.py ...` (its SHARED_MAX_AGE_S is REFRESH_MS less 5 s)
+SHARED_SNAPSHOT = Path("_cache") / "kbmon"  # where `kbmon.py --once --shared` keeps its one snapshot, under the clone (its own main checkout)
 PANE_COLUMNS = "80"  # the mod's DEFAULT_COLUMNS: COLUMNS of a pane run
 WINDOW_S = 150  # seconds of a phase of arm B: the pane's first run at FIRST_MS and then one every REFRESH_MS, so three runs
 CAPTURE_CLASSES = ("kb-tools", "git", "lsof", "claude", "fseventsd", "other")  # the classes of an fs_usage capture, by process name
@@ -265,9 +266,12 @@ def intake_hooks(hooks):
 
 def reset(clone):
     """The clone's working tree as the checkout left it, whatever a replay's hooks wrote, and the intake hook's drift
-    cursor removed, so each replay's drift scan starts at the same item instead of where the replay before it stopped."""
+    cursor removed, so each replay's drift scan starts at the same item instead of where the replay before it stopped;
+    the shared kbmon snapshot too, so the pane's first run of a window writes it as a new session's does and does not
+    serve the warm-up's or the window before's."""
     git("checkout", "-q", "--", ".", cwd=clone)
     git("clean", "-fdq", cwd=clone)
+    shutil.rmtree(Path(clone) / SHARED_SNAPSHOT, ignore_errors=True)
     (Path(clone) / git("rev-parse", "--git-path", "kb-intake-drift", cwd=clone)).unlink(missing_ok=True)
 
 
@@ -1202,7 +1206,7 @@ def s_session_load(b):
                                                                if arm in PANE_ARMS else "") + (f"; the sum of {n} sessions" if n > 1 else ""))
         if arm in PANE_ARMS:
             b.row("session-load", f"{phase} all{sfx}", arm, "pane_runs", statistics.median(r["pane_runs"] for r in reps), len(reps),
-                  note=f"{PANE_COMMANDS[0][0]} then {' '.join(PANE_COMMANDS[1])}, the first after {first_s:g} s, then every "
+                  note=f"{' '.join(PANE_COMMANDS[0])} then {' '.join(PANE_COMMANDS[1])}, the first after {first_s:g} s, then every "
                   f"{every:g} s over a window of {window:g} s; a tick that falls during a run does nothing")
         b.row("session-load", f"{phase} replay{sfx}", arm, "wall_s", statistics.median(r["wall_s"] for r in reps), len(reps),
               note=f"the longest of {n} sessions that ran at once" if n > 1 else "")

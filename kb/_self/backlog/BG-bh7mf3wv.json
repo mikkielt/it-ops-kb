@@ -23,6 +23,28 @@
   "depends_on": [
     "BG-4cq32a53"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does arm B keep the shared kbmon snapshot from serving the first measured pane run?",
+      "options": [
+        "reset removes _cache/kbmon of the clone before each replay",
+        "warm_pane runs with --max-age 0 and nothing else changes"
+      ],
+      "recommendation": "reset removes _cache/kbmon of the clone before each replay",
+      "reason": "the warm-up and the window before leave a snapshot under 55 s old that would serve the first run, which a new session's mod does not see",
+      "do": {
+        "reset removes _cache/kbmon of the clone before each replay": "BG-bh7mf3wv",
+        "warm_pane runs with --max-age 0 and nothing else changes": "BG-bh7mf3wv"
+      },
+      "class": "design",
+      "answer": "reset removes _cache/kbmon of the clone before each replay",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-wpttdu7u review"
   ],
