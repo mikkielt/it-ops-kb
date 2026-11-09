@@ -34,7 +34,8 @@
   ],
   "depends_on": [
     "ST-aayr46f5",
-    "ST-j3y2gugk"
+    "ST-j3y2gugk",
+    "BG-7zpe7p3w"
   ],
   "links": [
     "parked: SP-yojt6y7v run"
