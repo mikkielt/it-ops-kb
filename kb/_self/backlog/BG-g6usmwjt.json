@@ -21,8 +21,13 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "depends_on": [
+    "BG-s7smga3g",
+    "BG-a65lzrjf"
+  ],
   "links": [
     "parked: SP-lmpjclxz review"
   ],
+  "notes": "Order: same file bl_items.py as BG-s7smga3g and same test_authority.py as BG-a65lzrjf.",
   "filed_in": "clone-0ea70e5c"
 }
