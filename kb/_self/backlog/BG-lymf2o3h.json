@@ -1,0 +1,23 @@
+{
+  "id": "BG-lymf2o3h",
+  "kind": "bug",
+  "title": "A stale feedback.ids takeover guard is removed by path, so a live guard can be deleted and two takers hold the lock",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "ql_capture._take_stale_ids_lock removes a stale takeover guard only while it still holds the remover's own token, so two takers never both hold feedback.ids.lock when a dead taker left its guard",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.exit(1)"
+    ]
+  },
+  "repro_reason": "a race of eight threads over a dead guard: three of a hundred rounds gave two holders in the reviewer's measurement, so no single run fails every time",
+  "touches": [
+    "_tools/ql_capture.py",
+    "kb/_self/querylog.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
