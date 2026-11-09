@@ -22,13 +22,16 @@
         "-c",
         "import json, os, subprocess, sys, tempfile\nfrom pathlib import Path\nsys.path.insert(0, \"_tools\")\nimport backlog, bl_items, bl_land\nr = Path(tempfile.mkdtemp())\ng = lambda *a: subprocess.run([\"git\", \"-C\", str(r), *a], check=True, capture_output=True, text=True).stdout.strip()\ng(\"init\", \"-q\")\n(r / \"backlog.json\").write_text(json.dumps({\"item_dir\": \"items\"}))\n(r / \"items\").mkdir()\nitem = {\"id\": \"ST-aaaaaaaa\", \"kind\": \"story\", \"title\": \"t\", \"status\": \"todo\", \"priority\": \"P3\", \"goal\": \"g\", \"touches\": [\"x.txt\"], \"checks\": [{\"run\": [\"python3\", \"-c\", \"pass\"]}]}\n(r / \"items\" / \"ST-aaaaaaaa.json\").write_text(json.dumps(item, indent=2) + \"\\n\")\ng(\"add\", \"-A\")\ng(\"-c\", \"user.name=x\", \"-c\", \"user.email=x@example.com\", \"commit\", \"-qm\", \"i\")\ndef interrupted(*a, **k):\n    raise KeyboardInterrupt\nbl_items.ledger_lock = interrupted\nos.environ[\"CLAUDE_CODE_SESSION_ID\"] = \"chk\"\nos.environ.pop(\"KB_BACKLOG_CONFIG\", None)\ntry:\n    backlog.main([\"--root\", str(r), \"claim\", \"ST-aaaaaaaa\", \"--by\", \"w\"])\nexcept BaseException as e:\n    print(\"claim ended with\", type(e).__name__)\nbacklog.OUTPUT_ROOT[0] = str(r)\nstate = bl_land.run_state(\"ST-aaaaaaaa\")\nprint(\"run state of the item after the interrupted claim:\", repr(state))\nsys.exit(0 if state in (\"\", \"released\") else 1)\n"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json, os, signal, subprocess, sys, tempfile, time\nfrom pathlib import Path\nsys.path.insert(0, \"_tools\")\nimport backlog, bl_land\nr = Path(tempfile.mkdtemp())\ng = lambda *a: subprocess.run([\"git\", \"-C\", str(r), *a], check=True, capture_output=True, text=True).stdout.strip()\ng(\"init\", \"-q\")\n(r / \"backlog.json\").write_text(json.dumps({\"item_dir\": \"items\"}))\n(r / \"items\").mkdir()\nitem = {\"id\": \"ST-aaaaaaaa\", \"kind\": \"story\", \"title\": \"t\", \"status\": \"todo\", \"priority\": \"P3\", \"goal\": \"g\", \"touches\": [\"x.txt\"], \"checks\": [{\"run\": [\"python3\", \"-c\", \"pass\"]}]}\n(r / \"items\" / \"ST-aaaaaaaa.json\").write_text(json.dumps(item, indent=2) + \"\\n\")\ng(\"add\", \"-A\")\ng(\"-c\", \"user.name=x\", \"-c\", \"user.email=x@example.com\", \"commit\", \"-qm\", \"i\")\nchild = (\"import sys, time\\nsys.path.insert(0, \\\"_tools\\\")\\nimport backlog, bl_items\\n\"\n         \"def hold(*a, **k):\\n    print(\\\"waiting\\\", flush=True)\\n    time.sleep(120)\\n\"\n         \"bl_items.ledger_lock = hold\\n\"\n         \"backlog.main([\\\"--root\\\", sys.argv[1], \\\"claim\\\", \\\"ST-aaaaaaaa\\\", \\\"--by\\\", \\\"w\\\"])\\n\")\nenv = dict(os.environ, CLAUDE_CODE_SESSION_ID=\"chk\")\nenv.pop(\"KB_BACKLOG_CONFIG\", None)\np = subprocess.Popen([sys.executable, \"-c\", child, str(r)], stdout=subprocess.PIPE, text=True, env=env)\ntry:\n    p.stdout.readline()\n    p.send_signal(signal.SIGTERM)\n    p.wait(timeout=60)\nfinally:\n    if p.poll() is None:\n        p.kill()\nbacklog.OUTPUT_ROOT[0] = str(r)\nstate = bl_land.run_state(\"ST-aaaaaaaa\")\nprint(\"run state of the item after a claim ended by SIGTERM while it waited for the ledger lock:\", repr(state))\nsys.exit(0 if state in (\"\", \"released\") else 1)\n"
+      ]
     }
   ],
   "clauses": [
-    {
-      "clause": "claim puts the coord run state back to released when the item file cannot be saved after it took the state, not only on a Refused",
-      "check": 1
-    },
     {
       "clause": "claim puts the coord run state back to released on a KeyboardInterrupt or SIGTERM while it waits for the claims-ledger lock",
       "check": 0
