@@ -326,6 +326,15 @@ def claim_waits(bl, iid, by):
     return [x for x in waits(bl, iid, any_sprint=True, by=by) if not x.startswith(ok)]
 
 
+def claim_on_disk(bl, iid, by):
+    """True when the item's file on disk is `doing` and claimed by `by`: the claim was saved."""
+    try:
+        item = json.loads((bl.dir / f"{iid}.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return False
+    return isinstance(item, dict) and item.get("status") == "doing" and item.get("claimed_by") == by
+
+
 def cmd_claim(bl, a):
     iid = need(bl, a.id)
     it = bl.items[iid]
@@ -413,7 +422,10 @@ def cmd_claim(bl, a):
             except OSError:
                 recorded = False  # the record guards the next claim; a checkout it cannot be written in is not refused
     except BaseException:  # a refusal, an item file that cannot be saved, an interrupt or a SIGTERM
-        if moved:
+        # the state goes back only while the item file does not hold this claim: once it was saved as doing for this
+        # claimer, the claim stands (state `claimed`) and an interrupt after it, in the ledger write, leaves both in
+        # agreement; the file on disk is read, since a save that an interrupt cut short may or may not have written it
+        if moved and not claim_on_disk(bl, iid, a.by):
             move_run(iid, "released", "claim")
         raise
     finally:
