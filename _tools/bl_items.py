@@ -604,7 +604,7 @@ def cmd_answer(bl, a):
         who, role = operator_who()
         if who:
             g["operator"], g["role"] = who, role
-        if held in bl_authority.OPERATOR_CLASSES and disp != "hold" and bl_authority.in_agent_session():
+        if disp == "block" and bl_authority.in_agent_session():
             # taken, not refused: the operator re-confirms it from a terminal (horizon, review); a gate its item's
             # touches alone hold is none of those: its confirmation stands
             g["agent_session"] = True
