@@ -1,0 +1,22 @@
+{
+  "id": "ST-bnvclfdq",
+  "kind": "story",
+  "title": "Planning: a bug whose fix changes a documented behaviour names each doc that states the old behaviour in its touches",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the plan step runs a text search of kb/_self for the old behaviour's phrase and puts each doc it finds in the item's touches before the start gate, so the worker is not stopped for a doc outside them (SP-yriisdti: BG-wcgmj4zu changed what done does with a claimed key and kb/_self/coordination.md stated the old rule)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.exit('to fill in at planning')"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
