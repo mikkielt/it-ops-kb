@@ -2,7 +2,7 @@
   "id": "ST-7ssfgf5c",
   "kind": "story",
   "title": "A leak or guard story's plan lists every outbound path before the start gate",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-moxpl354",
   "priority": "P3",
   "rank": 0,
@@ -52,5 +52,7 @@
     "parked: SP-ep7ck2ab close"
   ],
   "notes": "Parked draft from the SP-ep7ck2ab close retrospective (night manager c9419db9, operator-delegated, 2026-11-09). Its check reads the rule text only: the planner adds a check that runs the behaviour on a planted input before the start gate. Retrospective item R6. The referrers check passes before the work on purpose: it runs the command form the rule text gives (referrers with a plain symbol name), so the rule's own command is proven to exit 0; the plan-section check beside it fails until the text is written.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-a1b2c3d4",
+  "operator": "op-f618a13e"
 }
