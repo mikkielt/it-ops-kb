@@ -63,7 +63,9 @@
       },
       "class": "design",
       "answer": "The closing text opens with the documented line 'Agent terminated early due to an API error'",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
