@@ -27,6 +27,10 @@
   "clauses": [
     {
       "clause": "landing_lock removes a ticket it created on any interrupt, also one that lands between os.open and the assignment of the ticket name",
+      "check": 1
+    },
+    {
+      "clause": "landing_lock restores the SIGTERM handler it replaced, on a normal exit and on an interrupt in the same window",
       "check": 0
     }
   ],
