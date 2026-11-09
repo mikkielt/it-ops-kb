@@ -23,6 +23,29 @@
   "depends_on": [
     "BG-yfvjzhkr"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which kb paths does run_commit compare against the merge-base?",
+      "options": [
+        "the whole kb tree",
+        "only kb/public"
+      ],
+      "recommendation": "the whole kb tree",
+      "reason": "the goal names the kb tree, and a root other than public (a team root, _self) is also measured by the clone's kb scenarios",
+      "do": {
+        "the whole kb tree": "BG-lwalma2o",
+        "only kb/public": "BG-lwalma2o"
+      },
+      "class": "design",
+      "answer": "the whole kb tree",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "links": [
     "parked: SP-bpjqqauu review"
   ],

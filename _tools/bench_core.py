@@ -240,18 +240,19 @@ def today():
 
 
 def run_commit():
-    """The commit a run records: the merge-base of HEAD and origin/main when HEAD's `_tools` and `.claude` trees equal
-    that commit's (the run measures what main holds, and the commit stays on main when `land` rebases the worker's
-    branch), else HEAD, said on stderr to be the branch's, which a rebase rewrites."""
+    """The commit a run records: the merge-base of HEAD and origin/main when HEAD's `_tools`, `.claude` and `kb` trees
+    equal that commit's (the run measures what main holds, code and kb articles alike, and the commit stays on main
+    when `land` rebases the worker's branch), else HEAD, said on stderr to be the branch's, which a rebase rewrites."""
     head = git("rev-parse", "--short=7", "HEAD", cwd=HOME)
     base = subprocess.run(["git", "merge-base", "HEAD", "origin/main"], cwd=str(HOME), capture_output=True, text=True,
                           encoding="utf-8").stdout.strip()
     if not base:
         return head
-    same = subprocess.run(["git", "diff", "--quiet", base, "HEAD", "--", "_tools", ".claude"], cwd=str(HOME)).returncode == 0
+    same = subprocess.run(["git", "diff", "--quiet", base, "HEAD", "--", "_tools", ".claude", "kb"],
+                          cwd=str(HOME)).returncode == 0
     if same:
         return git("rev-parse", "--short=7", base, cwd=HOME)
-    print(f"bench: the record's commit {head} is the branch's HEAD, whose _tools or .claude differ from origin/main's "
+    print(f"bench: the record's commit {head} is the branch's HEAD, whose _tools, .claude or kb differ from origin/main's "
           "merge-base; a rebase (land) rewrites it", file=sys.stderr)
     return head
 
