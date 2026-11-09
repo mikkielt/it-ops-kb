@@ -3,7 +3,7 @@ topic: gitlab/commit-signing-and-provenance
 priority: P3
 applies_to: "GitLab 19.x docs (gitlab-org/gitlab master @9f1632e2, 2026-09-27; protected branches and approval rules @56c82a97); SLSA v1.2; GitHub deploy keys and GitHub App installation tokens (docs.github.com, 2026-10-19)"
 retrieved_utc: 2026-10-20
-sources: [S-anknmecs, S-tt4wcwww, S-4kcovuch, S-27g42e5z, S-jw2of5h6, S-wzatkg4o, S-xx6xkm6f, S-45u5kgbq, S-jut4uqct, S-hthqd5dx, S-gqe643np, S-gfhrhfsb, S-oroizj3k, S-lu25cylz, S-cfpw3yy4, S-yg2mm5c6, S444, S442, S440, S-mgxxzq3i, S-zsl52tpy, S-ucjfr2m7, S-hvhro6n5, S-l6ia2wz4, S-243c6khs, S-3466yhgq, S-6sw5hnns, S-ziyhuwyc, S-5636dvek, S-k6iukhsi, S-7qi3b6ep, S-ijgc3zl2, S-tvl66qw4, S-66m3y7bm, S-3mxr7lgi, S-zbabcugt, S-4moobwvp, S-fkmmprdf, S-yhod6baa]
+sources: [S-anknmecs, S-tt4wcwww, S-4kcovuch, S-27g42e5z, S-jw2of5h6, S-wzatkg4o, S-xx6xkm6f, S-45u5kgbq, S-jut4uqct, S-hthqd5dx, S-gqe643np, S-gfhrhfsb, S-oroizj3k, S-lu25cylz, S-cfpw3yy4, S-yg2mm5c6, S444, S442, S440, S-mgxxzq3i, S-zsl52tpy, S-ucjfr2m7, S-hvhro6n5, S-l6ia2wz4, S1523, S-243c6khs, S-3466yhgq, S-6sw5hnns, S-ziyhuwyc, S-5636dvek, S-k6iukhsi, S-7qi3b6ep, S-ijgc3zl2, S-tvl66qw4, S-66m3y7bm, S-3mxr7lgi, S-zbabcugt, S-4moobwvp, S-fkmmprdf, S-yhod6baa]
 status: partial
 ---
 
@@ -99,7 +99,7 @@ GitLab verifies signatures on commits and tags made with an SSH key, a GPG key o
 ### GitLab CI provenance
 - Runner artifact provenance metadata is switched on with the variable `RUNNER_GENERATE_ARTIFACTS_METADATA: "true"` (global or per job) and is written as a plain-text `{ARTIFACT_NAME}-metadata.json` (default `artifacts-metadata.json`) stored with the artifact. [DOC S-hvhro6n5]
 - The file is an in-toto v0.1 Statement with an SLSA 1.0 provenance predicate: `subject` names and `sha256` of the artifacts, `buildType` the runner's `PROVENANCE.md` at its version, `builder.id` the runner's page, `externalParameters` the variable names with empty values (to protect secrets) plus `source` (project URL) and `entryPoint` (job name), and `resolvedDependencies[0]` the project URL with the commit revision. [DOC S-hvhro6n5]
-- GitLab's SLSA level 3 attestations (Ultimate, GitLab.com, Experiment, flag `slsa_provenance_statement` off by default) need a public project, so nothing leaks to Rekor, a job in the `build` stage, and `ATTEST_BUILD_ARTIFACTS: true` (artifacts of 100 MB at most) or `ATTEST_CONTAINER_IMAGES: true` with `IMAGE_DIGEST`; results are listed under **Build > Attestations** and in the Attestations API. [DOC S-l6ia2wz4]
+- GitLab's SLSA level 3 attestations (Ultimate, GitLab.com, Experiment, flag `slsa_provenance_statement` off by default) need, at the pinned commit, a public project (no `SIGSTORE` attestation is made for a private or internal project, so nothing leaks to Rekor; the docs page read 2026-11-09 adds `LOCAL_CA` attestations for private and internal projects and for GitLab Self-Managed and Dedicated from GitLab 19.6), a job in the `build` stage, and `ATTEST_BUILD_ARTIFACTS: true` (artifacts of 100 MB at most) or `ATTEST_CONTAINER_IMAGES: true` with `IMAGE_DIGEST`; results are listed under **Build > Attestations** and in the Attestations API. [DOC S-l6ia2wz4, S1523]
 - An attested artifact or container is checked with `glab attestation verify <file-or-container> -p <group>/<project>`. [DOC S-l6ia2wz4]
 - GitLab publishes the `buildType` of its attestations: external parameters `source`, `entryPoint` and `variables`, the values of `CI_PIPELINE_ID`, `CI_PIPELINE_URL`, `CI_JOB_ID`, `CI_JOB_URL`, `CI_JOB_NAME`, `CI_PROJECT_ID` and `CI_PROJECT_NAME`. [DOC S-243c6khs]
 ### How it fits
@@ -120,7 +120,7 @@ GitLab verifies signatures on commits and tags made with an SSH key, a GPG key o
 | Push rule **Reject unsigned commits** | Premium, Ultimate | all | S-lu25cylz |
 | Service accounts | Free, Premium, Ultimate | all | S-yg2mm5c6 |
 | Runner artifact provenance metadata (no signature described) | every tier | all | S-hvhro6n5 |
-| SLSA L3 provenance attestations | Ultimate, Experiment | GitLab.com, public projects | S-l6ia2wz4 |
+| SLSA L3 provenance attestations | Ultimate, Experiment | GitLab.com, public projects (from 19.6 also private and internal projects with `LOCAL_CA`, and Self-Managed) | S-l6ia2wz4, S1523 |
 
 See also `gitlab/multi-repository-layouts.md` (submodules and forks for knowledge kept in several repositories), `gitlab/protected-branches-tags.md` (push and merge lists, push rules), `gitlab/mr-approvals.md` (approval settings), `gitlab/deploy-keys-and-tokens.md` (deploy keys and group access tokens), `gitlab/git-trailers-and-hooks.md` (commit trailers such as `Co-Authored-By`) and `security/supply-chain.md` (SLSA levels and GitLab's attestation tiers for a Python package).
 
