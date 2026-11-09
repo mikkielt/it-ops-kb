@@ -378,7 +378,9 @@ def clause_map(bl, iid):
     return lines, warns, unread
 
 
-DELIVERY_READ = re.compile(r"_querylog|\bbl_cost\b|\bbacklog\.py\W+(?:--root\W+\S+\W+)?cost\b")
+# `_querylog` as a whole path component (`kb/_querylog/...`), not the tail of `bench_querylog.py`, `mon_querylog`,
+# `test_querylog_x.py` or `kb_querylog`.
+DELIVERY_READ = re.compile(r"(?<!\w)_querylog(?!\w)|\bbl_cost\b|\bbacklog\.py\W+(?:--root\W+\S+\W+)?cost\b")
 
 
 def after_merge_proof(bl, iid):
