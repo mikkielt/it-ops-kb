@@ -36,5 +36,6 @@
   "links": [
     "parked: SP-bpjqqauu close"
   ],
+  "notes": "The referrers check passes before the work on purpose: it runs the command form the rule text gives (referrers with a plain symbol name), so the rule's own command is proven to exit 0; the plan-section check beside it fails until the text is written.",
   "filed_in": "clone-0ea70e5c"
 }
