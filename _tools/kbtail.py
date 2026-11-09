@@ -14,7 +14,7 @@ Each line starts with the session's role and item (`worker ST-3k2m5n7q`, `intera
 sessions have the same words, never a raw session id) in a column as wide as the longest; a subagent's lines
 (`<session>/subagents/agent-*.jsonl`) are indented under its session's. `--item ID` and `--role ROLE` keep the matching
 sessions only. A followed session whose process ends gets a line `HH:MM:SS ended` within 2 seconds and the others go on. The
-session list is read again when the coord store has changed (a change less than 5 seconds after a read is acted on at the 5th second), after a session ended and every 30
+session list is read again when the coord store of the clone at `--root` has changed (a change less than 5 seconds after a read is acted on at the 5th second), after a session ended and every 30
 seconds, for sessions that began since. At most 16 sessions are followed, the rest named in one line; one more line counts
 the live sessions with no session id, which cannot be followed, and one names those with a session id whose transcript is not
 found. `--history N` is each file's.
@@ -32,7 +32,7 @@ and each line at the terminal's columns less one (COLUMNS, else the terminal's s
 An entry of an unknown type, a line that is not a JSON object, or one nested too deep to decode, is skipped and counted; the types Claude Code writes
 that are no conversation (attachment, mode, system, summary and the like) are ignored uncounted. `--once` ends with
 `kbtail: skipped N` on stderr when N is not 0. While following, the process waits on the stat of coord's store file (a store that exists:
-KB_COORD_STORE, else the project's; it opens no connection, so a lock another process holds does not delay a read) and
+KB_COORD_STORE, else the clone's at `--root` for the live view; it opens no connection, so a lock another process holds does not delay a read) and
 otherwise sleeps; either way it reads only the bytes appended since its last read. A file replaced by another (a new
 identity, a smaller size, other first bytes or other bytes before the read position) shows its last `--history` lines, and what is appended after them. It writes no file. Exit codes: 0 done (also an interrupt), 2 a bad argument or a TARGET with no transcript.
 `kbmon.py --follow ARGS` runs it with ARGS.
@@ -246,10 +246,11 @@ def wake(since, store, timeout=WAKE_S):
         time.sleep(min(STORE_POLL_S, max(end - time.monotonic(), 0)))
 
 
-def coord_store():
-    """The coord store file that exists, else None (a missing one is not made)."""
+def coord_store(root=None):
+    """The coord store file that exists, else None (a missing one is not made): KB_COORD_STORE, else the store of the clone at
+    ROOT (the one `mon_coord.local_store` and so `live_sessions` read), else, with no ROOT, the project's."""
     import coord
-    path = os.environ.get("KB_COORD_STORE") or coord.default_store()
+    path = os.environ.get("KB_COORD_STORE") or (coord.store_of(root) if root is not None else coord.default_store())
     return str(path) if path and Path(path).is_file() else None
 
 
@@ -485,7 +486,7 @@ def show(followed, shown, over, unbound, lost, columns, out):
 def follow_all(a, columns, out):
     """Print the history, then follow the live sessions of the clone at a.root until interrupted (the module doc says how)."""
     followed, last, over_shown, unbound_shown, lost_shown = {}, None, [], 0, []
-    store = coord_store()
+    store = coord_store(a.root)
     since = wake(0, store, 0)
     rescan, pending = True, False  # pending: the coord store changed and the list is not yet read again
     while True:
