@@ -89,6 +89,13 @@ def cwd_in_clone():
     return False
 
 
+def foreign_probe():
+    """True in a run whose working directory is no checkout of the clone that owns the spool and that names no query
+    log home of its own (`plugin_data()` is None): a probe of a temporary clone's tools, whose rows would land in a
+    spool they do not belong to."""
+    return plugin_data() is None and not cwd_in_clone()
+
+
 def launch_places():
     """(entry script, working directory) a detached distill starts with: the clone's main checkout, never a linked
     worktree HOME is. A worker's session-end distill outlives its session and waits for the lock, so a working

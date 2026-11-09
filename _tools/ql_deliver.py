@@ -11,8 +11,8 @@ from urllib.parse import urlsplit
 
 import kbcommon
 import kbpublic
-from ql_base import (BRANCH, DISABLED_NAME, HOME, STORE_REL, acquire, cwd_in_clone, json_lines, now, places,
-                     plugin_data, read_json, release, run_cmd, write_text)
+from ql_base import (BRANCH, DISABLED_NAME, HOME, STORE_REL, acquire, foreign_probe, json_lines, now, places, plugin_data,
+                     read_json, release, run_cmd, write_text)
 from ql_distill import LOG_MAX_BYTES, LOG_NAME, spool_delivered
 from ql_research import edit_problems
 from ql_store import (APPLY_FAILED, FINDINGS, LEARN_STATES, OPS, USAGE, WORK, finding_states, findings_files,
@@ -289,13 +289,6 @@ def inside_test():
     never reach the clone's own spool, as `tests.inside_test`; False only when the test has set TEST_SPOOL_ENV and
     pointed CLAUDE_PLUGIN_DATA at a directory outside the clone (own_test_spool)."""
     return bool(os.environ.get("PYTEST_CURRENT_TEST")) and not own_test_spool()
-
-
-def foreign_probe():
-    """True in a run whose working directory is no checkout of the clone that owns the spool and that names no query
-    log home of its own (`plugin_data()` is None): a probe of a temporary clone's tools, whose rows would land in a
-    spool they do not belong to."""
-    return plugin_data() is None and not cwd_in_clone()
 
 
 def ops_row(event, **fields):
