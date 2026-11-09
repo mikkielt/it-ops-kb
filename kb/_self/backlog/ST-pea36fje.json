@@ -2,7 +2,7 @@
   "id": "ST-pea36fje",
   "kind": "story",
   "title": "An executor runs a job as the identity its placement names, reading the credential from a 0600 file or a masked CI variable, and refuses a job whose credential is missing",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-p4guu2ip",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",
@@ -49,5 +49,7 @@
     "ST-vst4vom3"
   ],
   "notes": "Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: the job ends refused with that reason Order agreed 2026-11-08 with SP-ep7ck2ab's manager (ask A1e21b0d155): shared kb/_self/map.csv rows land by first claim, the later item rebases; no hard dependency.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-61c966d6",
+  "operator": "op-f618a13e"
 }
