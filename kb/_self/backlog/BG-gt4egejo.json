@@ -1,0 +1,24 @@
+{
+  "id": "BG-gt4egejo",
+  "kind": "bug",
+  "title": "factdiff.py detect run twice in one day overwrites the tracked detect log of that day",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "factdiff.py detect writes a new log name (or appends) when kb/public/_census/factdiff-<date>.csv already exists, so a second detect run in one day never replaces a committed log; found 2026-11-09 when a refresh run had to restore the tracked log after a second detect overwrote it",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.exit(1)"
+    ]
+  },
+  "repro_reason": "needs a planted kb root with a tracked same-day log; the planner writes the real repro",
+  "touches": [
+    "_tools/factdiff.py",
+    "kb/_self/web-sources.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
