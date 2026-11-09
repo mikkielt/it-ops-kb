@@ -2,7 +2,7 @@
   "id": "SP-rzwljgxv",
   "kind": "sprint",
   "title": "Workers and dispatch are safe: no paid claude from a worker, runner watch spares live workers, stage-back and claim survive interrupts, briefs and usage tell the truth",
-  "status": "planned",
+  "status": "active",
   "goal": "dispatch gives a worker a PATH whose claude is a stub that exits 2 unless its item has an answered money gate; runner watch counts a report file only once it holds output; bl_procs.fresh_pids counts a claude process fresh only by a transcript it can have written; a stage-back rerun after a kill commits a new file the dead run copied in; the worker brief clamps its commit-by turn above a small cap's margin; the brief of a staged-skill worker names the docs to pass to stage-back --self-reviewed; the sprint skill puts the move to an own worktree before the first claim; the sprint skill says precheck runs a bug's repro",
   "gates": [
     {

@@ -2,7 +2,7 @@
   "id": "BG-haeb4tn5",
   "kind": "bug",
   "title": "runner watch ends a live worker whose report file is still empty, since dispatch creates result.json empty at the start",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-rzwljgxv",
   "priority": "P2",
   "rank": 0,

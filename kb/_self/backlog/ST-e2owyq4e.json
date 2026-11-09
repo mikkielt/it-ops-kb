@@ -2,7 +2,7 @@
   "id": "ST-e2owyq4e",
   "kind": "story",
   "title": "Review sprint: Workers and dispatch are safe: no paid claude from a worker, runner watch spares live workers, stage-back and claim survive interrupts, briefs and usage tell the truth",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-rzwljgxv",
   "review": true,
   "priority": "P1",

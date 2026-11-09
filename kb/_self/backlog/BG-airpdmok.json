@@ -2,7 +2,7 @@
   "id": "BG-airpdmok",
   "kind": "bug",
   "title": "A stage-back rerun after a kill leaves a new file the dead run copied in untracked and out of the commit",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-rzwljgxv",
   "priority": "P2",
   "rank": 0,

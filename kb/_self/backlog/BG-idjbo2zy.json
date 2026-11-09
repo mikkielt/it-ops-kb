@@ -2,7 +2,7 @@
   "id": "BG-idjbo2zy",
   "kind": "bug",
   "title": "The sprint skill's plan step 5 says precheck runs only the checks, not a bug's repro or the windowed-detector warning",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-rzwljgxv",
   "priority": "P3",
   "rank": 0,

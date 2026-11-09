@@ -2,7 +2,7 @@
   "id": "BG-oa5rs334",
   "kind": "bug",
   "title": "A worker's brief tells it to commit by turn 1 when dispatch's cap is not above the commit margin",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-rzwljgxv",
   "priority": "P3",
   "rank": 0,
