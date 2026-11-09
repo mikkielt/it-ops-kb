@@ -2,7 +2,7 @@
   "id": "BG-wmgnn4d5",
   "kind": "bug",
   "title": "kbext.py verify fails a leak_scan extender whose function is not named file_hits, and that FAIL line names no point, module or layer",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-y7fe7qqx",
   "sprint": "SP-ga3lbnlk",
   "priority": "P2",
@@ -48,6 +48,28 @@
     "parked: SP-ep7ck2ab review"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-0a3e91bc",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "8e1eaeeb60ef1542c74d968022012b0a58de5334",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport json,os,subprocess,sys,tempfile,pathlib\nT=pathlib.Path(tempfile.mkdtemp())\ne=T/\"ext\"; e.mkdir()\n(e/\"gleak.py\").write_text(\"KBEXT_REQUIRES = \\\">=0.1\\\"\\ndef scan(path, text, allow, pinned=()):\\n    return 5\\n\")\n(T/\"settings.json\").write_text(json.dumps({\"extensions\":{\"leak_scan\":\"gleak:scan\"},\"extension_paths\":[str(e)]}))\nr=subprocess.run([sys.executable,\"_tools/kbext.py\",\"verify\",\"--root\",str(T)],capture_output=True,text=True,timeout=300)\nfails=[l for l in r.stdout.splitlines() if l.startswith(\"FAIL\")]\nif r.returncode!=1 or not fails:\n    sys.exit(\"not yet: expected a FAIL for a scan that answers a non-list: \"+repr((r.returncode,r.stdout,r.stderr)))\nbad=[l for l in fails if not (\"leak_scan\" in l and \"gleak\" in l and \"clone\" in l)]\nsys.exit(\"not yet: a FAIL line misses the point, module or layer: \"+repr(bad) if bad else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess,sys,tempfile,pathlib\nsys.path.insert(0,\"_tools\")\nT=pathlib.Path(tempfile.mkdtemp())\ndef W(p,v):\n    p=pathlib.Path(p); p.parent.mkdir(parents=True,exist_ok=True); p.write_text(v if isinstance(v,str) else json.dumps(v),encoding=\"utf-8\"); return p\ndef need(c,m):\n    if not c: sys.exit(\"not yet: \"+str(m)[:800])\ndef R(*a,env=None):\n    return subprocess.run([sys.executable,*a],capture_output=True,text=True,env=dict(os.environ,**(env or {})),timeout=600)\nEXT='KBEXT_REQUIRES = \">=0.1\"\\n'\ne=T/\"ext\"; W(e/\"gleak.py\",EXT+\"def scan(path, text, allow, pinned=()):\\n    return []\\n\")\nW(T/\"settings.json\",{\"extensions\":{\"leak_scan\":\"gleak:scan\"},\"extension_paths\":[str(e)]})\nr=R(\"_tools/kbext.py\",\"verify\",\"--root\",str(T))\nneed(r.returncode==0, (r.returncode,r.stdout,r.stderr))\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
