@@ -2,7 +2,7 @@
   "id": "BG-rrutf5bf",
   "kind": "bug",
   "title": "drop SP deletes an active sprint whose items are all dropped, bypassing close's ops row and worker cleanup",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-yriisdti",
   "priority": "P3",
   "rank": 0,
@@ -34,5 +34,7 @@
     "parked: SP-m3azo2y7 review",
     "merged: ST-5sgru6ls"
   ],
-  "notes": "Merged from ST-5sgru6ls “A planted test proves drop of a sprint takes its research and review stories and refuses while a live or claimed item remains” at the 2026-10-12 draft triage: both come from the SP-m3azo2y7 review and change cmd_drop/sprint_leftovers (_tools/bl_items.py). Its planned suite test (tests.py -k drop_sprint in the land e2e test file) is out under the test policy D-2tq4fhgs, which deleted that file: the fix is proven by its repro and by a drop run on a planned sprint in a temporary git repository (check errors=0, and the refusals on a non-dropped item and on a claimed story)."
+  "notes": "Merged from ST-5sgru6ls “A planted test proves drop of a sprint takes its research and review stories and refuses while a live or claimed item remains” at the 2026-10-12 draft triage: both come from the SP-m3azo2y7 review and change cmd_drop/sprint_leftovers (_tools/bl_items.py). Its planned suite test (tests.py -k drop_sprint in the land e2e test file) is out under the test policy D-2tq4fhgs, which deleted that file: the fix is proven by its repro and by a drop run on a planned sprint in a temporary git repository (check errors=0, and the refusals on a non-dropped item and on a claimed story).",
+  "claimed_by": "claude-ev2run01",
+  "operator": "op-f618a13e"
 }
