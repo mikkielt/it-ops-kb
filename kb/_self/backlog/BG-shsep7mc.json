@@ -2,7 +2,7 @@
   "id": "BG-shsep7mc",
   "kind": "bug",
   "title": "census.py read re-dates the articles of sources it did not read when another source was retrieved on the read date",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-2cq2hse4",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,7 @@
     "kb/_self/tools.md",
     "kb/_self/web-sources.md"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-c41d77ea",
+  "operator": "op-f618a13e"
 }
