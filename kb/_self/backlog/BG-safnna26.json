@@ -1,0 +1,23 @@
+{
+  "id": "BG-safnna26",
+  "kind": "bug",
+  "title": "pool build --ask and --redo make a run-<pid>-<hex> scratch directory in sonnet_regexes that nothing removes, since no Bench closes it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bench_pool.sonnet_regexes runs its Sonnet call in a temporary directory that is removed after the call, so a paid pool build leaves no scratch directory",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,re;t=open(\"_tools/bench_pool.py\",encoding=\"utf-8\").read();i=t.find(\"def sonnet_regexes\");j=t.find(\"\\ndef \",i+10);sys.exit(1 if \"scratch_dir()\" in t[i:j] else 0)"
+    ]
+  },
+  "repro_reason": "the call is a paid Sonnet run, so the repro reads that sonnet_regexes still takes scratch_dir() from the benchmarks scratch base",
+  "touches": [
+    "_tools/bench_pool.py",
+    "kb/_self/benchmarks.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
