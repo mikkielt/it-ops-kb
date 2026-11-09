@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "A worker's session can start real paid claude sessions: nothing in its environment stops a smoke test from calling claude",
   "status": "draft",
+  "sprint": "SP-rzwljgxv",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",

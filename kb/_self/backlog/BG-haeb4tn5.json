@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "runner watch ends a live worker whose report file is still empty, since dispatch creates result.json empty at the start",
   "status": "draft",
+  "sprint": "SP-rzwljgxv",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",

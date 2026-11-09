@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "dispatch's worker brief tells a worker whose touches are protected skill text to run stage-back --check but not that the orchestrator's stage-back needs --self-reviewed for each doc the worker read",
   "status": "draft",
+  "sprint": "SP-rzwljgxv",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",

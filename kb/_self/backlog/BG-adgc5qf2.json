@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kb-sprint run puts the move to an own worktree in landing step 4.2, after the claims it must precede",
   "status": "draft",
+  "sprint": "SP-rzwljgxv",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
