@@ -59,7 +59,12 @@
         "class, a token: succeeded, refused or failed": "ST-liirkdss",
         "exit, the child's exit number like land.step": "ST-liirkdss"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "class, a token naming the job's terminal state: succeeded, refused, failed or cancelled (lost is no end: a lost job is queued again or fails, and only that end writes a row)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     },
     {
       "id": "g2",
