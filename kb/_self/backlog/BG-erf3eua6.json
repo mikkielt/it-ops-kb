@@ -7,17 +7,21 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S4",
-  "goal": "claim in a checkout whose git dir is not writable claims the item as before the ledger lock, with a warning that the claims ledger was not recorded, so ledger_lock's OSError on creating the lock file no longer refuses the claim itself",
+  "goal": "claim in a checkout whose git dir is not writable claims the item as before the ledger lock, so ledger_lock's OSError on creating the lock file no longer refuses the claim itself; the claim prints a warning that says the claims ledger was not recorded",
   "repro": {
     "run": [
       "python3",
       "-c",
-      "import json,os,stat,subprocess as s,sys,tempfile,pathlib as P\nT=os.path.abspath(\"_tools/backlog.py\");r=P.Path(tempfile.mkdtemp());g=lambda *a:s.run([\"git\",\"-C\",str(r),*a],check=True,capture_output=True,text=True).stdout.strip()\ng(\"init\",\"-q\");(r/\"backlog.json\").write_text(json.dumps({\"item_dir\":\"items\"}));(r/\"items\").mkdir()\n(r/\"items\"/\"ST-aaaaaaaa.json\").write_text(json.dumps({\"id\":\"ST-aaaaaaaa\",\"kind\":\"story\",\"title\":\"t\",\"status\":\"todo\",\"priority\":\"P3\",\"goal\":\"g\",\"touches\":[\"x.txt\"],\"checks\":[{\"run\":[\"python3\",\"-c\",\"pass\"]}]},indent=2)+\"\\n\")\ng(\"add\",\"-A\");g(\"-c\",\"user.name=x\",\"-c\",\"user.email=x@x\",\"commit\",\"-qm\",\"i\")\ngd=P.Path(g(\"rev-parse\",\"--absolute-git-dir\"));m=gd.stat().st_mode;os.chmod(gd,0o555)\nenv=dict(os.environ,CLAUDE_CODE_SESSION_ID=\"chk\");env.pop(\"KB_BACKLOG_CONFIG\",None)\ntry:p=s.run([sys.executable,T,\"--root\",str(r),\"claim\",\"ST-aaaaaaaa\",\"--by\",\"w\"],capture_output=True,text=True,env=env)\nfinally:os.chmod(gd,m)\nprint(\"claim with an unwritable git dir: exit\",p.returncode,(p.stdout+p.stderr)[-200:]);sys.exit(0 if p.returncode==0 else 1)"
+      "import json, os, subprocess, sys, tempfile\nfrom pathlib import Path\nr = Path(tempfile.mkdtemp())\ng = lambda *a: subprocess.run([\"git\", \"-C\", str(r), *a], check=True, capture_output=True, text=True).stdout.strip()\ng(\"init\", \"-q\")\n(r / \"backlog.json\").write_text(json.dumps({\"item_dir\": \"items\"}))\n(r / \"items\").mkdir()\nitem = {\"id\": \"ST-aaaaaaaa\", \"kind\": \"story\", \"title\": \"t\", \"status\": \"todo\", \"priority\": \"P3\", \"goal\": \"g\",\n        \"touches\": [\"x.txt\"], \"checks\": [{\"run\": [\"python3\", \"-c\", \"pass\"]}]}\n(r / \"items\" / \"ST-aaaaaaaa.json\").write_text(json.dumps(item, indent=2) + \"\\n\")\ng(\"add\", \"-A\")\ng(\"-c\", \"user.name=x\", \"-c\", \"user.email=x@example.com\", \"commit\", \"-qm\", \"i\")\ngd = Path(g(\"rev-parse\", \"--absolute-git-dir\"))\nmode = gd.stat().st_mode\nos.chmod(gd, 0o555)\nenv = dict(os.environ, CLAUDE_CODE_SESSION_ID=\"chk\")\nenv.pop(\"KB_BACKLOG_CONFIG\", None)\ntry:\n    p = subprocess.run([sys.executable, os.path.abspath(\"_tools/backlog.py\"), \"--root\", str(r), \"claim\", \"ST-aaaaaaaa\",\n                        \"--by\", \"w\"], capture_output=True, text=True, env=env)\nfinally:\n    os.chmod(gd, mode)\ntext = p.stdout + p.stderr\nprint(\"claim with an unwritable git dir: exit\", p.returncode, \"|\", text[-300:])\nsys.exit(0 if p.returncode == 0 and \"not recorded\" in text else 1)"
     ]
   },
   "clauses": [
     {
-      "clause": "claim in a checkout whose git dir is not writable claims the item as before the ledger lock, with a warning that the claims ledger was not recorded, so ledger_lock's OSError on creating the lock file no longer refuses the claim itself",
+      "clause": "claim in a checkout whose git dir is not writable claims the item as before the ledger lock, so ledger_lock's OSError on creating the lock file no longer refuses the claim itself",
+      "check": 0
+    },
+    {
+      "clause": "the claim prints a warning that says the claims ledger was not recorded",
       "check": 0
     }
   ],
