@@ -24,6 +24,29 @@
   "depends_on": [
     "BG-u6lehif2"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does a --dry-run start no claude --version: lazy Bench.cc plus a dry run reading ?, or move the probe out of Bench.__init__ only?",
+      "options": [
+        "Bench.cc is a lazy property, ? under a dry run, benchmarks.py presets ? for --paid",
+        "Probe in Bench.__init__ skipped by a constructor flag"
+      ],
+      "recommendation": "Bench.cc is a lazy property, ? under a dry run, benchmarks.py presets ? for --paid",
+      "reason": "bench_pool reads getattr(b, cc) before its dry-run branch, outside the touches, so the property itself must not probe then",
+      "do": {
+        "Bench.cc is a lazy property, ? under a dry run, benchmarks.py presets ? for --paid": "BG-oipsx3sa",
+        "Probe in Bench.__init__ skipped by a constructor flag": "BG-oipsx3sa"
+      },
+      "class": "design",
+      "answer": "Bench.cc is a lazy property, ? under a dry run, benchmarks.py presets ? for --paid",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "notes": "Premise: the bug's repro fails on the base (origin/main at the planning commit, 2026-11-09); precheck ran it through the landing's check runner. Sprint order: items that share one file are chained with depends_on.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-bdc0a493",
