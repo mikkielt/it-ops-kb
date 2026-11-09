@@ -2,7 +2,7 @@
   "id": "ST-vst4vom3",
   "kind": "story",
   "title": "kbjob.py serve --kind server keeps one clone per integration remote and runs the jobs placed on the server there, landings from the pushed worker branch",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-p4guu2ip",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",
@@ -136,5 +136,7 @@
     }
   ],
   "notes": "Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: a test-ceiling refusal ends the job failed with the reason host condition and the central host's platform, never retried with another ceiling",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-432be86e",
+  "operator": "op-f618a13e"
 }
