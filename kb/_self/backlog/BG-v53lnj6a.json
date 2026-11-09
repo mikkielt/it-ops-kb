@@ -2,7 +2,7 @@
   "id": "BG-v53lnj6a",
   "kind": "bug",
   "title": "kbmon's landing_steps ignores every land.step of an item that once landed with exit 0, so a reopened item's second landing never shows",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-zobzdhwi",
   "priority": "P2",
@@ -48,6 +48,19 @@
   ],
   "notes": "Planner 2026-11-09: origin SP-fn7letri review G6 on ST-kxnlpycw, the operator's g1 answer. Repro replaced by a run of landing_steps on planted ops rows.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-0f9262ec",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "fc330d154390b8e88feb718e52cbc1dd896d7f3b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0, \"_tools\"); import bl_stall, mon_sessions as m; rows = [{\"event\": \"land.step\", \"item\": \"ST-aaaaaaaa\", \"step\": \"rebase\"}, {\"event\": \"land.end\", \"item\": \"ST-aaaaaaaa\", \"exit\": 0}, {\"event\": \"land.step\", \"item\": \"ST-aaaaaaaa\", \"step\": \"checks\"}, {\"event\": \"land.step\", \"item\": \"ST-bbbbbbbb\", \"step\": \"rebase\"}, {\"event\": \"land.end\", \"item\": \"ST-bbbbbbbb\", \"exit\": 0}]; bl_stall.ops_rows = lambda root: rows; got = m.landing_steps(\".\"); print(got); sys.exit(0 if got == {\"ST-aaaaaaaa\": \"checks\"} else 1)"
+        ],
+        "exit": 0,
+        "sha256": "aa42c66f87b53c7c"
+      }
+    ]
+  }
 }
