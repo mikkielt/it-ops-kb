@@ -2,7 +2,7 @@
   "id": "ST-jck3cqbd",
   "kind": "story",
   "title": "Review sprint: kbmon shows true state",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-uh5h46fm",
   "review": true,
   "priority": "P1",
@@ -38,5 +38,44 @@
       ]
     }
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "evidence": {
+    "commit": "31326caea2b58000bb11d294c74713d6422143cb",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "0a54a2907552046c"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "c4d93e30f8ac4bbc"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval",
+          "--file",
+          "kb/public/_retrieval/lookup_heldout.csv",
+          "--root",
+          "public",
+          "--min",
+          "86",
+          "--max-false-good",
+          "8"
+        ],
+        "exit": 0,
+        "sha256": "53f95954d73f0182"
+      }
+    ]
+  }
 }
