@@ -735,7 +735,14 @@ def probe(point, spec, layer, file, root, kb_root=None):
                        f"not an extension point of kbext.SURFACE")
     try:
         _add_paths(root, kb_root)
-        found = _import(point, spec if point != "ingest_mappers" or ":" in spec else spec + ":mapper", layer, file)
+        spec = spec if point != "ingest_mappers" or ":" in spec else spec + ":mapper"
+        if point == "backlog_commands":  # backlog.py imports it with the shipped commands registered: so does the probe
+            import backlog  # noqa: F401 - registers every shipped command
+            import bl_cli
+            with bl_cli.group_loading(root, layer):
+                found = _import(point, spec, layer, file)
+        else:
+            found = _import(point, spec, layer, file)
         with tempfile.TemporaryDirectory() as tmp:
             objects = _sample_objects(tmp, root)
             for sample in entry["samples"]:

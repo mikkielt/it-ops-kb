@@ -27,6 +27,27 @@
   "depends_on": [
     "BG-myligl24"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does kbext.py verify give a backlog_commands module the shipped commands?",
+      "options": [
+        "kbext imports backlog and loads the module inside bl_cli.group_loading, which restores the registry",
+        "bl_cli imports backlog itself"
+      ],
+      "recommendation": "kbext imports backlog and loads the module inside bl_cli.group_loading, which restores the registry",
+      "reason": "bl_cli keeps never importing backlog",
+      "do": {
+        "kbext imports backlog and loads the module inside bl_cli.group_loading, which restores the registry": "BG-u6eh3xyq",
+        "bl_cli imports backlog itself": "BG-u6eh3xyq"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "kbext imports backlog and loads the module inside bl_cli.group_loading, which restores the registry",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ep7ck2ab review"
   ],
