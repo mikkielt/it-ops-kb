@@ -2,7 +2,7 @@
   "id": "ST-j3y2gugk",
   "kind": "story",
   "title": "A source whose page moved is re-pointed by kbid.py repoint, which writes the new row, supersedes the old one and re-keys its anchor and doc2query rows",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-2cq2hse4",
   "priority": "P2",

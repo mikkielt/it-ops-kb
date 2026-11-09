@@ -2,7 +2,7 @@
   "id": "BG-gt4egejo",
   "kind": "bug",
   "title": "factdiff.py detect run twice in one day overwrites the tracked detect log of that day",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-2cq2hse4",
   "priority": "P2",

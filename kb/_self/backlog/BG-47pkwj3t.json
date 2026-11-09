@@ -2,7 +2,7 @@
   "id": "BG-47pkwj3t",
   "kind": "bug",
   "title": "census.py apply and factdiff.py apply write the same census.phase token, so the query log report cannot tell the phase-2 outcomes from factdiff's apply",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-2cq2hse4",
   "priority": "P3",

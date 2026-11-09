@@ -2,7 +2,7 @@
   "id": "BG-otqwcv5s",
   "kind": "bug",
   "title": "A batch judge call retried after a reply that matched no item counts as one call in the census.phase row",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-2cq2hse4",
   "priority": "P3",

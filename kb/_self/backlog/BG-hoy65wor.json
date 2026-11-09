@@ -2,7 +2,7 @@
   "id": "BG-hoy65wor",
   "kind": "bug",
   "title": "census.py run takes no topic or directory selection, so a census of one domain runs its phases 0 and 1 as separate factdiff.py and census.py commands",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-2cq2hse4",
   "priority": "P2",
   "rank": 0,

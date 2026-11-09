@@ -2,7 +2,7 @@
   "id": "BG-ept67yjj",
   "kind": "bug",
   "title": "The query log's gap step files a new public gap for a question a closed entry of the same question settled as a _self question",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-6iiony54",
   "sprint": "SP-2cq2hse4",
   "priority": "P2",

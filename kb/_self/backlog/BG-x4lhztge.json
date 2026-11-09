@@ -2,7 +2,7 @@
   "id": "BG-x4lhztge",
   "kind": "bug",
   "title": "search_urls records a PyPI 404 as no answer, asks PyPI with a space-joined query, and drops a PyPI hit as a hub page",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-2cq2hse4",
   "priority": "P3",
   "rank": 0,

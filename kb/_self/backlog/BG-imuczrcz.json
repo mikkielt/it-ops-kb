@@ -2,7 +2,7 @@
   "id": "BG-imuczrcz",
   "kind": "bug",
   "title": "LEARN_MAP sends intune/ and windows/ pages to repositories that answer 404, so each run makes a failed clone",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-2cq2hse4",
   "priority": "P3",
