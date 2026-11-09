@@ -3,10 +3,25 @@
   "kind": "story",
   "title": "A gate answer the orchestrator commits on a worker branch survives the worker's later item writes",
   "status": "draft",
-  "priority": "P3",
+  "sprint": "SP-moxpl354",
+  "priority": "P2",
   "rank": 0,
-  "goal": "a gate answer committed on a worker's branch by the orchestrator (answer --root WORKTREE --commit) is kept when the worker's own item commit writes the item file again, and kb/_self/backlog.md says so",
+  "goal": "a gate answer written to an item file after a command loaded the item is kept when that command saves it, so a worker's done or set no longer wipes an answer the orchestrator committed on its branch while the checks ran; an answer the command itself cleared stays cleared; kb/_self/backlog.md says an answer committed on a worker branch survives the worker's later item writes",
   "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys, json, pathlib, tempfile\nsys.path.insert(0, '_tools')\nimport bl_base\nr = pathlib.Path(tempfile.mkdtemp()); d = r / bl_base.rel_dir(); d.mkdir(parents=True)\nf = d / 'BG-aaaaaaaa.json'\ngate = {\"id\": \"g1\", \"kind\": \"provisional\", \"question\": \"q\", \"options\": [\"a\", \"b\"], \"recommendation\": \"a\"}\nf.write_text(bl_base.canonical({\"id\": \"BG-aaaaaaaa\", \"kind\": \"bug\", \"title\": \"t\", \"status\": \"todo\", \"gates\": [gate]}), encoding='utf-8')\nbl = bl_base.Backlog(r); it = bl.items['BG-aaaaaaaa']\ndisk = json.loads(f.read_text(encoding='utf-8')); disk['gates'][0].update(answer='a', by='operator')\nf.write_text(bl_base.canonical(disk), encoding='utf-8')\nit['status'] = 'done'; bl.save(it)\ngot = json.loads(f.read_text(encoding='utf-8'))\nok = got['status'] == 'done' and got['gates'][0].get('answer') == 'a' and got['gates'][0].get('by') == 'operator'\nprint('answer kept' if ok else 'answer wiped', got['gates'][0])\nsys.exit(0 if ok else 1)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys, json, pathlib, tempfile\nsys.path.insert(0, '_tools')\nimport bl_base\nr = pathlib.Path(tempfile.mkdtemp()); d = r / bl_base.rel_dir(); d.mkdir(parents=True)\nf = d / 'BG-aaaaaaaa.json'\ngate = {\"id\": \"g1\", \"kind\": \"provisional\", \"question\": \"q\", \"options\": [\"a\", \"b\"], \"recommendation\": \"a\", \"answer\": \"a\", \"by\": \"agent\"}\nf.write_text(bl_base.canonical({\"id\": \"BG-aaaaaaaa\", \"kind\": \"bug\", \"title\": \"t\", \"status\": \"todo\", \"gates\": [gate]}), encoding='utf-8')\nbl = bl_base.Backlog(r); it = bl.items['BG-aaaaaaaa']\nfor k in ('answer', 'by'):\n    it['gates'][0].pop(k)\nbl.save(it)\ngot = json.loads(f.read_text(encoding='utf-8'))\nok = 'answer' not in got['gates'][0]\nprint('cleared stays cleared' if ok else 'cleared answer came back', got['gates'][0])\nsys.exit(0 if ok else 1)\n"
+      ]
+    },
     {
       "run": [
         "python3",
@@ -14,6 +29,10 @@
         "import sys,pathlib\nt=pathlib.Path('kb/_self/backlog.md').read_text(encoding='utf-8').lower()\nmiss=[w for w in ['answer committed on a worker branch survives'] if w not in t]\nsys.exit('not yet: kb/_self/backlog.md lacks '+', '.join(miss) if miss else 0)\n"
       ]
     }
+  ],
+  "touches": [
+    "_tools/bl_base.py",
+    "kb/_self/backlog.md"
   ],
   "links": [
     "parked: SP-ep7ck2ab close"
