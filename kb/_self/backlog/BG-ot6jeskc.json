@@ -12,7 +12,7 @@
     "run": [
       "python3",
       "-c",
-      "import sys;sys.exit(1)"
+      "\nimport subprocess,sys,tempfile\nsys.path.insert(0,\"_tools\")\nimport kg_base,kg_hooks\nd=tempfile.mkdtemp()\ndef g(*a,ok=True): return subprocess.run([\"git\",\"-c\",\"user.name=t\",\"-c\",\"user.email=t@example.com\",*a],cwd=d,check=ok,capture_output=True,text=True).stdout\ndef link(n): g(\"update-index\",\"--add\",\"--cacheinfo\",\"160000,\"+n*40+\",kb/team\")\ng(\"init\",\"-q\",\"-b\",\"main\")\nopen(d+\"/a\",\"w\").write(\"1\");g(\"add\",\"a\");link(\"1\");g(\"commit\",\"-qm\",\"base\")\ng(\"checkout\",\"-q\",\"-b\",\"side\");link(\"2\");g(\"commit\",\"-qm\",\"s\")\ng(\"checkout\",\"-q\",\"main\");link(\"3\");g(\"commit\",\"-qm\",\"m\")\ng(\"merge\",\"--no-ff\",\"-m\",\"mg\",\"side\",ok=False)\nlink(\"4\");g(\"commit\",\"-qm\",\"mg\")\nkg_base.KB=d;kg_hooks.KB=d\nr=kg_hooks.new_lanes([\"HEAD^!\"])\nsys.exit(0 if r and r[0][1]==\"content\" else 1)\n"
     ]
   },
   "repro_reason": "needs a merge commit that changes a gitlink under kb; the planted input is in the notes",
