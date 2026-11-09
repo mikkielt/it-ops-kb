@@ -15,6 +15,15 @@
       "\nimport os, subprocess, sys, tempfile\nt = tempfile.mkdtemp()\nsubprocess.run([sys.executable, \"_tools/benchmarks.py\", \"run\", \"pool\", \"--dry-run\", \"--sample\", \"1\"], capture_output=True, env=dict(os.environ, BENCH_SCRATCH=t))\nleft = [n for n in os.listdir(t) if n.startswith(\"run-\")]\nprint(left); sys.exit(1 if left else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, subprocess, sys, tempfile; t=tempfile.mkdtemp(); subprocess.run([sys.executable, \"_tools/benchmarks.py\", \"run\", \"pool\", \"--dry-run\", \"--sample\", \"1\"], capture_output=True, env=dict(os.environ, BENCH_SCRATCH=t)); sys.exit(1 if [n for n in os.listdir(t) if n.startswith(\"run-\")] else 0)"
+      ]
+    }
+  ],
   "touches": [
     "_tools/bench_core.py",
     "_tools/bl_clean.py",
