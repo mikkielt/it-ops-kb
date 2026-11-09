@@ -1,0 +1,19 @@
+{
+  "id": "ST-5b7fsw4g",
+  "kind": "story",
+  "title": "start commits the item files it moves to todo and the sprint file to active, so the first begin pushes cleanly",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py start SP commits the sprint file it moves to active and the item files it moves to todo, so begin right after start finds no unstaged item file and its claim push runs",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,pathlib; t=pathlib.Path('kb/_self/backlog.md').read_text(encoding='utf-8').lower(); sys.exit(0 if 'start commits the item files it writes' in t else 'not yet: kb/_self/backlog.md lacks start commits the item files it writes')"
+      ]
+    }
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
