@@ -69,6 +69,7 @@ def change(a, b):
 
 
 ARMED = ("navigation",)  # the scenarios whose record holds one set of rows per arm (bench_core.ARMED, tested equal)
+SPLIT_BY_MODEL = ("session-load",)  # the scenarios whose replay rows (no model) and paid rows (a model) of one case stay apart
 
 
 def records(rows, scenario):
@@ -96,22 +97,26 @@ def history(m, by_record, order):
 
 def table(rows, scenario, metrics, cases=None, arms=None):
     """A Markdown table: one line per case and arm, a column per metric; each cell holds every record's value in date
-    order, `->` between them, and the change of the last from the one before."""
+    order, `->` between them, and the change of the last from the one before. A case and arm whose rows name more than
+    one model, in a scenario of SPLIT_BY_MODEL (a replay record has none, a paid record of the same case does), get a
+    line per model and a `model` column, so no cell chains a replay's value and a paid run's as one change."""
     order = list(dict.fromkeys(rec for rec, _ in records(rows, scenario)))
-    cells, keys = {}, []
-    for r in rows:
-        if r["scenario"] != scenario or r["metric"] not in metrics:
-            continue
-        if (cases and r["case"] not in cases) or (arms and r["arm"] not in arms):
-            continue
-        k = (r["case"], r["arm"])
+    cells, keys, models = {}, [], {}
+    picked = [r for r in rows if r["scenario"] == scenario and r["metric"] in metrics
+              and not ((cases and r["case"] not in cases) or (arms and r["arm"] not in arms))]
+    for r in picked:
+        models.setdefault((r["case"], r["arm"]), set()).add(r["model"])
+    split = scenario in SPLIT_BY_MODEL and any(len(v) > 1 for v in models.values())
+    for r in picked:
+        k = (r["case"], r["arm"]) + ((r["model"],) if split else ())
         if k not in keys:
             keys.append(k)
         cells.setdefault((k, r["metric"]), {})[r["record"]] = r["value"]
-    out = ["| case | arm | " + " | ".join(metrics) + " |", "|---|---|" + "---|" * len(metrics)]
+    out = ["| case | arm | " + ("model | " if split else "") + " | ".join(metrics) + " |",
+           "|---|---|" + ("---|" if split else "") + "---|" * len(metrics)]
     for k in keys:
         line = [history(m, cells.get((k, m), {}), order) for m in metrics]
-        out.append(f"| {k[0] or '-'} | {k[1] or '-'} | " + " | ".join(line) + " |")
+        out.append(f"| {k[0] or '-'} | {k[1] or '-'} | " + (f"{k[2] or '-'} | " if split else "") + " | ".join(line) + " |")
     return "\n".join(out)
 
 
