@@ -5,7 +5,7 @@ checkout and worktrees), each as an orphan or foreign (kb/_self/backlog.md, Proc
   procs                 list them (read only): pid, parent, age, class, command name, and where it runs
 
 Classes: `orphan` (its parent is gone: a background run a session left behind), `detached` (its parent is gone, but an
-`own PID --class process` record names it, or a transcript of a session started in its working directory was written under FRESH_S seconds ago (`fresh_pids`,
+`own PID --class process` record names it, or a transcript of a session started in its working directory was written under FRESH_S seconds ago, after the process started (`fresh_pids`,
 which `snapshot` passes to `classify` as `fresh`: `procs`, `selfcheck` and kbmon's sessions panel agree), or it leads its own process group, started with `start_new_session`, and still
 has a live child: a launcher a session started apart and left at work; named in no alert and by no `selfcheck`), `hook` (an orphan whose standard output
 is the query log's distill.log and that is still at work: the run a session's end hook started, which waits for the
@@ -409,18 +409,21 @@ def classify(procs, tab, hooks=(), now=None, holders=(), recorded=None, fresh=()
     return out
 
 
-def transcript_age(cwd, now):
+def transcript_age(cwd, now, since=None):
     """The seconds since the newest write to a transcript of a Claude Code session started in CWD (`<Claude config
-    dir>/projects/<project>/*.jsonl`, or a subagent's under `<session>/subagents/`), or None when it has none."""
+    dir>/projects/<project>/*.jsonl`, or a subagent's under `<session>/subagents/`), or None when it has none. With
+    SINCE (a process's start time) a transcript last written before SINCE is left out: no session of that process wrote it."""
     import kbusage
     base = kbusage.config_dir() / "projects" / kbusage.project_name(cwd)
     stamps = []
     try:
         for f in [*base.glob("*.jsonl"), *base.glob("*/subagents/agent-*.jsonl")]:
             try:
-                stamps.append(f.stat().st_mtime)
+                stamp = f.stat().st_mtime
             except OSError:
                 continue
+            if since is None or stamp >= since:
+                stamps.append(stamp)
     except OSError:
         return None
     return max(0, int(now - max(stamps))) if stamps else None
@@ -428,12 +431,13 @@ def transcript_age(cwd, now):
 
 def fresh_pids(procs, cwds, now=None):
     """The pids of the `claude` processes of PROCS (`inventory`'s rows) whose working directory (CWDS, `cwd_map`'s) holds a
-    transcript written less than FRESH_S ago: a session at work, which `classify` takes for detached, not an orphan. No
-    other process is named: a transcript says a session is at work, not what it started."""
+    transcript written less than FRESH_S ago and not before the process started (a transcript last written earlier is
+    some other session's, never this process's): a session at work, which `classify` takes for detached, not an orphan.
+    No other process is named: a transcript says a session is at work, not what it started."""
     now = time.time() if now is None else now
     out = set()
     for p in procs:
-        age = transcript_age(cwds[p["pid"]], now) if p["comm"] == "claude" and p["pid"] in cwds else None
+        age = transcript_age(cwds[p["pid"]], now, p["start"]) if p["comm"] == "claude" and p["pid"] in cwds else None
         if age is not None and age < FRESH_S:
             out.add(p["pid"])
     return out

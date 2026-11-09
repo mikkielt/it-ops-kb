@@ -34,6 +34,27 @@
   "depends_on": [
     "BG-haeb4tn5"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does fresh_pids tie a claude process to a transcript it can have written?",
+      "options": [
+        "Compare each transcript's last write with the process start and leave out earlier ones",
+        "Bind the process to its own session transcript"
+      ],
+      "recommendation": "Compare each transcript's last write with the process start and leave out earlier ones",
+      "reason": "needs no session binding, which a process table does not give",
+      "do": {
+        "Compare each transcript's last write with the process start and leave out earlier ones": "BG-lhat3jlo",
+        "Bind the process to its own session transcript": "BG-lhat3jlo"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "Compare each transcript's last write with the process start and leave out earlier ones",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-zobzdhwi review"
   ],
