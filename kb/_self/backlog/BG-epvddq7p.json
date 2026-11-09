@@ -1,0 +1,23 @@
+{
+  "id": "BG-epvddq7p",
+  "kind": "bug",
+  "title": "dispatch's worker brief tells a worker whose touches are protected skill text to run stage-back --check but not that the orchestrator's stage-back needs --self-reviewed for each doc the worker read",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "The brief of a worker whose staged copy changes skill text names the docs selfdoc.py stale lists as docs it read and found correct in its report, in the form the orchestrator passes to stage-back --self-reviewed, so the first stage-back is not refused for unnamed docs. Found by the SP-c6tr77jl close retrospective (ST-fmx7e2wd: the first stage-back was refused with AGENTS.md and maintaining.md not named by --self-reviewed).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import bl_dispatch as d;t=open(d.__file__,encoding=\"utf-8\").read();sys.exit(0 if \"--self-reviewed\" in t and \"stage-back\" in t and \"orchestrator passes\" in t else 1)"
+    ]
+  },
+  "repro_reason": "the refusal shows only when stage-back meets a stale doc list; the repro reads that the brief text names the --self-reviewed form",
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "kb/_self/backlog.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
