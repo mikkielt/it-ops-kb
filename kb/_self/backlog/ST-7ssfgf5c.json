@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "A leak or guard story's plan lists every outbound path before the start gate",
   "status": "draft",
+  "sprint": "SP-moxpl354",
   "priority": "P3",
   "rank": 0,
   "goal": "planning a story that changes the leak scan or a guard lists every path that hands content outside the clone (each caller of kbpublic.file_hits and kbcommon.leak_hits, and whether it passes shipped=True) in the item's notes, and a gate is asked for each path the goal leaves open, before the start gate",
@@ -11,9 +12,24 @@
       "run": [
         "python3",
         "-c",
-        "import sys,pathlib\nt=pathlib.Path('kb/_self/backlog.md').read_text(encoding='utf-8').lower()\nmiss=[w for w in ['outbound path'] if w not in t]\nsys.exit('not yet: kb/_self/backlog.md lacks '+', '.join(miss) if miss else 0)\n"
+        "import sys,pathlib\nt=pathlib.Path('skills/sprint/SKILL.md').read_text(encoding='utf-8')\ns=t.split('## plan',1)[1].split('## start',1)[0].lower()\nmiss=[w for w in ['outbound path', 'file_hits', 'leak_hits', 'shipped=true'] if w not in s]\nsys.exit('not yet: plan section lacks '+', '.join(miss) if miss else 0)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "referrers",
+        "file_hits",
+        "leak_hits"
       ]
     }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "depends_on": [
+    "ST-4wlxi33c"
   ],
   "links": [
     "parked: SP-ep7ck2ab close"
