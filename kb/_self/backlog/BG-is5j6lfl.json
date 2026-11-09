@@ -41,7 +41,9 @@
       },
       "class": "design",
       "answer": "the mean cost of the model's recorded multi research agents, else the repro mean scaled by the input price ratio",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "filed_in": "clone-0ea70e5c",
