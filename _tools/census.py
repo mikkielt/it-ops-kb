@@ -558,9 +558,37 @@ def check_api_release(d, kind, rec, since):
     return verdict("NEWER-VERSION", f"release(s) tagged after retrieval {since}: {', '.join(after[:3])}", "", f"newer={after[0]}")
 
 
+def learn_cands(path):
+    return (path + ".md", path + "/index.md", path + ".yml", path + "/index.yml")
+
+
+def fold_path(d, path):
+    """`path` with each component's letter case taken from the tree at HEAD (Learn lowercases a path whose repository
+    directory is mixed-case: desktop-src/ADSI for adsi); "" when a component has no entry that differs only in case."""
+    parts, cur = path.split("/"), ""
+    for i, part in enumerate(parts):
+        out = g(d, "ls-tree", "-z", "--name-only", f"HEAD:{cur}" if cur else "HEAD")
+        names = out[1].split("\0") if out[0] == 0 else []
+        low = part.casefold()
+        if i < len(parts) - 1:
+            real = next((n for n in names if n.casefold() == low), None)
+        else:
+            real = next((n[:len(n) - len(ext)] for ext in ("", ".md", ".yml") for n in names
+                         if n.casefold() == low + ext), None)
+        if real is None:
+            return ""
+        cur = f"{cur}/{real}" if cur else real
+    return cur
+
+
 def check_learn(d, path, since):
-    cands = (path + ".md", path + "/index.md", path + ".yml", path + "/index.yml")
+    cands = learn_cands(path)
     have = set(g(d, "ls-tree", "-z", "--name-only", "HEAD", "--", *cands)[1].split("\0"))  # one call for the four probes
+    if not have.intersection(cands):
+        real = fold_path(d, path)
+        if real and real != path:
+            cands = learn_cands(real)
+            have = set(g(d, "ls-tree", "-z", "--name-only", "HEAD", "--", *cands)[1].split("\0"))
     for cand in cands:
         if cand in have:
             out = g(d, "log", "--format=%H %cs", f"--since={since}T00:00:00Z", "HEAD", "--", cand)[1]
