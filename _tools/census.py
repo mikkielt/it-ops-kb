@@ -16,7 +16,8 @@
                                                    part as a capped headless session, its result written for apply
   census.py apply LOG --group G --from RESULTS.json [--dry-run]   phase 2: a group's result, validated, then its bookkeeping
   census.py score LOG --from RESULTS.json ...      phase 2: results against the outcomes a census recorded in LOG, source by source
-  census.py run [--date D] [--resume] [--dry-run]  phases 0-1 as one command: factdiff detect and apply, check, the index, the phase-1 commit, summary
+  census.py run [SELECTION] [--date D] [--resume] [--dry-run]  phases 0-1 as one command: factdiff detect and apply, check, the index, the phase-1 commit, summary
+                                                   (SELECTION: factdiff.py detect's --topic T, --dir D, --file F, --source ID, repeatable; none = every source)
   census.py finish LOG [--date D] [--dry-run]      phase 3 as one command: confirm, kbdecide sweep, the index, the confirmed-dates commit
 
 census.py --root NAME <command> works on that root of this repository's kb/ (default public; `read`, which runs no git, also on a
@@ -3593,19 +3594,31 @@ def run_log(date, resume, exists):
     return next((p for p in names if not exists(p)), names[-1])
 
 
-def plan_run(root, date, resume, exists, applied):
+SELECTION_FLAGS = ("topic", "dir", "file", "source")
+
+
+def selection_args(a):
+    """The selection flags of `run` as `factdiff.py detect` takes them, in a fixed order ([] for none)."""
+    return [x for k in SELECTION_FLAGS for v in getattr(a, k, None) or [] for x in (f"--{k}", v)]
+
+
+def plan_run(root, date, resume, exists, applied, select=(), ids=()):
     """The steps of `census.py run`: phase 0 (the fact diff and what it settles), phase 1 (the mechanical verdicts), the
     index and the phase-1 commit, then the summary. `exists(path)` and `applied(log, date)` say whether the output of
-    a step for this date is there; `resume` skips the steps whose output is. `detect` is given its log (`--out`), so
-    that `apply`, `check`, the commit and `summary` read the one it wrote, whichever detect logs of the date exist."""
+    a step for this date is there; `resume` skips the steps whose output is. `detect` is given its log (`--out`, unless it is the one detect names itself), so
+    that `apply`, `check`, the commit and `summary` read the one it wrote, whichever detect logs of the date exist.
+    `select` are the selection flags `detect` is given and `ids` the selected source ids `check` is given (`--source`
+    for each), so the census log covers those sources alone; with neither, every source."""
     flog, log = run_log(date, resume, exists), census_path(f"{date}.csv")
     ra = root_args(root)
+    only = [x for sid in ids for x in ("--source", sid)]
+    named = [] if flog == census_path(f"factdiff-{date}.csv") else ["--out", flog]  # detect's own default name needs no flag
     return [
-        step("detect", "factdiff.py", *ra, "detect", "--date", date, "--sitemaps", "--out", flog, ok=(0, 1),
+        step("detect", "factdiff.py", *ra, "detect", *select, "--date", date, "--sitemaps", *named, ok=(0, 1),
              skip=f"{flog} exists" if resume and exists(flog) else ""),
         step("apply", "factdiff.py", *ra, "apply", flog, "--date", date, "--commit",
              skip="its commit is in the history" if resume and applied(flog, date) else ""),
-        step("check", "census.py", *ra, "check", "--date", date, "--factdiff", flog,
+        step("check", "census.py", *ra, "check", "--date", date, *only, "--factdiff", flog,
              skip=f"{log} exists" if resume and exists(log) else ""),
         step("repin", "census.py", *ra, "repin", log, "--date", date, "--commit"),
         step("index", "build_index.py", *ra),
@@ -3779,7 +3792,13 @@ def start(why, dry_run):
 
 def cmd_run(a, tally):
     date, root, root_rel = a.date or today(), os.path.basename(KB), kbcommon.repo_rel(".")
-    log, extra = census_path(f"{date}.csv"), []
+    log, extra, ids = census_path(f"{date}.csv"), [], []
+    chosen = argparse.Namespace(**{k: list(getattr(a, k)) for k in SELECTION_FLAGS})
+    if any(getattr(chosen, k) for k in SELECTION_FLAGS):
+        ids = factdiff.select_ids(chosen, factdiff.sources())  # exits on an unknown topic, directory, file or source id
+        if not ids:
+            extra.append("the selection matches no source (check would take every source)")
+    select = selection_args(chosen)  # --file paths as the root holds them
     if not a.resume and output_exists(log):
         n = sum(1 for r in read_log(os.path.join(kbcommon.HOME, log)) if r["outcome"])
         if n:
@@ -3787,8 +3806,8 @@ def cmd_run(a, tally):
     refused = start(refusals(root_rel, False, extra), a.dry_run)
     if refused:
         return refused
-    rerun = shlex.join(["python3", f"{TOOLS_REL}/census.py", *root_args(root), "run", "--date", date, "--resume"])
-    code, _ = drive(plan_run(root, date, a.resume, output_exists, apply_committed), root_rel, False, a.dry_run, rerun)
+    rerun = shlex.join(["python3", f"{TOOLS_REL}/census.py", *root_args(root), "run", *select, "--date", date, "--resume"])
+    code, _ = drive(plan_run(root, date, a.resume, output_exists, apply_committed, select, ids), root_rel, False, a.dry_run, rerun)
     if code == 0 and not a.dry_run:
         print(f"next: phase 2 reads the queue above; phase 3 is `census.py finish {log} --date {date}`")
     return code
@@ -3923,6 +3942,10 @@ def main():
     sc.add_argument("--from", dest="from_json", action="append", required=True, metavar="RESULTS.json",
                     help="a group's result (repeatable: the parts and groups of one model's run)")
     u = sub.add_parser("run", help="phases 0-1 as one command: fact diff, apply, check, index, the phase-1 commit, summary")
+    for flag, what in (("topic", "a topic's files"), ("dir", "a directory's files"), ("file", "a file"), ("source", "a source id")):
+        u.add_argument(f"--{flag}", action="append", default=[], metavar=flag.upper(),
+                       help=f"only the sources of {what} (repeatable, a union, as factdiff.py detect; none: every source)" if flag != "source"
+                       else "only this source id (repeatable, a union, as factdiff.py detect)")
     u.add_argument("--date", help="census date (default today)")
     u.add_argument("--resume", action="store_true", help="skip the steps whose output for the date exists")
     u.add_argument("--dry-run", action="store_true", help="print each step's argv, run nothing")
