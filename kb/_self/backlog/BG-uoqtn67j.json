@@ -2,7 +2,7 @@
   "id": "BG-uoqtn67j",
   "kind": "bug",
   "title": "benchmarks.md chains the 2026-10-23 held-out-only record against earlier runs on different rows with no note",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-bpjqqauu",
   "priority": "P3",
   "rank": 0,
@@ -30,6 +30,19 @@
     "parked: SP-lorofi3i review"
   ],
   "notes": "Premise: the bug's repro fails on the base (origin/main at the planning commit, 2026-11-09); precheck ran it through the landing's check runner. Sprint order: items that share one file are chained with depends_on.",
-  "claimed_by": "claude-bdc0a493",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "7204dbbe182f12c6c2e6d8b4e5c7a2545cf96beb",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('kb/_self/reports/benchmarks.md',encoding='utf-8').read();sys.exit(0 if '2026-10-23' in t and ('different row' in t or 'no earlier record held' in t) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
