@@ -2,7 +2,7 @@
   "id": "ST-nmrcazp2",
   "kind": "story",
   "title": "kbjob.py submit records the placement decision in the job, and status shows where and as whom it runs and which level decided",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-p4guu2ip",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",
@@ -52,5 +52,7 @@
     "ST-nwwcf3kk",
     "ST-liejtnnc"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-61c966d6",
+  "operator": "op-f618a13e"
 }
