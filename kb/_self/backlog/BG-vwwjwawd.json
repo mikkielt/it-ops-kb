@@ -7,7 +7,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "landing_lock removes a ticket it created on any interrupt, also one that lands between os.open and the assignment of the ticket name, and restores the SIGTERM handler it replaced",
+  "goal": "landing_lock removes a ticket it created on any interrupt, also one that lands between os.open and the assignment of the ticket name; landing_lock restores the SIGTERM handler it replaced, on a normal exit and on an interrupt in the same window",
   "repro": {
     "run": [
       "python3",
@@ -15,8 +15,26 @@
       "import os, subprocess, sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport bl_close\nt = tempfile.mkdtemp()\nsubprocess.run([\"git\", \"init\", \"-q\", t], check=True)\nqdir = bl_close.landing_queue_dir(bl_close.landing_lock_path(t))\nreal = os.fdopen\ndef boom(*a, **k):\n    os.fdopen = real\n    raise KeyboardInterrupt\nos.fdopen = boom  # an interrupt lands between the creation of the ticket and the assignment of its name\ntry:\n    with bl_close.landing_lock(t, \"ST-aaaaaaaa\"):\n        pass\nexcept BaseException as e:\n    print(\"interrupted by\", type(e).__name__)\nfinally:\n    os.fdopen = real\nleft = os.listdir(qdir) if qdir.is_dir() else []\nprint(\"tickets left in the queue:\", left)\nsys.exit(0 if not left else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, signal, subprocess, sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport bl_close\nt = tempfile.mkdtemp()\nsubprocess.run([\"git\", \"init\", \"-q\", t], check=True)\ndef mine(*_):\n    pass\nsignal.signal(signal.SIGTERM, mine)\nwith bl_close.landing_lock(t, \"ST-aaaaaaaa\"):\n    pass\nnormal = signal.getsignal(signal.SIGTERM) is mine\nreal = os.fdopen\ndef boom(*a, **k):\n    os.fdopen = real\n    raise KeyboardInterrupt\nos.fdopen = boom\ntry:\n    with bl_close.landing_lock(t, \"ST-aaaaaaaa\"):\n        pass\nexcept BaseException:\n    pass\nfinally:\n    os.fdopen = real\ninterrupted = signal.getsignal(signal.SIGTERM) is mine\nprint(\"handler restored after a normal exit:\", normal, \"after an interrupt:\", interrupted)\nsys.exit(0 if normal and interrupted else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "landing_lock removes a ticket it created on any interrupt, also one that lands between os.open and the assignment of the ticket name",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/bl_close.py"
+  ],
+  "depends_on": [
+    "BG-5b35ssgk"
   ],
   "links": [
     "parked: SP-mc4dzsfe review"
