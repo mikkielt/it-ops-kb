@@ -89,6 +89,15 @@ names the host that has it otherwise, and `cancel` moves the job to cancelled on
                                         the workstation with identity none and a reason naming the cause; with no URL the reason is `no policy`.
                                         With --url and --key-file the operator and its groups are the central coord's (`kj_place.group_paths`)
 
+  kbjob.py opa-config --print --url URL --token-file PATH --key-env NAME [--plain-http]
+                                        print the OPA configuration (YAML) and the systemd unit that runs `opa run --server` with it, which
+                                        pull both bundles of the central coord at URL (`kj_place.opa_config`): one service with the bearer
+                                        `token_path` PATH (absolute, never read), the bundles kbjobs and kbjobs-overrides polled with
+                                        `persist: true`, signing keyid kbjobs, and the HS256 key read from `${NAME}` by OPA's environment
+                                        substitution (the unit's EnvironmentFile). It writes and reads no file: neither the token's nor the
+                                        key's text is in the output. Exit 0; 2 for a url that is no http(s) url, a plain http url beyond
+                                        loopback without --plain-http, a relative PATH or a NAME that is no variable name
+
 OP is one of the closed table `kj_ops.OPS`, so `publish`, `answer` and any operator-only command are no operation:
   land SUBJECT          options wait_merge=SECONDS, trailer='Key: value' (repeatable)
   done SUBJECT          options commit=true, trailer='Key: value' (repeatable)
@@ -139,6 +148,11 @@ def build_parser():
     pl.add_argument("op", help="one of " + ", ".join(coord.PLACEMENT_OPS))
     pl.add_argument("subject", nargs="?", default="", help="the backlog id, or the name of a check")
     pl.add_argument("--opa", default=None, metavar="URL", help="the OPA server to ask (default: KB_OPA_URL; with neither, the workstation)")
+    oc = sub.add_parser("opa-config", help="print the OPA configuration and systemd unit that pull both bundles from coord; writes nothing")
+    oc.add_argument("--print", dest="show", action="store_true", help="print them (the only mode: nothing is written)")
+    oc.add_argument("--url", dest="coord_url", default=None, help="the central coord.py serve OPA pulls the bundles from")
+    oc.add_argument("--token-file", default=None, metavar="PATH", help="the absolute path of the file holding the bearer token (named in the configuration, never read)")
+    oc.add_argument("--key-env", default=None, metavar="NAME", help="the environment variable that holds the bundle signing key (named as ${NAME}, never read)")
     sub.add_parser("ping", help="print the pid of this host's executor and exit 0, or exit 1 when none runs")
     sub.add_parser("ensure", help="start the executor detached when none runs, wait for it, print `kbjob: serving pid N`")
     li = sub.add_parser("login-item", help="print a macOS LaunchAgent plist and a systemd user unit that run serve at login")
@@ -289,7 +303,23 @@ def place_command(args, remote):
     return 0
 
 
+def opa_config_command(args, parser):
+    """`kbjob.py opa-config --print --url URL --token-file PATH --key-env NAME`: 0 printing `kj_place.opa_config`; nothing is written or read."""
+    if not args.show:
+        parser.error("opa-config only prints: pass --print")
+    if not (args.coord_url and args.token_file and args.key_env):
+        parser.error("opa-config needs --url, --token-file and --key-env")
+    try:
+        text = kj_place.opa_config(args.coord_url, args.token_file, args.key_env, args.plain_http)
+    except ValueError as error:
+        raise kj_ops.Refusal(str(error)) from None
+    sys.stdout.write(text)
+    return 0
+
+
 def run(args, parser):
+    if args.command == "opa-config":
+        return opa_config_command(args, parser)
     remote = central(args)
     if args.command == "place":
         return place_command(args, remote)

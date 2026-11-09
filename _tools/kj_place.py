@@ -11,6 +11,7 @@ identity none and a reason that names the cause: a job is never refused or lost 
 import json
 import os
 import platform
+import re
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -115,3 +116,71 @@ def place(op, subject, url=None, operator=None, groups=None):
     if not url:
         return refused("no policy: no --opa and no KB_OPA_URL")
     return ask(url, build_input(op, subject, operator, groups))
+
+
+BUNDLES = ("kbjobs", "kbjobs-overrides")  # the two bundles `coord.py serve` answers at GET /v1/bundles/NAME.tar.gz
+SIGNING_KEYID = "kbjobs"  # the keyid of the signature in each bundle
+OPA_CONFIG_PATH = "/etc/opa/kbjobs.yaml"  # where `opa_config` says to save the configuration
+OPA_ENV_PATH = "/etc/opa/kbjobs.env"  # where it says to keep the one environment line that holds the key
+OPA_STATE_DIR = "/var/lib/opa-kbjobs"  # the persistence directory (systemd's StateDirectory=opa-kbjobs)
+OPA_ADDR = "127.0.0.1:8181"  # the loopback address OPA serves on, the one `KB_OPA_URL` names
+
+
+def opa_config(url, token_file, key_env, plain_http=False):
+    """The OPA configuration (YAML) and the systemd unit that runs `opa run --server` with it, as one text. The configuration has one
+    service at URL with the bearer `token_path` TOKEN_FILE (an absolute path, never read), the bundles of BUNDLES polled and persisted,
+    verified against the signing keyid and the HS256 key `${KEY_ENV}`, which `opa run` replaces from its environment. Nothing is read
+    or written: neither the token's nor the key's text is known here. A refusal (`ValueError`) names a url that is no http(s) url, a plain
+    http url beyond loopback without PLAIN_HTTP, a relative token file and an environment name no variable has."""
+    parts = urllib.parse.urlsplit(url)
+    if parts.scheme not in ("http", "https") or not parts.hostname:
+        raise ValueError(f"--url {url[:60]!r} is no http or https url")
+    if parts.scheme == "http" and not plain_http and not coord.is_loopback(parts.hostname):
+        raise ValueError(f"--url host {parts.hostname} is not loopback and OPA would send the token over plain http, in the clear: "
+                         "use an https url, or pass --plain-http to accept the risk")
+    if not token_file.startswith("/"):
+        raise ValueError(f"--token-file {token_file[:60]!r} is not an absolute path: OPA reads it from the working directory of its service")
+    if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", key_env):
+        raise ValueError(f"--key-env {key_env[:40]!r} is no environment variable name")
+    quote = json.dumps  # a JSON string is a YAML string
+    bundles = "".join(f"""  {name}:
+    service: kb
+    resource: {quote("v1/bundles/" + name + ".tar.gz")}
+    persist: true
+    polling:
+      min_delay_seconds: 10
+      max_delay_seconds: 60
+    signing:
+      keyid: {SIGNING_KEYID}
+""" for name in BUNDLES)
+    config = f"""# Save as {OPA_CONFIG_PATH}. `opa run` replaces ${{{key_env}}} from its environment (the unit's EnvironmentFile).
+services:
+  kb:
+    url: {quote(url.rstrip("/"))}
+    credentials:
+      bearer:
+        token_path: {quote(token_file)}
+bundles:
+{bundles}keys:
+  {SIGNING_KEYID}:
+    key: "${{{key_env}}}"
+    algorithm: HS256
+persistence_directory: {quote(OPA_STATE_DIR)}
+"""
+    unit = f"""# Save as /etc/systemd/system/opa-kbjobs.service, then run: systemctl enable --now opa-kbjobs.service
+# {OPA_ENV_PATH} (mode 0600) holds the one line {key_env}=<the bytes of the file that coord.py serve --bundle-key names>
+[Unit]
+Description=OPA placement policy of the it-ops-kb job queue
+After=network-online.target
+
+[Service]
+EnvironmentFile={OPA_ENV_PATH}
+ExecStart=/usr/local/bin/opa run --server --addr {OPA_ADDR} --config-file {OPA_CONFIG_PATH}
+StateDirectory=opa-kbjobs
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target
+"""
+    return config + "\n" + unit
