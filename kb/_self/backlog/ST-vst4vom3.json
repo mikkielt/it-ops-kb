@@ -61,7 +61,9 @@
       },
       "class": "design",
       "answer": "submit takes --clone-url URL, and records remote on a job a server may run, this clone's url when none is given",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -98,7 +100,9 @@
       },
       "class": "design",
       "answer": "in the clone's own tree on the integration main, with a worker worktree of the remote work branch made beside it, as a workstation has",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g4",
@@ -115,7 +119,9 @@
       },
       "class": "design",
       "answer": "only the seconds line of the test run's refusal; the reason and platform are members of the job record, shown by status",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g5",
@@ -132,7 +138,9 @@
       },
       "class": "design",
       "answer": "one job at a time per url, whatever the operation; other urls run in parallel",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: a test-ceiling refusal ends the job failed with the reason host condition and the central host's platform, never retried with another ceiling",

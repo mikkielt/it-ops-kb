@@ -90,7 +90,9 @@
       },
       "class": "design",
       "answer": "required: a Home built without the urls fails at once",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "filed_in": "clone-0ea70e5c",

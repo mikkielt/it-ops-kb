@@ -54,7 +54,9 @@
       },
       "class": "design",
       "answer": "any --kind with --url, the serve ends after the job (--once implied)",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",

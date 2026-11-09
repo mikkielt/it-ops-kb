@@ -44,7 +44,9 @@
       },
       "class": "design",
       "answer": "the operator the queue's queued event names",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -62,7 +64,9 @@
       },
       "class": "design",
       "answer": "its own KB_OPA_URL and its own clone's roots, with no new serve option",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
@@ -80,7 +84,9 @@
       },
       "class": "design",
       "answer": "the four the goal names; the fallback and its delay are taken from the decision",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g4",

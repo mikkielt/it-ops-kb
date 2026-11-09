@@ -86,7 +86,9 @@
       },
       "class": "design",
       "answer": "One BEGIN IMMEDIATE transaction reads the triple key and the live job, then writes the key and a new stateless record; coord.job_transition then moves none to queued",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -124,7 +126,9 @@
       },
       "class": "design",
       "answer": "flags take true, false, 1 or 0, wait_merge is 0 to 86400 seconds, trailer is one line of Key: value, self_reviewed is a doc path, trailer and self_reviewed repeat as lists, check requires its name",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g4",

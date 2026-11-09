@@ -79,7 +79,9 @@
       },
       "class": "design",
       "answer": "later of last renewal and submit",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -97,7 +99,9 @@
       },
       "class": "design",
       "answer": "step offline-since-TIME[-fallback-KIND], read by status as reason and placement",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
@@ -136,7 +140,9 @@
       },
       "class": "design",
       "answer": "60 s lease renewed every 20 s",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: a live lease keeps the job on its workstation",

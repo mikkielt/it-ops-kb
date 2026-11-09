@@ -70,7 +70,9 @@
       },
       "class": "design",
       "answer": "answer 500 naming the file",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -88,7 +90,9 @@
       },
       "class": "design",
       "answer": "read once at start; keyid kbjobs as kid in the header and as keyid in the payload",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Research 2026-11-08 (kb public/agents/policy-as-code.md, OPA bundle manifest, signing and configuration): OPA hashes a JSON or YAML file after sorting its object keys (compact JSON, Go's encoding of primitives; CODE S-iqk7tct2 v1/bundle/hash.go#walk), not over its bytes, and the payload must list exactly the bundle's files, .manifest included; for HS256 the verifier takes the configured key string's bytes as the secret (CODE S-xrw6ar44). The check hashes JSON files that way; numeric values in data files are safest kept as strings, since Go's and Python's number encodings may differ (UNK in QK-operations-placement-stories-need-opa-bundles). Check 0 as written cannot pass for any server: its m.name.lstrip(\"./\") and f[\"name\"].lstrip(\"/\") strip the leading dot of .manifest and .signatures.json from the tar names (a char set, not a prefix), so files.pop(\".signatures.json\") raises KeyError. With removeprefix(\"./\") and removeprefix(\"/\") in their place it exits 0 against this work. The orchestrator should replace the check before done.",

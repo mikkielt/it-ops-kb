@@ -70,7 +70,9 @@
       },
       "class": "design",
       "answer": "key a check by its name",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -88,7 +90,9 @@
       },
       "class": "design",
       "answer": "the decision plus the submitting host, asked on every submit",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "filed_in": "clone-0ea70e5c",

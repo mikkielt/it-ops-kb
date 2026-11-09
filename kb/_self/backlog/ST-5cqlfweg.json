@@ -72,7 +72,9 @@
       },
       "class": "design",
       "answer": "count the end as a loss: lost, then queued once or failed",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -90,7 +92,9 @@
       },
       "class": "design",
       "answer": "count the job's lost events in the store, and keep the pid and raised attempt as record members written by kj_exec",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
@@ -108,7 +112,9 @@
       },
       "class": "design",
       "answer": "also a job already in lost (a signal to serve left it), and a waiting job moves through running to lost",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g4",
@@ -126,7 +132,9 @@
       },
       "class": "design",
       "answer": "no: adoption reads the command line with ps, so the job is lost and runs again",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Premise (the failure this closes) and what already exists: backlog.py runs lists a run-state drift for a land killed at landing (no process record names a live pid) and runs --reconcile writes refused (kb/_self/coordination.md:57, bl_runs.py), and enter_run takes over a state left by a dead land (bl_land.py:2357), so land and stage-back are safe to run again; sync --push and tests are idempotent. What no tool does today: a landing started in a session's background shell dies with the session (https://code.claude.com/docs/en/interactive-mode#how-backgrounding-works, read 2026-11-08: background tasks are cleaned up when Claude Code exits), and the log the skill sends to the scratch directory is removed by land itself (ST-vbwxcncr, ST-kios45l7). A job run twice at most (attempt 2) bounds a crash loop; a third failure is a result for the operator, not a retry. Lease semantics are coord's claim/renew (coord.py:321 take, ttl in seconds), recorded pid is the record member the executor writes at start; adoption keeps a child from running twice after a serve restart. Related: bl_runs.reconcile is the item-level counterpart; the job layer does not write run/ITEM states itself, the CLI it runs does. Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: land and stage-back rely on their own resume rules (a land state left at landing by a dead land is taken over, bl_land.enter_run)",

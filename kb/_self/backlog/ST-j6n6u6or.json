@@ -87,7 +87,9 @@
       },
       "class": "design",
       "answer": "G1/.../GN: the trailing policy is no group, so a group named policy below GN gains no write to its parent's overrides",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Check 2 passes before the work by design: it pins that a local put and get of group/<path>/policy/placement round-trips the override unchanged, which the schema refusal of check 1 must not break.",

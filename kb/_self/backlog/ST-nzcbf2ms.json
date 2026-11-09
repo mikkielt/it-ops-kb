@@ -89,7 +89,9 @@
       },
       "class": "design",
       "answer": "refuse: no key file below 20 group directories is read, and no key names a deeper group path",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
@@ -106,7 +108,9 @@
       },
       "class": "design",
       "answer": "operators whose group path is the team or above it, so an operator of a sub-group below the team does not",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Research 2026-11-08 (kb public/gitlab/codeowners.md, Groups and subgroups): GitLab nests groups up to 20 levels on every tier and advises five or fewer; members inherit into subgroups. A coord group path deeper than 20 levels matches no GitLab group, so refusing it is consistent with the forge.",

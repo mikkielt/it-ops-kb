@@ -74,7 +74,9 @@
       },
       "class": "design",
       "answer": "dev.it-ops-kb.jobs",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -92,7 +94,9 @@
       },
       "class": "design",
       "answer": "queue nothing and exit 1",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
@@ -110,7 +114,9 @@
       },
       "class": "design",
       "answer": "the clone's own checkout when it holds one, and --print required",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g4",
@@ -128,7 +134,9 @@
       },
       "class": "design",
       "answer": "validate first, so a refused job starts no executor",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g5",
@@ -146,7 +154,9 @@
       },
       "class": "design",
       "answer": "plain name for the clone's own store, plus 8 hex of the store path's hash for any other",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g6",
@@ -164,7 +174,9 @@
       },
       "class": "design",
       "answer": "serve --idle-exit 60: ends after 60 s with no queued or running job",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Choice: a session starts the executor (ensure, called by submit) and a login item is only printed, because writing a LaunchAgent or a systemd unit changes the operator's host outside the clone (the operator names 'started by a session or a login item'; the print leaves the install to them, so no host-setup gate). The executor then outlives the session that started it, as dispatch --detach does for a worker (bl_dispatch.py:1051 spawn_detached, start_new_session): a background shell would die with Claude Code (https://code.claude.com/docs/en/interactive-mode#how-backgrounding-works, read 2026-11-08), so ensure starts it with its own session and never as a Bash background task. One executor per host holds an exclusive file in the host lock directory (KB_HOST_LOCK_DIR, kg_lock's mechanism, git.md:62) so two sessions' ensure never start two. Claude Code's own supervisor (claude daemon, background sessions restarted when their process exits: kb public/claude/parallel-sessions.md:84, DOC https://code.claude.com/docs/en/agent-view, kb retrieved 2026-10-26) hosts model sessions, not shell commands; it does not replace this executor and is not rebuilt here.",

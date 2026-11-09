@@ -73,7 +73,9 @@
       },
       "class": "design",
       "answer": "operator is the local operator id and groups is empty, unless --url and --key-file name a central coord: then the operator it names for the key file and the ancestors of its path as groups",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -110,7 +112,9 @@
       },
       "class": "design",
       "answer": "a fallback_after_s or budget_cap_usd that is no number of 0 or more also decides the workstation, an OP outside the placement operations exits 2, and a missing decided_by or reason is filled with policy and a generic reason",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Order agreed 2026-11-08 with SP-ep7ck2ab's manager (ask A1e21b0d155): shared kb/_self/map.csv rows land by first claim, the later item rebases; no hard dependency.",
