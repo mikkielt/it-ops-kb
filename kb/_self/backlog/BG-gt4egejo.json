@@ -2,7 +2,7 @@
   "id": "BG-gt4egejo",
   "kind": "bug",
   "title": "factdiff.py detect run twice in one day overwrites the tracked detect log of that day",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-2cq2hse4",
   "priority": "P2",
@@ -29,5 +29,7 @@
     "kb/_self/content-rules.md"
   ],
   "notes": "Found 2026-11-09 when a refresh run had to restore the tracked log after a second detect overwrote it. Premise: the repro (cmd_detect in process on a planted root holding a committed same-day log) exits 1 on 55dde769f: the log is rewritten.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-c41d77ea",
+  "operator": "op-f618a13e"
 }
