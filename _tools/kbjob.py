@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 """kbjob: queue an operation as a job in coord's store (stdlib only). Docs: kb/_self/coordination.md, section "Operation jobs".
 
-  kbjob.py [--store PATH] submit OP [SUBJECT] [--by claude-<8 hex>] [--option KEY=VALUE]... [--name CHECK] [--no-ensure] [--opa URL]
+  kbjob.py [--store PATH] submit OP [SUBJECT] [--by claude-<8 hex>] [--option KEY=VALUE]... [--name CHECK] [--budget USD] [--no-ensure] [--opa URL]
                                         after `ensure` (a job is never queued for nobody: when it had to start the executor it prints
                                         `kbjob: no executor, started pid N` on stderr, and when none comes up it queues nothing and
                                         exits 1; --no-ensure skips it), queue the operation OP on SUBJECT for this clone and print one JSON object,
                                         {job, state, deduped, seq, follow}: the job is the key job/JB-<8 characters>, its
-                                        state queued, `follow` the command line `python3 _tools/kbjob.py follow JOB`. Before it queues,
+                                        state queued, `follow` the command line `python3 _tools/kbjob.py follow JOB`. A paid operation
+                                        (bench, dispatch, begin) needs --budget USD, its most spend (exit 2 naming --budget without it);
+                                        when the decision has a `budget_cap_usd`, a new job whose budget plus the group's live jobs'
+                                        budgets plus the group's spend of the UTC day passes it queues nothing and exits 1 naming the
+                                        three figures and the cap (`kj_store.cap_guard`). Before it queues,
                                         it asks `kj_place` (the policy at --opa, else KB_OPA_URL) where and as whom OP runs and keeps the
                                         decision in the job's record as `placement`, with `host`; a decision that cannot be had is the
                                         workstation with its reason, and a submit that joins a live job keeps that job's first decision.
@@ -108,9 +112,12 @@ OP is one of the closed table `kj_ops.OPS`, so `publish`, `answer` and any opera
   stage-back SUBJECT    options check=true, self_reviewed=DOC (repeatable), trailer='Key: value' (repeatable)
   sync-push             no subject, no option
   check --name NAME     no subject; NAME is backlog-check, tests-full or tests-changed
+  bench SCENARIO --budget USD
+                        a scenario name as the subject; option budget (USD, required, above 0): benchmarks.py run SCENARIO --max-usd USD
 SUBJECT is the id of an item of this clone's backlog. --by is claude- and 8 lowercase hex digits, never a full session id.
 The store is --store, else KB_COORD_STORE, else the clone's own (coord.py's). Exit codes of submit: 0 queued or joined; 2 an
-operation, subject, option or --by the table does not allow (the message names what is), or no store; of follow, status, log and
+operation, subject, option or --by the table does not allow (the message names what is), a paid operation with no --budget, or no
+store; 1 a budget that would pass the group's daily cap (nothing is queued); of follow, status, log and
 cancel: as each says, 2 for a job the store does not hold. `kj_store.submit` and
 `kj_store.status` are the same as a function, the interface the kb MCP server calls.
 
@@ -143,10 +150,11 @@ def build_parser():
     sub = parser.add_subparsers(dest="command", required=True)
     p = sub.add_parser("submit", help="queue an operation as a job, or return the live one")
     p.add_argument("op", help="one of " + ", ".join(kj_ops.OPS))
-    p.add_argument("subject", nargs="?", default="", help="the backlog id of land, done and stage-back")
+    p.add_argument("subject", nargs="?", default="", help="the backlog id of land, done and stage-back, the scenario of bench")
     p.add_argument("--by", default=None, help="claude- and 8 lowercase hex digits")
     p.add_argument("--option", action="append", default=[], metavar="KEY=VALUE", help="an option of the operation, repeatable")
     p.add_argument("--name", default=None, help="the check of the operation check")
+    p.add_argument("--budget", default=None, metavar="USD", help="the most a paid operation (bench, dispatch, begin) may spend, in US dollars; required for one")
     p.add_argument("--no-ensure", action="store_true", help="queue the job without starting an executor when none runs")
     p.add_argument("--opa", default=None, metavar="URL", help="the OPA server to ask for the placement (default: KB_OPA_URL; with neither, the workstation)")
     pl = sub.add_parser("place", help="ask the OPA placement policy where and as whom an operation runs; any failure to answer decides the workstation")
@@ -194,6 +202,8 @@ def options_of(args):
         given.setdefault(name, []).append(value)
     if args.name is not None:
         given.setdefault("name", []).append(args.name)
+    if args.budget is not None:
+        given.setdefault("budget", []).append(args.budget)
     return {name: values if len(values) > 1 else values[0] for name, values in given.items()}
 
 
@@ -205,6 +215,9 @@ def main(argv=None):
     args = parser.parse_args(argv)
     try:
         return run(args, parser)
+    except kj_ops.OverCap as error:
+        print(f"kbjob.py: {error}", file=sys.stderr)
+        return 1
     except (kj_ops.Refusal, coord.Refused) as error:
         print(f"kbjob.py: {error}", file=sys.stderr)
         return 2
@@ -364,7 +377,7 @@ def run(args, parser):
         if not args.no_ensure:
             given = options_of(args)
             kj_ops.check_job(args.op, args.subject, args.by or None, given)  # a refused job starts no executor
-            if kj_ops.OPS[args.op]["subject"]:
+            if kj_ops.item_subject(args.op):
                 bl_base.load_settings(str(ROOT))
                 if not (ROOT / bl_base.rel_dir() / f"{args.subject}.json").is_file():
                     raise kj_ops.Refusal(f"{args.subject} is no item of this clone's backlog: a subject is the id of an item file under {bl_base.rel_dir()}")

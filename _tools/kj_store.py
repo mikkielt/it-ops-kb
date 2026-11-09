@@ -21,6 +21,12 @@ refusal and key file mode rule are coord's). `submit_remote` and `status_remote`
 adds `remote` (the url of the submitting clone's integration remote); a job's `placement` (the decision of `kj_place`, with `host`;
 a job with none is placed on the workstation, `placement_of`) is on the local queue too and, once an executor runs it, `log_host` and `executor`. The central store holds states and
 events only: the output log stays on the executor's host.
+
+A paid job (`kj_ops.PAID`) carries its `budget` (USD) in its options. When the placement decision has a `budget_cap_usd`, `submit`
+queues the job only if the spend of its group's finished jobs of the UTC day it is submitted on (`bl_cost.spend_usd` of each
+finished job's item, once per item), the budgets of the group's live jobs and this budget stay within the cap, else it raises
+`kj_ops.OverCap` naming the three figures and the cap and queues nothing; a group is the jobs placed by the same `decided_by`.
+The live budgets are read in the transaction that writes the job, so racing submits meet one cap. Nothing running is stopped.
 """
 import base64
 import hashlib
@@ -109,9 +115,72 @@ def read_record(store, job):
     return coord.job_record(row["value"]) if row is not None and row["value"] is not None else None
 
 
-def enqueue(store, key, record):
+def records_of(con):
+    """The records of every job the store holds, read on CON."""
+    rows = con.execute("SELECT value FROM entries WHERE key LIKE ?", (JOB_KEYS + "%",)).fetchall()
+    return [r for r in (coord.job_record(row["value"]) for row in rows if row["value"]) if r and r.get("job")]
+
+
+def budget_of(record):
+    """The budget in USD of RECORD's options, 0 for a job with none."""
+    value = (record.get("options") or {}).get("budget")
+    return value if isinstance(value, (int, float)) and not isinstance(value, bool) else 0
+
+
+def group_of(record):
+    """The group a job's spend counts to: the level that decided its placement (`decided_by`), None for a job with none."""
+    placed = record.get("placement")
+    return placed.get("decided_by") if isinstance(placed, dict) else None
+
+
+def utc_day(ts):
+    return time.strftime("%Y-%m-%d", time.gmtime(ts))
+
+
+def finished_spend(root, records, group, now):
+    """USD the query log holds for the items of the finished jobs of GROUP submitted on the UTC day of NOW (`bl_cost.spend_usd`,
+    once per item: a scenario or a job with no item adds nothing)."""
+    import bl_cost
+    day = utc_day(now)
+    items = sorted({r.get("subject") for r in records if group_of(r) == group and r.get("state") in TERMINAL
+                    and utc_day(r.get("submitted_ts", 0)) == day and kj_ops.ITEM.fullmatch(r.get("subject") or "")})
+    if not items:
+        return 0.0
+    bl_base.load_settings(root)
+    backlog = bl_base.Backlog(Path(root))
+    return round(sum(bl_cost.spend_usd(backlog, item)[0] for item in items), 6)
+
+
+def read_records(store):
+    """The records of every job the store holds."""
+    con = coord.connect(store)
+    try:
+        coord.ensure_schema(con)
+        return records_of(con)
+    finally:
+        con.close()
+
+
+def cap_guard(placement, budget, spent):
+    """The function the transaction calls with the records of the store before it writes a paid job: it raises `kj_ops.OverCap` when
+    SPENT, the group's live budgets and BUDGET pass the placement's `budget_cap_usd`; None when PLACEMENT has no cap."""
+    cap = placement.get("budget_cap_usd") if isinstance(placement, dict) else None
+    if cap is None or not budget:
+        return None
+    group = placement.get("decided_by")
+
+    def guard(records):
+        live = sum(budget_of(r) for r in records if group_of(r) == group and r.get("state") in LIVE)
+        if spent + live + budget > cap:
+            raise kj_ops.OverCap(f"the budget {budget:g} USD would take {group} past its cap of {cap:g} USD a day: spend today {spent:g} USD "
+                                 f"+ live jobs' budgets {live:g} USD + this budget {budget:g} USD = {spent + live + budget:g} USD; nothing is queued")
+    return guard
+
+
+def enqueue(store, key, record, guard=None):
     """(job id, deduped) after one transaction: the triple's live job when it has one, else RECORD written as a new job
-    (its attempt raised by one over the newest job of the triple, when that ended) and the triple's key pointing at it."""
+    (its attempt raised by one over the newest job of the triple, when that ended) and the triple's key pointing at it. GUARD,
+    called with the store's job records before a new job is written, may refuse it by raising."""
     with coord.Tx(store) as con:
         now = time.time()
         krow = coord.live_row(con, key, now)
@@ -122,6 +191,8 @@ def enqueue(store, key, record):
             if have is not None and have.get("state", "none") not in TERMINAL:
                 return job, True
             record["attempt"] = int(have.get("attempt", 1)) + 1 if have else 1
+        if guard is not None:
+            guard(records_of(con))
         job = record["job"]
         con.execute("INSERT INTO entries (key, value, revision) VALUES (?, ?, 1)",
                     (JOB_KEYS + job, json.dumps(record, sort_keys=True, ensure_ascii=False)))
@@ -156,7 +227,7 @@ def submit(root, op, subject, by, options=None, store=None, placement=None):
     subject = subject or ""
     by = by or None
     given = kj_ops.check_job(op, subject, by, options)
-    if kj_ops.OPS[op]["subject"]:
+    if kj_ops.item_subject(op):
         bl_base.load_settings(root)
         if not (Path(root) / bl_base.rel_dir() / f"{subject}.json").is_file():
             raise kj_ops.Refusal(f"{subject} is no item of this clone's backlog: a subject is the id of an item file under {bl_base.rel_dir()}")
@@ -166,7 +237,11 @@ def submit(root, op, subject, by, options=None, store=None, placement=None):
               "by": by, "options": given, "attempt": 1, "submitted_ts": round(time.time(), 3)}
     if placement is not None:
         record["placement"] = placed(placement)
-    job, deduped = enqueue(store, triple_key(clone, op, key_subject(subject, given)), record)
+    guard = None
+    if op in kj_ops.PAID:
+        spent = finished_spend(root, read_records(store), (placement or {}).get("decided_by"), time.time()) if (placement or {}).get("budget_cap_usd") is not None else 0
+        guard = cap_guard(placement, given["budget"], spent)
+    job, deduped = enqueue(store, triple_key(clone, op, key_subject(subject, given)), record, guard)
     have = read_record(store, job) or {}
     if have.get("state", "none") == "none":
         queue(store, job, have or record)
@@ -338,7 +413,7 @@ def submit_remote(root, remote, op, subject, by, options=None, placement=None):
     a revision-checked write first, so racing submits meet one winner."""
     subject, by = subject or "", by or None
     given = kj_ops.check_job(op, subject, by, options)
-    if kj_ops.OPS[op]["subject"]:
+    if kj_ops.item_subject(op):
         bl_base.load_settings(root)
         if not (Path(root) / bl_base.rel_dir() / f"{subject}.json").is_file():
             raise kj_ops.Refusal(f"{subject} is no item of this clone's backlog: a subject is the id of an item file under {bl_base.rel_dir()}")
@@ -362,6 +437,10 @@ def submit_remote(root, remote, op, subject, by, options=None, placement=None):
             else:
                 attempt = int(have.get("attempt", 1)) + 1
         if not deduped:
+            if op in kj_ops.PAID and (placement or {}).get("budget_cap_usd") is not None:  # not atomic: the central store has no transaction to read in
+                records = remote.records()
+                group = placement.get("decided_by")
+                cap_guard(placement, given["budget"], finished_spend(root, records, group, time.time()))(records)
             job = new_id()
             if not remote.put(key, job, revision):
                 continue  # another submit won the key
