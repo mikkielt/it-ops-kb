@@ -19,10 +19,37 @@
     "_tools/bench_core.py",
     "kb/_self/benchmarks.md",
     "kb/_self/tools.md",
-    "_tools/bench_load.py"
+    "_tools/bench_load.py",
+    "_tools/bench_repro.py",
+    "_tools/bench_multi.py",
+    "_tools/bl_clean.py",
+    "kb/_self/backlog.md"
   ],
   "depends_on": [
     "BG-bh7mf3wv"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does a session-load run keep its sandbox clone apart from a run started at once, and what happens to its clones when it ends?",
+      "options": [
+        "scratch_dir() is a per-process run-<pid>-<hex> directory under scratch_base(), and Bench.close() removes the run's clones and bare origins",
+        "scratch_dir() is a per-process run directory, and Bench.close() keeps the clones",
+        "only session-load names its clones per run, scratch_dir() stays shared"
+      ],
+      "recommendation": "scratch_dir() is a per-process run-<pid>-<hex> directory under scratch_base(), and Bench.close() removes the run's clones and bare origins",
+      "reason": "runs share nothing, and the 1.3 GB clones do not pile up; raw logs stay",
+      "do": {
+        "scratch_dir() is a per-process run-<pid>-<hex> directory under scratch_base(), and Bench.close() removes the run's clones and bare origins": "BG-ui3f5s37",
+        "scratch_dir() is a per-process run directory, and Bench.close() keeps the clones": "BG-ui3f5s37",
+        "only session-load names its clones per run, scratch_dir() stays shared": "BG-ui3f5s37"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "scratch_dir() is a per-process run-<pid>-<hex> directory under scratch_base(), and Bench.close() removes the run's clones and bare origins",
+      "by": "agent"
+    }
   ],
   "notes": "Premise: the bug's repro fails on the base (origin/main at the planning commit, 2026-11-09); precheck ran it through the landing's check runner. Sprint order: items that share one file are chained with depends_on.",
   "filed_in": "clone-0ea70e5c",
