@@ -19,5 +19,9 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "links": [
+    "parked: SP-pww4aqis review"
+  ],
+  "notes": "Review gap 3 of SP-pww4aqis (probed 2026-11-09 on origin/main): bl_items.py ids=[iid]+gone only; the neighbour files are in bl.written and committed. tools.md says KB-Work naming each deleted item, which matches the code but not the goal of BG-mwqxiqqx (each id whose file changed). move and reopen are right. Whether the neighbour should be named or the goal and docs say deleted ids only is a small choice for the worker; check-trailers refuses a named id whose file the commit does not change, so naming the changed neighbour is allowed.",
   "filed_in": "clone-0ea70e5c"
 }
