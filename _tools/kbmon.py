@@ -6,7 +6,7 @@
                                unsupported), its seconds and, unless it timed out or is absent, its data
   kbmon.py --once              print the same panels as plain text, with no escape byte
   kbmon.py --once --shared [--max-age S]
-                               the same text, served from the clone's one shared snapshot (`_cache/kbmon/shared.json`) when
+                               the same text, served from the clone's one shared snapshot (`_cache/kbmon/shared.json` of its main checkout) when
                                it is younger than S seconds (default 60), with a last line that says so and its age; else
                                one fresh run, written there under a lock, so panes that fall due together make one refresh;
                                --max-age 0 always refreshes
@@ -75,6 +75,7 @@ import contextlib
 import json
 import os
 import shutil
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -92,7 +93,7 @@ DEFAULT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_TIMEOUT = 10.0  # seconds a panel may take
 DEFAULT_INTERVAL = 5  # seconds between live frames
 MAX_INTERVAL = 300
-SHARED_FILE = Path("_cache") / "kbmon" / "shared.json"  # under the clone: the snapshot its interactive panes share
+SHARED_FILE = Path("_cache") / "kbmon" / "shared.json"  # under the clone's main checkout: the snapshot its interactive panes share
 SHARED_MAX_AGE = 60.0  # seconds a shared snapshot is served when --max-age is not given
 SHARED_LOCK_STALE_S = 120.0  # a refresh lock file older than this is a crashed run's
 SHARED_POLL_S = 0.2
@@ -182,6 +183,22 @@ def take(a, names, kept=None):
     return mon_view.scrub(snap)
 
 
+def shared_home(root):
+    """The checkout that holds the clone's shared snapshot: the parent of the git common directory (the main checkout, which
+    every worktree of the clone shares), else `root` itself where git cannot say, the clone is bare or `root` is in none."""
+    root = Path(root).resolve()
+    try:
+        p = subprocess.run(["git", "-C", str(root), "rev-parse", "--git-common-dir"], capture_output=True, text=True,
+                           encoding="utf-8", timeout=10)
+    except (OSError, subprocess.SubprocessError):
+        return root
+    out = p.stdout.strip()
+    if p.returncode != 0 or not out:
+        return root
+    common = (root / out).resolve()
+    return common.parent if common.name == ".git" else root
+
+
 def shared_age(path):
     """Seconds since the shared snapshot at `path` was written, or None when there is none."""
     try:
@@ -228,7 +245,7 @@ def shared(a, names):
     `--max-age`, else a fresh one of every panel (age 0), written to the file by a temporary file of this process's own
     under the lock and stamped with the time its run began, so its age counts from when its data was read. A pane that waited on the lock finds the snapshot the holder wrote and serves it, so panes due
     together make one refresh. A snapshot that cannot be read or written is refreshed or served from memory."""
-    path = a.root.resolve() / SHARED_FILE
+    path = shared_home(a.root) / SHARED_FILE
 
     def fresh_enough():
         age = shared_age(path)
