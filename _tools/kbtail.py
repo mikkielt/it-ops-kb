@@ -34,7 +34,7 @@ that are no conversation (attachment, mode, system, summary and the like) are ig
 `kbtail: skipped N` on stderr when N is not 0. While following, the process waits on the stat of coord's store file (a store that exists:
 KB_COORD_STORE, else the project's; it opens no connection, so a lock another process holds does not delay a read) and
 otherwise sleeps; either way it reads only the bytes appended since its last read. A file replaced by another (a new
-identity, a smaller size or other first bytes) shows its last `--history` lines, and what is appended after them. It writes no file. Exit codes: 0 done (also an interrupt), 2 a bad argument or a TARGET with no transcript.
+identity, a smaller size, other first bytes or other bytes before the read position) shows its last `--history` lines, and what is appended after them. It writes no file. Exit codes: 0 done (also an interrupt), 2 a bad argument or a TARGET with no transcript.
 `kbmon.py --follow ARGS` runs it with ARGS.
 
 Answers: what a session, or every live session of the clone, is doing right now, as a redacted line for each tool call, result and message
@@ -60,6 +60,7 @@ HISTORY = 20  # lines printed before following
 WAKE_S = 1.0  # longest wait between two reads of a followed file
 STORE_POLL_S = 0.05  # seconds between two looks at the coord store file's stat
 HEAD_BYTES = 1024  # first bytes of a followed file kept to tell a replacement from an append
+TAIL_BYTES = 1024  # bytes just before the read position kept too: a file rewritten in place with the same first bytes differs there
 MAX_SESSIONS = 16 # sessions followed at once; the rest are named in one line
 SCAN_S = 30  # seconds after which the live sessions are listed again
 SCAN_MIN_S = 5  # the least seconds between two lists a change of the coord store asks for
@@ -263,22 +264,37 @@ def identify(path):
         return None, b""
 
 
-def mark(offset, known):
+def tail_of(path, offset):
+    """The up to TAIL_BYTES bytes of PATH that end at OFFSET (empty when it cannot be read)."""
+    try:
+        with open(path, "rb") as f:
+            start = max(0, offset - TAIL_BYTES)
+            f.seek(start)
+            return f.read(offset - start)
+    except OSError:
+        return b""
+
+
+def mark(offset, known, path):
     """The read position at OFFSET of the file `identify` returned KNOWN for: [offset, rest of a half-written line, identity,
-    first bytes]."""
-    return [offset, b"", known[0], known[1][:offset]]
+    first bytes, the bytes before OFFSET]."""
+    return [offset, b"", known[0], known[1][:offset], tail_of(path, offset)]
 
 
 def replaced(path, state, size):
-    """Whether PATH is no longer the file STATE was read from: another identity, a smaller size, or other first bytes."""
-    offset, _, ident, head = state
+    """Whether PATH is no longer the file STATE was read from: another identity, a smaller size, or other first bytes or
+    other bytes before the read position (a rewrite in place that kept the first bytes)."""
+    offset, _, ident, head, tail = state
     st = path.stat()
     if size < offset or (ident is not None and ident != (st.st_dev, st.st_ino)):
         return True
-    if not head:
-        return False
     with open(path, "rb") as f:
-        return f.read(len(head)) != head
+        if head and f.read(len(head)) != head:
+            return True
+        if tail:
+            f.seek(offset - len(tail))
+            return f.read(len(tail)) != tail
+    return False
 
 
 def read_new(path, state, count):
@@ -289,7 +305,7 @@ def read_new(path, state, count):
     if replaced(path, state, size):
         known = identify(path)
         lines, _, end = history(path, count)
-        state[:] = mark(end, known)
+        state[:] = mark(end, known, path)
         return lines
     offset, rest = state[0], state[1]
     lines = []
@@ -307,6 +323,7 @@ def read_new(path, state, count):
                     lines += parse(raw.decode("utf-8", "replace"))[0]
         if len(state[3]) < HEAD_BYTES:
             state[3] = identify(path)[1][:offset]
+        state[4] = (state[4] + data)[-TAIL_BYTES:]
     state[0], state[1] = offset, rest
     return lines
 
@@ -427,7 +444,7 @@ def scan(root, item, role, followed, count):
                 lines, bad, end = history(path, keep)
             except OSError:
                 continue
-            f.files[path] = mark(end, known)
+            f.files[path] = mark(end, known, path)
             skipped += bad
             shown += [(line[:8], row["pid"], sub, line) for line in lines]
     return sorted(shown, key=lambda x: x[0]), skipped, over, unbound, lost
@@ -439,7 +456,7 @@ def drain(followed, pid, count=HISTORY):
     f = followed[pid]
     for path in subagent_files(f.transcript):
         if path not in f.files:
-            f.files[path] = mark(0, identify(path))
+            f.files[path] = mark(0, identify(path), path)
     out = []
     for path, state in list(f.files.items()):
         try:
@@ -564,7 +581,7 @@ def main(argv=None, out=None, err=None):
             if skipped:
                 print(f"kbtail: skipped {skipped}", file=err)
             return 0
-        follow(path, mark(end, known), columns, out, a.history)
+        follow(path, mark(end, known, path), columns, out, a.history)
     except BrokenPipeError:
         return 0
     except OSError as e:
