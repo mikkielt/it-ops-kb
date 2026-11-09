@@ -24,8 +24,7 @@
     "kb/_self/backlog.md"
   ],
   "depends_on": [
-    "ST-p2wmi3hq",
-    "ST-nwwcf3kk"
+    "ST-p2wmi3hq"
   ],
   "gates": [
     {
