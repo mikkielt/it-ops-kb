@@ -343,50 +343,60 @@ def cmd_claim(bl, a):
     import os
     session = os.environ.get("CLAUDE_CODE_SESSION_ID") or f"by:{a.by}"
     top, ledger = claims_ledger(bl.root)
-    # the ledger is read and written under the lock `dispatch` takes to add a worker's pid and session, and through a
-    # temp file of this process's own, so a claim made beside a dispatch waits and neither side drops the other's record
-    with ledger_lock(ledger) if ledger else contextlib.nullcontext():
-        try:
-            here = json.loads(ledger.read_text(encoding="utf-8")) if ledger else {}
-        except (OSError, ValueError):
-            here = {}
-        here = {i: (r if isinstance(r, dict) else {"by": r, "session": f"by:{r}"}) for i, r in here.items()}
-        # the item files of the ledger's ids are read again under the lock: a claim another session made while this one
-        # waited for it is in the ledger and in its item file, and the files read at start predate both; the item being
-        # claimed is read again too, so a claim of it made meanwhile is refused and its file is not overwritten
-        for i in (*here, iid):
+    # the operator (`claude auth status`, `git config`) and the coord run state (`take_claim`) are asked before the
+    # ledger lock is taken: each can take longer than the lock's stale age, and a waiter clears a lock older than that.
+    # The coord transition is what lets one of two concurrent claims win; a refusal under the lock that follows it
+    # (the item claimed meanwhile, another session's claim in this checkout) puts the run state back
+    who = operator_who()[0]
+    moved = take_claim(iid, a.by, mine=it.get("status") == "doing" and it.get("claimed_by") == a.by)
+    try:
+        # the ledger is read and written under the lock `dispatch` takes to add a worker's pid and session, and through
+        # a temp file of this process's own, so a claim made beside a dispatch waits and neither side drops the other's
+        # record
+        with ledger_lock(ledger) if ledger else contextlib.nullcontext():
             try:
-                text = (bl.dir / f"{i}.json").read_text(encoding="utf-8")
-                item = json.loads(text)
+                here = json.loads(ledger.read_text(encoding="utf-8")) if ledger else {}
             except (OSError, ValueError):
-                continue
-            if isinstance(item, dict):
-                bl.items[i], bl.raw[i] = item, text
-        it = bl.items[iid]
-        if it.get("status") == "doing" and it.get("claimed_by") != a.by:
-            raise Refused(f"{bl.label(iid)} is claimed by {it['claimed_by']}")
-        busy = sorted(i for i, r in here.items() if r.get("session") != session and i != iid and i in bl.items
-                      and bl.items[i].get("status") == "doing" and bl.items[i].get("claimed_by") == r.get("by"))
-        if busy:
-            raise Refused(f"claim refuses {bl.label(iid)} for {a.by}: another session ({here[busy[0]].get('by')}) works "
-                          f"in this checkout ({top}) on {', '.join(bl.label(i) for i in busy)}; each session works in its "
-                          "own worktree (git worktree add), so its claim commits never land on another session's branch")
-        # the coord key run/<id> (shared by every tree and clone) is taken before anything is written: a run another owner
-        # holds refuses the claim here, and the transition itself lets one of two concurrent claims win
-        take_claim(iid, a.by, mine=it.get("status") == "doing" and it.get("claimed_by") == a.by)
-        it.update(status="doing", claimed_by=a.by)
-        it.pop("operator", None)
-        who = operator_who()[0]
-        if who:
-            it["operator"] = who
-        bl.save(it)
-        here = {i: r for i, r in here.items() if i in bl.items and bl.items[i].get("status") == "doing"}
-        here[iid] = {"by": a.by, "session": session}
-        try:
-            if ledger:
-                write_ledger(ledger, here)
-        except OSError:
-            pass  # the record guards the next claim; a checkout it cannot be written in is not refused for it
+                here = {}
+            here = {i: (r if isinstance(r, dict) else {"by": r, "session": f"by:{r}"}) for i, r in here.items()}
+            # the item files of the ledger's ids are read again under the lock: a claim another session made while this
+            # one waited for it is in the ledger and in its item file, and the files read at start predate both; the
+            # item being claimed is read again too, so a claim of it made meanwhile is refused and its file is not
+            # overwritten
+            for i in (*here, iid):
+                try:
+                    text = (bl.dir / f"{i}.json").read_text(encoding="utf-8")
+                    item = json.loads(text)
+                except (OSError, ValueError):
+                    continue
+                if isinstance(item, dict):
+                    bl.items[i], bl.raw[i] = item, text
+            it = bl.items[iid]
+            if it.get("status") == "doing" and it.get("claimed_by") != a.by:
+                raise Refused(f"{bl.label(iid)} is claimed by {it['claimed_by']}")
+            busy = sorted(i for i, r in here.items() if r.get("session") != session and i != iid and i in bl.items
+                          and bl.items[i].get("status") == "doing" and bl.items[i].get("claimed_by") == r.get("by"))
+            if busy:
+                raise Refused(f"claim refuses {bl.label(iid)} for {a.by}: another session ({here[busy[0]].get('by')}) "
+                              f"works in this checkout ({top}) on {', '.join(bl.label(i) for i in busy)}; each session "
+                              "works in its own worktree (git worktree add), so its claim commits never land on "
+                              "another session's branch")
+            it.update(status="doing", claimed_by=a.by)
+            it.pop("operator", None)
+            if who:
+                it["operator"] = who
+            bl.save(it)
+            here = {i: r for i, r in here.items() if i in bl.items and bl.items[i].get("status") == "doing"}
+            here[iid] = {"by": a.by, "session": session}
+            try:
+                if ledger:
+                    write_ledger(ledger, here)
+            except OSError:
+                pass  # the record guards the next claim; a checkout it cannot be written in is not refused for it
+    except Refused:
+        if moved:
+            move_run(iid, "released", "claim")
+        raise
     say(f"claimed {bl.label(iid)} for {a.by}")
     commit_written(bl, a, "claim", iid)
     return 0
