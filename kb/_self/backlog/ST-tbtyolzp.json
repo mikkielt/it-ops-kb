@@ -1,0 +1,22 @@
+{
+  "id": "ST-tbtyolzp",
+  "kind": "story",
+  "title": "A planned repro or check that plants an extender at one signature breaks the landing of a later item that changes how the point is called",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "planning orders items that share an extension point by their repros' planted shapes: a repro plants the shape the point documents (every optional parameter included), or the later item's checks name the earlier item's repro as one to rerun",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.exit(\"not yet: a planned follow-up, no check yet\")"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-ga3lbnlk close"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

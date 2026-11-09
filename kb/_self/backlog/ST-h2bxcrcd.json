@@ -1,0 +1,22 @@
+{
+  "id": "ST-h2bxcrcd",
+  "kind": "story",
+  "title": "begin right after start stops at the claim push because start leaves the sprint's item files unstaged",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py start commits the item files it rewrites (or begin commits them), so the first begin of a sprint pushes its claims without a hand commit",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.exit(\"not yet: a planned follow-up, no check yet\")"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-ga3lbnlk close"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
