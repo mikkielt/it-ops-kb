@@ -64,7 +64,30 @@
         "exactly, after the credential-free form of both (kj_store.bare_url)": "BG-qdsed6jk",
         "also ignoring a trailing slash and a .git suffix": "BG-qdsed6jk"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "exactly, after the credential-free form of both (kj_store.bare_url)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Is Home's allowed parameter required or does it default to no urls?",
+      "options": [
+        "required: a Home built without the urls fails at once",
+        "optional, defaulting to none, so every job is refused"
+      ],
+      "recommendation": "required: a Home built without the urls fails at once",
+      "reason": "so no caller can forget the list",
+      "do": {
+        "required: a Home built without the urls fails at once": "BG-qdsed6jk",
+        "optional, defaulting to none, so every job is refused": "BG-qdsed6jk"
+      },
+      "class": "design",
+      "answer": "required: a Home built without the urls fails at once",
+      "by": "agent"
     }
   ],
   "filed_in": "clone-0ea70e5c",
