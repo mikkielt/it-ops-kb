@@ -23,6 +23,29 @@
   "depends_on": [
     "BG-wopurh3z"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does claim keep the item file and the run state in agreement on a SIGTERM after the item file was saved?",
+      "options": [
+        "keep the state claimed when the item file on disk holds the claim",
+        "restore the SIGTERM handler before the item file is saved",
+        "put the item file back to its earlier status together with the run state"
+      ],
+      "recommendation": "keep the state claimed when the item file on disk holds the claim",
+      "reason": "the repro's exit comes after the save, so a restored handler alone would not change it, and a put-back would rewrite a saved file",
+      "do": {
+        "keep the state claimed when the item file on disk holds the claim": "BG-iu2uopke",
+        "restore the SIGTERM handler before the item file is saved": "BG-iu2uopke",
+        "put the item file back to its earlier status together with the run state": "BG-iu2uopke"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "keep the state claimed when the item file on disk holds the claim",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-6aegt3bs review"
   ],
