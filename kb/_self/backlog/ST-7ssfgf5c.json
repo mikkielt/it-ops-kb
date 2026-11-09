@@ -48,6 +48,27 @@
   "depends_on": [
     "ST-4wlxi33c"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where in the plan section does the outbound-path rule sit: its own sentence in step 6 beside the refusal and detector rule, or a new numbered step?",
+      "options": [
+        "step 6 sentence after the refusal and detector rule",
+        "new numbered step 7"
+      ],
+      "recommendation": "step 6 sentence after the refusal and detector rule",
+      "reason": "it is a plan check done before the start gate, as that rule is, and the step list keeps its numbers that other docs cite",
+      "do": {
+        "step 6 sentence after the refusal and detector rule": "ST-7ssfgf5c",
+        "new numbered step 7": "ST-7ssfgf5c"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "step 6 sentence after the refusal and detector rule",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ep7ck2ab close"
   ],
