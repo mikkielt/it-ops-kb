@@ -4,6 +4,7 @@
   "title": "kbtail.py counts entry types of real transcripts as skipped (queue-operation, custom-title, agent-name and others)",
   "status": "draft",
   "parent": "EP-booflukv",
+  "sprint": "SP-zobzdhwi",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",

@@ -4,6 +4,7 @@
   "title": "selfcheck and backlog.py procs still call a fresh-transcript claude session an orphan: no caller passes fresh= to bl_procs.classify",
   "status": "draft",
   "parent": "EP-n4dci4w7",
+  "sprint": "SP-zobzdhwi",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

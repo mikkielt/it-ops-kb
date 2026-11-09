@@ -4,6 +4,7 @@
   "title": "kbmon --split passes a relative --store or --key-file unchanged into a pane that starts in the clone's root",
   "status": "draft",
   "parent": "EP-wqgicmmj",
+  "sprint": "SP-zobzdhwi",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

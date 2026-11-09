@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "selfcheck's leftovers counts know only the verdicts remove and keep, so a tidy row with the verdict ask is missing from their total",
   "status": "draft",
+  "sprint": "SP-zobzdhwi",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",

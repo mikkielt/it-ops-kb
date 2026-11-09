@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kbmon --events still exports a sprint's kb.sprint span twice while the sprint holds an item that is todo and not yet claimed: once when the claimed items have landed and again with a later end",
   "status": "draft",
+  "sprint": "SP-zobzdhwi",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

@@ -4,6 +4,7 @@
   "title": "kbtail.py --root another clone watches the script's own clone's coord store, so new sessions there wait for the 30 s timer",
   "status": "draft",
   "parent": "EP-booflukv",
+  "sprint": "SP-zobzdhwi",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",

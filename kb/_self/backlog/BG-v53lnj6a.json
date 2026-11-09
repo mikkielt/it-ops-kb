@@ -4,6 +4,7 @@
   "title": "kbmon's landing_steps ignores every land.step of an item that once landed with exit 0, so a reopened item's second landing never shows",
   "status": "draft",
   "parent": "EP-n4dci4w7",
+  "sprint": "SP-zobzdhwi",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",

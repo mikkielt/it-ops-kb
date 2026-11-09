@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kbmon's kb panel counts closed and non-UNK gap entries and resolved conflicts as open",
   "status": "draft",
+  "sprint": "SP-zobzdhwi",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

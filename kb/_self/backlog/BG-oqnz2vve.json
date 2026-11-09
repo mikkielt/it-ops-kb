@@ -4,6 +4,7 @@
   "title": "kbmon's held-back count reads 0 after a delivery run that waited on CI or found the lock taken",
   "status": "draft",
   "parent": "EP-iowijan3",
+  "sprint": "SP-zobzdhwi",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",

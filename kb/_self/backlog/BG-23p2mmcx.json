@@ -4,6 +4,7 @@
   "title": "kbtail.py --once --history 0 prints a skipped count of a window it did not read",
   "status": "draft",
   "parent": "EP-booflukv",
+  "sprint": "SP-zobzdhwi",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",

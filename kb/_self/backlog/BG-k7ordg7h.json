@@ -4,6 +4,7 @@
   "title": "kbtail.py drops a coord change that comes less than 5 s after a rescan, so a new session waits for the 30 s timer",
   "status": "draft",
   "parent": "EP-booflukv",
+  "sprint": "SP-zobzdhwi",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
