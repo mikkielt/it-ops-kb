@@ -2,7 +2,7 @@
   "id": "BG-7po2pir4",
   "kind": "bug",
   "title": "provider.read_page takes an application-name meta as any page's organisation, which the kb says names a web application only",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-c6tr77jl",
   "priority": "P3",
   "rank": 0,
@@ -70,6 +70,28 @@
     "parked: SP-3g3egfll review"
   ],
   "notes": "Premise run on the base 2026-11-09: a page with application-name alone gives organisation Contoso (the repro exits 1). Check 0 pins og:site_name and passes before the work on purpose: it must keep passing. Orders after BG-iwqv7nxs: all four provider.py bugs run one after another. Planned 2026-11-09 by a headless plan session; left out as off the theme or in a file another live session plans: BG-55zjrwpn and BG-cgbpg3lq (kbfacts.py).",
-  "claimed_by": "claude-1d0b0461",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "dff858a03ee266ccf4fa3c340058ac75e527bc8c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import provider as P\nh=b\"<html><head><title>Install - Contoso</title><meta property=\\\"og:site_name\\\" content=\\\"Contoso\\\"></head><body><p>x</p></body></html>\"\nP.request=lambda *a,**k:{\"status\":200,\"error\":\"\",\"body\":h,\"headers\":{\"content-type\":\"text/html\"}}\nr=P.read_page(\"https://example.com/x\",P.providers(None));print(r);sys.exit(0 if r.get(\"organisation\")==\"Contoso\" else 1)"
+        ],
+        "exit": 0,
+        "sha256": "dabb2b9c9be60475"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import provider as P\nP.request=lambda *a,**k:{'status':200,'error':'','body':b'<html><head><title>Install - Contoso</title><meta name=\"application-name\" content=\"Contoso\"></head><body><p>x</p></body></html>','headers':{'content-type':'text/html'}}\nr=P.read_page('https://example.com/x',P.providers(None));print(r);sys.exit(1 if r.get('organisation')=='Contoso' else 0)"
+        ],
+        "exit": 0,
+        "sha256": "846c3cf9787517a2"
+      }
+    ]
+  }
 }
