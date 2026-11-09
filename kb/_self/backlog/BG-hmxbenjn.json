@@ -1,0 +1,18 @@
+{
+  "id": "BG-hmxbenjn",
+  "kind": "bug",
+  "title": "A gate whose option names a local mirror store of an executor is classed push and made blocking",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "A gate that says a local mirror store, a directory an executor keeps its own copy of a queue in, is not classed push: the push words stay for a write to a shared branch or a public copy, so the worker's provisional gate on an implementation choice is not made blocking by the word mirror alone",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, \"_tools\"); import bl_authority as a; g={\"id\": \"g9\", \"question\": \"How does an executor keep its jobs?\", \"options\": [\"a local mirror store of its own\", \"the central store directly\"]}; sys.exit(0 if a.derived_class({\"touches\": [\"_tools/kj_exec.py\"]}, g) != \"push\" else 1)"
+    ]
+  },
+  "filed_in": "clone-0ea70e5c"
+}

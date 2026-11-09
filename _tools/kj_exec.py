@@ -40,6 +40,15 @@ runs per store and host: an exclusive file in the host lock directory (`tests.ho
 store and the same name with a short hash of the store path for any other (`lock_name`), holds its pid, clone and start time and
 is cleared when that pid is gone, as `kg_lock.main_lock` clears the main lock.
 
+An executor of a central queue (`serve --kind K --url URL --key-file PATH`, `Sync`) keeps its jobs in a mirror store of its own
+(`kj_store.Mirror`) and runs them with the code above unchanged: every SYNC_S seconds, from the loop of `drain`, it takes from the
+central store each queued job whose placement executor is K (a workstation executor only one placed on this host and submitted by
+the operator of its own key file, read from the server's `queued` event), when the clone it serves has the integration remote url the
+job names (else the job stays queued and one `job` event with step `no-clone` says why), as a job of the mirror; `move` makes each
+move on the central store first, so one job is run by one executor, and a move it could not post is made again by the next sync;
+a job the central store cancelled is cancelled in the mirror (`kj_follow.cancel`, which ends its process group). The central store
+holds states and events only; the output log stays in this clone's `kb-jobs`, and the job's record names this host as `log_host`.
+
 The job's record keeps the pid of its child (the member `pid`, written after the child starts, dropped when the job is queued
 again). Serve runs `recover` at its start and every RECOVER_S seconds, and follows each adopted child (the lease renewed
 until its pid ends) instead of starting a second process. An adopted child's exit is not known to serve, so its end is a
@@ -131,10 +140,106 @@ def pending(store, clone, host, operator, states=("queued",)):
 def move(store, job, state, **fields):
     """Move JOB to STATE by coord's job table, with the fields given (exit, step); coord.Refused when the table says no."""
     given = [f"{name}={value}" for name, value in fields.items() if value is not None]
+    if getattr(store, "remote", None) is not None:
+        post_move(store, job, state, given)
     done = coord.job_transition(Namespace(key=coord.JOB_KEYS + job, to=state, field=given, store=store), time.time)
     if state != "waiting-lock":
         drop_holder(store, job)
     return done
+
+
+def post_move(store, job, state, given):
+    """Make the move of JOB to STATE on the central queue of a mirror store first (`coord.Refused` when the queue's job table says
+    no, so the job is not run twice): a central queue that cannot be reached refuses a move to running, the one that takes a
+    job, and lets any other go on in the mirror, for `Sync` to post again."""
+    try:
+        code, body = store.remote.move(job, state, given)
+    except kj_ops.Refusal as error:
+        if state == "running":
+            raise coord.Refused({"ok": False, "error": str(error)}, 2) from None
+        return
+    if code == 1 and body.get("state") != state:
+        raise coord.Refused(body, 1)
+    if code == 0 and state == "running":
+        with contextlib.suppress(kj_ops.Refusal):
+            store.remote.amend(job, log_host=platform.node(), executor=store.kind)
+
+
+SYNC_S = 2.0  # the wait between two syncs of a mirror with its central queue
+NO_CLONE = "no-clone"  # the step of the event that says a queued job names an integration remote url this executor's clone lacks
+
+
+class Sync:
+    """What an executor of a central queue does between two looks of `drain` at its jobs: `__call__` takes the queue's jobs for
+    its kind into the mirror store and brings the two stores' states together (the central store's cancel, a move not posted)."""
+
+    def __init__(self, root, store, clone, out):
+        self.root, self.store, self.clone, self.out = root, store, clone, out
+        self.remote, self.kind = store.remote, store.kind
+        self.host, self.operator = platform.node(), kj_store.operator_id()
+        self.last, self.noted = None, {}
+
+    def __call__(self):
+        if self.last is not None and time.monotonic() - self.last < SYNC_S:
+            return
+        self.last = time.monotonic()
+        try:
+            self.reconcile()
+            self.pull()
+        except kj_ops.Refusal as error:
+            print(f"kbjob.py: central queue: {error}", file=self.out, flush=True)
+
+    def mirrored(self):
+        return pending(self.store, self.clone, self.host, self.operator, coord.JOB_STATES)
+
+    def reconcile(self):
+        """The central store's cancel applied to the mirror (the job's process group ended), a job another executor took dropped
+        from the mirror, and a state the mirror reached and the queue lacks posted."""
+        for job, local in self.mirrored():
+            central = self.remote.record(job)
+            if central is None or central.get("state") == local.get("state"):
+                continue
+            theirs, mine = central.get("state", "none"), local.get("state")
+            if theirs == "cancelled" and mine not in kj_store.TERMINAL:
+                kj_follow.cancel(self.root, self.store, job, open(os.devnull, "w", encoding="utf-8"))
+            elif mine == "queued" and theirs != "queued":
+                kj_follow.move_cancelled(self.store, job)
+            elif theirs not in kj_store.TERMINAL:
+                fields = [f"{name}={local[name]}" for name in ("exit", "step") if local.get(name) is not None]
+                if self.remote.move(job, mine, fields)[0] and mine != "running":
+                    self.remote.move(job, "running")
+                    self.remote.move(job, mine, fields)
+
+    def reason(self, job, step):
+        """Say once per serve, as one `job` event and a line, why the queued JOB is left queued."""
+        if self.noted.get(job) != step:
+            self.noted[job] = step
+            self.remote.call(["post", "--kind", "job", "--field", f"job={job}", "--field", "state=queued", "--field", f"step={step}"])
+            print(f"{job} stays queued: step {step} (no clone here with the job's integration remote url)", file=self.out, flush=True)
+
+    def pull(self):
+        """Take each queued job of the central store placed on this kind into the mirror, in submit order."""
+        have = {job for job, _ in self.mirrored()}
+        url = kj_store.remote_url(self.clone)
+        for record in self.remote.records():
+            job = record["job"]
+            if record.get("state") != "queued" or job in have:
+                continue
+            placed = kj_store.placement_of(record)
+            if placed["executor"] != self.kind:
+                continue
+            if self.kind == kj_store.WORKSTATION and (placed.get("host") != self.host or self.remote.owner(job) != self.remote.operator()):
+                continue
+            if not url or record.get("remote") != url:
+                self.reason(job, NO_CLONE)
+                continue
+            mirrored = {k: v for k, v in record.items() if k not in ("state", "exit", "step")}
+            mirrored.update(host=self.host, clone=self.clone, operator=self.operator)
+            with coord.Tx(self.store) as con:
+                if con.execute("SELECT 1 FROM entries WHERE key = ?", (coord.JOB_KEYS + job,)).fetchone() is None:
+                    con.execute("INSERT INTO entries (key, value, revision) VALUES (?, ?, 1)",
+                                (coord.JOB_KEYS + job, json.dumps(mirrored, sort_keys=True, ensure_ascii=False)))
+            kj_store.queue(self.store, job, mirrored)
 
 
 def own_store(root, store):
@@ -781,11 +886,12 @@ def wait_step(lock):
     return LOCK_STEPS[lock]
 
 
-def drain(store, clone, host, operator, out, slots=SLOTS):
+def drain(store, clone, host, operator, out, slots=SLOTS, tick=None):
     """Run the queued jobs of this host, clone and operator to the end, at most SLOTS at a time and as `next_runnable` places them
     (submit order inside a class); the ids of the jobs that failed or were lost. A job whose lock a process outside the executor
     holds is moved to waiting-lock (event step: the lock; record member `holder`: its pid, clone and step) and started once the lock is free. A job another
-    executor leased, or that left queued before this one moved it, is passed over."""
+    executor leased, or that left queued before this one moved it, is passed over. TICK, when given, is called at the start of each pass
+    (an executor of a central queue syncs its mirror there, `Sync`)."""
     failed, passed, active, waiting = [], set(), {}, {}  # active: job -> child state; waiting: job -> {record, token, renewed}
     slots = max(1, int(slots))
 
@@ -821,6 +927,8 @@ def drain(store, clone, host, operator, out, slots=SLOTS):
 
     try:
         while True:
+            if tick is not None:
+                tick()
             for job, one in list(active.items()):  # the children that ended, the land threads that ended
                 run = one.get("run")
                 if run is not None:  # the thread renews its own lease
@@ -1050,12 +1158,18 @@ def login_item(root, store=None, out=None):
     return 0
 
 
-def serve(root, store, once=False, out=None, idle_exit=None, slots=SLOTS):
+def serve(root, store, once=False, out=None, idle_exit=None, slots=SLOTS, kind=None, remote=None, data=None):
     """`kbjob.py serve`: 0 when the queue was drained (--once), when IDLE_EXIT seconds passed with no live job of this host,
     clone and operator, or when this process ended by a signal; 1 when --once ran a job that failed, 2 where the clone has no
-    git directory; a second serve for the same store on the host prints the running one's pid and returns 0."""
+    git directory; a second serve for the same store on the host prints the running one's pid and returns 0. With REMOTE (a
+    `kj_store.Remote`) and KIND (one of coord's placement executors) it serves the central queue: its jobs are kept in a mirror
+    store (in DATA, else in the clone's `kb-jobs`) and `Sync` takes and posts them."""
     out = out or sys.stdout
     clone = kj_store.clone_path(root)
+    sync = None
+    if remote is not None:
+        store = kj_store.Mirror(kj_store.mirror_path(root, remote, kind, data), remote, kind)
+        sync = Sync(root, store, clone, out)
     if kj_store.log_path(clone, "JB-00000000") is None:
         print("kbjob.py: serve needs a git clone for its job logs", file=sys.stderr)
         return 2
@@ -1073,7 +1187,7 @@ def serve(root, store, once=False, out=None, idle_exit=None, slots=SLOTS):
             if recovered is None or time.monotonic() - recovered >= RECOVER_S:
                 failed += recovery_pass(root, store, out)
                 recovered = time.monotonic()
-            failed += drain(store, clone, host, operator, out, slots)
+            failed += drain(store, clone, host, operator, out, slots, sync)
             if once:
                 break
             if idle_exit is not None:
