@@ -18,5 +18,6 @@
   "links": [
     "parked: SP-2cq2hse4 close"
   ],
+  "notes": "SP-moxpl354: ST-u2e3rbit landed Backlog.save keeping a gate answer written to the item file after the command loaded it; done, set and gate add all save through it, so the write path this draft names is covered. Rerun its check against main before committing it; drop it when the check passes.",
   "filed_in": "clone-0ea70e5c"
 }
