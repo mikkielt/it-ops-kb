@@ -2,7 +2,7 @@
   "id": "ST-aayr46f5",
   "kind": "story",
   "title": "A source a refresh read by hand is dated through one census.py read command, not a scratch census log",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-2cq2hse4",
   "priority": "P3",
@@ -32,5 +32,7 @@
     "BG-ivir5ulw"
   ],
   "notes": "Found 2026-11-09 when a refresh run had to write a scratch census log and run census.py confirm to date 8 sources it had read by hand. Premise: the planted-root check exits 1 on 55dde769f (census.py has no read subcommand). Lives in census.py (factdiff.py cannot import census); the log goes to _census/ of the root.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-c41d77ea",
+  "operator": "op-f618a13e"
 }
