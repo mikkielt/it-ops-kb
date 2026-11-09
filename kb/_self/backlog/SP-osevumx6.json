@@ -1,0 +1,22 @@
+{
+  "id": "SP-osevumx6",
+  "kind": "sprint",
+  "title": "Leak scan, redaction and query-log capture hold on the layouts reviews found",
+  "status": "planned",
+  "goal": "The leak scan flags a prose secret assignment followed by a comma, bracket or backtick, and no longer flags an EC armor label before a camel-case repository path or in a table row with a lower-camel or digit identifier cell; url_holds_credential accepts a Windows path with an @ in a folder name; redact leaves no character of a url password holding an angle bracket, never raises on a deep or wrong-shaped cache file, and has a comment that names both armor lines; kbask keeps a coord session id and resolves a session label to the live session id; a stale feedback.ids lock is held by only one of two takers; a kb! negation stops at and, but and or; agent.run marks a run failed only on a documented signal; an ops row written by a probe in another directory never reaches the clone's spool; an ended session's spool rows are delivered or kept with a reason; querylog.py check prints its redact note for every redact-gate problem; a refused query-log delivery logs its reason",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e",
+  "filed_in": "clone-0ea70e5c"
+}
