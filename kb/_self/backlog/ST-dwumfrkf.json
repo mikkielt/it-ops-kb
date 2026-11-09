@@ -1,0 +1,22 @@
+{
+  "id": "ST-dwumfrkf",
+  "kind": "story",
+  "title": "A plan for an interrupt-window bug lists each statement between the call that creates the resource and the block that releases it, and gives each its own planted case",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The sprint skill's plan step, for a lock or interrupt story, lists every statement between the call that creates or installs a resource and the try that releases it and plants one case per statement, so a fix that closes only part of the window is not found by the review",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; t = open('skills/sprint/SKILL.md').read(); i = t.index('a lock or concurrency story'); sys.exit(0 if 'each statement between' in t[i:i + 1500] else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
