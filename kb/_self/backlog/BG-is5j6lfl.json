@@ -15,5 +15,10 @@
       "import subprocess,sys;o=subprocess.run([sys.executable,\"_tools/benchmarks.py\",\"multi\",\"run\",\"research\",\"--dry-run\",\"--model\",\"research=haiku-5-5\"],capture_output=True,text=True).stdout;sys.exit(0 if float(o.split(\"estimate: $\")[-1].split()[0])>=1.3 else 1)"
     ]
   },
+  "touches": [
+    "_tools/bench_multi.py",
+    "kb/_self/benchmarks.md",
+    "kb/_self/tools.md"
+  ],
   "filed_in": "clone-0ea70e5c"
 }
