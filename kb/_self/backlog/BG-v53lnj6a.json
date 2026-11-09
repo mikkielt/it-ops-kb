@@ -2,7 +2,7 @@
   "id": "BG-v53lnj6a",
   "kind": "bug",
   "title": "kbmon's landing_steps ignores every land.step of an item that once landed with exit 0, so a reopened item's second landing never shows",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-zobzdhwi",
   "priority": "P2",
@@ -28,5 +28,7 @@
     "parked: SP-fn7letri review"
   ],
   "notes": "Planner 2026-11-09: origin SP-fn7letri review G6 on ST-kxnlpycw, the operator's g1 answer. Repro replaced by a run of landing_steps on planted ops rows.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-0f9262ec",
+  "operator": "op-f618a13e"
 }
