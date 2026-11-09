@@ -2,7 +2,7 @@
   "id": "ST-cdu2c7lw",
   "kind": "story",
   "title": "horizon and show of the review story list every unconfirmed provisional answer, not only held ones",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-moxpl354",
   "priority": "P3",
   "rank": 0,
@@ -63,6 +63,28 @@
   ],
   "notes": "Parked draft from the SP-ep7ck2ab close retrospective (night manager c9419db9, operator-delegated, 2026-11-09). Its check reads the rule text only: the planner adds a check that runs the behaviour on a planted input before the start gate. Retrospective item R3. Premise (planner, 2026-11-09, base): reproduced. Check 0 plants a review story and a done item with a provisional gate answered by an agent and not held: show of the review story and horizon --sprint both omit it (held_answers keeps only hold:true gates). Choice settled in the goal: the unheld answers are listed beside the held ones, under their own wording.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-a1b2c3d4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "65e135c897d35646cce7f9ff9cbcbc17801defd7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys, pathlib, subprocess, tempfile, shutil\nsys.path.insert(0, \"_tools\")\nimport bl_base\nr = pathlib.Path(tempfile.mkdtemp()); d = r / bl_base.rel_dir(); d.mkdir(parents=True)\nshutil.copy(\"backlog.json\", r / \"backlog.json\")\ndef put(it): (d / (it[\"id\"] + \".json\")).write_text(bl_base.canonical(it), encoding=\"utf-8\")\nput({\"id\": \"SP-aaaaaaaa\", \"kind\": \"sprint\", \"title\": \"s\", \"goal\": \"g one\", \"status\": \"active\", \"gates\": [{\"id\": \"start\", \"kind\": \"blocking\", \"question\": \"q\", \"options\": [\"approve\"], \"recommendation\": \"approve\", \"answer\": \"approve\", \"by\": \"operator\"}]})\ngate = {\"id\": \"g1\", \"kind\": \"provisional\", \"question\": \"which\", \"options\": [\"alpha\", \"beta\"], \"recommendation\": \"alpha\", \"answer\": \"alpha\", \"by\": \"agent\"}\nput({\"id\": \"BG-bbbbbbbb\", \"kind\": \"bug\", \"title\": \"t\", \"goal\": \"g\", \"status\": \"done\", \"sprint\": \"SP-aaaaaaaa\", \"gates\": [gate]})\nput({\"id\": \"ST-dddddddd\", \"kind\": \"story\", \"title\": \"review\", \"goal\": \"g\", \"status\": \"todo\", \"sprint\": \"SP-aaaaaaaa\", \"review\": True, \"checks\": [{\"run\": [\"true\"]}]})\ndef run(*a): return subprocess.run([sys.executable, \"_tools/backlog.py\", \"--root\", str(r), *a], capture_output=True, text=True).stdout\nshown, hz = run(\"show\", \"ST-dddddddd\"), run(\"horizon\", \"--sprint\", \"SP-aaaaaaaa\")\nok = \"alpha\" in shown and \"alpha\" in hz and \"BG-bbbbbbbb\" in shown and \"BG-bbbbbbbb\" in hz\nprint(\"both list the unheld provisional answer\" if ok else \"unheld provisional answer missing: show=%s horizon=%s\" % (\"alpha\" in shown, \"alpha\" in hz))\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "b6020bb37645199b"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,pathlib\nt=pathlib.Path('kb/_self/tools.md').read_text(encoding='utf-8').lower()\nmiss=[w for w in ['every unconfirmed provisional answer'] if w not in t]\nsys.exit('not yet: kb/_self/tools.md lacks '+', '.join(miss) if miss else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
