@@ -2,7 +2,7 @@
   "id": "BG-a65lzrjf",
   "kind": "bug",
   "title": "The delete class misses removed, removes and removal, and the execute signal misses program and run once a file name's dot ends the clause",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-pww4aqis",
   "priority": "P3",
   "rank": 0,
@@ -28,5 +28,7 @@
     "parked: SP-lmpjclxz review"
   ],
   "notes": "Order: same files bl_authority.py and test_authority.py as BG-zmwnp3hh. Premise reproduces on origin/main (precheck 2026-11-09). Review gaps G4 and G5 of SP-lmpjclxz.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-6b037793",
+  "operator": "op-f618a13e"
 }
