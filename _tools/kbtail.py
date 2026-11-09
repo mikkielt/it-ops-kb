@@ -14,7 +14,7 @@ Each line starts with the session's role and item (`worker ST-3k2m5n7q`, `intera
 sessions have the same words, never a raw session id) in a column as wide as the longest; a subagent's lines
 (`<session>/subagents/agent-*.jsonl`) are indented under its session's. `--item ID` and `--role ROLE` keep the matching
 sessions only. A followed session whose process ends gets a line `HH:MM:SS ended` within 2 seconds and the others go on. The
-session list is read again when the coord store has changed (5 seconds apart at most), after a session ended and every 30
+session list is read again when the coord store has changed (a change less than 5 seconds after a read is acted on at the 5th second), after a session ended and every 30
 seconds, for sessions that began since. At most 16 sessions are followed, the rest named in one line; one more line counts
 the live sessions with no session id, which cannot be followed, and one names those with a session id whose transcript is not
 found. `--history N` is each file's.
@@ -487,11 +487,11 @@ def follow_all(a, columns, out):
     followed, last, over_shown, unbound_shown, lost_shown = {}, None, [], 0, []
     store = coord_store()
     since = wake(0, store, 0)
-    rescan = True
+    rescan, pending = True, False  # pending: the coord store changed and the list is not yet read again
     while True:
         now = time.monotonic()
         if rescan or now - last >= SCAN_S:
-            rescan = False
+            rescan = pending = False
             try:
                 shown, _, over, unbound, lost = scan(a.root, a.item, a.role, followed, a.history)
             except Exception:  # noqa: BLE001 - a list that fails once is tried again at the next scan
@@ -511,9 +511,10 @@ def follow_all(a, columns, out):
             rescan = True
         out.flush()
         moved = wake(since, store)
-        if moved != since and time.monotonic() - last >= SCAN_MIN_S:
-            rescan = True
+        pending = pending or moved != since
         since = moved
+        if pending and time.monotonic() - last >= SCAN_MIN_S:
+            rescan, pending = True, False
 
 
 def count(text):
