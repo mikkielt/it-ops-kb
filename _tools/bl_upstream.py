@@ -79,7 +79,8 @@ def report_body(bl, ids):
                           "items (the upstream already has that one)")
     stories = "\n\n---\n\n".join(story_sections(bl.items[i]) for i in ids)
     body = f"### Clone scope\n\n{scope_of(bl.root)}\n\n{stories}\n"
-    kinds = sorted({k for k, _ in item_leak_hits(body, clone_allowlist(bl.root))})
+    # The body leaves the group for the shared upstream: the shipped scan reads it, whatever a group replaced.
+    kinds = sorted({k for k, _ in item_leak_hits(body, clone_allowlist(bl.root), shipped=True)})
     if kinds:
         raise Refused(f"the report holds a leak-scan hit ({', '.join(kinds)}; value not printed): write a placeholder "
                       "in the item instead (kb/_self/backlog.md, Writing about items)")

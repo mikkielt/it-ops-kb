@@ -56,6 +56,27 @@
     "kb/_self/extension-changelog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the upstream-report body get the shipped scan?",
+      "options": [
+        "item_leak_hits takes shipped=True, only report_body passes it",
+        "every item_leak_hits caller uses the shipped scan"
+      ],
+      "recommendation": "item_leak_hits takes shipped=True, only report_body passes it",
+      "reason": "the backlog check and upstream-import read text inside this clone and keep the clone's scan",
+      "do": {
+        "item_leak_hits takes shipped=True, only report_body passes it": "BG-dq3lxnqm",
+        "every item_leak_hits caller uses the shipped scan": "BG-dq3lxnqm"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "item_leak_hits takes shipped=True, only report_body passes it",
+      "by": "agent"
+    }
+  ],
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-a796fc75",
   "operator": "op-f618a13e"

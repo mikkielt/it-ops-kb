@@ -499,10 +499,12 @@ def item_strings(v, path=""):
             yield from item_strings(x, f"{path}[{n}]")
 
 
-def item_leak_hits(text, allow):
-    """[(kind, value)] the leak scan finds in one text of an item, read as the scan of tracked files reads a file."""
+def item_leak_hits(text, allow, shipped=False):
+    """[(kind, value)] the leak scan finds in one text of an item, read as the scan of tracked files reads a file: the
+    clone's scan (a group's replacement where `extensions.leak_scan` names one). SHIPPED always runs the shipped scan, for
+    a text that leaves the group (the body `backlog.py upstream-report` writes for the shared upstream)."""
     import kbpublic
-    return kbpublic.file_hits("item.json", text, allow)
+    return kbpublic.file_hits("item.json", text, allow, shipped=shipped)
 
 
 def leak_errors(bl):
