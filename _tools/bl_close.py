@@ -477,7 +477,7 @@ def landing_lock(root, iid, poll=None):
     me = (f"pid={os.getpid()}\nclone={root}\nstarted={time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}\n"
           f"item={iid}\n")
     qdir, ticket = landing_queue_dir(path), None
-    staged, recorded = f"{path}.new.{os.getpid()}", False  # the record's own file, linked to the lock path once whole
+    staged, recorded, linkable = f"{path}.new.{os.getpid()}", False, True  # the record's own file, linked to the lock path once whole
     # the handler is read before it is installed and the install is inside the block whose finally restores it, so an
     # interrupt right after the install (before `signal.signal` returns the old one) still finds `prev` to restore
     prev = signal.getsignal(signal.SIGTERM)
@@ -521,6 +521,41 @@ def landing_lock(root, iid, poll=None):
             with f:
                 f.write(me)
             recorded = True
+        def claim():
+            """Take the lock path: True when this landing holds it, False when the staged record went missing (the
+            caller looks again), FileExistsError when it is held. The record is linked whole to the path; where the
+            filesystem has no hard links (any other OSError of the link) the path is made exclusively and its record
+            written, the file removed on any interrupt once it exists."""
+            nonlocal recorded, linkable
+            if linkable:
+                if not recorded:
+                    stage()
+                try:
+                    os.link(staged, path)  # the lock file appears whole, or not at all: never an empty one
+                    return True
+                except FileNotFoundError:  # the staged record was removed: write it again
+                    recorded = False
+                    return False
+                except FileExistsError:
+                    raise
+                except OSError:  # no hard links here
+                    linkable = False
+                    with contextlib.suppress(OSError):
+                        os.unlink(staged)
+            fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            try:
+                try:
+                    f = os.fdopen(fd, "w", encoding="utf-8", newline="\n")
+                except BaseException:
+                    os.close(fd)
+                    raise
+                with f:
+                    f.write(me)
+            except BaseException:
+                with contextlib.suppress(OSError):
+                    os.unlink(path)
+                raise
+            return True
         take()
         told, waited, bound = None, 0.0, kg_lock.max_wait()
         while True:
@@ -541,13 +576,9 @@ def landing_lock(root, iid, poll=None):
                 time.sleep(poll)
                 waited += time.monotonic() - began
                 continue
-            if not recorded:
-                stage()
             try:
-                os.link(staged, path)  # the lock file appears whole, or not at all: never an empty one
-            except FileNotFoundError:  # the staged record was removed: write it again
-                recorded = False
-                continue
+                if not claim():
+                    continue
             except FileExistsError:
                 text = tests_py.read_lock(path)
                 if text is None and not os.path.exists(path):  # released: look again
