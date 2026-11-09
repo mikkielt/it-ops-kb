@@ -3579,14 +3579,29 @@ def apply_committed(flog, date):
                   f"--grep=fact diff {date}: confirm", f"--grep={path}")[1])
 
 
+DETECT_LOGS_MAX = 99  # detect logs of one date `run_log` tells apart: factdiff-<date>.csv, then -2 ... -99
+
+
+def run_log(date, resume, exists):
+    """The detect log of `census.py run` for this date, which every later step reads: the first of
+    factdiff-<date>.csv, -2.csv, -3.csv ... that does not exist (the name `factdiff.py detect` itself picks, so a run
+    never replaces a log), and with `resume` the last that does (the log of the run being continued; the base name when
+    none exists, which `detect` then writes). After `DETECT_LOGS_MAX` the last name stands."""
+    names = [census_path(f"factdiff-{date}.csv")] + [census_path(f"factdiff-{date}-{n}.csv") for n in range(2, DETECT_LOGS_MAX + 1)]
+    if resume:
+        return next((p for p in reversed(names) if exists(p)), names[0])
+    return next((p for p in names if not exists(p)), names[-1])
+
+
 def plan_run(root, date, resume, exists, applied):
     """The steps of `census.py run`: phase 0 (the fact diff and what it settles), phase 1 (the mechanical verdicts), the
     index and the phase-1 commit, then the summary. `exists(path)` and `applied(log, date)` say whether the output of
-    a step for this date is there; `resume` skips the steps whose output is."""
-    flog, log = census_path(f"factdiff-{date}.csv"), census_path(f"{date}.csv")
+    a step for this date is there; `resume` skips the steps whose output is. `detect` is given its log (`--out`), so
+    that `apply`, `check`, the commit and `summary` read the one it wrote, whichever detect logs of the date exist."""
+    flog, log = run_log(date, resume, exists), census_path(f"{date}.csv")
     ra = root_args(root)
     return [
-        step("detect", "factdiff.py", *ra, "detect", "--date", date, "--sitemaps", ok=(0, 1),
+        step("detect", "factdiff.py", *ra, "detect", "--date", date, "--sitemaps", "--out", flog, ok=(0, 1),
              skip=f"{flog} exists" if resume and exists(flog) else ""),
         step("apply", "factdiff.py", *ra, "apply", flog, "--date", date, "--commit",
              skip="its commit is in the history" if resume and applied(flog, date) else ""),
