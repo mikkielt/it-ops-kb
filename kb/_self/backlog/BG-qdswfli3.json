@@ -2,7 +2,7 @@
   "id": "BG-qdswfli3",
   "kind": "bug",
   "title": "start's host-setup warning goes silent on every gate of an item whose touches derive agents-rule, not only on a rule-wording gate",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-pww4aqis",
   "priority": "P2",
   "rank": 0,
@@ -46,6 +46,19 @@
     "parked: SP-hlt2tdel review"
   ],
   "notes": "Premise reproduces on origin/main (precheck 2026-11-09). SP-hlt2tdel review gap 5, on ST-dbyng654.",
-  "claimed_by": "claude-6b037793",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "93791235d664513892478aec65a0b54c977060af",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bl_plan as p;B=type('B',(),{'items':{'ST-1':{'touches':['_tools/bl_items.py'],'status':'todo','gates':[{'id':'g1','question':'Which service account must the daemon run as on the host?','options':['a','b']}]}},'sprint_items':lambda self,s:['ST-1']});sys.exit(0 if p.free_text_host_gates(B(),'SP-x') else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
