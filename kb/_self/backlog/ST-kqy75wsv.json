@@ -2,7 +2,7 @@
   "id": "ST-kqy75wsv",
   "kind": "story",
   "title": "factdiff.py close re-points the path:line citations to the lines its inserted bullet shifted, in the ledgers and other articles",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-2cq2hse4",
   "priority": "P3",
@@ -57,6 +57,19 @@
   ],
   "notes": "Found 2026-11-09 when a refresh run re-pointed 24 citations with a scratch diff-based script; any other tool that inserts a fact line is a later story. Premise: the planted-root check exits 1 on 55dde769f (close exits 0, no citation moves).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-c41d77ea",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "aab10b6147c9e03ef96b740ae86481420dde3f3e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, subprocess, sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport kbroot\nt = tempfile.mkdtemp()\nd = os.path.join(t, \"zq\")\nsid = \"ZQ-abcdefgh\"\nart = [\"---\", \"topic: win/a\", \"priority: P1\", \"applies_to: x\", \"retrieved_utc: 2026-01-01\", \"sources: [\" + sid + \"]\", \"status: complete\", \"---\", \"\", \"# A\", \"\",\n       \"## Summary\", \"- Summary line one. [DOC \" + sid + \"]\", \"\", \"## Facts\", \"- First fact holds. [DOC \" + sid + \"]\", \"- Second fact holds. [DOC \" + sid + \"]\", \"- Third fact holds. [DOC \" + sid + \"]\", \"\"]\nother = [\"---\", \"topic: win/b\", \"priority: P1\", \"applies_to: x\", \"retrieved_utc: 2026-01-01\", \"sources: [\" + sid + \"]\", \"status: complete\", \"---\", \"\", \"# B\", \"\",\n         \"## Summary\", \"- Summary line one. [DOC \" + sid + \"]\", \"\", \"## Facts\", \"- B repeats the third fact of A (`win/a.md:18`). [DOC \" + sid + \"]\", \"\"]\nfiles = {\"_root.md\": kbroot.root_md(\"zq\", \"ZQ\", \"internal\", \"planted\"), **{k: v.format(name=\"zq\") for k, v in kbroot.FILES.items()},\n         \"win/a.md\": \"\\n\".join(art), \"win/b.md\": \"\\n\".join(other)}\nfiles[\"_sources.csv\"] += sid + \",https://example.org/a,A,P,CC BY 4.0,copy,2026-01-01,confirmed; a.md:18 holds,,win/a.md;win/b.md,\\n\"\nfiles[\"_answers.md\"] += \"\\n## QK-plant. What does the second fact say?\\n- It holds. (`win/a.md:17`) [DOC \" + sid + \"]\\n\"\nfiles[\"_gaps.md\"] += \"\\n## Gap\\n  - Tried 2026-02-01: see `win/a.md:18` (topic: win/a)\\n\"\nfiles[\"_conflicts.md\"] += \"\\n## Conflict\\n  - Read `win/a.md:17` against the page (topic: win/a)\\n\"\nfor rel, text in files.items():\n    os.makedirs(os.path.dirname(os.path.join(d, rel)) or d, exist_ok=True)\n    open(os.path.join(d, rel), \"w\").write(text)\nenv = dict(os.environ, KB_ROOTS=d)\nr = subprocess.run([sys.executable, \"_tools/factdiff.py\", \"--root\", \"zq\", \"close\", \"win/a.md:16\", \"--on\", \"2026-06-01\", \"--from\", \"2026-01-01\",\n                    \"--text\", \"First fact now differs. [DOC \" + sid + \"]\"], env=env, capture_output=True, text=True)\nrd = lambda p: open(os.path.join(d, p)).read()\nwant = [(\"_answers.md\", \"win/a.md:18\"), (\"_gaps.md\", \"win/a.md:19\"), (\"_conflicts.md\", \"win/a.md:18\"), (\"win/b.md\", \"win/a.md:19\"), (\"_sources.csv\", \"a.md:19\")]\nbad = [f\"{p} lacks {w}\" for p, w in want if w not in rd(p)]\nprint(\"close exit\", r.returncode, \"; citations not re-pointed:\", bad)\nsys.exit(1 if r.returncode or bad else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "e6fd7e2d4233d0e0"
+      }
+    ]
+  }
 }
