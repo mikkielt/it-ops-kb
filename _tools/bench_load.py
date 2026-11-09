@@ -809,7 +809,8 @@ def live_rows(b):
     <class>`: `cpu_s` (the CPU time the class's processes used over the window: from the first tick for a process that was
     running at it, all of it for one that began later), `rss_peak_mb` (the highest tick's sum), `rss_mean_mb` (the mean of
     the ticks' sums, a tick with no process of the class counting 0) and `spawns_per_min` (the processes first seen after
-    the first tick, per minute of the window). The snapshot of the ticks is written under `_cache/` (live_snapshot) and its
+    the first tick, per minute of the window, which counts as at least one LIVE_TICK_S, so a window shorter than that, which
+    lists once, writes figures and divides by no zero). The snapshot of the ticks is written under `_cache/` (live_snapshot) and its
     path printed."""
     if not shutil.which("ps"):
         raise Skip("no ps: run it on macOS or Linux")
@@ -825,7 +826,8 @@ def live_rows(b):
             break
         time.sleep(min(LIVE_TICK_S, max(0.0, end - time.monotonic())))
     elapsed = live.times[-1] - live.times[0]
-    note = (f"{os.cpu_count()} cores, load {load:.1f} at the start; {len(live.ticks)} ps listings over {elapsed:.0f} s of the process trees "
+    per_min = max(elapsed, LIVE_TICK_S) / 60  # a window under one listing's pause lists once: its figures stand for one listing
+    note =(f"{os.cpu_count()} cores, load {load:.1f} at the start; {len(live.ticks)} ps listings over {elapsed:.0f} s of the process trees "
             f"of {len(roots)} roots ({', '.join(sorted({r['class'] for r in described}))}), this process left out; a process that "
             "lives less than a listing is not seen, and one that began before the window counts only its CPU since the first listing")
     for cls in [*sorted({c["class"] for c in live.procs.values()}), "all"]:
@@ -833,7 +835,7 @@ def live_rows(b):
         sums = [(sum(per.values()) if cls == "all" else per.get(cls, 0)) / 1024 for per in live.ticks]
         for metric, value in (("cpu_s", sum(c["cpu1"] - c["cpu0"] for c in cells)), ("rss_peak_mb", max(sums)),
                               ("rss_mean_mb", statistics.mean(sums)),
-                              ("spawns_per_min", sum(1 for c in cells if c["tick"] > 0 and not c["root"]) / (elapsed / 60))):
+                              ("spawns_per_min", sum(1 for c in cells if c["tick"] > 0 and not c["root"]) / per_min)):
             b.row("session-load", f"live {cls}", LIVE_ARM, metric, value, 1, note=note if metric == "cpu_s" and cls == "all" else "")
     print(f"session-load: live snapshot written to {live_snapshot(live, described, window)}", flush=True)
 
