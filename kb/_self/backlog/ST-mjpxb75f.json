@@ -1,0 +1,22 @@
+{
+  "id": "ST-mjpxb75f",
+  "kind": "story",
+  "title": "land's second pass refuses at the landing lock after its wait budget when other sprints' landings queue ahead, though the merge request already merged",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "a land whose code merge request merged waits for the clone's landing lock past the queue of other landings, or keeps its place, instead of refusing at step landing-lock and needing a rerun (SP-yriisdti: BG-dricgbax refused at wait-merge after 1900 s with its code merged)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.exit('to fill in at planning')"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
