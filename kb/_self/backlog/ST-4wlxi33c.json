@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "Sprint planning names the public helpers a change needs in the module that owns them, so the touches cover it",
   "status": "draft",
+  "sprint": "SP-moxpl354",
   "priority": "P3",
   "rank": 0,
   "goal": "kb-sprint plan step 2 asks, for each item that calls into another tool module, which public helper the change needs there, and puts that module in the item's touches before the start gate",
@@ -11,9 +12,15 @@
       "run": [
         "python3",
         "-c",
-        "import sys,pathlib\nt=pathlib.Path('kb/_self/backlog.md').read_text(encoding='utf-8').lower()\nmiss=[w for w in ['public helper', 'owns'] if w not in t]\nsys.exit('not yet: kb/_self/backlog.md lacks '+', '.join(miss) if miss else 0)\n"
+        "import sys,pathlib\nt=pathlib.Path('skills/sprint/SKILL.md').read_text(encoding='utf-8')\ns=t.split('## plan',1)[1].split('## start',1)[0].lower()\nmiss=[w for w in ['public helper', 'owns'] if w not in s]\nsys.exit('not yet: plan section lacks '+', '.join(miss) if miss else 0)\n"
       ]
     }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "depends_on": [
+    "ST-ocyvajbg"
   ],
   "links": [
     "parked: SP-ep7ck2ab close"
