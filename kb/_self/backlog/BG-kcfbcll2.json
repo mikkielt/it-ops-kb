@@ -2,7 +2,7 @@
   "id": "BG-kcfbcll2",
   "kind": "bug",
   "title": "A review's done names a loaded host for tests.py -n 2, -x or --durations as for a bare whole-suite run",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-yriisdti",
   "priority": "P3",
   "rank": 0,
@@ -25,5 +25,7 @@
   ],
   "links": [
     "parked: SP-qlpfcgs2 review"
-  ]
+  ],
+  "claimed_by": "claude-ev2run01",
+  "operator": "op-f618a13e"
 }
