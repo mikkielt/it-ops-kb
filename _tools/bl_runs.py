@@ -117,13 +117,13 @@ def branch_gates(root, iid):
         return None
 
 
-def on_integration_main(root, iid):
-    """Whether the item's file reads `done` on the integration main as last fetched (the done commit is on it). True when
-    the ref is missing: git cannot say, so the item file is taken as the answer."""
+def on_integration_main(root, iid, missing=True):
+    """Whether the item's file reads `done` on the integration main as last fetched (the done commit is on it). MISSING
+    is the answer when the ref is missing: git cannot say, so the item file is taken as the answer."""
     import kbpublic
     ref = f"refs/remotes/{kbpublic.integration_remote(root)}/main"
     if subprocess.run(["git", "-C", str(root), "rev-parse", "--verify", "-q", ref], capture_output=True).returncode:
-        return True
+        return missing
     p = subprocess.run(["git", "-C", str(root), "show", f"{ref}:{rel_dir()}/{iid}.json"], capture_output=True, text=True,
                        encoding="utf-8", errors="replace")
     try:
@@ -132,12 +132,14 @@ def on_integration_main(root, iid):
         return False
 
 
-def drift_of(state, status, alive, claimed, on_main=True):
+def drift_of(state, status, alive, claimed, on_main=True, done_on_main=False):
     """(the state git shows, why) for a run key that contradicts git, else None. ON_MAIN: the item's done commit is on the
-    integration main; a done item whose commit is not has no drift of the claim kinds either: `land` moves its key once it is."""
+    integration main; a done item whose commit is not has no drift of the claim kinds either: `land` moves its key once it is.
+    DONE_ON_MAIN: the item file reads done on the integration main as last fetched; a `landed` key over a file that is not
+    done here is left alone then, since a checkout that has not pulled the landing is behind, not the key wrong."""
     if status == "done" and state != "landed" and on_main:
         return "landed", f"the item file is done and the run state is {state}"
-    if state == "landed" and status not in (None, "done"):
+    if state == "landed" and status not in (None, "done") and not done_on_main:
         return NONE, f"the run state is landed and the item file is {status}, not done"
     if state == NONE:
         return None
@@ -174,8 +176,9 @@ def collect(bl, states, scope):
                 ledgers = ledgers_of(trees)
             claimed = claimed_elsewhere(trees, ledgers, owned, iid)
         on_main = status != "done" or state == "landed" or on_integration_main(bl.root, iid)
+        behind = state == "landed" and status not in (None, "done") and on_integration_main(bl.root, iid, missing=False)
         rows.append({"id": iid, "state": state, "status": status, "gates": branch_gates(bl.root, iid) if it else None,
-                     "pid": pid, "alive": alive, "drift": drift_of(state, status, alive, claimed, on_main)})
+                     "pid": pid, "alive": alive, "drift": drift_of(state, status, alive, claimed, on_main, behind)})
     return rows
 
 
