@@ -64,6 +64,26 @@
   "relates_to": [
     "BG-afksmtkf"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which ids does a session label target of kbask.py ask match: the label as peers prints it (digest of the id) only, or also the id's first six hex characters, which the item's checks use?",
+      "options": [
+        "digest label and id prefix",
+        "digest label only"
+      ],
+      "recommendation": "digest label and id prefix",
+      "reason": "the item's checks name sessions by the id's first six hex, and several matches stay refused",
+      "do": {
+        "digest label and id prefix": "BG-i3wx5mto",
+        "digest label only": "BG-i3wx5mto"
+      },
+      "class": "design",
+      "answer": "digest label and id prefix",
+      "by": "agent"
+    }
+  ],
   "notes": "Found 2026-10-28 running SP-lmpjclxz: ask A92f312cef4 to s-0e0c2d (the label backlog.py peers printed for the other orchestrator) was never answered. coord_hook.new_asks (.claude/hooks/coord_hook.py:672) shows an ask only when its to is the session's full id, any or one of its announced items, and kbask.refuse_ended checks only full session ids, so a label target passes and is lost. A second ask, Afe61c64057 to the item ST-qqpcgqe7, was not answered either while that item's worker had returned and its orchestrator went on to land it; whether an item ask reaches the orchestrator that dispatched the item, rather than only the worker's session, is not yet known and is for the worker to read in coord_hook and the intents. A session idle in a coord.py wait --kind progress makes no tool call, so the hook shows it no ask until its wait returns. Planned 2026-11-09 in SP-osevumx6: items that share a file wait on each other (kbcommon.py, redact.py then kbask.py, ql_capture.py then ql_deliver.py); no open item of the other live sprints touches this item's code files.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-cdcea91c",
