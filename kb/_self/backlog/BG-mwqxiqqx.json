@@ -20,6 +20,9 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "depends_on": [
+    "BG-g6usmwjt"
+  ],
   "relates_to": [
     "ST-ee6lc724",
     "ST-icdowdj6",
@@ -28,6 +31,6 @@
   "links": [
     "retro: drain 2026-10-27..11-08"
   ],
-  "notes": "Retro finding of the drain: the item files drop and move wrote left the main checkout dirty, which snagged land ('it has uncommitted changes') and sync until the files were committed by hand. reopen has the same gap (verified: reopen -h lists no --commit), so it is in the goal beside the two the retro named. The shared helper is commit_written (bl_items.py), which set calls with its ids; the repro plants a clone and runs move and drop with --commit. BG-gt4i6ec6 also edits bl_items.py (cmd_reopen): land one after the other.",
+  "notes": "Retro finding of the drain: the item files drop and move wrote left the main checkout dirty, which snagged land ('it has uncommitted changes') and sync until the files were committed by hand. reopen has the same gap (verified: reopen -h lists no --commit), so it is in the goal beside the two the retro named. The shared helper is commit_written (bl_items.py), which set calls with its ids; the repro plants a clone and runs move and drop with --commit. BG-gt4i6ec6 also edits bl_items.py (cmd_reopen): land one after the other. Order: same file bl_items.py as BG-g6usmwjt.",
   "filed_in": "clone-0ea70e5c"
 }
