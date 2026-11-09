@@ -73,7 +73,7 @@ def names_secret(touch):
 
 
 # In a gate's text `token` is a secret word, but not in the sense of a model's token counts (`output tokens`, `token
-# counts`, `usage.output_tokens`) nor in the sense of the words of a text (`token overlap`, `overlap of the
+# counts`, `usage.output_tokens`, a hyphenated count used as a budget: `a 200-token floor`) nor in the sense of the words of a text (`token overlap`, `overlap of the
 # tokens`, `words or tokens`, `word tokens`) nor in the file name of a Markdown doc (`kb/_self/token-efficiency.md`, as
 # for a touch). The ops-row value shapes `phase token` and `closed token` are no secret either, nor an upper-case identifier of
 # token counts that holds `TOKENS` in the plural (`DISPATCH_BASE_TOKENS`, `MAX_TOKENS`). A bare `token`, one qualified
@@ -92,7 +92,7 @@ CRED_WORDS = "api|access|auth|bearer|refresh|session|personal|oauth|csrf|jwt|id"
 TOKEN_COUNT = re.compile(
     rf"(?P<cred>\b(?:{CRED_WORDS})[-_ ])?"
     r"(?:\b(?:output|input|prompt|completion|cached?|total|max|context|reasoning)[-_ ]tokens?\b|"
-    r"\b(?:phase|closed)[-_ ]tokens?\b|"
+    r"\b(?:phase|closed)[-_ ]tokens?\b|\b\d[\d,.]*-tokens?\b|"
     r"\btokens?[-_ ](?:counts?|usage|budgets?|limits?|costs?|efficiency|estimates?)\b|"
     r"\btokens?[-_ ]overlaps?\b|\boverlaps? of (?:\w+[ ]){0,3}tokens\b|\bwords?[ ]+(?:or|and)[ ]+tokens\b|"
     r"\btokens[ ]+(?:or|and)[ ]+words\b|\bword[-_ ]tokens?\b|"

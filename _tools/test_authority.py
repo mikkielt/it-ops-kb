@@ -117,7 +117,7 @@ def operator_class_is_derived_from_touches_and_question_a_lower_stored_class_cha
         shapes = (f"{up}_TOKENS", f"DISPATCH_{up}_TOKENS", f"{up}_MAX_TOKENS",  # an upper-case identifier
                   f"{word} phase token", f"{word} closed token",  # an ops-row value
                   f"{word} output tokens", f"{word} input tokens", f"{word} max tokens", f"{word} token count",
-                  f"{word} output_tokens", f"{word} count of tokens",  # a model's token count
+                  f"{word} output_tokens", f"{word} count of tokens", f"{word} 200-token floor",  # a model's token count
                   f"{word} tokens, units, points", f"{word} tokens and units or points")  # a unit-noun list
         for shape in shapes:
             assert secrets(f"Which {shape} does the run take?") == "secrets", shape
