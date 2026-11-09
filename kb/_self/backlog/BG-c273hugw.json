@@ -47,7 +47,12 @@
         "Only the dropped note per refused field": "BG-c273hugw",
         "Dropped plus the row's replaced and left notes": "BG-c273hugw"
       },
-      "class": "querylog"
+      "class": "querylog",
+      "answer": "Only the dropped note per refused field",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "links": [
