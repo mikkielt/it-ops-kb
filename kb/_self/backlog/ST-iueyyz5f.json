@@ -103,7 +103,11 @@
         "Refuse them naming --budget when it is missing, and as no operation when it is given": "ST-iueyyz5f",
         "Add rows for them now": "ST-iueyyz5f"
       },
-      "class": "design"
+      "class": "design",
+      "answer": "Refuse them naming --budget when it is missing, and as no operation when it is given",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: queues nothing",
