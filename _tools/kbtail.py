@@ -31,7 +31,7 @@ and each line at the terminal's columns less one (COLUMNS, else the terminal's s
 
 An entry of an unknown type, or a line that is not a JSON object, is skipped and counted; the types Claude Code writes
 that are no conversation (attachment, mode, system, summary and the like) are ignored uncounted. `--once` ends with
-`kbtail: skipped N` on stderr. While following, the process waits on the stat of coord's store file (a store that exists:
+`kbtail: skipped N` on stderr when N is not 0. While following, the process waits on the stat of coord's store file (a store that exists:
 KB_COORD_STORE, else the project's; it opens no connection, so a lock another process holds does not delay a read) and
 otherwise sleeps; either way it reads only the bytes appended since its last read. A file replaced by another (a new
 identity, a smaller size or other first bytes) shows its last `--history` lines, and what is appended after them. It writes no file. Exit codes: 0 done (also an interrupt), 2 a bad argument or a TARGET with no transcript.
@@ -72,7 +72,9 @@ READ_CAP = 4000  # characters of a text that are redacted; its first line is wit
 KNOWN = redact.scan_known(())  # nothing of the public root is read (some seconds of CPU): a display may redact more than the query log
 DISPLAYED = ("user", "assistant")
 IGNORED = frozenset(("attachment", "mode", "permission-mode", "last-prompt", "ai-title", "file-history-snapshot",
-                     "system", "summary", "cost-state", "atis-latch"))
+                     "file-history-delta", "system", "summary", "cost-state", "atis-latch", "queue-operation",
+                     "custom-title", "agent-name", "agent-setting", "bridge-session", "session-owner", "tools-used",
+                     "frame-link", "continued-in", "artifact-autoreact-ledger", "artifact-comment-monitor"))
 IGNORED_PREFIX = ("api-request",)
 INPUT_KEYS = ("file_path", "notebook_path", "path", "command", "pattern", "url", "query", "skill", "description",
               "prompt", "name")
@@ -510,7 +512,8 @@ def main_all(a, out, err):
             shown, skipped, over, unbound, lost = scan(a.root, a.item, a.role, followed, a.history)
             show(followed, shown, over, unbound, lost, columns, out)
             out.flush()
-            print(f"kbtail: skipped {skipped}", file=err)
+            if skipped:
+                print(f"kbtail: skipped {skipped}", file=err)
             return 0
         follow_all(a, columns, out)
     except BrokenPipeError:
@@ -555,7 +558,8 @@ def main(argv=None, out=None, err=None):
             out.write(fit(line, columns) + "\n")
         out.flush()
         if a.once:
-            print(f"kbtail: skipped {skipped}", file=err)
+            if skipped:
+                print(f"kbtail: skipped {skipped}", file=err)
             return 0
         follow(path, mark(end, known), columns, out, a.history)
     except BrokenPipeError:
