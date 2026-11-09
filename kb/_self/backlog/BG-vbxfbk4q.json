@@ -23,6 +23,26 @@
   "depends_on": [
     "BG-tj3k7mk6"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which statuses of a sprint's items does kbmon --events wait on before it exports the kb.sprint span: todo and doing (a draft item, such as the review story a new sprint holds, is not waited for), or every status but done and dropped?",
+      "options": [
+        "todo and doing only",
+        "every status but done and dropped"
+      ],
+      "recommendation": "todo and doing only",
+      "reason": "the repro's sprint holds two draft stories that never get a run, and waiting on them would export no kb.sprint span at all",
+      "do": {
+        "todo and doing only": "BG-vbxfbk4q",
+        "every status but done and dropped": "BG-vbxfbk4q"
+      },
+      "class": "design",
+      "answer": "todo and doing only",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ymnz7b4n review"
   ],

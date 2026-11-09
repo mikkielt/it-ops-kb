@@ -182,11 +182,11 @@ def closed_sprints(ctx, items):
 
 
 def open_of(backlog):
-    """{item id: its sprint's id} of the BACKLOG's items that a sprint has claimed or is doing: `doing`, or `todo` with a
-    claim, whatever their runs."""
+    """{item id: its sprint's id} of the BACKLOG's items that a sprint holds and has not finished: `todo`, claimed or not, and
+    `doing`, whatever their runs; a `draft` item (a sprint's review story before the sprint's items are done) is not waited
+    for."""
     return {i: d["sprint"] for i, d in backlog.items()
-            if isinstance(d, dict) and d.get("sprint") and (d.get("status") == "doing"
-                                                          or (d.get("status") == "todo" and d.get("claimed_by")))}
+            if isinstance(d, dict) and d.get("sprint") and d.get("status") in ("todo", "doing")}
 
 
 def run_span(name, first, last, end, trace, parent, extra):
@@ -257,10 +257,10 @@ def worker_ids(events, item, sprint=None):
 
 
 def sprint_records(runs, sprints, held=None):
-    """[(`kb.sprint` span, sequence of its last move)] of the sprints whose claimed items have all ended their runs: for each
+    """[(`kb.sprint` span, sequence of its last move)] of the sprints whose items have all ended their runs: for each
     sprint of SPRINTS ({item: sprint}) the RUNS ((item, moves) as `item_runs` gives them) of its items, once the last move of
-    every item is `landed` or `released` and no item of HELD ({item: sprint} of the items the sprint has claimed or is doing,
-    `open_of`) is without an ended run. The span runs from the first move of the first run to the last move of the last,
+    every item is `landed` or `released` and no item of HELD ({item: sprint} of the items the sprint holds that are `todo` or
+    `doing`, `open_of`) is without an ended run. The span runs from the first move of the first run to the last move of the last,
     its id and trace derived from the sprint id."""
     by = {}
     for item, run in runs:
