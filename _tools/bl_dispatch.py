@@ -197,12 +197,21 @@ def backlog_cmd(root):
     return f"python3 {PLUGIN_ROOT.as_posix()}/_tools/backlog.py"
 
 
+def commit_by_turn(turns):
+    """The turn by which the brief tells a worker to commit: TURNS minus `COMMIT_MARGIN` when TURNS is above twice the
+    margin, else half of TURNS, at least 1 (a cap at or below the margin would otherwise say turn 1)."""
+    turns = turns or 0
+    if turns > 2 * COMMIT_MARGIN:
+        return turns - COMMIT_MARGIN
+    return max(turns // 2, 1)
+
+
 def worker_rules(root, iid, branch, turns=None, budget=None):
     """The brief's fixed rules for the project at ROOT, as lines: the kb-only ones (its test runner and ceiling, its
     stale-doc check) as the kb's own brief has them where the project has the tool, else the project-neutral wording
     (a rule with no such wording is left out there).
     The rule on the paths every item may change names `always_in_scope` (what `in_scope` counts), and is left out
-    where the project sets none; the rule on the turn cap names TURNS and the turn `COMMIT_MARGIN` turns before it,
+    where the project sets none; the rule on the turn cap names TURNS and the turn `commit_by_turn` gives,
     and is left out where no cap is given; the rule on the spend cap names BUDGET (USD, as text) and is left out
     where the worker runs without one."""
     always = ", ".join(f"`{g}`" for g in always_in_scope())
@@ -220,7 +229,7 @@ def worker_rules(root, iid, branch, turns=None, budget=None):
         if "{budget}" in rule and not budget:
             continue
         out.append(rule.format(id=iid, branch=branch, backlog=backlog_cmd(root), always=always, turns=turns,
-                               budget=budget, commit_by=max((turns or 0) - COMMIT_MARGIN, 1)))
+                               budget=budget, commit_by=commit_by_turn(turns)))
     return out
 
 
