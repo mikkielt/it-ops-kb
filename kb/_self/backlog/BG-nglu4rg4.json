@@ -21,11 +21,11 @@
     "kb/_self/backlog.md"
   ],
   "depends_on": [
-    "BG-rrutf5bf"
+    "BG-2naamm5z"
   ],
   "links": [
     "parked: SP-swavez3g review"
   ],
-  "notes": "Found by the SP-swavez3g review (S3) of BG-r7c7dxia: splitting at every hyphen yields S, 5kvx24wm and related but never the whole id; most ledger ids are of this S-<8 hex> form. The other gate option, matching source-id shapes inside tokens, would have covered them. 2026-11-09 run: the planned order after BG-dlp3mui2 is relaxed (depends now names an item already landed) so workers run while the landing queue drains; landings stay one at a time and a rebase conflict goes back to the worker.",
+  "notes": "Found by the SP-swavez3g review (S3) of BG-r7c7dxia: splitting at every hyphen yields S, 5kvx24wm and related but never the whole id; most ledger ids are of this S-<8 hex> form. The other gate option, matching source-id shapes inside tokens, would have covered them.",
   "filed_in": "clone-0ea70e5c"
 }

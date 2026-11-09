@@ -21,10 +21,9 @@
     "kb/_self/tools.md"
   ],
   "depends_on": [
-    "BG-rrutf5bf"
+    "BG-vrjsu4oz"
   ],
   "links": [
     "parked: SP-sqgyoiaz review"
-  ],
-  "notes": "2026-11-09 run: the planned order after BG-dlp3mui2 is relaxed (depends now names an item already landed) so workers run while the landing queue drains; landings stay one at a time and a rebase conflict goes back to the worker."
+  ]
 }

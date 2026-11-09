@@ -21,11 +21,11 @@
     "kb/_self/tools.md"
   ],
   "depends_on": [
-    "BG-rrutf5bf"
+    "BG-dlp3mui2"
   ],
   "links": [
     "parked: SP-basca7ae review"
   ],
-  "notes": "2026-11-09 plan: narrowed to the clause the repro reads. The earlier goal also held two further review gaps, left out here and open for a later draft: a rebase that fails with no unmerged file prints no conflict remedy, and a path holding a space or non-ASCII letters is named whole (the unmerged list is read with .split()). 2026-11-09 run: the planned order after BG-dlp3mui2 is relaxed (depends now names an item already landed) so workers run while the landing queue drains; landings stay one at a time and a rebase conflict goes back to the worker.",
+  "notes": "2026-11-09 plan: narrowed to the clause the repro reads. The earlier goal also held two further review gaps, left out here and open for a later draft: a rebase that fails with no unmerged file prints no conflict remedy, and a path holding a space or non-ASCII letters is named whole (the unmerged list is read with .split()).",
   "filed_in": "clone-0ea70e5c"
 }
