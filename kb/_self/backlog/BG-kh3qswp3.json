@@ -18,5 +18,9 @@
   "touches": [
     "_tools/kg_contrib.py"
   ],
+  "links": [
+    "parked: SP-mut2pmu3 review"
+  ],
+  "notes": "SP-mut2pmu3 review gap 9 (S3, outside the sprint's commits). kg_contrib.py:98 (added_hits) calls shipped_file_hits(x, added, allow, pinned) with no root, so the placeholders a public root lists never pass in contribute, while publish (tree_hits, leak_verdicts via root_of) lets them pass: a commit that adds a listed placeholder home path to a public root is left out by contribute as a hit (home) and would publish. Fails closed. This is the S4 half BG-ff6fhfoo left out. Fix: pass root_of(x, kbpublic.root_placeholders(head, files, KB)).",
   "filed_in": "clone-0ea70e5c"
 }
