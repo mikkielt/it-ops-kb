@@ -2,7 +2,7 @@
   "id": "BG-5knikq4t",
   "kind": "bug",
   "title": "The detail-only lint never fires for a gate added with the default kind, since --kind blocking is itself a block reason",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-pww4aqis",
   "priority": "P3",
   "rank": 0,
@@ -29,5 +29,7 @@
     "parked: SP-v6crf4rx review"
   ],
   "notes": "Order: same files bl_authority.py (after BG-hmxbenjn) and bl_items.py (after BG-gt4i6ec6). Premise reproduces on origin/main (precheck 2026-11-09). precheck SP calls the same detail_only (bl_precheck.py:526), so its line follows from the fix; bl_precheck.py is left out of touches as the fix is in bl_authority.py. Review gap G3 of SP-v6crf4rx.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-6b037793",
+  "operator": "op-f618a13e"
 }
