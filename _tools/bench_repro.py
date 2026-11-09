@@ -924,6 +924,14 @@ def stems(key):
     return out
 
 
+CODE_SPAN = re.compile(r"`([^`]+)`")
+
+
+def code_spans(text):
+    """The set of backticked terms of a claim, lower-cased: the option, setting or command names it is about."""
+    return {m.strip().lower() for m in CODE_SPAN.findall(text)}
+
+
 def row_name(text):
     """The first cell's value of a data-row fact (`property=lastIpAddress; type=String; ...`, factdiff.row_parts), which
     names the property or setting the row is about, lower-cased; None for any other fact."""
@@ -938,7 +946,9 @@ def match_facts(a, b):
     article path whose difflib ratio (factdiff.unit_sim of their claims) is at least SAME_CLAIM, or a pair, on any path,
     that cites one source (`source_keys`) and whose claims share at least TOKEN_OVERLAP of their content words (`stems`,
     so a claim worded differently on the same article still pairs), taken best first, each fact in one pair at most. A pair whose ratio cannot reach SAME_CLAIM by its lengths or letters
-    (difflib's two upper bounds) is judged by its words only. Two data rows of one CSV path whose first cells differ
+    (difflib's two upper bounds) is judged by its words only. A pair on two article paths also needs
+    equal code spans (`code_spans`) and equal `factdiff.numbers`, so two sentences about different options of one page
+    (`--timeout` and `--retries`) are no pair. Two data rows of one CSV path whose first cells differ
     (`row_name`: two properties or settings of one table) are never a pair, whatever they share."""
     import difflib, factdiff
     by_path, by_source = {}, {}
@@ -951,17 +961,22 @@ def match_facts(a, b):
     stems_a = [stems(k) for k in keys_a]
     norms_a = [factdiff.norm(t) for t in texts_a]
     rows_a = [row_name(t) for t in texts_a]
+    spans_a = [code_spans(t) for t in texts_a]
+    nums_a = [factdiff.numbers(t) for t in texts_a]
     sm = difflib.SequenceMatcher(None, autojunk=False)
     found = []
     for j, f in enumerate(b):
         text, key = claim(f), factdiff.words_key(claim(f))
         words = stems(key)
         row = row_name(text)
+        spans, nums = code_spans(text), factdiff.numbers(text)
         sm.set_seq2(factdiff.norm(text))
         near = set(by_path.get(f["path"], []))
         shared = {i for k in source_keys(f) for i in by_source.get(k, [])}
         for i in sorted(near | shared):
             if row is not None and rows_a[i] not in (None, row) and a[i]["path"] == f["path"]:
+                continue
+            if a[i]["path"] != f["path"] and (spans_a[i] != spans or nums_a[i] != nums):
                 continue
             if keys_a[i] == key:
                 found.append((-1.0, i, j))
