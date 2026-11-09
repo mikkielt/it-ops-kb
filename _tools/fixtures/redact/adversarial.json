@@ -47,6 +47,11 @@
     {"id": "layout.prose", "text": "Set the service password to {v} and restart it.", "v": "mixed"},
     {"id": "layout.prose-colon", "text": "The deploy account's password: {v} (rotate monthly).", "v": "mixed"},
     {"id": "layout.code-span", "text": "The account uses the password: `{v}` today.", "v": "mixed"},
+    {"id": "layout.prose-comma", "text": "The service password: {v}, then rotate it.", "v": "mixed"},
+    {"id": "layout.prose-paren", "text": "Log in (password={v}) and rotate it.", "v": "mixed"},
+    {"id": "layout.prose-bracket", "text": "Log in [password={v}] and rotate it.", "v": "mixed"},
+    {"id": "layout.prose-brace", "text": "Log in {password={v}} and rotate it.", "v": "mixed"},
+    {"id": "layout.prose-backtick", "text": "Log in with password=`{v}` and rotate it.", "v": "mixed"},
     {"id": "layout.bullet", "text": "- api_key={v}", "v": "mixed"},
     {"id": "layout.multiline-json", "text": "{\n  \"user\": \"svc\",\n  \"password\": \"{v}\"\n}", "v": "mixed"},
     {"id": "cmd.cmdkey", "text": "cmdkey /add:fs01.corp.example.com /user:CORP\\svc-backup /pass:{v}", "v": "mixed"},
@@ -114,9 +119,9 @@
   ],
   "known_gap": {
     "redact": ["token|*|*|*", "layout.table", "layout.xml", "layout.xml-attr", "layout.prose", "cmd.cmdkey", "cmd.net-use", "cmd.sqlcmd", "cmd.securestring", "cmd.curl-user", "cmd.schtasks", "cmd.psexec", "cmd.az-login", "cmd.docker", "cmd.mgraph", "domain.bitlocker", "domain.laps", "domain.wifi"],
-    "scan": ["*|*|*|1", "*|*|*|2", "*|*|*|4", "token|*|*|*", "hdr.token-scheme", "hdr.short", "hdr.split-line", "hdr.table-cell", "layout.table", "layout.xml", "layout.xml-attr", "layout.query", "layout.prose", "layout.code-span", "layout.multiline-json", "cmd.cmdkey", "cmd.net-use", "cmd.sqlcmd", "cmd.securestring", "cmd.curl-user", "cmd.schtasks", "cmd.psexec", "cmd.az-login", "cmd.docker", "cmd.mgraph", "cmd.env-set", "domain.sas", "domain.bitlocker", "domain.laps", "domain.wifi", "domain.vault-token"],
+    "scan": ["*|*|*|1", "*|*|*|2", "*|*|*|4", "token|*|*|*", "hdr.token-scheme", "hdr.short", "hdr.split-line", "hdr.table-cell", "layout.table", "layout.xml", "layout.xml-attr", "layout.query", "layout.prose", "layout.multiline-json", "cmd.cmdkey", "cmd.net-use", "cmd.sqlcmd", "cmd.securestring", "cmd.curl-user", "cmd.schtasks", "cmd.psexec", "cmd.az-login", "cmd.docker", "cmd.mgraph", "cmd.env-set", "domain.sas", "domain.bitlocker", "domain.laps", "domain.wifi", "domain.vault-token"],
     "utility_redact": ["sha-pin", "sha-digest", "prose-strong", "ph-api-key", "ref-path", "ref-code-path", "hdr-shell", "hdr-upper-name", "hdr-words", "hdr-ellipsis", "url-doc-password", "url-doc-change-me", "url-ssh"],
     "utility_scan": ["prose-strong", "ref-path"],
-    "max": {"redact": 65, "scan": 327, "utility_redact": 13, "utility_scan": 2}
+    "max": {"redact": 65, "scan": 326, "utility_redact": 13, "utility_scan": 2}
   }
 }

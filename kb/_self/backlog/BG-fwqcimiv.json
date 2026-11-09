@@ -50,6 +50,25 @@
     "kb/_self/plugin.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the scan keep a closed code reference (api_key=token_provider, a path) from being flagged once , ) ] } and backticks no longer make a value a placeholder?",
+      "options": [
+        "Exempt a snake_case name or a path only when closing punctuation was stripped",
+        "Strip the punctuation with no exemption and edit the tracked docs that then hit",
+        "Strip only for values holding a digit and an upper-case letter"
+      ],
+      "recommendation": "Exempt a snake_case name or a path only when closing punctuation was stripped",
+      "do": {
+        "Exempt a snake_case name or a path only when closing punctuation was stripped": "BG-fwqcimiv",
+        "Strip the punctuation with no exemption and edit the tracked docs that then hit": "BG-fwqcimiv",
+        "Strip only for values holding a digit and an upper-case letter": "BG-fwqcimiv"
+      },
+      "class": "secrets"
+    }
+  ],
   "links": [
     "parked: SP-fn7letri review"
   ],
