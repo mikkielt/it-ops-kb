@@ -1,0 +1,22 @@
+{
+  "id": "SP-2cq2hse4",
+  "kind": "sprint",
+  "title": "Refresh and census tooling does by command what the freshness and gap runs did by hand",
+  "status": "planned",
+  "goal": "census.py read dates a source a person read by hand and census.py run takes a selection; kbid.py repoint re-points a moved source with its anchor and doc2query rows and factdiff.py close re-points the citations its inserted line shifts; factdiff.py detect never overwrites a committed same-day log; the census's phase token, LEARN_MAP entries, judge call count and PyPI search read as documented; rag.py pack flags a not-stated UNK line as a possible false good and rag.py audit --stale-gaps lists the gaps the kb already answers; the query log's gap step keeps no new entry for a question a closed entry settled",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e",
+  "filed_in": "clone-0ea70e5c"
+}
