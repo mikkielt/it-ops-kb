@@ -1,0 +1,23 @@
+{
+  "id": "ST-rosm4sdw",
+  "kind": "story",
+  "title": "A worker's brief states code.md's rule against calling another module's underscore names when its touches name tool code",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the brief of an item whose touches name _tools/ files states that another module never calls a name starting with an underscore and that a needed helper is added as a public name in the module that owns it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,pathlib\nt=pathlib.Path('kb/_self/backlog.md').read_text(encoding='utf-8').lower()\nmiss=[w for w in ['underscore', 'brief'] if w not in t]\nsys.exit('not yet: kb/_self/backlog.md lacks '+', '.join(miss) if miss else 0)\n"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-ep7ck2ab close"
+  ],
+  "notes": "Parked draft from the SP-ep7ck2ab close retrospective (night manager c9419db9, operator-delegated, 2026-11-09). Its check reads the rule text only: the planner adds a check that runs the behaviour on a planted input before the start gate. Retrospective item R4.",
+  "filed_in": "clone-0ea70e5c"
+}

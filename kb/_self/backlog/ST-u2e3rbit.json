@@ -1,0 +1,23 @@
+{
+  "id": "ST-u2e3rbit",
+  "kind": "story",
+  "title": "A gate answer the orchestrator commits on a worker branch survives the worker's later item writes",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "a gate answer committed on a worker's branch by the orchestrator (answer --root WORKTREE --commit) is kept when the worker's own item commit writes the item file again, and kb/_self/backlog.md says so",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,pathlib\nt=pathlib.Path('kb/_self/backlog.md').read_text(encoding='utf-8').lower()\nmiss=[w for w in ['answer committed on a worker branch survives'] if w not in t]\nsys.exit('not yet: kb/_self/backlog.md lacks '+', '.join(miss) if miss else 0)\n"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-ep7ck2ab close"
+  ],
+  "notes": "Parked draft from the SP-ep7ck2ab close retrospective (night manager c9419db9, operator-delegated, 2026-11-09). Its check reads the rule text only: the planner adds a check that runs the behaviour on a planted input before the start gate. Retrospective item R2.",
+  "filed_in": "clone-0ea70e5c"
+}

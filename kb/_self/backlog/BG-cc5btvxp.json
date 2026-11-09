@@ -1,0 +1,26 @@
+{
+  "id": "BG-cc5btvxp",
+  "kind": "bug",
+  "title": "The group gate_checks refusal in kbgit.py sync --push has no planted failure in the push gate's tests",
+  "status": "draft",
+  "parent": "EP-y7fe7qqx",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "_tools/test_sync_e2e.py holds one planted failure for a group gate_checks entry that fails, proving sync --push refuses naming its argv and layer, within the existing test ceiling (no raise)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,pathlib; t=pathlib.Path('_tools/test_sync_e2e.py').read_text(encoding='utf-8'); sys.exit(0 if 'gate_checks' in t else 'not yet: test_sync_e2e.py plants no gate_checks failure')"
+    ]
+  },
+  "repro_reason": "the defect is a missing test of the push gate: until it exists no behaviour runs, so the repro reads the push gate's test file for a planted gate_checks entry; the fix's test run is the proof",
+  "touches": [
+    "_tools/test_sync_e2e.py"
+  ],
+  "links": [
+    "parked: SP-ep7ck2ab close"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

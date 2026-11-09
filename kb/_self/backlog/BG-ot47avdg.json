@@ -22,6 +22,6 @@
   "links": [
     "parked: SP-uh5h46fm close"
   ],
-  "notes": "Likely cause, not proven: kg_sync.push_options sends merge_request.auto_merge and merge_request.remove_source_branch, so a merge request that merges at once removes code/<id> before land's pushed_tip fetch, which then reports no tip. Also read: land without --wait-merge is two-pass by design (the first pass says so before the push); the repro covers the missing-branch fetch only.",
+  "notes": "Likely cause, not proven: kg_sync.push_options sends merge_request.auto_merge and merge_request.remove_source_branch, so a merge request that merges at once removes code/<id> before land's pushed_tip fetch, which then reports no tip. Also read: land without --wait-merge is two-pass by design (the first pass says so before the push); the repro covers the missing-branch fetch only. SP-ep7ck2ab (2026-11-08/09): about 9 code-lane items, BG-dq3lxnqm the last, ended land's first pass with 'could not fetch code/<id> from origin after the push' because the merge request had already merged and its branch was gone; each needed a second land run.",
   "filed_in": "clone-0ea70e5c"
 }

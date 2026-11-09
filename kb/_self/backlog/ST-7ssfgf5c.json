@@ -1,0 +1,23 @@
+{
+  "id": "ST-7ssfgf5c",
+  "kind": "story",
+  "title": "A leak or guard story's plan lists every outbound path before the start gate",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "planning a story that changes the leak scan or a guard lists every path that hands content outside the clone (each caller of kbpublic.file_hits and kbcommon.leak_hits, and whether it passes shipped=True) in the item's notes, and a gate is asked for each path the goal leaves open, before the start gate",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,pathlib\nt=pathlib.Path('kb/_self/backlog.md').read_text(encoding='utf-8').lower()\nmiss=[w for w in ['outbound path'] if w not in t]\nsys.exit('not yet: kb/_self/backlog.md lacks '+', '.join(miss) if miss else 0)\n"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-ep7ck2ab close"
+  ],
+  "notes": "Parked draft from the SP-ep7ck2ab close retrospective (night manager c9419db9, operator-delegated, 2026-11-09). Its check reads the rule text only: the planner adds a check that runs the behaviour on a planted input before the start gate. Retrospective item R6.",
+  "filed_in": "clone-0ea70e5c"
+}

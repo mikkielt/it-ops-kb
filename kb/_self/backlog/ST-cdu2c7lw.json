@@ -1,0 +1,23 @@
+{
+  "id": "ST-cdu2c7lw",
+  "kind": "story",
+  "title": "horizon and show of the review story list every unconfirmed provisional answer, not only held ones",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py horizon --sprint SP and show of the sprint's review story list every provisional answer the operator has not confirmed, held or not, so the review brief and the operator's confirmation see all of them before the review's done",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,pathlib\nt=pathlib.Path('kb/_self/tools.md').read_text(encoding='utf-8').lower()\nmiss=[w for w in ['every unconfirmed provisional answer'] if w not in t]\nsys.exit('not yet: kb/_self/tools.md lacks '+', '.join(miss) if miss else 0)\n"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-ep7ck2ab close"
+  ],
+  "notes": "Parked draft from the SP-ep7ck2ab close retrospective (night manager c9419db9, operator-delegated, 2026-11-09). Its check reads the rule text only: the planner adds a check that runs the behaviour on a planted input before the start gate. Retrospective item R3.",
+  "filed_in": "clone-0ea70e5c"
+}
