@@ -2,7 +2,7 @@
   "id": "ST-ngfxdk42",
   "kind": "story",
   "title": "The clone's landing lock goes to its waiters in the order they asked, and a waiter that died holds nobody up",
-  "status": "draft",
+  "status": "doing",
   "sprint": "SP-mc4dzsfe",
   "priority": "P1",
   "rank": 0,
@@ -36,5 +36,7 @@
     "parked: SP-zobzdhwi close"
   ],
   "notes": "Folded in from ST-73as4hrd (a duplicate, dropped): landings of several sessions on one clone take the landing lock in the order they asked, so a land does not end at step landing-lock after its 30 minute wait (BG-o4rrijqe and BG-mhlxillg each lost 30 minutes while a later landing of another sprint took the lock first). Where the lock lives: bl_close.landing_lock (O_EXCL file kb-landing.lock in the git common directory, polled every KB_HOST_LOCK_POLL s); the queue goes there, with a ticket record per waiter (pid, start, item) in a directory beside the lock, a waiter taking the lock only when its ticket is the oldest of a live process, and a ticket whose pid is gone removed. The check plants it: a holder and four waiters as subprocesses, the second waiter killed with SIGKILL while queued, the lock released, and the order the waiters took it read (expected H, W1, W3, W4; on the base it was H, W4, W2, W1, W3). One planted failure per gate, no test id: the landing lock is critical but the suite ceiling is 29 s and 120 ids, so this sprint adds no test. Night baseline (2026-11-08 18:00 to 2026-11-09 13:00 CET): 13 land runs of 10 items refused at step landing lock after 1807 to 1811 s.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-4bf1b2c2",
+  "operator": "op-f618a13e"
 }
