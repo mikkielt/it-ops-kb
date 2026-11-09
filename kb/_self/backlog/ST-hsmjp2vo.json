@@ -2,7 +2,7 @@
   "id": "ST-hsmjp2vo",
   "kind": "story",
   "title": "Research sprint goal: Extension API follow-ups: group locks hold for every key, verify accepts valid extenders, ext tags are sent",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ga3lbnlk",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,7 @@
     "kb/public/**"
   ],
   "notes": "Planning 2026-11-09: every item of this sprint is a bug in this repository's own extension API code (kbsettings, kbext, kg_sync, kb_mcp, kbingest, bl_cli) with a repro run at planning; no Microsoft or Claude product claim is in play, so the worker closes it with a note stating that no outside facts are needed, in the form the researched check reads.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-0a3e91bc",
+  "operator": "op-f618a13e"
 }
