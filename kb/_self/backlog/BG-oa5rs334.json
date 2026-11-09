@@ -2,7 +2,7 @@
   "id": "BG-oa5rs334",
   "kind": "bug",
   "title": "A worker's brief tells it to commit by turn 1 when dispatch's cap is not above the commit margin",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rzwljgxv",
   "priority": "P3",
   "rank": 0,
@@ -23,5 +23,7 @@
   "links": [
     "parked: SP-mujl7ebh review"
   ],
-  "notes": "Premise (reproduces: the repro, which asserts the turns the goal names): worker_rules clamps the commit-by turn with max(cap - COMMIT_MARGIN, 1), so cap 10 writes by turn 1. Settled in the goal, not a gate: half the cap at or below twice the margin, no dispatch refusal. The code is bl_dispatch.py line 223 (compose_brief and worker_rules callers of commit_by); backlog.md and tools.md name the turn cap rule."
+  "notes": "Premise (reproduces: the repro, which asserts the turns the goal names): worker_rules clamps the commit-by turn with max(cap - COMMIT_MARGIN, 1), so cap 10 writes by turn 1. Settled in the goal, not a gate: half the cap at or below twice the margin, no dispatch refusal. The code is bl_dispatch.py line 223 (compose_brief and worker_rules callers of commit_by); backlog.md and tools.md name the turn cap rule.",
+  "claimed_by": "claude-ev1run01",
+  "operator": "op-f618a13e"
 }
