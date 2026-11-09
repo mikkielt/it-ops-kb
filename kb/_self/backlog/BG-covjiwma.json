@@ -1,0 +1,21 @@
+{
+  "id": "BG-covjiwma",
+  "kind": "bug",
+  "title": "provider.read_licence gives CC BY-SA to a gitlab-org/gitlab doc/ path with a double-encoded .. segment",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "provider.read_licence unquotes the path of a gitlab-org/gitlab doc/ url until it no longer changes before it looks for a .. segment, so .../doc/%252e%252e/app/x.rb keeps the API's MIT. Found by the SP-c6tr77jl review (S4, BG-iwqv7nxs).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import provider as p;p.request=lambda *a,**k:{\"status\":404,\"error\":\"x\",\"body\":b\"\",\"headers\":{}};l=p.read_licence(\"https://gitlab.com/gitlab-org/gitlab/-/blob/master/doc/%252e%252e/app/x.rb\")[\"licence\"];print(l);sys.exit(1 if l.startswith(\"CC BY-SA\") else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/provider.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
