@@ -2,7 +2,7 @@
   "id": "BG-imuczrcz",
   "kind": "bug",
   "title": "LEARN_MAP sends intune/ and windows/ pages to repositories that answer 404, so each run makes a failed clone",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-2cq2hse4",
   "priority": "P3",
@@ -48,6 +48,28 @@
     "parked: SP-gavrmuvx review"
   ],
   "notes": "Operator 2026-10-21 changed ST-wim24u46 gate g1 to 'map only prefixes whose repository answers' after the SP-gavrmuvx review found the 404 entries decide no page (detect wall time 36 min 22 s before, 36 min 25 s after). Premise: the repro fails on 70d82e949.",
-  "claimed_by": "claude-c41d77ea",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "ff06a31fbcb4e787bb64062ddce3bc88a741ee0d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0, \"_tools\")\nr = open(\"kb/_self/web-sources.md\", encoding=\"utf-8\").read()\nt = open(\"kb/_self/tools.md\", encoding=\"utf-8\").read()\nbad = []\nif \"intune/\" not in r:\n    bad.append(\"web-sources.md does not name the intune/ prefix as mapped to no repository\")\nif \"answers 404 included\" in t:\n    bad.append(\"tools.md still says LEARN_MAP names a repository that answers 404\")\nprint(bad)\nsys.exit(1 if bad else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0, '_tools')\nimport census\ndead = ('MicrosoftDocs/memdocs', 'MicrosoftDocs/windows-itpro-docs')\nurls = ['https://learn.microsoft.com/en-us/intune/intune-service/fundamentals/what-is-intune',\n        'https://learn.microsoft.com/en-us/windows/client-management/mdm/policy-csp-update']\nhit = [(u, census.learn_source(u)[0]) for u in urls if census.learn_source(u)[0].endswith(dead)]\nprint('pages mapped to a repository that answers 404:', hit)\nsys.exit(1 if hit else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "b57422fd8bd9899d"
+      }
+    ]
+  }
 }
