@@ -159,12 +159,13 @@ def delivery_rows(data):
 
 def alerts(data):
     """The alerts of the panel's data: one `delivery` alert (id `querylog.delivery`) while the log's last apply outcome that
-    tried a push is a refused run or a failed gate, whatever lines of other runs follow it. A fetch that failed is a `! `
+    tried a push is a refused run or a failed gate, whatever lines of other runs follow it, unless the panel counts no
+    undelivered entry (a concurrent run's push delivered the rows, so the refusal left nothing waiting). A fetch that failed is a `! `
     row only, and a later push that delivered clears it (the outcome is then `pushed`). `since` is the time (UTC, as
     `YYYY-MM-DD HH:MM`) of the oldest run file the delivery ref lacks, which a refusal keeps undelivered and so does not
     move while it stands; else the log's last write."""
     last = data.get("last_delivery")
-    if not isinstance(last, dict) or last.get("outcome") != "refused":
+    if not isinstance(last, dict) or last.get("outcome") != "refused" or data.get("undelivered") == 0:
         return []
     since = data.get("undelivered_since") or last.get("when")
     return [{"kind": "delivery", "id": "querylog.delivery", "panel": "querylog",
