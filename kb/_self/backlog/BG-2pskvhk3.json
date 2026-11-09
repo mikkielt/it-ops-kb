@@ -2,7 +2,7 @@
   "id": "BG-2pskvhk3",
   "kind": "bug",
   "title": "An ops row of a census phase or of the sync gate written by a probe in another working directory still reaches the owning clone's spool",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-iowijan3",
   "sprint": "SP-osevumx6",
   "priority": "P3",
@@ -30,5 +30,7 @@
     "parked: SP-vmtfnkim review"
   ],
   "notes": "Found by the SP-vmtfnkim review on 2026-10-26. It changes the provisional answer BG-zoaoahj4 g1 took (the guard in ops_row and record_pipeline only; the other option, a guard in ql_capture.record, was not taken): kg_sync.record_gate (sync.gate) and ql_capture.census_phase (census.phase) call ql_capture.record directly, so a probe that imports the clone's tools from another directory still writes those rows to the clone's spool. The repro runs a census phase from a temporary clone and counts the rows left in the owning clone's spool. The operator decides whether the gate's other option is meant. Planned 2026-11-09 in SP-osevumx6: items that share a file wait on each other (kbcommon.py, redact.py then kbask.py, ql_capture.py then ql_deliver.py); no open item of the other live sprints touches this item's code files.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-cdcea91c",
+  "operator": "op-f618a13e"
 }
