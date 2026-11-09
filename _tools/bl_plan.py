@@ -20,7 +20,7 @@ import bl_cli
 from bl_authority import RULE_WORD, class_reasons
 from bl_base import (
     APPROVALS, CHECK_TIMEOUT_S, KB_CONTENT_RE, OPEN, RECURRING_MIN, Refused, START_GATE, WORKSPACE, commit_written,
-    glob_re, id_re, in_scope, line, link_target, need, repositories, resolved_touch, run_check, say, scope,
+    git_text, glob_re, id_re, in_scope, line, link_target, need, repositories, resolved_touch, run_check, say, scope,
     split_touch, within_repository,
 )
 
@@ -493,6 +493,8 @@ def cmd_start(bl, a):
     found, n = shared_files(bl, items)
     for path, ids in found:
         say(f"  warning: {shared_file_line(path, ids, n)}")
+    if git_text(bl.root, "rev-parse", "--is-inside-work-tree") == "true":
+        a.commit = True  # the item files it rewrote go in one commit, flag or not: the first claim then finds a clean tree
     commit_written(bl, a, "start", sid)
     return 0
 
