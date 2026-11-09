@@ -56,7 +56,12 @@
         "_repository_of ends the project at the first blob, tree, raw or blame segment after the second path segment, also for the other gitlab.com projects": "BG-iwqv7nxs",
         "a special case for gitlab-org/gitlab only": "BG-iwqv7nxs"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "_repository_of ends the project at the first blob, tree, raw or blame segment after the second path segment, also for the other gitlab.com projects",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "links": [
