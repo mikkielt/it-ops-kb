@@ -23,6 +23,16 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "the worker brief tells a worker to run selfdoc.py stale --since origin/main again after the rebase onto origin/main, since SP-osevumx6 landings of BG-fwqcimiv and BG-fjptk52z stopped at the stale step on kb/_self/tools.md, which the worker's own pre-rebase run did not list",
+      "check": 0
+    },
+    {
+      "clause": "agents/worker.md says the same",
+      "check": 1
+    }
+  ],
   "touches": [
     "_tools/bl_dispatch.py",
     "agents/worker.md",
