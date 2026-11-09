@@ -67,7 +67,7 @@ Answers: which paths never reach the public home, and whether a revision carries
 Answers: how the history is published to the public home and bridged
 Use: python3 _tools/kbgit.py publish | check-public | bridge BRANCH
 """
-import csv, hashlib, io, json, os, re, subprocess, sys, tempfile, types, urllib.parse, urllib.request
+import csv, hashlib, inspect, io, json, os, re, subprocess, sys, tempfile, types, urllib.parse, urllib.request
 from pathlib import Path
 
 PRIVATE = ("kb/_querylog",)  # repository paths kept on the integration remote only (kb/_self/git.md, Public home)
@@ -641,7 +641,7 @@ def shipped_file_hits(path, text, allow, pinned=(), root=None):
 
 
 def replaced_scan():
-    """The function of extension point `leak_scan` (`file_hits(path, text, allow, pinned=())`) that a group's settings or
+    """The function of extension point `leak_scan` (`file_hits(path, text, allow, pinned=(), root=None)`) that a group's settings or
     entry point name for this clone, or None when the shipped scan runs (`kbext.configured`). A named one that cannot be
     loaded raises kbext.ExtensionError: a group's replacement that fails never falls back to the shipped scan silently,
     nor passes."""
@@ -651,7 +651,8 @@ def replaced_scan():
 
 def file_hits(path, text, allow, pinned=(), root=None, shipped=False):
     """[(kind, value)] of the leak scan of the file PATH with TEXT: the group's extender of point `leak_scan` when this clone
-    names one, called with PATH, TEXT, ALLOW and PINNED (its signature has no ROOT), else `shipped_file_hits`. SHIPPED
+    names one, called with PATH, TEXT, ALLOW, PINNED and ROOT, or without ROOT when its signature cannot take five
+    arguments (an extender written for the shorter shape), else `shipped_file_hits`. SHIPPED
     always runs the shipped scan: the paths that leave the group (`kbgit.py publish`, `kbgit.py contribute`) pass it. A
     hit the extender answers is a (kind, value) pair; an extender that raises or answers anything else raises
     kbext.ExtensionError naming it, since a guard that cannot answer must not pass the file."""
@@ -660,7 +661,14 @@ def file_hits(path, text, allow, pinned=(), root=None, shipped=False):
         return shipped_file_hits(path, text, allow, pinned, root)
     import kbext
     try:
-        got = scan(path, text, allow, pinned)
+        try:
+            inspect.signature(scan).bind(path, text, allow, pinned, root)
+            takes_root = True
+        except TypeError:
+            takes_root = False
+        except ValueError:  # a callable with no readable signature gets the root
+            takes_root = True
+        got = scan(path, text, allow, pinned, root) if takes_root else scan(path, text, allow, pinned)
         return [(str(kind), str(value)) for kind, value in got]
     except kbext.ExtensionError:
         raise
