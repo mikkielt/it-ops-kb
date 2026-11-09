@@ -2,7 +2,7 @@
   "id": "BG-hmxbenjn",
   "kind": "bug",
   "title": "A gate whose option names a local mirror store of an executor is classed push and made blocking",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-pww4aqis",
   "priority": "P2",
   "rank": 0,
@@ -47,6 +47,19 @@
   ],
   "notes": "Met again by ST-ma2tluug: a provisional gate whose option read 'through a mirror store and LocalRemote, as a central queue's executor does' was classed push and made blocking (gate add printed: class push, matched 'mirror').\n\nOrder: same file bl_authority.py as BG-a65lzrjf. Touches: the push words live in bl_authority (derived_class). Planning 2026-11-09: premise reproduces on origin/main (precheck). 2026-11-09 ST-vst4vom3 hit it again: gate g2 asked where a server executor keeps its mirror store and clones under --data DIR; gate add printed class push (matched 'mirror'), option names 'clones/' outside the touches: made blocking.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-6b037793",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "fccddfc037bb32e36b97005fe68f4010f35a5ef1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0, \"_tools\"); import bl_authority as a; g={\"id\": \"g9\", \"question\": \"How does an executor keep its jobs?\", \"options\": [\"a local mirror store of its own\", \"the central store directly\"]}; sys.exit(0 if a.derived_class({\"touches\": [\"_tools/kj_exec.py\"]}, g) != \"push\" else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
