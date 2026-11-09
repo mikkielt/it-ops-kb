@@ -5,8 +5,8 @@
 
 A path is content when it is written by the kb's own routine work, and code otherwise:
 
-  content  kb/<name>/** for a name not starting with `_` (a root; kb/<name> itself is a submodule root's gitlink),
-           kb/_querylog/**, a backlog item
+  content  kb/<name>/** for a name not starting with `_` (a root; a submodule root's gitlink kb/<name> is left out of
+           commit_paths, and a plain file directly under kb/ is code), kb/_querylog/**, a backlog item
            (kb/_self/backlog/*.json), a process doc directly in kb/_self/ (kb/_self/*.md), _tools/aliases.csv and
            _tools/lint_baseline.txt
   code     everything else: _tools/, .claude/, .claude-plugin/, .githooks/, the CI file, AGENTS.md, README.md, the
@@ -35,7 +35,9 @@ from pathlib import Path
 CONTENT, CODE = "content", "code"
 _ITEM = re.compile(r"kb/_self/backlog/[^/]+\.json")
 _SELF_DOC = re.compile(r"kb/_self/[^/]+\.md")
-_ROOT = re.compile(r"kb/[^/_][^/]*(/.+)?")  # a path below the root, or the root's own path: a submodule root's gitlink
+_ROOT = re.compile(r"kb/[^/_][^/]*/.+")  # a path below a root; a top-level file kb/<file> is code
+_GITLINK = "160000"  # git's raw mode of a submodule entry
+_ROOT_LINK = re.compile(r"kb/[^/_][^/]*")  # the path of a submodule root's gitlink
 _FILES = frozenset({"_tools/aliases.csv", "_tools/lint_baseline.txt"})
 
 
@@ -88,10 +90,17 @@ def commit_paths(repo, sha):
         base = p.stdout.decode().strip() if p.returncode == 0 else None
         if not base:
             return None
-    out = _git(repo, "diff-tree", "-r", "--no-renames", "--name-only", "-z", base, sha)
+    out = _git(repo, "diff-tree", "-r", "--no-renames", "--raw", "-z", base, sha)
     if out is None:
         return None
-    names = sorted(x for x in out.split("\0") if x)
+    fields = out.split("\0")
+    names = []
+    for i in range(0, len(fields) - 1, 2):  # ":oldmode newmode oldsha newsha status", then the path
+        modes = fields[i].lstrip(":").split()[:2]
+        if _GITLINK in modes and _ROOT_LINK.fullmatch(fields[i + 1]):
+            continue  # a submodule root's gitlink is the root's own commit, not a change of this repository's files
+        names.append(fields[i + 1])
+    names.sort()
     if ATTRS in names:
         # cat-file, not show: `git show REV:PATH` checks its argument as a file name ("Filename too long" on Windows)
         old, new = _git(repo, "cat-file", "blob", f"{base}:{ATTRS}"), _git(repo, "cat-file", "blob", f"{sha}:{ATTRS}")
