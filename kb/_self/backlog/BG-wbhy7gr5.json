@@ -29,6 +29,29 @@
     "kb/_self/git.md",
     "kb/_self/backlog.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does lane_plan learn that a root has no code lane?",
+      "options": [
+        "read the root's own backlog.json through bl_base.read_settings, and keep the code lane when extension point lane is configured",
+        "call bl_base.lane(root), which reads the lane_module of the root the process runs on"
+      ],
+      "recommendation": "read the root's own backlog.json through bl_base.read_settings, and keep the code lane when extension point lane is configured",
+      "reason": "bl_base.lane reads the process root's setting, so a plan for another root (sync in a clone, land in a landing worktree) would follow the wrong file",
+      "do": {
+        "read the root's own backlog.json through bl_base.read_settings, and keep the code lane when extension point lane is configured": "BG-wbhy7gr5",
+        "call bl_base.lane(root), which reads the lane_module of the root the process runs on": "BG-wbhy7gr5"
+      },
+      "class": "push",
+      "answer": "read the root's own backlog.json through bl_base.read_settings, and keep the code lane when extension point lane is configured",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "links": [
     "parked: SP-5y4ut64g review"
   ],

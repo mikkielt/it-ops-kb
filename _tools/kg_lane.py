@@ -43,12 +43,24 @@ def code_branch(root, up, rev):
     return CODE_BRANCH_PREFIX + ids[0]
 
 
+def has_code_lane(root):
+    """False when the project at ROOT has no code lane: no extension point `lane` and an empty `lane_module` in its
+    backlog.json (read for ROOT itself, not for the root this process runs on), as bl_base.lane says it; else True."""
+    import bl_base, kbext  # noqa: PLC0415 - at call time, the rules only (never the backlog facade)
+    if kbext.configured("lane", root):
+        return True
+    return bool(bl_base.read_settings(root)[0]["lane_module"])
+
+
 def lane_plan(root, up, rev, target=LANE_BRANCH):
     """(lane, branch) of the commits up..REV (all of REV's history without UP) in the repository at ROOT: the branch is
-    code_branch's code/<id> for a range with a code-lane commit, else None. A push to a TARGET branch other than
-    LANE_BRANCH is not routed: (None, None)."""
+    code_branch's code/<id> for a range with a code-lane commit, else None; a project with no code lane
+    (has_code_lane) has none: every commit is content. A push to a TARGET branch other than LANE_BRANCH is not
+    routed: (None, None)."""
     if target != LANE_BRANCH:
         return None, None
+    if not has_code_lane(root):
+        return kblane.CONTENT, None
     branch = code_branch(root, up, rev)
     if branch is None:
         return kblane.CONTENT, None
