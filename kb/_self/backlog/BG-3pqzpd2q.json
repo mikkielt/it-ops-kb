@@ -20,7 +20,7 @@
       "run": [
         "python3",
         "-c",
-        "import json; assert 'gitkraken@synced' in json.load(open('backlog.json'))['worker_plugins_off']"
+        "import json,sys; v=json.load(open('backlog.json')).get('worker_plugins_off', []); print('worker_plugins_off:', v); sys.exit(0 if 'gitkraken@synced' in v else 1)"
       ]
     }
   ],
