@@ -2,7 +2,7 @@
   "id": "BG-d6znzh6b",
   "kind": "bug",
   "title": "selfcheck and backlog.py procs still call a fresh-transcript claude session an orphan: no caller passes fresh= to bl_procs.classify",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-zobzdhwi",
   "priority": "P2",

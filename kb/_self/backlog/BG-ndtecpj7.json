@@ -2,7 +2,7 @@
   "id": "BG-ndtecpj7",
   "kind": "bug",
   "title": "kbtail.py --root another clone watches the script's own clone's coord store, so new sessions there wait for the 30 s timer",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-booflukv",
   "sprint": "SP-zobzdhwi",
   "priority": "P3",

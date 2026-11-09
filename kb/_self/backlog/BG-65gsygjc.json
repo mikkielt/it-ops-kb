@@ -2,7 +2,7 @@
   "id": "BG-65gsygjc",
   "kind": "bug",
   "title": "kbtail.py reads a transcript rewritten in place with the same first kilobyte from its old byte offset and loses the first new lines",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-booflukv",
   "sprint": "SP-zobzdhwi",
   "priority": "P3",

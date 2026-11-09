@@ -2,7 +2,7 @@
   "id": "BG-oqnz2vve",
   "kind": "bug",
   "title": "kbmon's held-back count reads 0 after a delivery run that waited on CI or found the lock taken",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-iowijan3",
   "sprint": "SP-zobzdhwi",
   "priority": "P3",

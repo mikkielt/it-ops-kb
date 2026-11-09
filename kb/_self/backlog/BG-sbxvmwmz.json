@@ -2,7 +2,7 @@
   "id": "BG-sbxvmwmz",
   "kind": "bug",
   "title": "kbmon's kb panel counts closed and non-UNK gap entries as open gaps",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-zobzdhwi",
   "priority": "P3",
   "rank": 0,

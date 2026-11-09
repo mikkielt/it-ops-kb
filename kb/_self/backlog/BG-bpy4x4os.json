@@ -2,7 +2,7 @@
   "id": "BG-bpy4x4os",
   "kind": "bug",
   "title": "kbmon's shared snapshot is one per checkout, not one per clone as its goal says, and the pane's receipt and needs-you runs stay unshared",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-zobzdhwi",
   "priority": "P2",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "BG-v53lnj6a",
   "kind": "bug",
   "title": "kbmon's landing_steps ignores every land.step of an item that once landed with exit 0, so a reopened item's second landing never shows",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-zobzdhwi",
   "priority": "P2",
