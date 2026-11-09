@@ -20,6 +20,26 @@
     "kb/_self/querylog.md",
     "kb/_self/usage.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does _take_ids_lock stop two takers that saw the same stale lock from both holding it?",
+      "options": [
+        "takeover guard file",
+        "recheck lock identity before replace"
+      ],
+      "recommendation": "takeover guard file",
+      "reason": "an O_EXCL <lock>.takeover file held by the one writer that checks age and replaces, since a recheck before the replace leaves the same window and rename-away vacates the lock path",
+      "do": {
+        "takeover guard file": "BG-vry5r7pe",
+        "recheck lock identity before replace": "BG-vry5r7pe"
+      },
+      "class": "design",
+      "answer": "takeover guard file",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-4ppjbh4k review"
   ],

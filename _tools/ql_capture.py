@@ -489,7 +489,9 @@ def _take_ids_lock(path, token=""):
     """Create the lock file `path` (O_EXCL, so one writer at a time on every OS) holding `token`; True once held,
     False when another writer kept it for FEEDBACK_IDS_LOCK_WAIT_S. A lock file older than FEEDBACK_IDS_LOCK_STALE_S
     is a dead writer's: a file already holding `token` replaces it in one step, so the path is never without a lock
-    and no third writer can create one beside it."""
+    and no third writer can create one beside it. Only the writer holding the takeover guard `<path>.takeover`
+    (an O_EXCL file of its own) looks at the lock's age and replaces it, so two writers that saw the same stale lock
+    never both replace it: the second finds the guard held and waits."""
     end = time.monotonic() + FEEDBACK_IDS_LOCK_WAIT_S
     while True:
         try:
@@ -498,20 +500,44 @@ def _take_ids_lock(path, token=""):
                 f.write(token)
             return True
         except FileExistsError:
-            take = path.with_name(f"{path.name}.take-{uuid.uuid4().hex[:8]}")
-            try:
-                take.write_text(token, encoding="utf-8", newline="\n")
-                if time.time() - path.stat().st_mtime > FEEDBACK_IDS_LOCK_STALE_S:
-                    os.replace(take, path)  # atomic: the path holds a lock before and after
-                    if path.read_text(encoding="utf-8") == token:
-                        return True
-            except OSError:
-                pass
-            finally:
-                take.unlink(missing_ok=True)
+            if _take_stale_ids_lock(path, token):
+                return True
         if time.monotonic() >= end:
             return False
         time.sleep(0.005)
+
+
+def _take_stale_ids_lock(path, token):
+    """Replace the stale lock file `path` by one holding `token` while this writer holds the guard
+    `<path>.takeover`; True once the lock reads back as `token`. A guard older than FEEDBACK_IDS_LOCK_STALE_S is a
+    dead taker's and is removed, so the next try can take it."""
+    guard = path.with_name(path.name + ".takeover")
+    guard_token = uuid.uuid4().hex
+    try:
+        fd = os.open(guard, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as f:
+            f.write(guard_token)
+    except FileExistsError:
+        try:
+            if time.time() - guard.stat().st_mtime > FEEDBACK_IDS_LOCK_STALE_S:
+                guard.unlink()
+        except OSError:
+            pass
+        return False
+    except OSError:
+        return False
+    take = path.with_name(f"{path.name}.take-{uuid.uuid4().hex[:8]}")
+    try:
+        take.write_text(token, encoding="utf-8", newline="\n")
+        if time.time() - path.stat().st_mtime > FEEDBACK_IDS_LOCK_STALE_S:
+            os.replace(take, path)  # atomic: the path holds a lock before and after
+            return path.read_text(encoding="utf-8") == token
+    except OSError:
+        pass
+    finally:
+        take.unlink(missing_ok=True)
+        _drop_ids_lock(guard, guard_token)
+    return False
 
 
 def _drop_ids_lock(path, token):
