@@ -7,7 +7,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "Bench.close removes the run's own scratch directory when it holds no raw log worth keeping, and a --dry-run makes none, or backlog.py tidy lists the leftover run directories as its own records",
+  "goal": "Bench.close removes the run's own scratch directory when it holds no raw log worth keeping, and a benchmarks.py run with --dry-run makes none, so no run-<pid>-<hex> directory is left behind",
   "repro": {
     "run": [
       "python3",
