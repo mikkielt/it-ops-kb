@@ -2,7 +2,7 @@
   "id": "BG-fh4pag2k",
   "kind": "bug",
   "title": "The usage text of backlog.py leaves --max-budget-usd off both dispatch entries, though the parser takes it for a new dispatch and for --resume",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ejeki6bv",
   "priority": "P3",
   "rank": 0,

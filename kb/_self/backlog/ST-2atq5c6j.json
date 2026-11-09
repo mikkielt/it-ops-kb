@@ -2,7 +2,7 @@
   "id": "ST-2atq5c6j",
   "kind": "story",
   "title": "Review sprint: Claim and dispatch follow-ups: claim restores its SIGTERM handler, a reworded gate gets no old answer, workers start with named plugins off, and the dispatch usage text names the real turn caps and --max-budget-usd",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ejeki6bv",
   "review": true,
   "priority": "P1",

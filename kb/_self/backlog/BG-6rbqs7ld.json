@@ -2,7 +2,7 @@
   "id": "BG-6rbqs7ld",
   "kind": "bug",
   "title": "An interrupt right after claim installs its SIGTERM handler, before the block that restores it opens, leaves the handler installed",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ejeki6bv",
   "priority": "P3",
   "rank": 0,
