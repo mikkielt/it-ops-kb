@@ -3,7 +3,7 @@ url: https://docs.gitlab.com/ci/yaml/
 title: CI/CD YAML syntax reference (image, digest pinning)
 publisher: GitLab
 licence: CC BY-SA 4.0 (GitLab docs)
-retrieved: 2026-10-21
+retrieved: 2026-11-09
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 /
@@ -45,6 +45,7 @@ cacheList of files that should be cached between subsequent runs.
 coverageCode coverage settings for a given job.
 dast_configurationUse configuration from DAST profiles on a job level.
 dependenciesRestrict which artifacts are passed to a specific job by providing a list of jobs to fetch artifacts from.
+descriptionShort text that explains the purpose of the job.
 environmentName of an environment to which the job deploys.
 extendsConfiguration entries that this job inherits from.
 identityAuthenticate with third party services using identity federation.
@@ -162,7 +163,7 @@ Supported values: The full address of the CI/CD component, formatted as
 Example of include:component:
 yaml
 include:
-- component: $CI_SERVER_FQDN/my-org/security-components/[email protected]
+- component: $CI_SERVER_FQDN/my-org/security-components/secret-detection@1.0
 Additional details:
 If the component’s source project is private, the user running the pipeline must have at least the Reporter role.
 For internal projects, any authenticated non-external user can access the component.
@@ -703,7 +704,7 @@ not affect the behavior of the input and is only used to help users of the file
 understand the input.
 Keyword type: Header keyword. spec must be declared at the top of the configuration file,
 in a header section.
-Supported values: A string representing the description.
+Supported values: A string representing the description. You can use Markdown.
 Example of spec:inputs:description:
 yaml
 spec:
@@ -1780,6 +1781,25 @@ If the earlier job does not generate artifacts, or is a manual job that didn’t
 the dependent job still runs and does not generate an error.
 If the artifacts of a dependent job are expired or
 deleted, then the job fails.
+### description
+Introduced in GitLab 19.6.
+Use description to add a short text that explains the purpose of a job.
+Keyword type: Job keyword. You can use it only as part of a job.
+Supported values:
+A string of 128 characters or fewer.
+Example of description:
+yaml
+rspec:
+script: bundle exec rspec
+description: Unit tests for the application
+rubocop:
+script: bundle exec rubocop
+description: Static code analysis
+Additional details:
+If the description is empty or contains only whitespace, GitLab ignores it.
+GitLab does not expand CI/CD variables in the description.
+The description is stored with the job configuration. It is no longer available
+after the pipeline is archived.
 ### environment
 Use environment to define the environment that a job deploys to.
 Keyword type: Job keyword. You can use it only as part of a job.
@@ -4447,6 +4467,7 @@ include: path/to/child-pipeline.gitlab-ci.yml
 Additional details:
 Use:
 trigger:include:artifact to trigger a dynamic child pipeline.
+trigger:include:component to trigger a child pipeline with a CI/CD component.
 trigger:include:inputs to set the inputs when the downstream pipeline configuration
 uses spec:inputs.
 trigger:include:local for a path to a child pipeline configuration file when:
@@ -4465,6 +4486,24 @@ in the project running the pipeline, not the project hosting the file.
 trigger:include:template to trigger a child pipeline with a CI/CD template.
 Related topics:
 Child pipeline configuration examples.
+#### trigger:include:component
+Introduced in GitLab 15.9 with a flag named ci_include_components. Disabled by default.
+Feature flag ci_include_components removed in GitLab 16.3.
+Use trigger:include:component to trigger a child pipeline with a
+CI/CD component as its configuration.
+Supported values: The full address of the CI/CD component, formatted as
+<fully-qualified-domain-name>/<project-path>/<component-name>@<specific-version>.
+Example of trigger:include:component:
+yaml
+trigger-job:
+trigger:
+include:
+- component: $CI_SERVER_FQDN/my-org/deploy-components/deploy@1.0
+inputs:
+environment: staging
+Additional details:
+Use inputs to set the component’s spec:inputs.
+The same access rules as include:component apply.
 #### trigger:include:inputs
 Introduced in GitLab 17.11.
 Use trigger:include:inputs to set the inputs for a child pipeline

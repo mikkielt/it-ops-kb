@@ -3,7 +3,7 @@ url: https://docs.gitlab.com/user/application_security/dependency_scanning/depen
 title: Dependency scanning by using SBOM
 publisher: GitLab
 licence: CC BY-SA 4.0 (GitLab docs)
-retrieved: 2026-10-21
+retrieved: 2026-11-09
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 /
@@ -15,7 +15,7 @@ Enabled on GitLab Self-Managed in GitLab 17.5.
 Changed from experiment to beta with support for all branches and Enabled by default with the latest dependency scanning CI/CD templates for Cargo, Conda, Cocoapods, and Swift in GitLab 17.9.
 Feature flag dependency_scanning_using_sbom_reports removed in GitLab 17.10.
 Changed from beta to limited availability for GitLab.com only with a new V2 CI/CD dependency scanning template in GitLab 18.5 with a feature flag named dependency_scanning_sbom_scan_api. Disabled by default.
-Feature flag dependency_scanning_using_sbom_reports enabled by default in GitLab 18.10.
+Feature flag dependency_scanning_sbom_scan_api enabled by default in GitLab 18.10.
 Generally available in GitLab 19.0.
 Dependency scanning using CycloneDX Software Bill of Materials (SBOM) analyzes your application’s
 dependencies for known vulnerabilities. All dependencies are scanned,
@@ -312,7 +312,7 @@ json
 {
 "name": "Iesi.Collections",
 "version": "4.0.4",
-"purl": "pkg:nuget/[email protected]?sha512=8e579b4a3bf66bb6a661f297114b0f0d27f6622f6bd3f164bef4fa0f2ede865ef3f1dbbe7531aa283bbe7d86e713e5ae233fefde9ad89b58e90658ccad8d69f9",
+"purl": "pkg:nuget/Iesi.Collections@4.0.4?sha512=8e579b4a3bf66bb6a661f297114b0f0d27f6622f6bd3f164bef4fa0f2ede865ef3f1dbbe7531aa283bbe7d86e713e5ae233fefde9ad89b58e90658ccad8d69f9",
 "hashes": [
 {
 "alg": "SHA-512",
@@ -320,7 +320,7 @@ json
 }
 ],
 "type": "library",
-"bom-ref": "pkg:nuget/[email protected]?sha512=8e579b4a3bf66bb6a661f297114b0f0d27f6622f6bd3f164bef4fa0f2ede865ef3f1dbbe7531aa283bbe7d86e713e5ae233fefde9ad89b58e90658ccad8d69f9"
+"bom-ref": "pkg:nuget/Iesi.Collections@4.0.4?sha512=8e579b4a3bf66bb6a661f297114b0f0d27f6622f6bd3f164bef4fa0f2ede865ef3f1dbbe7531aa283bbe7d86e713e5ae233fefde9ad89b58e90658ccad8d69f9"
 }
 ## Customizing analyzer behavior
 How to customize the analyzer varies depending on the enablement solution.

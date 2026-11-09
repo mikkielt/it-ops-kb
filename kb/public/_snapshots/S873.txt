@@ -3,7 +3,7 @@ url: https://www.edpb.europa.eu/news/news/2025/edpb-adopts-pseudonymisation-guid
 title: EDPB news: adopts pseudonymisation guidelines (+ PDF https://www.edpb.europa.eu/system/files/2025-01/edpb_guidelines_202501_pseudonymisation_en.pdf sha256 db1b9931b3403fab8bab846cb5868df776c415589ad925477117bc6b062bd085)
 publisher: EDPB
 licence: EDPB reuse notice (reuse authorised, source acknowledged, meaning not distorted)
-retrieved: 2026-10-21
+retrieved: 2026-11-09
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 ##
@@ -30,6 +30,9 @@ Relevant topics
 Cooperation between authorities
 ## Latest news
 RSS Feed
+EDPB News
+### EDPB helps kids stay safe online
+04 November 2026
 National News
 no
 ### Norwegian DPA fines Xandr EUR 8 600 000 for unlawful processing of personal data
@@ -37,8 +40,4 @@ no
 EDPB News
 ### EDPB publishes statement on the data protection challenges of smart glasses
 13 October 2026
-National News
-it
-### Italian DPA fines Emirates EUR 180 000 for infringements concerning passengers’ health data
-09 October 2026
 All news

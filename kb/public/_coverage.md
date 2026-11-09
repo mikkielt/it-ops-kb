@@ -160,7 +160,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `claude/tool-output-limits` | P1 | complete | `claude/tool-output-limits.md` | 3 |
 | `claude/agent-sdk` | P2 | complete | `claude/agent-sdk.md`, `claude/agent-sdk-options.csv` | 12 |
 | `claude/ci-and-headless` | P2 | partial | `claude/ci-and-headless.md` | 30 |
-| `claude/enterprise-admin` | P2 | complete | `claude/enterprise-admin.md` | 15 |
+| `claude/enterprise-admin` | P2 | complete | `claude/enterprise-admin.md` | 14 |
 | `claude/plugins` | P2 | complete | `claude/plugins.md`, `claude/plugins.csv` | 18 |
 | `claude/settings-and-scopes` | P2 | partial | `claude/settings-and-scopes.md`, `claude/settings-keys.csv`, `claude/env-vars.csv` | 21 |
 | `claude/skills-and-subagents` | P2 | complete | `claude/skills-and-subagents.md`, `claude/skills-and-subagents.csv` | 11 |

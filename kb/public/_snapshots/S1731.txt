@@ -3,7 +3,7 @@ url: https://docs.gitlab.com/user/project/pages/pages_access_control/
 title: GitLab Pages access control
 publisher: GitLab
 licence: CC BY-SA 4.0 (GitLab docs)
-retrieved: 2026-09-28
+retrieved: 2026-11-09
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 /
@@ -27,15 +27,15 @@ that means it isn’t turned on. Ask your administrator to turn it on.
 Use the Pages access control dropdown list to set who can view pages hosted
 with GitLab Pages, depending on your project’s visibility:
 If your project is private:
-Only project members: Only project members can browse the website.
+Only Project Members: Only project members can browse the website.
 Everyone: Everyone, both logged into and logged out of GitLab, can browse the website, no matter their project membership.
 If your project is internal:
-Only project members: Only project members can browse the website.
-Everyone with access: Everyone logged into GitLab can browse the website, no matter their project membership. External users can access the website only if they have a membership in the project.
+Only Project Members: Only project members can browse the website.
+Everyone With Access: Everyone logged into GitLab can browse the website, no matter their project membership. External users can access the website only if they have a membership in the project.
 Everyone: Everyone, both logged into and logged out of GitLab, can browse the website, no matter their project membership.
 If your project is public:
-Only project members: Only project members can browse the website.
-Everyone with access: Everyone, both logged into and logged out of GitLab, can browse the website, no matter their project membership.
+Only Project Members: Only project members can browse the website.
+Everyone With Access: Everyone, both logged into and logged out of GitLab, can browse the website, no matter their project membership.
 Select Save changes. Your changes might not take effect immediately. GitLab Pages uses
 a caching mechanism for efficiency. Your changes may not take effect until that cache is
 invalidated, which usually takes less than a minute.

@@ -3,7 +3,7 @@ url: https://docs.gitlab.com/ci/components/
 title: CI/CD components
 publisher: GitLab
 licence: CC BY-SA 4.0 (GitLab docs)
-retrieved: 2026-10-21
+retrieved: 2026-11-09
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 /
@@ -99,7 +99,7 @@ keyword. The component reference is formatted as <fully-qualified-domain-name>/<
 for example:
 yaml
 include:
-- component: $CI_SERVER_FQDN/my-org/security-components/[email protected]
+- component: $CI_SERVER_FQDN/my-org/security-components/secret-detection@1.0.0
 inputs:
 stage: build
 In this example:
@@ -372,7 +372,7 @@ In a project using the component:
 yaml
 stages: [verify, release]
 include:
-- component: $CI_SERVER_FQDN/myorg/ruby/[email protected]
+- component: $CI_SERVER_FQDN/myorg/ruby/test@1.0.0
 inputs:
 stage: verify
 #### Define job names with inputs
@@ -420,7 +420,7 @@ script: my-scan --output $[[ inputs.scanner-output ]]
 In the project using the component:
 yaml
 include:
-- component: $CI_SERVER_FQDN/path/to/project/[email protected]
+- component: $CI_SERVER_FQDN/path/to/project/my-scanner@1.0.0
 inputs:
 scanner-output: yaml
 In other cases, CI/CD variables might still be preferred. For example:

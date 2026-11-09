@@ -3,7 +3,7 @@ url: https://docs.ansible.com/ansible/latest/collections/ansible/windows/win_dsc
 title: ansible.windows.win_dsc module
 publisher: Ansible project
 licence: GPL-3.0 (ansible/ansible-documentation COPYING; module docs GPL-3.0-or-later)
-retrieved: 2026-09-28
+retrieved: 2026-11-09
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 Blog
@@ -17,7 +17,7 @@ ansible.windows.win_dsc module – Invokes a PowerShell DSC configuration
 Edit on GitHub
 # ansible.windows.win_dsc module – Invokes a PowerShell DSC configuration
 Note
-This module is part of the ansible.windows collection (version 3.8.0).
+This module is part of the ansible.windows collection (version 3.9.2).
 You might already have this collection installed if you are using the ansible package.
 It is not included in ansible-core.
 To check whether it is installed, run ansible-galaxy collection list.

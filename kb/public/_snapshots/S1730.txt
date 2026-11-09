@@ -3,7 +3,7 @@ url: https://docs.gitlab.com/administration/pages/
 title: GitLab Pages administration
 publisher: GitLab
 licence: CC BY-SA 4.0 (GitLab docs)
-retrieved: 2026-10-21
+retrieved: 2026-11-09
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 /
@@ -359,7 +359,7 @@ gitlab_serverGitLab external_urlServer to use for authentication when access con
 headersNot applicableSpecify any additional HTTP headers that should be sent to the client with each response. Multiple headers can be given as an array, header and value as one string. For example ['my-header: myvalue', 'my-other-header: my-other-value'].
 enable_diskNot applicableAllows the GitLab Pages daemon to serve content from disk. Turn off if shared disk storage is not available.
 insecure_ciphersNot applicableUse default list of cipher suites, which may contain insecure ones like 3DES and RC4.
-internal_gitlab_serverGitLab external_urlInternal GitLab server address used exclusively for API requests. Use if you want to send that traffic over an internal load balancer.
+internal_gitlab_serverGitLab external_urlInternal GitLab server address for API requests, such as domain lookups. Use if you want to send that traffic over an internal load balancer. If this address bypasses GitLab Workhorse (for example, http://localhost:8080) and artifacts_server is on, also set artifacts_server_url. For more information, see the troubleshooting guide.
 listen_proxyNot applicableThe addresses to listen on for reverse-proxy requests. Pages binds to these addresses’ network sockets and receives incoming requests from them. Sets the value of proxy_pass in $nginx-dir/conf/gitlab-pages.conf.
 log_directoryNot applicableAbsolute path to a log directory.
 log_formatNot applicableThe log output format: text or json.
@@ -438,7 +438,7 @@ In the left sidebar, select Applications.
 Expand GitLab Pages.
 Clear the api scope’s checkbox and select the desired scope’s checkbox (for example,
 read_api).
-Select Save changes.
+Select Save application.
 ### Disable public access to all Pages sites
 You can enforce access control for all GitLab Pages websites hosted
 on your GitLab instance. When you turn on this setting, only authenticated users
@@ -556,7 +556,7 @@ To set the global maximum pages size for a project:
 In the upper-right corner, select Admin.
 In the left sidebar, select Settings > Preferences.
 Expand Pages.
-In Maximum size of pages, enter a value. The default is 100.
+In Maximum size of pages (MiB), enter a value. The default is 100.
 Select Save changes.
 ### Set maximum size of each GitLab Pages site in a group
 Tier: Premium, Ultimate
@@ -567,7 +567,7 @@ To set the maximum size of each GitLab Pages site in a group, overriding the inh
 In the top bar, select Search or go to and find your group.
 In the left sidebar, select Settings > General.
 Expand Pages.
-Enter a value under Maximum size in MB.
+Enter a value under Maximum size (MB).
 Select Save changes.
 ### Set maximum size of GitLab Pages site in a project
 Tier: Premium, Ultimate
@@ -577,7 +577,7 @@ You must have administrator access to the instance.
 To set the maximum size of a GitLab Pages site in a project, overriding the inherited setting:
 In the top bar, select Search or go to and find your project.
 In the left sidebar, select Deploy > Pages.
-In Maximum size of pages, enter the size in MB.
+In Maximum size (MB), enter the size.
 Select Save changes.
 ### Set maximum number of GitLab Pages custom domains for a project
 Prerequisites:
@@ -612,7 +612,7 @@ parallel deployments are deleted:
 In the upper-right corner, select Admin.
 In the left sidebar, select Settings > Preferences.
 Expand Pages.
-Enter a value for Default expiration for parallel deployments in seconds.
+Enter a value for Default expiration time for parallel deployments (in seconds).
 Use 0 if parallel deployments should not expire by default.
 Select Save changes.
 ## Storage

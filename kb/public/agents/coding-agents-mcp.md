@@ -3,7 +3,7 @@ topic: agents/coding-agents-mcp
 priority: P2
 applies_to: "GitHub Copilot coding agent (2026-09); VS Code MCP support (2026-09); OpenAI Agents SDK (Python, mcp>=1.19.0,<3); OpenAI Responses API remote MCP tool; Codex CLI config.toml (2026-09)"
 retrieved_utc: 2026-10-21
-sources: [S-udcaydkb, S-y4l4chtg, S-caxeb7wx, S-shpwh3m7, S-r4egujgz, S-b5ptbcql, S-jdsamvo4, S-4fmcb5i2, S-zqlgscwv]
+sources: [S-udcaydkb, S-y4l4chtg, S-caxeb7wx, S-shpwh3m7, S-r4egujgz, S-b5ptbcql, S-jdsamvo4, S-6g72xzi7, S-zqlgscwv]
 status: complete
 ---
 
@@ -87,7 +87,7 @@ Responses API instead expose `require_approval` as an explicit opt-in control pe
   streamable-HTTP servers use `bearer_token_env_var` (a bearer token read from a named env var),
   `http_headers`/`env_http_headers` for custom headers, `http_headers_helper` (a helper command producing
   headers dynamically), or a full `[mcp_servers.<name>.oauth]` block (`client_id`, `callback_url`,
-  `callback_port`) plus the `codex mcp login <server-name>` command to run the OAuth flow. [DOC S-b5ptbcql, S-jdsamvo4, S-4fmcb5i2, S-zqlgscwv]
+  `callback_port`) plus the `codex mcp login <server-name>` command to run the OAuth flow. [DOC S-b5ptbcql, S-jdsamvo4, S-6g72xzi7, S-zqlgscwv]
 
 ### Tool allowlist / approval / trust
 - Copilot coding agent: the `tools` array is the allowlist (`["*"]` for all); the docs state plainly that
@@ -122,7 +122,7 @@ Responses API instead expose `require_approval` as an explicit opt-in control pe
   `mcp_servers.<id>.tools.<tool>.approval_mode`, each taking `auto`, `prompt`, `writes` or `approve`. The
   global `approval_policy` takes `on-request`, `never` or a `granular` table (`sandbox_approval`, `rules`,
   `mcp_elicitations`, `request_permissions`, `skill_approval`); `"untrusted"` is no longer supported.
-  [DOC S-4fmcb5i2] Codex's CLI commands are `codex mcp add <server-name>` (optionally with `--env` values and
+  [DOC S-6g72xzi7] Codex's CLI commands are `codex mcp add <server-name>` (optionally with `--env` values and
   a stdio command), `codex mcp login <server-name>` (OAuth) and `codex mcp list`. [DOC S-zqlgscwv]
 
 ## Reference

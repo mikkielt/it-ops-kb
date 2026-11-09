@@ -3,7 +3,7 @@ url: https://docs.gitlab.com/user/project/pages/getting_started/pages_from_scrat
 title: Get started with GitLab Pages (project subdirectory publishing)
 publisher: GitLab
 licence: CC BY-SA 4.0 (GitLab docs)
-retrieved: 2026-09-28
+retrieved: 2026-11-09
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 /
@@ -286,7 +286,8 @@ default:
 image: ruby:3.2
 before_script:
 - gem install bundler
-- bundle install --path vendor
+- bundle config set path 'vendor'
+- bundle install
 cache:
 paths:
 - vendor/

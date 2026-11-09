@@ -3,7 +3,7 @@ url: https://docs.ansible.com/ansible/latest/cli/ansible-pull.html
 title: ansible-pull CLI documentation
 publisher: Ansible project
 licence: GPL-3.0 (ansible/ansible-documentation COPYING; module docs GPL-3.0-or-later)
-retrieved: 2026-10-21
+retrieved: 2026-11-09
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 Blog
@@ -22,15 +22,15 @@ usage: ansible-pull [-h] [--version] [-v] [--private-key PRIVATE_KEY_FILE]
 [--ssh-common-args SSH_COMMON_ARGS]
 [--sftp-extra-args SFTP_EXTRA_ARGS]
 [--scp-extra-args SCP_EXTRA_ARGS]
-[--ssh-extra-args SSH_EXTRA_ARGS] [-k |
---connection-password-file CONNECTION_PASSWORD_FILE]
-[--vault-id VAULT_IDS] [-J |
---vault-password-file VAULT_PASSWORD_FILES]
+[--ssh-extra-args SSH_EXTRA_ARGS]
+[-k | --connection-password-file CONNECTION_PASSWORD_FILE]
+[--vault-id VAULT_IDS]
+[-J | --vault-password-file VAULT_PASSWORD_FILES]
 [-e EXTRA_VARS] [-t TAGS] [--skip-tags SKIP_TAGS]
 [-i INVENTORY] [--list-hosts] [-l SUBSET] [--flush-cache]
-[-M MODULE_PATH] [-K |
---become-password-file BECOME_PASSWORD_FILE] [--purge]
-[-o] [-s SLEEP] [-f] [-d DEST] [-U URL] [--full]
+[-M MODULE_PATH]
+[-K | --become-password-file BECOME_PASSWORD_FILE]
+[--purge] [-o] [-s SLEEP] [-f] [-d DEST] [-U URL] [--full]
 [-C CHECKOUT] [--accept-host-key] [-m MODULE_NAME]
 [--verify-commit] [--clean] [--track-subs] [--check]
 [--diff]

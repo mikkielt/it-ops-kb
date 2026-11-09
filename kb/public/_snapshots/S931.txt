@@ -3,7 +3,7 @@ url: https://docs.ansible.com/ansible/latest/collections/ansible/windows/dsc3_mo
 title: ansible.windows.dsc3 module
 publisher: Ansible project
 licence: GPL-3.0 (ansible/ansible-documentation COPYING; module docs GPL-3.0-or-later)
-retrieved: 2026-09-28
+retrieved: 2026-11-09
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 Blog
@@ -17,7 +17,7 @@ ansible.windows.dsc3 module – Sets or checks DSC v3 configuration state
 Edit on GitHub
 # ansible.windows.dsc3 module – Sets or checks DSC v3 configuration state
 Note
-This module is part of the ansible.windows collection (version 3.8.0).
+This module is part of the ansible.windows collection (version 3.9.2).
 You might already have this collection installed if you are using the ansible package.
 It is not included in ansible-core.
 To check whether it is installed, run ansible-galaxy collection list.
@@ -25,18 +25,24 @@ To install it, use: ansible-galaxy collection install ansible.windows.
 To use it in a playbook, specify: ansible.windows.dsc3.
 New in ansible.windows 3.4.0
 ## Synopsis
-Calls dsc config set or dsc config test using config as the configuration document.
-This module assumes that dsc can be found using PATH environment variable, and dsc itself relies on PATH for resource discovery. Manipulate the environment variable directly if dsc is not already discoverable using PATH.
+Calls dsc config set using config or config_file as the configuration document.
+The module is tested against Microsoft DSC 3.3. Older 3.x releases work as long as the options that map to newer DSC features, such as ignore_settings_file, are not used.
+By default dsc must be discoverable through the PATH environment variable, which dsc itself also uses to discover resources. Use executable to run a specific dsc.exe and resource_path to control where resources are discovered.
 Note
 This module has a corresponding action plugin.
 ## Parameters
 Parameter
 Comments
+chdir
+path
+added in ansible.windows 3.9.0
+Set the specified path as the working directory of the dsc process.
+When config is used, dsc reads the document from stdin and sets DSC_CONFIG_ROOT to this directory, so relative paths of Microsoft.DSC/Include resources are resolved from here. When config_file is used, they are resolved from the directory containing the file instead.
 config
 dictionary
 The DSC configuration document to set or test.
 See https://learn.microsoft.com/en-us/powershell/dsc/concepts/configuration-documents/overview?view=dsc-3.0 for an overview of how to author a configuration document.
-The $schema top-level property may be omitted. If so, it will default to https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+The $schema top-level property may be omitted. If so, it will default to https://aka.ms/dsc/schemas/v3/bundled/config/document.json. Nested configuration documents, for example the properties of a Microsoft.DSC/Group resource, must include their own $schema.
 One of config or config_file must be specified.
 config_file
 path
@@ -44,21 +50,53 @@ Path to DSC configuration document either on the control node or the target host
 The remote_config_file parameter controls whether the file is located on the control node (false) or the target host (true).
 This corresponds to the --file DSC commandline option.
 One of config or config_file must be specified.
+executable
+path
+added in ansible.windows 3.9.0
+Path to the dsc executable to run.
+By default dsc.exe is searched for through the PATH environment variable. Installations through WinGet place it in %LOCALAPPDATA%\Microsoft\WinGet\Links, which may not be part of PATH for a remote session.
+Default: "dsc.exe"
+ignore_settings_file
+boolean
+added in ansible.windows 3.9.0
+Ignore the DSC settings and policy files when running the command.
+This corresponds to the --ignore-settings-file DSC commandline option and requires DSC 3.3.0 or later, older releases fail with exit code 2 when this is set.
+Choices:
+false ← (default)
+true
 parameters
 dictionary
 Runtime parameter values.
 This corresponds to the --parameters commandline option.
+Can be combined with parameters_file on DSC 3.2.0 or later, the values set here take precedence for parameters that are defined in both.
+parameters_file
+path
+added in ansible.windows 3.9.0
+Path on the target host to a JSON or YAML file with runtime parameter values.
+The file must contain a top-level parameters object with the values.
+This corresponds to the --parameters-file DSC commandline option.
 remote_config_file
 boolean
 Whether the provided config_file is already on the target host.
 If false, the file will be transferred from the control node to the target host and removed after the module is done.
 A local config_file cannot be used with async tasks, the file will need to be pre-transferred to the target host.
 Choices:
-false
-true ← (default)
+false ← (default)
+true
+resource_path
+list / elements=path
+added in ansible.windows 3.9.0
+List of directories dsc searches for resource manifests, set as the DSC_RESOURCE_PATH environment variable of the dsc process.
+When set, dsc only discovers resource manifests in these directories, include the DSC installation directory if the built-in resources are needed. The executables of resources are still located through PATH on DSC 3.3.0 or later, older releases only look for them in these directories.
+system_root
+path
+added in ansible.windows 3.9.0
+Path to the root of the operating system to target when it is not the running one, for example an offline image.
+This corresponds to the --system-root DSC commandline option.
 trace_level
 string
-Specify level of tracing output, which are returned in stderr_lines.
+Specify level of tracing output, which is returned in stderr_lines.
+Messages of level WARN are also reported as Ansible warnings.
 This corresponds to the --trace-level DSC commandline option.
 Choices:
 "error"
@@ -66,6 +104,20 @@ Choices:
 "info"
 "debug"
 "trace"
+## Notes
+Note
+The dsc process runs as the user Ansible connects with. If that user does not have the rights a resource needs, become may be able to help.
+A configuration document can require a security context through the securityContext key of its top-level directives property, with the value elevated or restricted. dsc checks this before it invokes any resource and the task fails with exit code 2 when the dsc process does not run in that context.
+In check mode the module runs dsc config set --what-if, which reports the changes that would be made without changing the system. This requires DSC 3.1.0 or later. Resources without native what-if support are simulated from their test operation, but group resources such as Microsoft.DSC/Group and Microsoft.DSC/Include and resources that declare implementsPretest do not support what-if and fail the task with exit code 2.
+The changed status is derived from the changedProperties of each resource. The nested results of group resources such as Microsoft.DSC/Group and Microsoft.DSC/Include are walked recursively so a group is only reported as changed when one of its resources changed.
+When run with diff mode, the diff lists every resource with its name and type. Resources that changed also include the properties that changed and group resources contain a nested resources list.
+Warnings emitted by dsc are reported as Ansible warnings and the last error emitted by dsc is included in msg when the command fails.
+## See Also
+See also
+ansible.windows.win_dsc
+Invokes a PowerShell DSC configuration.
+DSC configuration document schema
+Reference documentation for configuration documents, including the directives property.
 ## Examples
 - name: Install DSC3 using WinGet
 ansible.windows.win_command:
@@ -108,29 +160,122 @@ components:
 - Microsoft.VisualStudio.Component.Windows11SDK.22621
 vars:
 vs_product: BuildTools
+- name: Require an elevated session and DSC 3.3 or later before configuring the registry
+ansible.windows.dsc3:
+config:
+directives:
+securityContext: elevated
+version: '>=3.3.0'
+resources:
+- name: Example key
+type: Microsoft.Windows/Registry
+properties:
+keyPath: HKLM\Software\Example
+_exist: true
+register: dsc_result
+- name: Reboot when a resource requires it
+ansible.windows.win_reboot:
+when: dsc_result.reboot_required
+- name: Run a specific dsc executable with additional resource directories
+ansible.windows.dsc3:
+executable: '{{ ansible_env.ProgramFiles }}\WinGet\Links\dsc.exe'
+resource_path:
+- '{{ ansible_env.ProgramFiles }}\DSC'
+- C:\DscResources
+config:
+resources:
+- name: Custom resource
+type: Contoso/Example
+properties:
+enabled: true
+- name: Include a configuration document from a directory on the target
+ansible.windows.dsc3:
+chdir: C:\dsc\configs
+config:
+resources:
+- name: Base configuration
+type: Microsoft.DSC/Include
+properties:
+configurationFile: base.dsc.config.yaml
+parametersFile: base.parameters.yaml
+- name: Apply a configuration with parameters from a file and the playbook
+ansible.windows.dsc3:
+config_file: C:\dsc\configs\web.dsc.config.yaml
+remote_config_file: true
+parameters_file: C:\dsc\configs\web.parameters.yaml
+parameters:
+siteName: '{{ inventory_hostname }}'
+- name: Preview the changes DSC would make without applying them
+ansible.windows.dsc3:
+config_file: files/baseline.dsc.config.yaml
+check_mode: true
+diff: true
+register: dsc_preview
 ## Return Values
 Common return values are documented here, the following are the fields unique to this module:
 Key
 Description
+execution_type
+string
+added in ansible.windows 3.9.0
+actual when the configuration was set and whatIf when the module ran in check mode.
+Not returned by DSC releases before 3.2.0.
+Returned: success
+Sample: "actual"
+msg
+string
+Error message when dsc fails.
+Contains the exit code with its meaning and the last error message emitted by dsc.
+Returned: failure
+Sample: "dsc config set failed with exit code 2 (DSC error): Security context: Elevated security context required"
 rc
 integer
 Exit code of dsc
 Returned: always
+reboot_required
+boolean
+added in ansible.windows 3.9.0
+Whether a resource reported that the system needs to be restarted to complete the configuration.
+Returned: success
+Sample: false
+restart_requirements
+list / elements=dictionary
+added in ansible.windows 3.9.0
+The restart requirements reported by the resources, aggregated from executionInformation.restartRequired.
+Each entry contains a system, service or process key.
+Returned: success
+Sample: [{"system": "Windows"}, {"service": "Spooler"}]
 result
 dictionary
 Result object returned by dsc.
-The exact schema of this object depends on the command used to invoke dsc. For example, https://learn.microsoft.com/en-us/powershell/dsc/reference/schemas/outputs/config/set?view=dsc-3.0 or https://learn.microsoft.com/en-us/powershell/dsc/reference/schemas/outputs/config/test?view=dsc-3.0.
+See https://learn.microsoft.com/en-us/powershell/dsc/reference/schemas/outputs/config/set?view=dsc-3.0 for the schema of this object.
+Returned: success
+executionInformation
+dictionary
+Details regarding the DSC execution such as the operation, the execution type, the timings, the security context and the restart requirements reported by resources.
+Returned by DSC 3.2.0 and later, older releases only return result.metadata.
 Returned: success
 metadata
 dictionary
-Details regarding the DSC execution.
+Details regarding the DSC execution under the Microsoft.DSC key.
 See https://learn.microsoft.com/en-us/powershell/dsc/reference/schemas/metadata/microsoft.dsc/properties?view=dsc-3.0.
+Since DSC 3.2.0 this is a deprecated copy of result.executionInformation that DSC will stop returning in a future major version.
 Returned: success
 results
 list / elements=string
 List of results from each resource that were configured.
-The schema of each item depends on the DSC operation used, and the resource’s type.
+The schema of each item depends on the resource’s type.
 Returned: success
+security_context
+string
+added in ansible.windows 3.9.0
+The security context dsc ran in, either elevated or restricted.
+Returned: success
+Sample: "elevated"
+stderr
+string
+Raw output of dsc on stderr, which contains the logging and tracing messages.
+Returned: always
 stderr_lines
 list / elements=string
 Logging and tracing messages from dsc.
