@@ -2,7 +2,7 @@
   "id": "BG-idjbo2zy",
   "kind": "bug",
   "title": "The sprint skill's plan step 5 says precheck runs only the checks, not a bug's repro or the windowed-detector warning",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rzwljgxv",
   "priority": "P3",
   "rank": 0,
@@ -31,5 +31,7 @@
   "links": [
     "parked: SP-m3azo2y7 review"
   ],
-  "notes": "Run order dependency dropped at 20:10 (landings take about 45 minutes each; the planned chain would not finish before the sprint's worker cutoff). Rebase merges separate hunks of the shared file."
+  "notes": "Run order dependency dropped at 20:10 (landings take about 45 minutes each; the planned chain would not finish before the sprint's worker cutoff). Rebase merges separate hunks of the shared file.",
+  "claimed_by": "claude-ev1run01",
+  "operator": "op-f618a13e"
 }
