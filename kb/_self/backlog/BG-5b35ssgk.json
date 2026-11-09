@@ -60,5 +60,6 @@
   "links": [
     "parked: SP-mc4dzsfe review"
   ],
+  "notes": "Planner 2026-11-09 (SP-6aegt3bs): premise reproduces on main after SP-mc4dzsfe (repro exit 1 with the live ticket of a reused pid listed). Check 1 (a live process that asked just now is still waited for) passes before the work on purpose: it pins the order of tickets the fix must keep. Detail settled: a ticket is stale when its stamp (the nanosecond time in its name) is before its pid's process start (read with ps, as ticket_alive does; where it cannot be read the ticket is trusted) or older than kg_lock.max_wait(); the checks run through bl_base.run_check in precheck and fail on their premise, not on a traceback.",
   "filed_in": "clone-0ea70e5c"
 }
