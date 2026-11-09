@@ -2,7 +2,7 @@
   "id": "BG-ot47avdg",
   "kind": "bug",
   "title": "A code item's land finishes in one run: when its merge request merged and removed code/ID right after the push, land finds the merge on the integration main and goes on to the second pass",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-mc4dzsfe",
   "priority": "P1",
@@ -39,5 +39,7 @@
     "parked: SP-uh5h46fm close"
   ],
   "notes": "Likely cause, not proven: kg_sync.push_options sends merge_request.auto_merge and merge_request.remove_source_branch, so a merge request that merges at once removes code/<id> before land's pushed_tip fetch, which then reports no tip. Also read: land without --wait-merge is two-pass by design (the first pass says so before the push); the repro covers the missing-branch fetch only. SP-ep7ck2ab (2026-11-08/09): about 9 code-lane items, BG-dq3lxnqm the last, ended land's first pass with 'could not fetch code/<id> from origin after the push' because the merge request had already merged and its branch was gone; each needed a second land run. Merged with ST-5l6ldosq (dropped), one fix: pushed_tip (bl_land.py) returns None when the fetch of code/ID finds no remote ref, so LAND_OPS pending stays empty and the first pass ends 'not done yet'. Night baseline (2026-11-08 18:00 to 2026-11-09 13:00 CET): 129 of the 146 land.end rows of lane code were followed by a second pass of the same item, a second run the orchestrator started by hand. Cause (sync sends merge_request.auto_merge and remove_source_branch, so the request merges and removes code/ID before land's fetch): the repro plants a bare remote whose main holds the Merge branch commit of code/ST-aaaaaaaa and no such branch, and asks pushed_tip for that branch (expects a list holding main's tip) and for a never-pushed branch (expects None); on the base both give None. Keep pushed_tip's signature: kj_land.py and kj_exec.py (SP-lwkdljxg's files) call pending_merge, not pushed_tip, and are not touched here. The fix may read the merge by its subject (Merge branch 'code/ID') on the fetched integration main.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-4bf1b2c2",
+  "operator": "op-f618a13e"
 }
