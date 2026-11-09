@@ -2,7 +2,7 @@
   "id": "BG-zvzfglnl",
   "kind": "bug",
   "title": "A query-log delivery refused by its sync logs no reason, and kbmon raises REFUSED though another run delivered the rows",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-osevumx6",
   "priority": "P3",
   "rank": 0,
@@ -56,5 +56,7 @@
     "found during: SP-hxxn6fnv"
   ],
   "notes": "Planning 2026-11-09: the checks replace the repro as the proof (the repro reads this host's distill.log, which a landing worktree does not have). The old trailing note about the 2026-10-26 sightings was cut from the goal. Planned 2026-11-09 in SP-osevumx6: items that share a file wait on each other (kbcommon.py, redact.py then kbask.py, ql_capture.py then ql_deliver.py); no open item of the other live sprints touches this item's code files.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-cdcea91c",
+  "operator": "op-f618a13e"
 }
