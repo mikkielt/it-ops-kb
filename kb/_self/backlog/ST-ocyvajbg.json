@@ -24,6 +24,12 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "The kb-sprint plan step says to run referrers on each function a committed bug's repro calls or asserts on and to put each caller in touches, so a worker is not stopped for touches (BG-ui3f5s37 stopped with no fix and again at land for a doc that names scratch_dir, both for callers of scratch_dir outside its touches)",
+      "check": 0
+    }
+  ],
   "touches": [
     "skills/sprint/SKILL.md"
   ],
