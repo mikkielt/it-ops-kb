@@ -2,7 +2,7 @@
   "id": "BG-is5j6lfl",
   "kind": "bug",
   "title": "multi run research --dry-run estimates USD 0.42 for three Haiku pip agents that cost USD 2.69 to 3.05 in the 2026-10-28 records",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-hyfyn22d",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,7 @@
   "depends_on": [
     "BG-3ji4fsfo"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev4run01",
+  "operator": "op-f618a13e"
 }
