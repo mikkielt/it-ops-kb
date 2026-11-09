@@ -7,7 +7,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "kg_contrib.internal_dirs holds back every root and pointer that does not say visibility: public, as publish's tree refusal does; its docstring and the git.md contribute paragraph state that rule; its leak scan passes each file's root to file_hits",
+  "goal": "kg_contrib.internal_dirs holds back every root and pointer that does not say visibility: public (a restricted value or a missing line too), as publish's tree refusal does, and its docstring and the git.md contribute paragraph state that a root or pointer not saying visibility: public is private",
   "repro": {
     "run": [
       "python3",
@@ -16,6 +16,22 @@
     ]
   },
   "repro_reason": "internal_dirs needs a scratch repository with a contribute upstream; the comparison it makes is the literal == internal test in its source",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,\"_tools\");import kbpublic as p,kg_contrib as c;p.tree_files=lambda rev,cwd:[\"kb/t1/_root.md\",\"kb/_roots/t2.md\",\"kb/t3/_root.md\"];p.texts=lambda specs,cwd:{s:(\"---\\nroot: x\\nvisibility: public\\n---\\n\" if \"t3\" in s else \"---\\nroot: x\\nvisibility: restricted\\n---\\n\") for s in specs};r,q=c.internal_dirs(\"H\",\"U\",[]);print(sorted(r),sorted(q));sys.exit(0 if r>={\"kb/t1\"} and \"kb/t3\" not in r and \"kb/t2\" in q else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,\"_tools\");import kg_contrib as c;d=c.internal_dirs.__doc__;g=[l for l in open(\"kb/_self/git.md\",encoding=\"utf-8\") if l.startswith(\"**`python3 _tools/kbgit.py contribute\")][0];ok=\"not say\" in d and \"visibility: public\" in d and \"not saying `visibility: public`\" in g;print(ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
   "touches": [
     "_tools/kg_contrib.py",
     "kb/_self/git.md"
