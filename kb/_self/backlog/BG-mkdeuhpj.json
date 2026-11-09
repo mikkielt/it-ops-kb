@@ -26,6 +26,26 @@
   "depends_on": [
     "BG-uoqtn67j"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which scenarios does bench_report.table split by the model column into a line per model?",
+      "options": [
+        "session-load only",
+        "every scenario"
+      ],
+      "recommendation": "session-load only",
+      "reason": "older records of other scenarios have no model in early rows and a model later, so a split everywhere breaks their history chains and rewrites hundreds of report lines",
+      "do": {
+        "session-load only": "BG-mkdeuhpj",
+        "every scenario": "BG-mkdeuhpj"
+      },
+      "class": "design",
+      "answer": "session-load only",
+      "by": "agent"
+    }
+  ],
   "notes": "Premise: the bug's repro fails on the base (origin/main at the planning commit, 2026-11-09); precheck ran it through the landing's check runner. Sprint order: items that share one file are chained with depends_on.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-bdc0a493",

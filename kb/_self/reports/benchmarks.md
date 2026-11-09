@@ -3,7 +3,7 @@
 What a kb lookup costs an agent, against the same agent without the kb, and what each of the kb's techniques and tools costs or saves. `kb/_self/design.md` draws the conclusions and `kb/_self/token-efficiency.md` lists the techniques; `kb/_self/reports/fact-diff.md` holds the fact diff's measurements.
 
 - **Data:** every number is a row of `kb/_self/reports/benchmarks.csv`, one row per scenario, record, case, arm and metric. A record is one measurement: the date of a run of `_tools/benchmarks.py`, or, for the numbers of the reports this one replaced, the commit that wrote them (found with `git log -S` and `git blame`), with its date, the Claude Code version and the kb size its setup stated (empty where it stated none). The historical rows keep each cell as written (`$0.043 / $0.051` for two runs); a number those reports gave only in prose is a row with metric `text` and its sentence in `note`. The 2026-09-28 runs name the commit of the runner they ran; the runs of all scenarios but the query log's ran before `c038ae6` (the query log's entry change) was under them, which changes no file those scenarios read.
-- **Tables:** every table below between `bench:` markers is generated from the results file by `python3 _tools/benchmarks.py report`; `report --check` (a test in `_tools/tests.py`) fails when a table, or a number in `README.md`, disagrees with it. A cell lists each record's value in date order (`->` between them) and the change of the newest from the one before it; a historical cell of several numbers counts as their mean.
+- **Tables:** every table below between `bench:` markers is generated from the results file by `python3 _tools/benchmarks.py report`; `report --check` (a test in `_tools/tests.py`) fails when a table, or a number in `README.md`, disagrees with it. A cell lists each record's value in date order (`->` between them) and the change of the newest from the one before it; a historical cell of several numbers counts as their mean. A `session-load` case and arm that holds rows of a replay (no model) and of a paid run (a model) has a line for each model, so no cell chains the two.
 - **Re-run:** `python3 _tools/benchmarks.py run` runs every scenario, `run <scenario>` one; each section names its command. Paid runs are fresh `claude -p` sessions; the rest run no model.
 - **Counting:** input is uncached + cache-write + cache-read input tokens, read from each run's result event or transcript, never from an agent's own account. Output (`out`) is the sum of the result event's `modelUsage` `outputTokens` (the whole run: subagents and internal calls such as compaction included, thinking inside the count, `claude/ci-and-headless.md`; the event's `usage.output_tokens`, the main loop alone, when `modelUsage` has none), never the sum of the stream's per-message usage, whose output counts are partial and read a fraction of the run's output; `out` therefore covers the scope of the run's `total_cost_usd`, while the input counts are those of the main session's requests. A run's list cost (`list_cost`, the pool's check that a reported cost is the sum of its parts) prices that whole scope: the main session's requests, the output and uncached input `modelUsage` bills beyond them, a model the session never requested (the Haiku 5.5 call a WebFetch or WebSearch runs inside the tool, in whatever session, priced in its lowest tier) and the web searches billed, $0.01 each, on every arm. Effective input weights cache writes by their rate over the input price (1.25x for a 5-minute write, 2x for a 1-hour write: a request's usage splits its writes by TTL when the stream carries `cache_creation`, else the run's billing surface decides, one hour on a subscription) and cache reads by the read price of the model the run reports over its input price: 0.1x for Haiku 4.5, Haiku 5.5 (both of its price tiers), Sonnet 5 and Sonnet 5.5 (a Sonnet 5.5 run on Claude Code 2.1.296 or later is priced at the pricing page's $0.10 per MTok, one on an earlier version at the $0.20 that version's cost figure counted: `READ_BEFORE` in `_tools/bench_core.py`, and the resolved conflict in `kb/public/_conflicts.md`), 0.05x for Opus 5.5. A run is priced at its model's own list price per MTok (`PRICE` in `_tools/bench_core.py`, source S2131), the tier of a prompt-length price (Haiku 5.5) taken per request and the highest one a run reached recorded in the row's note; the stored rows of earlier batches keep the values they were written with. Dollar costs compare only within one batch, since the run that pays a cache write varies; compare tokens across batches.
 - **Isolation:** every `claude -p` runs with hooks off (`--settings '{"disableAllHooks": true}'`) from a throwaway clone of `HEAD` whose query log is `off` and whose `origin` is a local bare repository; the kb and docs servers are registered at local scope for that clone and removed afterwards. The scenarios that measure the query log's hooks run them in a throwaway clone in mode `local` with a local bare `origin`, or as a copy of the plugin whose hook commands write under the scratch directory instead of `~/.claude/plugins/data/`. The historical runs had hooks on; a hook adds no context unless it prints, which the query log's never do.
@@ -1423,21 +1423,27 @@ The record of 2026-10-26 mixes two commits, both on `main`: its rows of arms `A`
 
 The record of 2026-10-28 also mixes two commits: its three `idle hook intake real` rows are at `553d9e5` (the table's commit), and its paid rows, the ones the spend belongs to, at `1f6011b`, which the spend cell names.
 
-**The paid record of 2026-10-28** (`run session-load --paid --arms A,C,D,worker --sessions 1,4,8 --reps 3`) replaces the replay with real sessions: per arm, phase, session count and rep, one `claude -p` of `claude-haiku-5-5` under `--max-budget-usd 0.5` per session, in a throwaway clone of its own with the arm's hooks, and the same sampler of `ps` follows each session's process tree. The phase `idle` is a prompt that calls no tool, `working` one that calls three (the PreToolUse, PostToolUse and Stop hooks run). The arm `worker` is arm `A` under the environment of a dispatched worker (`KB_UNWATCHED=1`). The cases `idle all` and `working all` are one session, `idle all x4` and `x8` (and `working`) the sum of 4 and 8 sessions started together; each cell is the median of 3 reps and no run failed. The record has no file reads (no `fs_usage` capture was made). The 312 runs cost $0.56 by the sessions' own result events (the `cost` rows, the sum of the sessions of a case). The host was not idle: the notes of the `cpu_s` rows give its load at the start of each group (7 to 19 on 14 cores), so the figures at 8 sessions include contention. In the first table below the cells of the record of 2026-10-28 for arms `A`, `C` and `D` are these paid sessions and the cell before them the replay of 2026-10-26: the `->` there joins two different measurements and its percentage is not a change of one.
+**The paid record of 2026-10-28** (`run session-load --paid --arms A,C,D,worker --sessions 1,4,8 --reps 3`) replaces the replay with real sessions: per arm, phase, session count and rep, one `claude -p` of `claude-haiku-5-5` under `--max-budget-usd 0.5` per session, in a throwaway clone of its own with the arm's hooks, and the same sampler of `ps` follows each session's process tree. The phase `idle` is a prompt that calls no tool, `working` one that calls three (the PreToolUse, PostToolUse and Stop hooks run). The arm `worker` is arm `A` under the environment of a dispatched worker (`KB_UNWATCHED=1`). The cases `idle all` and `working all` are one session, `idle all x4` and `x8` (and `working`) the sum of 4 and 8 sessions started together; each cell is the median of 3 reps and no run failed. The record has no file reads (no `fs_usage` capture was made). The 312 runs cost $0.56 by the sessions' own result events (the `cost` rows, the sum of the sessions of a case). The host was not idle: the notes of the `cpu_s` rows give its load at the start of each group (7 to 19 on 14 cores), so the figures at 8 sessions include contention. In the first table below the replay of 2026-10-26 (model `-`) and these paid sessions (model `claude-haiku-5-5`) of arms `A`, `C` and `D` have a line each, since they are two different measurements and a percentage between them is not a change of one.
 
 <!-- bench:table session-load metrics=cpu_s,rss_peak_mb,rss_mean_mb,spawns_per_min cases=idle all,working all -->
-| case | arm | cpu_s | rss_peak_mb | rss_mean_mb | spawns_per_min |
-|---|---|---|---|---|---|
-| idle all | A | 17.70 s -> 7.37 s (-58%) | 307.922 -> 533.234 (+73%) | 137.012 -> 390.484 (+185%) | 989 -> 302.336 (-69%) |
-| working all | A | 17.97 s -> 14.12 s (-21%) | 309.328 -> 530.016 (+71%) | 139.221 -> 411.061 (+195%) | 207.6 -> 346.821 (+67%) |
-| idle all | C | 12.92 s -> 6.43 s (-50%) | 267.484 -> 454.828 (+70%) | 146.006 -> 380.079 (+160%) | 972 -> 276.816 (-72%) |
-| working all | C | 15.67 s -> 11.60 s (-26%) | 315.141 -> 479.172 (+52%) | 148.574 -> 411.498 (+177%) | 196.6 -> 287.723 (+46%) |
-| idle all | D | 0.00 s -> 1.18 s | 0 -> 279.625 | 0 -> 265.539 | 0 -> 0 |
-| working all | D | 0.00 s -> 2.12 s | 0 -> 354.859 | 0 -> 278.251 | 0 -> 59.4445 |
-| idle all | B | 38.34 s | 834.828 | 307.981 | 1071.8 |
-| working all | B | 44.13 s | 883.641 | 328.78 | 290.8 |
-| idle all | worker | 1.92 s | 311.766 | 269.655 | 56.8155 |
-| working all | worker | 3.38 s | 329.391 | 279.298 | 108.876 |
+| case | arm | model | cpu_s | rss_peak_mb | rss_mean_mb | spawns_per_min |
+|---|---|---|---|---|---|---|
+| idle all | A | - | 17.70 s | 307.922 | 137.012 | 989 |
+| working all | A | - | 17.97 s | 309.328 | 139.221 | 207.6 |
+| idle all | C | - | 12.92 s | 267.484 | 146.006 | 972 |
+| working all | C | - | 15.67 s | 315.141 | 148.574 | 196.6 |
+| idle all | D | - | 0.00 s | 0 | 0 | 0 |
+| working all | D | - | 0.00 s | 0 | 0 | 0 |
+| idle all | B | - | 38.34 s | 834.828 | 307.981 | 1071.8 |
+| working all | B | - | 44.13 s | 883.641 | 328.78 | 290.8 |
+| idle all | A | claude-haiku-5-5 | 7.37 s | 533.234 | 390.484 | 302.336 |
+| working all | A | claude-haiku-5-5 | 14.12 s | 530.016 | 411.061 | 346.821 |
+| idle all | C | claude-haiku-5-5 | 6.43 s | 454.828 | 380.079 | 276.816 |
+| working all | C | claude-haiku-5-5 | 11.60 s | 479.172 | 411.498 | 287.723 |
+| idle all | D | claude-haiku-5-5 | 1.18 s | 279.625 | 265.539 | 0 |
+| working all | D | claude-haiku-5-5 | 2.12 s | 354.859 | 278.251 | 59.4445 |
+| idle all | worker | claude-haiku-5-5 | 1.92 s | 311.766 | 269.655 | 56.8155 |
+| working all | worker | claude-haiku-5-5 | 3.38 s | 329.391 | 279.298 | 108.876 |
 <!-- /bench -->
 
 Four and eight sessions at once, each cell the sum over the sessions of the paid record (`cost` in USD):
@@ -1466,14 +1472,16 @@ Four and eight sessions at once, each cell the sum over the sessions of the paid
 What it shows: at 8 working sessions arm `A` takes 148 s of CPU and 4.1 GB at peak, arm `C` 110 s and 3.9 GB, the lean worker arm 37 s and 2.6 GB, arm `D` (no hook) 18 s and 2.6 GB; the worker arm's CPU is a quarter of arm `A`'s and about twice that of no hook at all. Idle, the same order holds (99 s, 56 s, 19 s, 9 s at 8 sessions). Per session, arm `A` takes 7.4 s idle at one session and 12.4 s at eight (99 s over 8), so the cost per session does not stay flat as sessions are added; the host's load rose during the record, which this record does not separate from the hooks. The `cost` rows differ by arm and session count in a way the record does not explain.
 
 <!-- bench:table session-load metrics=pane_runs,cpu_s,rss_peak_mb,rss_mean_mb,spawns_per_min cases=idle kbmon,working kbmon,idle all,working all arms=A,B -->
-| case | arm | pane_runs | cpu_s | rss_peak_mb | rss_mean_mb | spawns_per_min |
-|---|---|---|---|---|---|---|
-| idle all | A | - | 17.70 s -> 7.37 s (-58%) | 307.922 -> 533.234 (+73%) | 137.012 -> 390.484 (+185%) | 989 -> 302.336 (-69%) |
-| working all | A | - | 17.97 s -> 14.12 s (-21%) | 309.328 -> 530.016 (+71%) | 139.221 -> 411.061 (+195%) | 207.6 -> 346.821 (+67%) |
-| idle kbmon | B | - | 22.88 s | 689.281 | 346.626 | 2.4 |
-| idle all | B | 3 | 38.34 s | 834.828 | 307.981 | 1071.8 |
-| working kbmon | B | - | 24.87 s | 731.484 | 364.547 | 2.4 |
-| working all | B | 3 | 44.13 s | 883.641 | 328.78 | 290.8 |
+| case | arm | model | pane_runs | cpu_s | rss_peak_mb | rss_mean_mb | spawns_per_min |
+|---|---|---|---|---|---|---|---|
+| idle all | A | - | - | 17.70 s | 307.922 | 137.012 | 989 |
+| working all | A | - | - | 17.97 s | 309.328 | 139.221 | 207.6 |
+| idle kbmon | B | - | - | 22.88 s | 689.281 | 346.626 | 2.4 |
+| idle all | B | - | 3 | 38.34 s | 834.828 | 307.981 | 1071.8 |
+| working kbmon | B | - | - | 24.87 s | 731.484 | 364.547 | 2.4 |
+| working all | B | - | 3 | 44.13 s | 883.641 | 328.78 | 290.8 |
+| idle all | A | claude-haiku-5-5 | - | 7.37 s | 533.234 | 390.484 | 302.336 |
+| working all | A | claude-haiku-5-5 | - | 14.12 s | 530.016 | 411.061 | 346.821 |
 <!-- /bench -->
 
 <!-- bench:table session-load metrics=spawns cases=idle hook --notice,idle hook .claude/hooks/session_start.py,idle hook .claude/hooks/coord_hook.py,idle hook _tools/querylog.py launch,idle hook _tools/querylog.py digest --hook,idle hook _tools/backlog.py red-pipeline --hook,idle hook _tools/backlog.py intake --file --hook,idle hook _tools/kbgit.py publish --hook,idle hook _tools/kbroot.py fetch --hook,idle hook _tools/backlog.py horizon --hook -->
