@@ -1284,7 +1284,7 @@ def compare(root=None, record=False, file=None, questions_path=None, dry_run=Fal
     the rows whose verdict moved (churn). With `record` the rows are merged into `file` (default kb/_self/reports/benchmarks.csv) as the scenario
     `repro-compare`, replacing the rows of the start commit. With `dry_run` it prints the metrics and the instances it
     would read and starts nothing. Returns 0, also with no instance or no result line; raises Refused (a bare or a sha
-    that is gone, a tool that prints no json, also the eval at the start commit, no questions file)."""
+    that is gone, a tool that prints no json, also the eval at the start commit and at an instance's end, no questions file)."""
     root = Path(root) if root else default_dir()
     manifest = root / MANIFEST
     if not manifest.exists():
@@ -1343,6 +1343,8 @@ def compare(root=None, record=False, file=None, questions_path=None, dry_run=Fal
             put_at(dest, main, env)
             errors[n] = error_counts(dest, rev, env)
             evals[n] = eval_rows(dest, qpath, env)
+            if evals[n] is None:
+                raise Refused(f"{dest}: rag.py eval at instance {n}'s end {main[:12]} printed no json")
         finally:
             shutil.rmtree(dest, ignore_errors=True)
     out(f"repro compare: start {rev[:12]}, dir {root}, {len(insts)} instance(s), {len(areas)} area(s)")
