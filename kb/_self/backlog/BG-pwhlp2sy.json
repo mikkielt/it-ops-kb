@@ -29,6 +29,24 @@
     "kb/_self/plugin.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does structured_secrets judge a url password holding an angle bracket?",
+      "options": [
+        "hit unless ASSIGNED_PLACEHOLDER whole, as redact does",
+        "apply the other _value filters too"
+      ],
+      "recommendation": "hit unless ASSIGNED_PLACEHOLDER whole, as redact does",
+      "reason": "the goal says as redact.redact takes it, and a second filter would let pass what redact masks",
+      "do": {
+        "hit unless ASSIGNED_PLACEHOLDER whole, as redact does": "BG-pwhlp2sy",
+        "apply the other _value filters too": "BG-pwhlp2sy"
+      },
+      "class": "secrets"
+    }
+  ],
   "links": [
     "parked: SP-osevumx6 review"
   ],

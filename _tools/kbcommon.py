@@ -276,9 +276,12 @@ AUTH_HEADER = re.compile(
     r"""((?:[^\s"',;\\]|\\(?!["']))+)""")
 # The password of a URL's user:password@ part; the user stays.
 URL_USERINFO = re.compile(r"""(\b[A-Za-z][A-Za-z0-9+.-]*://[^\s/:@"'<>]*:)([^\s/"'<>]+)(?=@)""")
+# A url password that holds an angle bracket (`a<b>cccccc`): URL_USERINFO's password class leaves `<` and `>` out, so it
+# matches none. This shape takes exactly those; the scan reports one that is not a placeholder whole.
+URL_USERINFO_ANGLE = re.compile(r"""(\b[A-Za-z][A-Za-z0-9+.-]*://[^\s/:@"'<>]*:)([^\s/"']*[<>][^\s/"']*)(?=@)""")
 # What the leak scan takes of them (`structured_secrets`): the shapes named in STRUCTURED, each only for a value, not a
 # placeholder. A header credential has 12 or more characters; a url password and an unquoted assignment value have one or
-# more. A placeholder is one of ASSIGNED_PLACEHOLDER whole, a value with one of `$ { } < > *` or `...`, a code expression
+# more; a url password with a `<` or `>` is a hit unless it is one of ASSIGNED_PLACEHOLDER whole, as `redact` reads it. A placeholder is one of ASSIGNED_PLACEHOLDER whole, a value with one of `$ { } < > *` or `...`, a code expression
 # or markup rather than a literal (a value with one of `( ) [ ] , ; \``; an unquoted assignment value is first stripped of
 # the `, ) ] }` that close it and of a code span's backticks), an upper-case name (`YOUR_API_KEY`), a
 # `your-`, `my-` or `-here` name, one character, or one of the words in PLACEHOLDER_WORDS. A quoted assignment value is the last SECRETS
@@ -320,6 +323,7 @@ def structured_secrets(text, kinds=STRUCTURED):
         out += [m.group(0) for m in AUTH_HEADER.finditer(text) if _value(m.group(2), 12)]
     if "url" in kinds:
         out += [m.group(0) for m in URL_USERINFO.finditer(text) if _value(m.group(2), 1)]
+        out += [m.group(0) for m in URL_USERINFO_ANGLE.finditer(text) if not ASSIGNED_PLACEHOLDER.fullmatch(m.group(2))]
     if "assign" in kinds:
         out += [m.group(0) for m in ASSIGNMENT.finditer(text)
                 if m.group(2)[:1] not in "\\\"'" and _closed_value(m.group(2))]
