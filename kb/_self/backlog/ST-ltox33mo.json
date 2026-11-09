@@ -2,7 +2,7 @@
   "id": "ST-ltox33mo",
   "kind": "story",
   "title": "Review sprint: Lock interrupt windows close: no empty lock file, no stale ticket ordering, no leftover SIGTERM handler or claimed state, and coordination.md names who moves a refused state",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-luspfajx",
   "review": true,
   "priority": "P1",

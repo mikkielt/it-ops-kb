@@ -2,7 +2,7 @@
   "id": "ST-signsq3l",
   "kind": "story",
   "title": "Research sprint goal: Lock interrupt windows close: no empty lock file, no stale ticket ordering, no leftover SIGTERM handler or claimed state, and coordination.md names who moves a refused state",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-luspfajx",
   "goal_research": true,
   "priority": "P1",

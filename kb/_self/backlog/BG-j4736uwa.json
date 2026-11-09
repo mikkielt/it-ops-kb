@@ -2,7 +2,7 @@
   "id": "BG-j4736uwa",
   "kind": "bug",
   "title": "A landing whose own ticket another landing removed counts every later ticket as ahead and is starved behind later askers until its wait bound",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-luspfajx",
   "priority": "P3",
   "rank": 0,

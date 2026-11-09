@@ -2,7 +2,7 @@
   "id": "BG-wopurh3z",
   "kind": "bug",
   "title": "An interrupt in claim between taking the coord run state and the block that puts it back leaves the run state at claimed",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-luspfajx",
   "priority": "P3",
   "rank": 0,
