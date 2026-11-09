@@ -12,7 +12,7 @@ agents/agent-rbac,P1,complete,agents/agent-rbac.md,23
 agents/api-tokens-issue-and-store,P1,partial,agents/api-tokens-issue-and-store.md;agents/api-tokens.csv;agents/secret-storage-options.csv,18
 agents/copilot-studio-inventory,P1,complete,agents/copilot-studio-inventory.md;agents/copilot-studio-feature-map.csv,23
 agents/eval-question-baseline,P1,complete,agents/eval-question-baseline.md;agents/eval-question-baseline.csv,3
-agents/foundry-agent-service,P1,complete,agents/foundry-agent-service.md;agents/foundry-agent-tools.csv,16
+agents/foundry-agent-service,P1,complete,agents/foundry-agent-service.md;agents/foundry-agent-tools.csv,17
 agents/instruction-and-context-limits,P1,complete,agents/instruction-and-context-limits.md;agents/instruction-and-context-limits.csv,38
 agents/m365-copilot-extensibility,P1,complete,agents/m365-copilot-extensibility.md;agents/declarative-agent-manifest.csv,26
 agents/mcp-stress-testing,P1,complete,agents/mcp-stress-testing.md,11

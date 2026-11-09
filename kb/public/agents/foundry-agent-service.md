@@ -2,8 +2,8 @@
 topic: agents/foundry-agent-service
 priority: P1
 applies_to: "Microsoft Foundry Agent Service (GA runtime; Toolbox tool search/Skills, voice-based prompt agents, Work IQ, Agent Optimizer preview), Azure AI Projects SDK, docs current 2026-09-26"
-retrieved_utc: 2026-10-21
-sources: [S-hkoalitj, S-yutqeaay, S-3axje6py, S-wy457poi, S-5ygcb6vm, S-f5p5qi4d, S-k3l2irzl, S-gessjq23, S-kub3e5bx, S-5tsg2rir, S-23bcmfv4, S-all62inb, S-jgc6ne22, S-wffcy42c, S-eh6okx77, S-zlfl25p7]
+retrieved_utc: 2026-11-09
+sources: [S-hkoalitj, S-yutqeaay, S-3axje6py, S-wy457poi, S-5ygcb6vm, S-f5p5qi4d, S-k3l2irzl, S-gessjq23, S-kub3e5bx, S-5tsg2rir, S-23bcmfv4, S-all62inb, S-jgc6ne22, S-wffcy42c, S-eh6okx77, S-zlfl25p7, S-6354zpid]
 status: complete
 files: [agents/foundry-agent-tools.csv]
 ---
@@ -100,6 +100,7 @@ quotas/limits, and a runnable MCP-tool example.
 
 ### Tool catalogue and code interpreter
 - The Foundry capability reference lists as tools: function calling, code interpreter, file search, web search and Grounding with Bing, OpenAPI, MCP, Azure Functions, the toolbox and the tool catalog, with browser automation, computer use, image generation, SharePoint and Fabric connectors and Skills marked preview. [DOC S-eh6okx77]
+- The Browser automation tool's own page calls it "a generally available (GA) service", and its manage and troubleshoot page says it is generally available, with some capabilities such as private website access in separate preview, so the capability reference's preview label for it disagrees with the per-tool pages (computer use stays preview on its page). [DOC S-6354zpid]
 - Code interpreter runs Python in a Microsoft-managed sandbox built on Azure Container Apps dynamic sessions, each isolated by a Hyper-V boundary, in the project's region, with no outbound network access; concurrent use in different conversations creates separate sessions, each active up to one hour with a 30-minute idle timeout, charged beyond token fees. Through a toolbox in a hosted agent there is no user isolation: all users of the project share the same container context. [DOC S-zlfl25p7]
 
 ### MCP tool and require_approval

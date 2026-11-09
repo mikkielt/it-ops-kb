@@ -7,7 +7,7 @@ Code interpreter,GA,built-in tool; runs in a Microsoft-managed sandbox,charged b
 File search,GA,built-in (Microsoft-managed vector search in basic setup; Azure AI Search in standard setup),max file size for vector store attachment 2000000 tokens; not available in Italy North and Brazil South,S-f5p5qi4d; S-hkoalitj; S-eh6okx77
 OpenAPI (custom tool from spec),GA,not stated in the cited sources,every registered tool counts toward the 128 tools-per-agent cap,S-yutqeaay; S-f5p5qi4d; S-eh6okx77
 Agent-to-agent (A2A),GA (v1.0); v0.3 preview,incoming A2A requires Entra ID auth (OBO or a service identity); the caller needs Foundry Agent Consumer or another Foundry role with endpoint access on the target project or agent,text modality only; no streaming responses; v1.0 is JSON-RPC only,S-all62inb; S-yutqeaay
-Browser automation,preview,not stated in the cited sources,model/region dependent,S-yutqeaay; S-f5p5qi4d; S-eh6okx77
+Browser automation,"GA per its own page (S-6354zpid); the capability reference S-eh6okx77 still labels it preview; private website access is a separate preview",not stated in the cited sources,model/region dependent,S-yutqeaay; S-f5p5qi4d; S-eh6okx77; S-6354zpid
 Fabric IQ,preview,not stated in the cited sources,not stated in the cited sources,S-yutqeaay; S-eh6okx77
 Work IQ,preview,not stated in the cited sources,model dependent (see tool-support-by-model table),S-yutqeaay; S-f5p5qi4d; S-eh6okx77
 Tool search (toolbox meta-tools tool_search/call_tool),preview,exposed through the toolbox endpoint,toolbox-only; not available for direct tool integration,S-yutqeaay
