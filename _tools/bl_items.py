@@ -1053,6 +1053,10 @@ def cmd_reopen(bl, a):
     # a done item's gone touches are no finding while it is done: reopening reveals them, and set --check repoints the checks that name them
     changed_items(bl, {iid: edit}, reveal=(iid,))
     say(f"reopened {label}: status {state}, evidence and claim cleared. Why: {a.why.strip()}")
+    import bl_runs
+    stuck = bl_runs.reset_landed(iid)  # the earlier landing's run state `landed` moves nowhere: land would refuse every step
+    if stuck:
+        say(f"  run state not reset: {stuck}; `backlog.py runs {iid} --reconcile` writes it")
     gone = [s for s in stale_touches(bl) if s.startswith(gone_touch_prefix(bl, iid))]
     if gone:
         say("  " + "\n  ".join(gone) + f"\n  keep a touch the item's own work commits changed (done needs it in touches) and repoint only its checks: "
