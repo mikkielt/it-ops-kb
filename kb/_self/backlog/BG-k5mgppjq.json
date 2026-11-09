@@ -2,7 +2,7 @@
   "id": "BG-k5mgppjq",
   "kind": "bug",
   "title": "kbtail.py dies with a RecursionError on a deeply nested JSON line in a transcript, where it should skip and count it",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-booflukv",
   "sprint": "SP-zobzdhwi",
   "priority": "P2",
@@ -27,5 +27,7 @@
   "links": [
     "parked: SP-wurbmsid review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-0f9262ec",
+  "operator": "op-f618a13e"
 }
