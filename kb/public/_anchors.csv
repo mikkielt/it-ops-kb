@@ -178,10 +178,12 @@ f9afed7bacc7,agents/agent-caching.md,S2130,located,"Depending on the model, this
 254fafeeae5e,agents/agent-cost-governance.md,S2132,unlocated:no-match,,,,,2026-10-12
 268494bc73ab,agents/agent-cost-governance.md,S2132,located,Manage costs effectively > Track your costs > Using the `/usage` command > Plan usage breakdown,result;consum;mcp;server;shar;one;count;tool,e9dbe13c3d833467,An MCP server's share counts only the requests that consumed one of its tool results.,2026-10-21
 411901ee637b,agents/agent-cost-governance.md,S744,located,Monitoring > Available metrics and events > Metric details > Cost counter,consum;mcp_tool.nam;mcp_server;mcp_server.nam;mcp_tool;result;mcp;server,ebf5880d6d158533,"mcptool.name: MCP tool whose result this request consumed, with the same redaction and version behavior as mcpserver.name.",2026-11-09
+5c4973beae8c,agents/agent-cost-governance.md,S2013,located,Next request with pagination > Frequently asked questions > How do I get per-user cost breakdowns for Claude Code?,actor;call;claude_cod;estimat;metric;productivity;per-user;product,31b6ce4e158feda9,"Call the cost endpoint of the Usage and Cost Analytics API with products[]=claudecode&groupby[]=actor. For cost by API key, group by apikeyid instead. The Claude Code",2026-11-09
 823f32c31cd4,agents/agent-cost-governance.md,S2132,unlocated:no-match,,,,,2026-10-12
 8b82f1322f6e,agents/agent-cost-governance.md,S2132,located,Manage costs effectively,150-250;baselin;day;month;activ;developer;user,cb680b31dfe33ffb,"Across enterprise deployments, the average cost is around \$13 per developer per active day and \$150-250 per developer per month, with costs remaining below \$30",2026-10-12
 9e28826fc42b,agents/agent-cost-governance.md,S2132,located,Manage costs effectively > Manage costs for your organization > Report spend at your contracted rates,charg;modelpric;anthropic;status;contract;pric;chang;figur,b7d0e6695a67c287,"By default, Claude Code computes every cost figure it shows developers at list price, so if your organization pays contracted rates, the figures in /usage,",2026-10-12
-acba92679f75,agents/agent-cost-governance.md,S2013,located,Next request with pagination > Frequently asked questions > How do I get per-user cost breakdowns for Claude Code?,break;down;general;limitation;many;per-user;performanc;without,8ff63d221d49ae69,"Use the Claude Code Analytics API, which provides per-user estimated costs and productivity metrics without the performance limitations of breaking down costs by many API",2026-10-10
+bc9191ddf543,agents/agent-cost-governance.md,S744,unlocated:no-match,,,,,2026-11-09
+bc9191ddf543,agents/agent-cost-governance.md,S-r7mszxqu,unlocated:no-match,,,,,2026-11-09
 c8bd1c41971c,agents/agent-cost-governance.md,S2132,unlocated:no-match,,,,,2026-10-12
 ccc4b180764e,agents/agent-cost-governance.md,S2132,located,Manage costs effectively > Manage costs for your organization > Claude Console > Rate limit recommendations,0.25;0.25-0.35;0.35;concurrently;fewer;grow;larger;15k,0e5f71dd30cae52b,"500+ users | 10k-15k | 0.25-0.35 For example, if you have 200 users, you might request 20k TPM for each user, or 4 million total",2026-10-12
 f67f01a2ab5d,agents/agent-cost-governance.md,S2013,unlocated:no-match,,,,,2026-10-10
@@ -2970,6 +2972,10 @@ dd69446897fd,agents/mcp-server-lifecycle.md,S2012,unlocated:no-match,,,,,2026-10
 fbefcc5d9945,agents/mcp-stress-testing.md,S1935,unlocated:no-match,,,,,2026-10-10
 0081423d0718,agents/microsoft-agent-framework.md,S-7ziha7pr,unlocated:no-match,,,,,2026-10-10
 032e618b78ae,agents/microsoft-agent-framework.md,S-j2yxzynm,unlocated:no-match,,,,,2026-10-21
+0a9d61823acf,agents/microsoft-agent-framework.md,S-bayhkj2j,unlocated:no-match,,,,,2026-11-09
+0a9d61823acf,agents/microsoft-agent-framework.md,S-kzoop7qs,unlocated:no-match,,,,,2026-11-09
+0a9d61823acf,agents/microsoft-agent-framework.md,S-x7eqxwa3,unlocated:no-match,,,,,2026-11-09
+0a9d61823acf,agents/microsoft-agent-framework.md,S-y76ymaxp,unlocated:no-match,,,,,2026-11-09
 126e81294cba,agents/microsoft-agent-framework.md,S-lkto4w7b,located,AutoGen to Microsoft Agent Framework Migration Guide | Microsoft Learn > Key Similarities and Differences > Key Differences,unless;schema;until;keep;max_tool_iteration;interpreter;turn;web,562d218ea34a095d,"Agent Framework uses @tool, infers schemas automatically, and adds hosted tools such as a code interpreter and web search. Agent behavior: AssistantAgent is single‑turn unless",2026-10-21
 12ef7e3d46f2,agents/microsoft-agent-framework.md,S-do52zses,located,AgentThread Class,agent.get_new_thread;service-manag;message_stor;both;either;local;service_thread_id;get_new_thread,699a3a0697308900,"It can either use a service-managed thread (via servicethreadid) or a local message store (via messagestore), but not both. Initialize an AgentThread, do not use",2026-10-21
 1c2aacd5550e,agents/microsoft-agent-framework.md,S-7ziha7pr,unlocated:no-match,,,,,2026-10-21
@@ -2985,10 +2991,6 @@ fbefcc5d9945,agents/mcp-stress-testing.md,S1935,unlocated:no-match,,,,,2026-10-1
 34f186467e0b,agents/microsoft-agent-framework.md,S-sjqmzszi,unlocated:no-match,,,,,2026-10-21
 38200238b2e7,agents/microsoft-agent-framework.md,S-mhvboogr,located,Observability | Microsoft Learn > Use observability with Harness Agent,agent-framework-cor;core;disable_instrumentation;raw;create_harness_agent;result;enable_sensitive_data;disabl,ab8cea1f73fd763e,"Set ENABLEINSTRUMENTATION=false or call disableinstrumentation() when telemetry must be disabled. Enabling ENABLESENSITIVEDATA adds raw messages, tool arguments, and tool results. createharnessagent is released in agent-framework-core.",2026-10-10
 465b3f77a01e,agents/microsoft-agent-framework.md,S-sjqmzszi,unlocated:no-match,,,,,2026-10-21
-475be3253b26,agents/microsoft-agent-framework.md,S-bayhkj2j,unlocated:no-match,,,,,2026-10-22
-475be3253b26,agents/microsoft-agent-framework.md,S-kzoop7qs,unlocated:no-match,,,,,2026-10-22
-475be3253b26,agents/microsoft-agent-framework.md,S-x7eqxwa3,unlocated:no-match,,,,,2026-10-22
-475be3253b26,agents/microsoft-agent-framework.md,S-y76ymaxp,unlocated:no-match,,,,,2026-10-22
 47cbd4e5793f,agents/microsoft-agent-framework.md,S-j2yxzynm,located,Microsoft Agent Framework Workflows - Human-in-the-loop (HITL) | Microsoft Learn > Human-in-the-Loop with Agent Orchestrations,approval-requir;content;function;function_approval_request;payload;toolapprovalrequestcontent;concurrent;requir,178018744604f43a,"When using agent orchestrations (such as sequential, concurrent, or group chat workflows), tool approval is achieved through the human-in-the-loop request/response mechanism. Agents can use tools",2026-10-21
 58a392fe91ef,agents/microsoft-agent-framework.md,S-cjxn455h,unlocated:no-match,,,,,2026-10-21
 58a392fe91ef,agents/microsoft-agent-framework.md,S-nghojxuy,unlocated:no-match,,,,,2026-10-21
@@ -14350,27 +14352,114 @@ fb900473a31d,prior-art/secret-vault-encryption.md,S-r3t6wvk5,unlocated:no-match,
 cef03e42954e,prior-art/tiered-approval-ops.md,S-askzkdnt,located,,library;moved;ansibl;base;django;django-ansible-bas;rbac;system,3902e33c1c891710,Role-Based Access Control (RBAC) The Role-Based Access Control system has been moved to the django-ansible-base library.,2026-10-10
 e5f3ed9dad9a,prior-art/tiered-approval-ops.md,S1017,unlocated:no-match,,,,,2026-10-10
 ebabf329da5d,prior-art/tiered-approval-ops.md,S-uh67gxyw,located,RBAC security setup,approver;becaus;rule;approval;community;edition;enterpris;teleport,a3213c7b6f694d5d,"There is no role for request approvers, because request approval rules can only be configured for Teleport Enterprise. In Teleport Community Edition, approvals must",2026-10-10
+010fb78fc90f,privacy/coreference-resolution-options.md,S-cbfcxnwp,located,,biu;biu-nlp;cuda;f-coref;none;default;devic;nlp,8f9bfe5c48587264,"""modelarchitecture"": 'FCoref', # FCoref or LingMessCoref ""modelpath"": 'biu-nlp/f-coref', # You can specify your own trained model path ""device"": None, # ""cuda"" or ""cpu"" None defaults",2026-11-09
+05d916f4f1c4,privacy/coreference-resolution-options.md,S-2icfoxql,unlocated:no-match,,,,,2026-11-09
+05d916f4f1c4,privacy/coreference-resolution-options.md,S-35hkzfyb,unlocated:no-match,,,,,2026-11-09
+0a35bdffe29e,privacy/coreference-resolution-options.md,S-oetpt5t7,located,... list with an empty list or with a list of strings,f-coref;biu;biu-nlp;core;en_core_web_sm;web;name;devic,0675b0602a0068b9,"def init(self, modelnameorpath='biu-nlp/f-coref', device=None, nlp=""encorewebsm"", enableprogressbar=True):",2026-11-09
+1f1c83feefea,privacy/coreference-resolution-options.md,S-zynjjt6b,located,CorPipe,2.12.0;4.29.0;transformer;tensorflow,1cac61601212b764,tensorflow~=2.12.0 tensorflowaddons~=0.20.0 transformers~=4.29.0,2026-11-09
+24b6489c9d7a,privacy/coreference-resolution-options.md,S-6qgprb3q,unlocated:no-match,,,,,2026-11-09
+24b6489c9d7a,privacy/coreference-resolution-options.md,S-oa5ipfj6,unlocated:no-match,,,,,2026-11-09
+24b6489c9d7a,privacy/coreference-resolution-options.md,S-oetpt5t7,unlocated:no-match,,,,,2026-11-09
+24b6489c9d7a,privacy/coreference-resolution-options.md,S-p6ormh2r,unlocated:no-match,,,,,2026-11-09
+24b6489c9d7a,privacy/coreference-resolution-options.md,S-xg33uza6,unlocated:not-text,,,,,2026-11-09
+2d8a4feb4ef5,privacy/coreference-resolution-options.md,S-blq5nxf2,unlocated:no-match,,,,,2026-11-09
+2d8a4feb4ef5,privacy/coreference-resolution-options.md,S-oetpt5t7,unlocated:no-match,,,,,2026-11-09
+2d8a4feb4ef5,privacy/coreference-resolution-options.md,S-p6ormh2r,unlocated:no-match,,,,,2026-11-09
+2d8a4feb4ef5,privacy/coreference-resolution-options.md,S-ukgogmmx,unlocated:no-match,,,,,2026-11-09
+31ad268b9466,privacy/coreference-resolution-options.md,S-el226szq,unlocated:no-match,,,,,2026-11-09
+31ad268b9466,privacy/coreference-resolution-options.md,S-kdsj7amh,located,Polish Coreference Corpus / Korpus zależności referencyjnych,licenc;4.0;page;polish;corpus,c48099f961a3379e,"This page offers the official Creative Commons Attribution-NonCommercial 4.0 International License release of the corpus of Polish coreference, which was created as a part of",2026-11-09
+33a5b6e7ecf4,privacy/coreference-resolution-options.md,S-zt6artnx,located,,core;default;news;pl_core_news_lg;spacy;model,399981835b682124,modelconfig: ModelConfig = field(defaultfactory=ModelConfig) SPACYMODELNAME = 'plcorenewslg',2026-11-09
+34627b3b8290,privacy/coreference-resolution-options.md,S-mxdbr2k2,located,Coreferee,relea;3.10;3.13;releas;maintain;compatibility;current;3.7,74f8553169950d54,"Current status: Coreferee is maintained for compatibility with current spaCy releases. The current release supports Python 3.10-3.13 and spaCy 3.7-3.8, while retaining compatibility with selected",2026-11-09
+34627b3b8290,privacy/coreference-resolution-options.md,S-yydpfutu,located,,3.7;3.13;current;maintain;relea;releas;compatibility;english,fe666523ffae012c,"""description"": ""Current status: Coreferee is maintained for compatibility with current spaCy releases. The current release supports Python 3.10-3.13 and spaCy 3.7-3.8, while retaining compatibility with",2026-11-09
+39fab89119e5,privacy/coreference-resolution-options.md,S-gur4fjbl,located,The `corpipe24-corefud1.2-240906` Model > Running the Model on Plain Text,convert;conll;conll-u;first;nll;plain;text;udpip,a451061c6ac46bea,"To run the model on plain text, first the plain text needs to be tokenized and converted to CoNLL-U (and optionally parsed if you also",2026-11-09
+51b465b09f06,privacy/coreference-resolution-options.md,S-36c52acv,unlocated:no-match,,,,,2026-11-09
+51b465b09f06,privacy/coreference-resolution-options.md,S-5qzwrdja,located,,2.1.0;archiv;install;instruction;allennlp;train;spanbert;coref,70f515d17c9786b2,"""archivefile"": ""coref-spanbert-large-2021.03.10.tar.gz"", ""trainingconfig"": ""coref/corefspanbertlarge.jsonnet"", ""installinstructions"": ""pip install allennlp==2.1.0 allennlp-models==2.1.0""",2026-11-09
+51b465b09f06,privacy/coreference-resolution-options.md,S-c6kvn3ps,unlocated:no-match,,,,,2026-11-09
+5960f9ea0fa7,privacy/coreference-resolution-options.md,S-6qgprb3q,unlocated:no-match,,,,,2026-11-09
+5acc944ed7cc,privacy/coreference-resolution-options.md,S-gur4fjbl,located,The `corpipe24-corefud1.2-240906` Model,en_litbank;litbank;pcc;pl_pc;4.0;en_gum;gum;larg,f2dc254a9f7432d7,"tb=""caancora cspcedt cspdt cuproiel deparcorfull depotsdamcc engum enlitbank enparcorfull esancora frdemocrat grcproiel hboptnk hukorkor huszegedkoref ltlcc nobokmaalnarc nonynorsknarc plpcc rurucor tritcc"" ratiossqrt=""7.3 12.3 10.3 2.8",2026-11-09
+5acc944ed7cc,privacy/coreference-resolution-options.md,S-uznr3g4z,unlocated:no-match,,,,,2026-11-09
+654a121b50e7,privacy/coreference-resolution-options.md,S-ix32u5vu,unlocated:no-match,,,,,2026-11-09
+654a121b50e7,privacy/coreference-resolution-options.md,S-ygt5635t,unlocated:no-match,,,,,2026-11-09
+66865638f8fd,privacy/coreference-resolution-options.md,S-6owdinqk,unlocated:no-match,,,,,2026-11-09
+66865638f8fd,privacy/coreference-resolution-options.md,S-6wb3kouw,unlocated:no-match,,,,,2026-11-09
+66865638f8fd,privacy/coreference-resolution-options.md,S-hodbmqjs,unlocated:no-match,,,,,2026-11-09
+716db11dd090,privacy/coreference-resolution-options.md,S-mxdbr2k2,located,Coreferee > 1. Introduction > 3 How it works > 3.2 The neural ensemble,coordinat;span;limit;phras;token;coreferenc,6aa7bcbf05230914,Possible intuitions that might explain this behaviour are: the reduced width forces the network to learn and attend to a constrained number of specific semantic,2026-11-09
+75187db4b80b,privacy/coreference-resolution-options.md,S-lvf4vsum,located,read the contents of your README file,1.10.0;2.5.2;4.11.3;dataset;torch;transformer,7869570c3474d2a0,"'torch>=1.10.0', 'transformers>=4.11.3', 'datasets>=2.5.2',",2026-11-09
+76b32e14160b,privacy/coreference-resolution-options.md,S-h5hcpb6z,unlocated:no-match,,,,,2026-11-09
+76b32e14160b,privacy/coreference-resolution-options.md,S-lva6e5k2,unlocated:no-match,,,,,2026-11-09
+76b32e14160b,privacy/coreference-resolution-options.md,S-zcu63phy,unlocated:no-match,,,,,2026-11-09
+84f1defd19ab,privacy/coreference-resolution-options.md,S-xf7ynxdt,located,"F-Coref: Fast, Accurate and Easy to Use Coreference Resolution",note;onto;ontonot;second;2.8k;document;leftover;v100,222a249a54c49653,"F-Coref allows to process 2.8K OntoNotes documents in 25 seconds on a V100 GPU (compared to 6 minutes for the LingMess model, and to 12",2026-11-09
+8bf7e86d97e8,privacy/coreference-resolution-options.md,S-blq5nxf2,unlocated:no-match,,,,,2026-11-09
+95c86025143b,privacy/coreference-resolution-options.md,S-36nisfrm,unlocated:no-match,,,,,2026-11-09
+95c86025143b,privacy/coreference-resolution-options.md,S-oa5ipfj6,unlocated:no-match,,,,,2026-11-09
+95c86025143b,privacy/coreference-resolution-options.md,S-xhyyf6km,unlocated:no-match,,,,,2026-11-09
+967cc07d60b8,privacy/coreference-resolution-options.md,S-7f4d52ha,unlocated:no-match,,,,,2026-11-09
+967cc07d60b8,privacy/coreference-resolution-options.md,S-ygt5635t,located,,releas;2.1.6;pypi,de6caebc5185ca15,"""releaseurl"": ""https://pypi.org/project/fastcoref/2.1.6/"",",2026-11-09
+96a5a7ee7df5,privacy/coreference-resolution-options.md,S-fvrqnhop,unlocated:no-match,,,,,2026-11-09
+97d60e636dbb,privacy/coreference-resolution-options.md,S-ukgogmmx,unlocated:no-match,,,,,2026-11-09
+97d73acc9cce,privacy/coreference-resolution-options.md,S-mo3khkbn,unlocated:no-match,,,,,2026-11-09
+9d898a78c29c,privacy/coreference-resolution-options.md,S-2egs3y3u,located,,1.8;java;java.version;version,55178c8100892857,<java.version>1.8</java.version>,2026-11-09
+9e41b37b61b8,privacy/coreference-resolution-options.md,S-6owdinqk,unlocated:no-match,,,,,2026-11-09
+9e41b37b61b8,privacy/coreference-resolution-options.md,S-6wb3kouw,unlocated:no-match,,,,,2026-11-09
+9e41b37b61b8,privacy/coreference-resolution-options.md,S-chminfqh,unlocated:no-match,,,,,2026-11-09
+9e41b37b61b8,privacy/coreference-resolution-options.md,S-gur4fjbl,unlocated:no-match,,,,,2026-11-09
+9e41b37b61b8,privacy/coreference-resolution-options.md,S-kdsj7amh,located,Polish Coreference Corpus / Korpus zależności referencyjnych,commercial;core;licenc;non;4.0;page,c48099f961a3379e,"This page offers the official Creative Commons Attribution-NonCommercial 4.0 International License release of the corpus of Polish coreference, which was created as a part of",2026-11-09
+a0adc4889880,privacy/coreference-resolution-options.md,S-m6gdqyyo,unlocated:no-match,,,,,2026-11-09
+aef90c2f3a2f,privacy/coreference-resolution-options.md,S-mxdbr2k2,unlocated:no-match,,,,,2026-11-09
+bada21d23abf,privacy/coreference-resolution-options.md,S-mxdbr2k2,located,Coreferee > 1. Introduction > 1.1 The basic idea,polish;text;spa;spacy;corefere,67ecac387d708167,"Coreferee is a Python 3 library for resolving coreferences in English, French, German and Polish texts using spaCy.",2026-11-09
+bd2ae99fdad6,privacy/coreference-resolution-options.md,S-5twstxnc,located,v0.6.1: Coref and biaffine parser bug fixes > No results found,0a2;coreferenc;demonstration;en_coreference_web_trf;experimental;explosion;pipelin;purpo,047ad98e73c4edbb,This release includes an updated trained pipeline for demonstration purposes. You can install it like this: pip install https://github.com/explosion/spacy-experimental/releases/download/v0.6.1/encoreferencewebtrf-3.4.0a2-py3-none-any.whl,2026-11-09
+bd2ae99fdad6,privacy/coreference-resolution-options.md,S-ocgbnk4i,unlocated:not-text,,,,,2026-11-09
+be4dce808ce2,privacy/coreference-resolution-options.md,S-36c52acv,unlocated:no-match,,,,,2026-11-09
+be4dce808ce2,privacy/coreference-resolution-options.md,S-lva6e5k2,unlocated:no-match,,,,,2026-11-09
+be4dce808ce2,privacy/coreference-resolution-options.md,S-mxdbr2k2,unlocated:no-match,,,,,2026-11-09
+be4dce808ce2,privacy/coreference-resolution-options.md,S-oa5ipfj6,unlocated:no-match,,,,,2026-11-09
+be4dce808ce2,privacy/coreference-resolution-options.md,S-ocgbnk4i,unlocated:not-text,,,,,2026-11-09
+be4dce808ce2,privacy/coreference-resolution-options.md,S-uznr3g4z,unlocated:no-match,,,,,2026-11-09
+be4dce808ce2,privacy/coreference-resolution-options.md,S-vfwwrhjc,unlocated:no-match,,,,,2026-11-09
+be4dce808ce2,privacy/coreference-resolution-options.md,S-xf7ynxdt,unlocated:no-match,,,,,2026-11-09
+bfe2c314e73c,privacy/coreference-resolution-options.md,S-6j4ijcxo,unlocated:fetch-error,,,,,2026-11-09
+bfeb1f4fdb60,privacy/coreference-resolution-options.md,S-537stu5l,located,,2.0.0;2.0.1;2.1.0;3.13;3.9;4.35.0;python;torch,5d4a6a4fcab6a3b5,"python = "">=3.9,<3.13"" torch = "">=2.0.0, !=2.0.1, !=2.1.0"" transformers = ""^4.35.0""",2026-11-09
+c59ad903a18d,privacy/coreference-resolution-options.md,S-chminfqh,located,Details: https://spacy.io/models/pl#pl_core_news_lg,3.0;corpus;gpl;national;pdb;polish,4decafb25ba9b8bd,"Sources | UD Polish PDB v2.8 (Wróblewska, Alina; Zeman, Daniel; Mašek, Jan; Rosa, Rudolf)<br />National Corpus of Polish (Mirosław Bańko, Rafał L. Górski, Barbara Lewandowska-Tomaszczyk,",2026-11-09
+c6888eb9413d,privacy/coreference-resolution-options.md,S-ix32u5vu,unlocated:no-match,,,,,2026-11-09
+c6888eb9413d,privacy/coreference-resolution-options.md,S-ixa2vaqw,unlocated:no-match,,,,,2026-11-09
+c6888eb9413d,privacy/coreference-resolution-options.md,S-xf7ynxdt,located,"F-Coref: Fast, Accurate and Easy to Use Coreference Resolution",nlp;note;onto;ontonot;lingmess;model;coref;f-coref,be0b3987b1db91ab,"F-Coref allows to process 2.8K OntoNotes documents in 25 seconds on a V100 GPU (compared to 6 minutes for the LingMess model, and to 12",2026-11-09
+d9c057c9ba5e,privacy/coreference-resolution-options.md,S-mxdbr2k2,unlocated:no-match,,,,,2026-11-09
+d9c057c9ba5e,privacy/coreference-resolution-options.md,S-xg33uza6,unlocated:not-text,,,,,2026-11-09
+e33c51f1677e,privacy/coreference-resolution-options.md,S-rarraofb,unlocated:no-match,,,,,2026-11-09
+e33c51f1677e,privacy/coreference-resolution-options.md,S-vfwwrhjc,unlocated:no-match,,,,,2026-11-09
+ecbf8203c5d3,privacy/coreference-resolution-options.md,S-zymyxmg5,located,,3.3.0;3.8.0;spacy,2d4c254cc95f6182,"spacy>=3.3.0,<3.8.0",2026-11-09
+f2ab25c4525f,privacy/coreference-resolution-options.md,S-p6ormh2r,located,,availabl;cuda;cpu;devic;else,da7729fd7923b3e2,'cuda' if torch.cuda.isavailable() else 'cpu') if not device else device,2026-11-09
+fa6536bbae7f,privacy/coreference-resolution-options.md,S-537stu5l,unlocated:no-match,,,,,2026-11-09
+fa6536bbae7f,privacy/coreference-resolution-options.md,S-blq5nxf2,unlocated:no-match,,,,,2026-11-09
+fa6536bbae7f,privacy/coreference-resolution-options.md,S-ix7uqv2r,unlocated:no-match,,,,,2026-11-09
+fa6536bbae7f,privacy/coreference-resolution-options.md,S-ocgbnk4i,unlocated:not-text,,,,,2026-11-09
+fa6536bbae7f,privacy/coreference-resolution-options.md,S-zymyxmg5,unlocated:no-match,,,,,2026-11-09
+fac6fd037d6d,privacy/coreference-resolution-options.md,S-gz6vychk,unlocated:no-match,,,,,2026-11-09
+fac6fd037d6d,privacy/coreference-resolution-options.md,S-kp4hr5hg,located,spacy-experimental: Cutting-edge experimental spaCy components and features > Using spacy-experimental,exact;may;modifi;releas;remov;featur;packag;version,3d6706a582d41fad,"Components and features may be modified or removed in any release, so always specify the exact version as a package requirement if you're experimenting with",2026-11-09
+fac6fd037d6d,privacy/coreference-resolution-options.md,S-wd6aqhk3,unlocated:no-match,,,,,2026-11-09
 14af7d486ec5,privacy/gdpr-pseudonymisation.md,S-3cqkmexh,located,,could;additional;attribut;information;pseudonymis;remain;personal;data,686dc097e5736822,Pseudonymised data which could be attributed to an individual by the use of additional information remains information related to an identifiable natural person,2026-11-09
+5ad492a4b305,privacy/gdpr-pseudonymisation.md,S874,unlocated:no-match,,,,,2026-11-09
+5ad492a4b305,privacy/gdpr-pseudonymisation.md,S-eickk3hp,unlocated:no-match,,,,,2026-11-09
+5ad492a4b305,privacy/gdpr-pseudonymisation.md,S-hp6yws35,unlocated:no-match,,,,,2026-11-09
 5df4f290de75,privacy/gdpr-pseudonymisation.md,S875,unlocated:not-text,,,,,2026-11-09
 6508577f0799,privacy/gdpr-pseudonymisation.md,S-hp6yws35,located,,january;period;march;feedback,abe27d818b174599,Feedback period 17 January 14 March 2025 (23:59 CET),2026-11-09
-7682686c27f9,privacy/gdpr-pseudonymisation.md,S874,unlocated:no-match,,,,,2026-10-21
 7b5f2bbd8150,privacy/gdpr-pseudonymisation.md,S-3cqkmexh,located,,back;controller;else;link;someon;remain;individual;personal,e45107f09ee11d9c,if the data can be linked back to an individual by the data controller or someone else,2026-11-09
 7b5f2bbd8150,privacy/gdpr-pseudonymisation.md,S-rebms33k,unlocated:not-text,,,,,2026-10-23
 98542c03b67a,privacy/gdpr-pseudonymisation.md,S-3cqkmexh,located,,consultation;public;adopt;guidelin;edpb,d298b79164e12a87,"The guidelines will be subject to public consultation until 28 February 2025, providing stakeholders with the opportunity to comment and allowing for the incorporation of",2026-11-09
-aa76552760d8,privacy/gdpr-pseudonymisation.md,S872,unlocated:no-match,,,,,2026-10-21
-aa76552760d8,privacy/gdpr-pseudonymisation.md,S874,unlocated:no-match,,,,,2026-10-21
-aa76552760d8,privacy/gdpr-pseudonymisation.md,S-eickk3hp,unlocated:no-match,,,,,2026-10-21
 aef480da3af0,privacy/gdpr-pseudonymisation.md,S875,unlocated:not-text,,,,,2026-11-09
 b80fd1818a33,privacy/gdpr-pseudonymisation.md,S875,unlocated:not-text,,,,,2026-11-09
 c5f8144461c0,privacy/gdpr-pseudonymisation.md,S-3cqkmexh,located,,identifi;kept;longer;manner;organisational;separately;specific;such,84eb26bd0bc19a42,can no longer be attributed to a specific data subject without the use of additional information,2026-11-09
 c5f8144461c0,privacy/gdpr-pseudonymisation.md,S-rebms33k,unlocated:not-text,,,,,2026-10-23
+ca2cf7f5449a,privacy/gdpr-pseudonymisation.md,S874,located,On this page > Guidance,clos;consultation;public,9f24f88e21bfb646,Public consultation closed,2026-11-09
 d0ca697cabb6,privacy/gdpr-pseudonymisation.md,S875,unlocated:not-text,,,,,2026-11-09
+d240f09855d1,privacy/gdpr-pseudonymisation.md,S-eickk3hp,located,Understanding anonymous data,until;consultation;public;guidelin,bac2333e4091fb63,The guidelines will be subject to public consultation until 30 October 2026,2026-11-09
 d5c99cfd18c7,privacy/gdpr-pseudonymisation.md,S-rebms33k,unlocated:not-text,,,,,2026-10-23
-f733bc75de36,privacy/gdpr-pseudonymisation.md,S-eickk3hp,unlocated:no-match,,,,,2026-10-10
 078837c0cdac,privacy/gliner-glirel-zero-shot.md,S-ngy65th6,unlocated:no-match,,,,,2026-10-13
 078837c0cdac,privacy/gliner-glirel-zero-shot.md,S-pjp4rzor,located,,between;end;inclusiv;list;allow;allowed_head;allowed_tail;head_text,3dba60de117aff3b,"The company is headquartered in Cupertino, California.\""\n\nlabels = {\""glirellabels\"": {\n 'co-founder': {\""allowedhead\"": [\""PERSON\""], \""allowedtail\"": [\""ORG\""]}, \n 'country of origin': {\""allowedhead\"": [\""PERSON\"", \""ORG\""], \""allowedtail\"": [\""LOC\"", \""GPE\""]},",2026-10-13
 08ae10647792,privacy/gliner-glirel-zero-shot.md,S-edkar7xu,unlocated:no-match,,,,,2026-10-13
 08ae10647792,privacy/gliner-glirel-zero-shot.md,S-uu7ov3pw,unlocated:no-match,,,,,2026-10-13
+0afcbe2d1aa0,privacy/gliner-glirel-zero-shot.md,S-7bjdu5bv,located,,0.2.30,e94de5604b2056ca,version 0.2.30,2026-11-09
+0afcbe2d1aa0,privacy/gliner-glirel-zero-shot.md,S-sw4xvzwh,located,,2.0;apach;file;licens,bb9a1314ab46d7aa,"Licensed under the Apache License, Version 2.0 (the ""License""); you may not use this file except in compliance with the License.",2026-11-09
 10f2b73aab2e,privacy/gliner-glirel-zero-shot.md,S-y42nqxiw,located,Advanced Usage > Input limits and truncation,checkpoint;input;max_len;len;max,a03ccf7dc499675a,"stateless inference, each input that exceeds the checkpoint's config.maxlen",2026-10-13
 1c5d4a28c629,privacy/gliner-glirel-zero-shot.md,S-sislku4q,unlocated:no-match,,,,,2026-10-13
 1c5d4a28c629,privacy/gliner-glirel-zero-shot.md,S-y42nqxiw,unlocated:no-match,,,,,2026-10-13
@@ -14396,7 +14485,6 @@ f733bc75de36,privacy/gdpr-pseudonymisation.md,S-eickk3hp,unlocated:no-match,,,,,
 6817447e9f58,privacy/gliner-glirel-zero-shot.md,S-w7vp7g4j,unlocated:no-match,,,,,2026-10-13
 68c8a8663b3c,privacy/gliner-glirel-zero-shot.md,S-y42nqxiw,unlocated:no-match,,,,,2026-10-13
 6e9539321566,privacy/gliner-glirel-zero-shot.md,S-w7vp7g4j,located,only touches floating-point params/buffers.,cuda;map_location;location;warn;compil;cpu;map;model,3bbec69de147ed0f,"warnings.warn(""Cannot compile model on CPU. Set maplocation='cuda' to compile."", stacklevel=2)",2026-10-13
-7b03513bc739,privacy/gliner-glirel-zero-shot.md,S-7bjdu5bv,unlocated:no-match,,,,,2026-10-13
 818aaba6520f,privacy/gliner-glirel-zero-shot.md,S-vdhsig6s,unlocated:no-match,,,,,2026-10-13
 818aaba6520f,privacy/gliner-glirel-zero-shot.md,S-w7vp7g4j,unlocated:no-match,,,,,2026-10-13
 818aaba6520f,privacy/gliner-glirel-zero-shot.md,S-wrx2q5ya,unlocated:no-match,,,,,2026-10-13
@@ -14429,6 +14517,7 @@ f733bc75de36,privacy/gdpr-pseudonymisation.md,S-eickk3hp,unlocated:no-match,,,,,
 a2c336557d66,privacy/gliner-glirel-zero-shot.md,S-edkar7xu,unlocated:no-match,,,,,2026-10-13
 a2c336557d66,privacy/gliner-glirel-zero-shot.md,S-gc45kgud,unlocated:no-match,,,,,2026-10-13
 a2c336557d66,privacy/gliner-glirel-zero-shot.md,S-ngy65th6,unlocated:no-match,,,,,2026-10-13
+a6859a095cf5,privacy/gliner-glirel-zero-shot.md,S-7bjdu5bv,located,,4.51.3;5.23.0;transformer,1e5bd43f9e741526,transformers<5.23.0 >=4.51.3,2026-11-09
 ac4f0fb7ee50,privacy/gliner-glirel-zero-shot.md,S-7ke3sttd,unlocated:no-match,,,,,2026-10-13
 ac4f0fb7ee50,privacy/gliner-glirel-zero-shot.md,S-rvd2zkel,unlocated:no-match,,,,,2026-10-13
 b625d59c2356,privacy/gliner-glirel-zero-shot.md,S-edkar7xu,located,,bin;glirel_config;glirel_config.json;pytorch;pytorch_model;pytorch_model.bin;json;glirel,95eb5defb08587d1,"Use ""pytorchmodel.bin"" and ""glirelconfig.json""",2026-10-13
@@ -14443,8 +14532,6 @@ bf66846a6131,privacy/gliner-glirel-zero-shot.md,S-7p4fya6x,located,Installation 
 bf66846a6131,privacy/gliner-glirel-zero-shot.md,S-ulch3bqh,unlocated:no-match,,,,,2026-10-13
 bf66846a6131,privacy/gliner-glirel-zero-shot.md,S-w6u6mtcx,unlocated:no-match,,,,,2026-10-13
 d30ddc811d8d,privacy/gliner-glirel-zero-shot.md,S-ngy65th6,located,GLiREL : Generalist and Lightweight model for Zero-Shot Relation Extraction,classify;given;entity;rel;relation;glirel,85faf29c3f58a508,GLiREL is a Relation Extraction model capable of classifying unseen relations given the entities within a text.,2026-10-13
-d92add088214,privacy/gliner-glirel-zero-shot.md,S-7bjdu5bv,unlocated:no-match,,,,,2026-10-13
-d92add088214,privacy/gliner-glirel-zero-shot.md,S-sw4xvzwh,located,,2.0;apach;file;licens,bb9a1314ab46d7aa,"Licensed under the Apache License, Version 2.0 (the ""License""); you may not use this file except in compliance with the License.",2026-10-13
 da47be3e6ffd,privacy/gliner-glirel-zero-shot.md,S-gtbynljf,located,,deberta-v3-larg;microsoft;deberta;gliner;larg;model,a9176fd06ae6fd81,"""modelname"": ""microsoft/deberta-v3-large"", ""modeltype"": ""gliner"",",2026-10-13
 da47be3e6ffd,privacy/gliner-glirel-zero-shot.md,S-snmqzq62,unlocated:no-match,,,,,2026-10-13
 da47be3e6ffd,privacy/gliner-glirel-zero-shot.md,S-zmg7nlby,unlocated:no-match,,,,,2026-10-13
@@ -14491,9 +14578,6 @@ f9a616af2583,privacy/gliner-models.md,S-zw4luelo,unlocated:no-match,,,,,2026-10-
 0ca3aa211e41,privacy/morfeusz-polish-lemmatisation.md,S-jvn5jnee,located,Index of /morfeusz/20260823/,morfeusz2-dictionary-sgjp-20260823.tgz;dictionary;morfeusz2;polimorf;sgjp;tgz,6a425e7fde3a130a,morfeusz2-dictionary-polimorf-20260823.tgz 23-Aug-2026 23:21 8M morfeusz2-dictionary-sgjp-20260823.tgz 23-Aug-2026 23:20 7M,2026-10-22
 0f46594ae387,privacy/morfeusz-polish-lemmatisation.md,S-xz7r3unc,unlocated:not-text,,,,,2026-10-22
 0f46594ae387,privacy/morfeusz-polish-lemmatisation.md,S-zfdnyluh,unlocated:not-text,,,,,2026-10-22
-151d7ac996c4,privacy/morfeusz-polish-lemmatisation.md,S-7mdjthbr,unlocated:no-match,,,,,2026-10-22
-151d7ac996c4,privacy/morfeusz-polish-lemmatisation.md,S-ix7uqv2r,located,,pypi;spa;3.8;3.0;core;packag;version;spacy,1fb63413d7293750,"It features\nstate-of-the-art speed and neural network models for tagging, parsing,\nnamed entity recognition, text classification and more, multi-task\nlearning with pretrained transformers like BERT, as well as",2026-10-22
-151d7ac996c4,privacy/morfeusz-polish-lemmatisation.md,S-tzw22ffl,unlocated:no-match,,,,,2026-10-22
 1aac9e2601e0,privacy/morfeusz-polish-lemmatisation.md,S-caclcxya,unlocated:no-match,,,,,2026-11-09
 1aac9e2601e0,privacy/morfeusz-polish-lemmatisation.md,S-v6tu47om,unlocated:not-text,,,,,2026-10-22
 1aac9e2601e0,privacy/morfeusz-polish-lemmatisation.md,S-zfdnyluh,unlocated:not-text,,,,,2026-10-22
@@ -14513,6 +14597,9 @@ f9a616af2583,privacy/gliner-models.md,S-zw4luelo,unlocated:no-match,,,,,2026-10-
 3babbe845271,privacy/morfeusz-polish-lemmatisation.md,S-sirpm4j2,unlocated:no-match,,,,,2026-10-22
 403c57acfebd,privacy/morfeusz-polish-lemmatisation.md,S-v6tu47om,unlocated:not-text,,,,,2026-10-22
 4ee5200af74b,privacy/morfeusz-polish-lemmatisation.md,S-ohpwxaqx,located,fmt: off,adp;adv;aux;lemma_lookup_adj;num;part;pron;adj,39b5b0ffeb5d4288,"""lemmalookupadj"", ""lemmalookupadp"", ""lemmalookupadv"", ""lemmalookupaux"", ""lemmalookupnoun"", ""lemmalookupnum"", ""lemmalookuppart"", ""lemmalookuppron"", ""lemmalookupverb""",2026-10-22
+50800623386a,privacy/morfeusz-polish-lemmatisation.md,S-7mdjthbr,unlocated:no-match,,,,,2026-11-09
+50800623386a,privacy/morfeusz-polish-lemmatisation.md,S-ix7uqv2r,located,,pypi;spa;3.8;3.0;core;packag;version;spacy,1fb63413d7293750,"It features\nstate-of-the-art speed and neural network models for tagging, parsing,\nnamed entity recognition, text classification and more, multi-task\nlearning with pretrained transformers like BERT, as well as",2026-11-09
+50800623386a,privacy/morfeusz-polish-lemmatisation.md,S-tzw22ffl,unlocated:no-match,,,,,2026-11-09
 5580c8b63097,privacy/morfeusz-polish-lemmatisation.md,S-fgod2hh4,unlocated:not-text,,,,,2026-10-22
 5580c8b63097,privacy/morfeusz-polish-lemmatisation.md,S-haoeqge5,unlocated:no-match,,,,,2026-10-22
 5580c8b63097,privacy/morfeusz-polish-lemmatisation.md,S-pxcitvg3,unlocated:no-match,,,,,2026-10-22
@@ -14664,6 +14751,94 @@ ffd40ed6f37f,privacy/presidio.md,S808,unlocated:no-match,,,,,2026-10-10
 c46a693e407a,privacy/spacy-model-licence.md,S851,unlocated:no-match,,,,,2026-10-10
 cc4a9b44c0ed,privacy/spacy-model-licence.md,S833,located,,core;en_core_web_lg;install;spacy;web;download;python;presidio,378543ad49b4f286,"""!pip install presidioanalyzer presidioanonymizer\n"", ""!python -m spacy download encoreweblg""",2026-10-10
 d04ce44229c0,privacy/spacy-model-licence.md,S850,located,en_core_web_lg-3.8.0 > No results found > Details: https://spacy.io/models/en#en_core_web_lg,3.0;clear;clearnlp;conversion;net;nlp;note;onto,2978f80424cfa483,"OntoNotes 5 (Ralph Weischedel, Martha Palmer, Mitchell Marcus, Eduard Hovy, Sameer Pradhan, Lance Ramshaw, Nianwen Xue, Ann Taylor, Jeff Kaufman, Michelle Franchini, Mohammed El-Bachouti, Robert",2026-10-10
+059f4bd9c899,privacy/spacy-pipeline-pinning.md,S-7cypj7la,unlocated:no-match,,,,,2026-11-09
+073d1f23d4db,privacy/spacy-pipeline-pinning.md,S-pxs757ky,located,"Basics {id=""basics"",hidden=""true""} > Saving, loading and distributing trained pipelines {id=""models""} > Including custom functions and components {id=""models-custom""}",chang;hyperparameter;architectur;edit;cfg;config.cfg;train;config,a673b80ec910dee2,"edits to the config.cfg after training, as this can easily lead to data incompatibility. For instance, changing an architecture or hyperparameter can",2026-11-09
+09ccaa7f46bd,privacy/spacy-pipeline-pinning.md,S-afy77hze,unlocated:no-match,,,,,2026-11-09
+09ccaa7f46bd,privacy/spacy-pipeline-pinning.md,S-eem3ebzg,unlocated:no-match,,,,,2026-11-09
+0a3e75e8236e,privacy/spacy-pipeline-pinning.md,S-afy77hze,unlocated:no-match,,,,,2026-11-09
+0ab0d1f49b94,privacy/spacy-pipeline-pinning.md,S-ufedwopa,unlocated:no-match,,,,,2026-11-09
+0ab493b8ac19,privacy/spacy-pipeline-pinning.md,S-afy77hze,located,check that there is a package version,legacy;nightly;spacy-legacy;spacy-nightly;thinc;srsly;spacy;packag,8f21af46df02c41c,"ownpackages = (""spacy"", ""spacy-legacy"", ""spacy-nightly"", ""thinc"", ""srsly"")",2026-11-09
+1219e9914579,privacy/spacy-pipeline-pinning.md,S-yo4p2wby,unlocated:no-match,,,,,2026-11-09
+1623a020a5b8,privacy/spacy-pipeline-pinning.md,S-fpqwvm77,located,,location;priority;extra-index-url;search;extra;find-link;link;url,434e24305c6d75a7,and in any additional repositories specified via --find-links or --extra-index-url. There is no priority in the locations that are searched.,2026-11-09
+17e074168f05,privacy/spacy-pipeline-pinning.md,S-pmc3phpi,unlocated:no-match,,,,,2026-11-09
+1a238c6c2d9b,privacy/spacy-pipeline-pinning.md,S-afy77hze,unlocated:no-match,,,,,2026-11-09
+1a5e460d810c,privacy/spacy-pipeline-pinning.md,S-fpqwvm77,located,,dir;find-link;link;no-index;find;local;index;install,9a68bc955ed77ab7,python -m pip install --no-index --find-links=file:///local/dir/ SomePackage,2026-11-09
+1a7d5cd37aba,privacy/spacy-pipeline-pinning.md,S-uyjpiflf,located,fmt: off,__compatibility__;__download_url__;compatibility;compatibility.json;download;github;json;master,81e1b969f0d9c244,"downloadurl = ""https://github.com/explosion/spacy-models/releases/download"" compatibility = ""https://raw.githubusercontent.com/explosion/spacy-models/master/compatibility.json""",2026-11-09
+1f3b35f0b08a,privacy/spacy-pipeline-pinning.md,S-afy77hze,located,the requirements list in the meta if desired.,install_requir;install;requir;requirement,be44b53264a1129e,"installrequires=listrequirements(meta),",2026-11-09
+202d1b63a0ae,privacy/spacy-pipeline-pinning.md,S-fpqwvm77,located,,hash;check;wheel,6f538e431a1f7c6c,.. rubric:: Wheel Cache This is now covered in :doc:../topics/caching. .. 0-hash-checking-mode:,2026-11-09
+202d1b63a0ae,privacy/spacy-pipeline-pinning.md,S-kzxs7o5q,located,Secure installs > Hash-checking Mode > Interaction with caching,wheel;install;check;hash,90e5f7071bf149cd,"When installing from the cache of locally built wheels in hash-checking mode, pip verifies",2026-11-09
+202d1b63a0ae,privacy/spacy-pipeline-pinning.md,S-umcvzek3,located,,check;install;hash,e9bc850a8c0bd5e6,":ref:hash-checking mode, especially for packages with multiple archives. The error message from pip install --require-hashes ... will give you one",2026-11-09
+2293f981e509,privacy/spacy-pipeline-pinning.md,S-yo4p2wby,unlocated:no-match,,,,,2026-11-09
+24cc51e39cba,privacy/spacy-pipeline-pinning.md,S-kmhasvx6,located,fmt: on,argument;check;pass;skip;compatibility;direct;install;pip,7cf514d123d13cd5,"For direct downloads, the compatibility check will be skipped. All additional arguments provided to this command will be passed to pip install",2026-11-09
+2734ce33ab1a,privacy/spacy-pipeline-pinning.md,S-afy77hze,unlocated:no-match,,,,,2026-11-09
+31b20593eed5,privacy/spacy-pipeline-pinning.md,S-ix7uqv2r,located,,pypi;relea;spa;3.8;python;spacy,a5516fa814ba3392,"It features\nstate-of-the-art speed and neural network models for tagging, parsing,\nnamed entity recognition, text classification and more, multi-task\nlearning with pretrained transformers like BERT, as well as",2026-11-09
+3335c84ace0b,privacy/spacy-pipeline-pinning.md,S-fpqwvm77,unlocated:no-match,,,,,2026-11-09
+35aab7b6a6ca,privacy/spacy-pipeline-pinning.md,S-umcvzek3,located,,sha256;download;packag;hash;pip,d1370eef3e77ca49,./pipdownloads/SomePackage-2.2.tar.gz: --hash=sha256:93e62e05c7ad3da1a233def6731e8285156701e3419a5fe279017c429ec67ce0,2026-11-09
+36cc0fbab5a2,privacy/spacy-pipeline-pinning.md,S-fpqwvm77,unlocated:no-match,,,,,2026-11-09
+36cc0fbab5a2,privacy/spacy-pipeline-pinning.md,S-kzxs7o5q,unlocated:no-match,,,,,2026-11-09
+36cc0fbab5a2,privacy/spacy-pipeline-pinning.md,S-umcvzek3,located,,check;requir;require-hash;install;hash;pip,e9bc850a8c0bd5e6,":ref:hash-checking mode, especially for packages with multiple archives. The error message from pip install --require-hashes ... will give you one",2026-11-09
+3d656ba6edaf,privacy/spacy-pipeline-pinning.md,S-tzx4jroa,unlocated:no-match,,,,,2026-11-09
+45992697620b,privacy/spacy-pipeline-pinning.md,S-2rokayfc,located,,spa;spacy_version;packag;compat;spacy;model;version,2b1a0c2d7d6abca7,"msg.warn(f""No compatible packages found for v{spacyversion} of spaCy"") incompatmodels = {d[""name""] for , d in modelpkgs.items() if not d[""compat""]}",2026-11-09
+45992697620b,privacy/spacy-pipeline-pinning.md,S-eqnfvpps,unlocated:no-match,,,,,2026-11-09
+4cf6f072aee7,privacy/spacy-pipeline-pinning.md,S-afy77hze,unlocated:no-match,,,,,2026-11-09
+4cf6f072aee7,privacy/spacy-pipeline-pinning.md,S-eem3ebzg,unlocated:no-match,,,,,2026-11-09
+4cf6f072aee7,privacy/spacy-pipeline-pinning.md,S-kzxs7o5q,unlocated:no-match,,,,,2026-11-09
+4f13b811012a,privacy/spacy-pipeline-pinning.md,S-kcn56y7v,unlocated:no-match,,,,,2026-11-09
+533177388e7c,privacy/spacy-pipeline-pinning.md,S-eem3ebzg,unlocated:no-match,,,,,2026-11-09
+5b5a5184f0a7,privacy/spacy-pipeline-pinning.md,S-kzxs7o5q,located,Secure installs > Hash-checking Mode > Additional restrictions,must;path;pin;dependency;url;requirement;hash,159383421390b1a1,"If there is a dependency that is not spelled out and hashed in the requirements file, it will result in an error. Requirements must be",2026-11-09
+5b81493f39d9,privacy/spacy-pipeline-pinning.md,S-zd7e6qfm,located,,random;salt;within;process;byte;hash;python;valu,dc3dbc531f4f67fb,"By default, the :meth:hash values of str and bytes objects are ""salted"" with an unpredictable random value. Although they remain constant within an individual Python",2026-11-09
+5e178e45e452,privacy/spacy-pipeline-pinning.md,S-szqctyjx,located,TODO: this is currently pretty slow,byte;sort;md5;checksum;file;path,13d5da5c4a143bfb,"dirchecksum = hashlib.md5() for subfile in sorted(fp for fp in path.rglob("""") if fp.isfile()): dirchecksum.update(subfile.readbytes())",2026-11-09
+62b64bd8b0a0,privacy/spacy-pipeline-pinning.md,S-eem3ebzg,unlocated:no-match,,,,,2026-11-09
+62b64bd8b0a0,privacy/spacy-pipeline-pinning.md,S-pmc3phpi,unlocated:no-match,,,,,2026-11-09
+6c664ff0d8b5,privacy/spacy-pipeline-pinning.md,S-kzxs7o5q,unlocated:no-match,,,,,2026-11-09
+6db53697933d,privacy/spacy-pipeline-pinning.md,S-pxs757ky,unlocated:no-match,,,,,2026-11-09
+6db53697933d,privacy/spacy-pipeline-pinning.md,S-tzx4jroa,unlocated:no-match,,,,,2026-11-09
+6db53697933d,privacy/spacy-pipeline-pinning.md,S-yo4p2wby,unlocated:no-match,,,,,2026-11-09
+6ef2d7f9a41f,privacy/spacy-pipeline-pinning.md,S-afy77hze,located,Update the requirements with all third-party packages in the config,spacy_version;spacy;pipelin;version,f9512466679a0c13,"(md.bold(""spaCy""), md.code(meta[""spacyversion""])), (md.bold(""Default Pipeline""), pipeline),",2026-11-09
+6ef2d7f9a41f,privacy/spacy-pipeline-pinning.md,S-pmc3phpi,located,"download {id=""download"",tag=""command""}",exact;wheel;version;packag;pipelin,7804f858467caeb9,"model | Pipeline package name, e.g. encorewebsm. ~~str (positional)~~ --direct, -D | Force direct download of exact package version. ~~bool (flag)~~ --sdist, -S <Tag variant=""new"">3</Tag>",2026-11-09
+74ae8a6053ed,privacy/spacy-pipeline-pinning.md,S-mvtjqg65,located,corresponds to the new pipeline.,_sourced_vectors_hash;nlp.meta;hash;vector;sourc;meta;nlp,6c082ccd88394ffe,"if ""sourcedvectorshashes"" not in nlp.meta:",2026-11-09
+7b4f49a6e796,privacy/spacy-pipeline-pinning.md,S-7dzxtyeg,unlocated:no-match,,,,,2026-11-09
+7cc1c8b54849,privacy/spacy-pipeline-pinning.md,S-bdjuufne,unlocated:no-match,,,,,2026-11-09
+7cc1c8b54849,privacy/spacy-pipeline-pinning.md,S-kzxs7o5q,located,Secure installs > Hash-checking Mode,requirements.txt;txt;requirement;hash,76ed8b8ee729458b,"This mode uses local hashes, embedded in a requirements.txt file, to protect against remote tampering and network issues.",2026-11-09
+7dd78efffc6b,privacy/spacy-pipeline-pinning.md,S-y7fy5phu,located,"Introduction and workflow {id=""intro"",hidden=""true""} > Project directory and assets {id=""directory""} > Data assets {id=""data-assets""}",else;someon;verify;checksum;file;asset;run;project,69a7d0fdfc01d977,project assets command. Defining checksums lets you verify that someone else running your project will use the same files you used.,2026-11-09
+7e0ae2e793ee,privacy/spacy-pipeline-pinning.md,S-pxs757ky,located,"Basics {id=""basics"",hidden=""true""} > Saving, loading and distributing trained pipelines {id=""models""} > Including custom functions and components {id=""models-custom""}",copi;root;__init__.py;__init__;init;code;function;file,3c2b52e374100a42,"$ python -m spacy package ./enexamplepipeline ./packages --code functions.py The Python files will be copied over into the root of the package, and the package's",2026-11-09
+80041d8dd766,privacy/spacy-pipeline-pinning.md,S-yo4p2wby,located,"Training config {id=""config"",version=""3""} > Pipeline meta {id=""meta""}",minor;next;3.0.0;3.1.0;spacy_version;version;creat;pipelin,973463954ba806d3,"spacyversion | spaCy version range the package is compatible with. Defaults to the spaCy version used to create the pipeline, up to next minor version,",2026-11-09
+804738a4dc42,privacy/spacy-pipeline-pinning.md,S-2rokayfc,located,,__compatibility__;about.__compatibility__;status;compatibility;tabl,482c441615f85db9,"with msg.loading(""Loading compatibility table...""): r = requests.get(about.compatibility) if r.statuscode != 200:",2026-11-09
+81bba144c3b8,privacy/spacy-pipeline-pinning.md,S-kzxs7o5q,unlocated:no-match,,,,,2026-11-09
+81bba144c3b8,privacy/spacy-pipeline-pinning.md,S-szqctyjx,unlocated:no-match,,,,,2026-11-09
+89560165b90c,privacy/spacy-pipeline-pinning.md,S-afy77hze,located,fmt: off,meta.json;json;path;meta,b4521ebafcd179e9,"help=""Path to meta.json"",",2026-11-09
+89560165b90c,privacy/spacy-pipeline-pinning.md,S-eem3ebzg,located,"Everything else, like only an upper version, only a lower version etc.",meta.json;json;meta;path,6fefaac65b7af805,"""""""Load a model meta.json from a path and validate its contents.",2026-11-09
+97f25469a6bd,privacy/spacy-pipeline-pinning.md,S-kcn56y7v,located,,requirements.txt;txt;dependency;requirement;url;version;pipelin,d314bf6a3c97d42a,"They're versioned and can be defined as a dependency in your requirements.txt. Trained pipelines can be installed from a download URL or a local directory,",2026-11-09
+993beea2d0e8,privacy/spacy-pipeline-pinning.md,S-5wch47ce,unlocated:no-match,,,,,2026-11-09
+9e1c1c7eb75b,privacy/spacy-pipeline-pinning.md,S-pmc3phpi,located,"download {id=""download"",tag=""command""} > validate {id=""validate"",version=""2"",tag=""command""}",check;install;pipelin,b53cda6f8abed8bd,Find all trained pipeline packages installed in the current environment and check whether they are compatible with the currently installed version of spaCy.,2026-11-09
+9e1c1c7eb75b,privacy/spacy-pipeline-pinning.md,S-w2iwn6ac,located,fmt: on,install;pipelin,8dc3f22bb0d886c3,This is only available for pipelines installed as modules that have,2026-11-09
+a4c1ee707cf0,privacy/spacy-pipeline-pinning.md,S-b5ddf5wg,unlocated:no-match,,,,,2026-11-09
+a6d8c8742b0e,privacy/spacy-pipeline-pinning.md,S-eem3ebzg,unlocated:no-match,,,,,2026-11-09
+b060a08179d2,privacy/spacy-pipeline-pinning.md,S-pmc3phpi,unlocated:no-match,,,,,2026-11-09
+b4ab1580a148,privacy/spacy-pipeline-pinning.md,S-2rokayfc,unlocated:no-match,,,,,2026-11-09
+b4ab1580a148,privacy/spacy-pipeline-pinning.md,S-eem3ebzg,unlocated:no-match,,,,,2026-11-09
+b4ab1580a148,privacy/spacy-pipeline-pinning.md,S-kmhasvx6,unlocated:no-match,,,,,2026-11-09
+b4ab1580a148,privacy/spacy-pipeline-pinning.md,S-w2iwn6ac,unlocated:no-match,,,,,2026-11-09
+b6ada7092e41,privacy/spacy-pipeline-pinning.md,S-afy77hze,located,the requirements list in the meta if desired.,entry;point;spacy_model;spacy;model;name,338e7f9c21e4b399,entrypoints={'spacymodels': ['{m} = {m}'.format(m=modelname)]},2026-11-09
+b6ada7092e41,privacy/spacy-pipeline-pinning.md,S-eem3ebzg,unlocated:no-match,,,,,2026-11-09
+b8d2027d9c82,privacy/spacy-pipeline-pinning.md,S-eqnfvpps,unlocated:no-match,,,,,2026-11-09
+ccd52c02ab33,privacy/spacy-pipeline-pinning.md,S-kmhasvx6,unlocated:no-match,,,,,2026-11-09
+cd5588d5b202,privacy/spacy-pipeline-pinning.md,S-afy77hze,located,after a command fails,back;fall;deprecat;setup.py;setup;python;fail;sdist,76379a539e4ac88f,"""Creating sdist with 'python -m build' failed. Falling "" ""back to deprecated use of 'python setup.py sdist'""",2026-11-09
+d9200e253a0e,privacy/spacy-pipeline-pinning.md,S-pmc3phpi,located,"download {id=""download"",tag=""command""}",convenient;intend;interactiv;mostly;wrapper;download,ffe54778491d859e,"The download command is mostly intended as a convenient, interactive wrapper",2026-11-09
+d95a283e49dc,privacy/spacy-pipeline-pinning.md,S-eem3ebzg,unlocated:no-match,,,,,2026-11-09
+d95a283e49dc,privacy/spacy-pipeline-pinning.md,S-uyjpiflf,unlocated:no-match,,,,,2026-11-09
+d9997fc39a7f,privacy/spacy-pipeline-pinning.md,S-tzx4jroa,unlocated:no-match,,,,,2026-11-09
+d9997fc39a7f,privacy/spacy-pipeline-pinning.md,S-yo4p2wby,unlocated:no-match,,,,,2026-11-09
+d9e395fb2790,privacy/spacy-pipeline-pinning.md,S-afy77hze,unlocated:no-match,,,,,2026-11-09
+e04bf332c6fc,privacy/spacy-pipeline-pinning.md,S-q6tsebaa,unlocated:no-match,,,,,2026-11-09
+e2954a0c82f0,privacy/spacy-pipeline-pinning.md,S-pmc3phpi,located,"download {id=""download"",tag=""command""} > package {id=""package"",tag=""command""}",create-meta;input_dir;meta-path;output_dir;build;forc;meta;input,89907a6900b459b9,$ python -m spacy package [inputdir] [outputdir] [--code] [--meta-path] [--create-meta] [--build] [--name] [--version] [--force],2026-11-09
+e34925482e96,privacy/spacy-pipeline-pinning.md,S-w2iwn6ac,unlocated:no-match,,,,,2026-11-09
+e9c47e22159d,privacy/spacy-pipeline-pinning.md,S-pmc3phpi,located,"download {id=""download"",tag=""command""} > package {id=""package"",tag=""command""}",artifact;comma;comma-separat;sdist;wheel;separat;build;none,75de0f21578f4324,"--build, -b <Tag variant=""new"">3</Tag> | Comma-separated artifact formats to build. Can be sdist (for a .tar.gz archive) and/or wheel (for a binary .whl file), or",2026-11-09
+eb26002c04fc,privacy/spacy-pipeline-pinning.md,S-bdjuufne,unlocated:no-match,,,,,2026-11-09
+eef58dba2b12,privacy/spacy-pipeline-pinning.md,S-eqnfvpps,located,,3.8;news;core,d493fe91122f6496,,2026-11-09
+f600cf2fa9e3,privacy/spacy-pipeline-pinning.md,S-eem3ebzg,located,"Everything else, like only an upper version, only a lower version etc.",major;minor;version,dfa7352c77018405,"""""""Get the major + minor version (without patch or prerelease identifiers).",2026-11-09
+f96a4ddde8f4,privacy/spacy-pipeline-pinning.md,S-mvtjqg65,unlocated:no-match,,,,,2026-11-09
+fdac7082a2a6,privacy/spacy-pipeline-pinning.md,S-pxs757ky,located,"Basics {id=""basics"",hidden=""true""} > Saving, loading and distributing trained pipelines {id=""models""} > Generating a pipeline package {id=""models-generating""}",org;public;pypi.python.org;suitabl;typically;pypi;over;binary,44bd67c17ab1857d,"Pipeline packages are typically not suitable for the public pypi.python.org directory, which is not designed for binary data and files over 50 MB.",2026-11-09
 0dd602de945e,python/extension-api-versioning.md,S-piurzx4u,located,,fully;compatibl;specification;schem;version,14a1df50de7ab7d4,are fully compatible with the version scheme defined in this specification,2026-11-08
 0f20bbfc95a2,python/extension-api-versioning.md,S-piurzx4u,located,,logical;comma;candidat;operator,4cb1bac6305b0057,"The comma ("","") is equivalent to a logical and operator: a candidate",2026-11-08
 405d8d075c6a,python/extension-api-versioning.md,S-f67thrzd,located,,mark;deprecat;functionality;increment;public;must;api,5ebc60f9e6f08f90,It MUST be incremented if any public API functionality is marked as deprecated.,2026-11-08
@@ -15812,8 +15987,6 @@ e3ddd896f505,security/almalinux-repositories-vault-pins.md,S-46pbwuai,located,Al
 fe0b09d05a4a,security/almalinux-repositories-vault-pins.md,S-sjuiftqx,located,Index of /9.4/BaseOS/,i686,708ede49c66425a4,i686/ 03-May-2024 22:40,2026-10-21
 12ae5ecf94b5,security/baselines-catalog.csv,S-3vkajr2c,unlocated:no-match,,,,,2026-10-10
 21ca5a668d90,security/baselines-catalog.csv,S1402,unlocated:no-match,,,,,2026-10-21
-24a043789d69,security/baselines-catalog.csv,S1406,unlocated:no-match,,,,,2026-10-10
-24a043789d69,security/baselines-catalog.csv,S-ycjlut3h,unlocated:no-match,,,,,2026-10-10
 5dadf3a98a8d,security/baselines-catalog.csv,S1421,located,Learn about Intune security baselines for Windows devices - Microsoft Intune | Microsoft Learn > Available security baselines,physical;vdi;endpoint;recommend;defender;devic;microsoft;security,830608adaabc9d3f,The Microsoft Defender for Endpoint security baseline is optimized for physical devices and is currently not recommended for use on virtual machines (VMs) or VDI,2026-10-10
 5dadf3a98a8d,security/baselines-catalog.csv,S1422,unlocated:no-match,,,,,2026-10-21
 78fe491fad92,security/baselines-catalog.csv,S-cvu2vf7c,unlocated:no-match,,,,,2026-10-10
@@ -15824,6 +15997,8 @@ fe0b09d05a4a,security/almalinux-repositories-vault-pins.md,S-sjuiftqx,located,In
 997fbdaba022,security/baselines-catalog.csv,S1598,unlocated:no-match,,,,,2026-10-10
 9b378e02de14,security/baselines-catalog.csv,S1419,unlocated:no-match,,,,,2026-10-21
 9e6b75e13da6,security/baselines-catalog.csv,S1472,unlocated:not-text,,,,,2026-11-09
+9ec822a7b57f,security/baselines-catalog.csv,S1406,unlocated:no-match,,,,,2026-11-09
+9ec822a7b57f,security/baselines-catalog.csv,S-ycjlut3h,unlocated:no-match,,,,,2026-11-09
 a3dffb389325,security/baselines-catalog.csv,S1421,unlocated:no-match,,,,,2026-10-10
 a3dffb389325,security/baselines-catalog.csv,S1423,unlocated:no-match,,,,,2026-10-21
 b8361d5120a0,security/baselines-catalog.csv,S1471,unlocated:not-text,,,,,2026-11-09
@@ -15837,6 +16012,7 @@ e7c11a0c0a1a,security/baselines-catalog.csv,S-cwnwnkri,unlocated:no-match,,,,,20
 3febcc80e61d,security/baselines-catalog.md,S1470,unlocated:not-text,,,,,2026-11-09
 506f7d1fa907,security/baselines-catalog.md,S-cvu2vf7c,unlocated:no-match,,,,,2026-10-10
 5cf9499519dd,security/baselines-catalog.md,S1470,unlocated:not-text,,,,,2026-11-09
+6147d4a3ab89,security/baselines-catalog.md,S1424,unlocated:no-match,,,,,2026-11-09
 6b0c4a36f93a,security/baselines-catalog.md,S1418,unlocated:no-match,,,,,2026-10-21
 6b0c4a36f93a,security/baselines-catalog.md,S1419,unlocated:no-match,,,,,2026-10-21
 71a2f6637e99,security/baselines-catalog.md,S-li2s6pgb,unlocated:no-match,,,,,2026-10-10
@@ -15845,6 +16021,10 @@ e7c11a0c0a1a,security/baselines-catalog.csv,S-cwnwnkri,unlocated:no-match,,,,,20
 7627aa1c9200,security/baselines-catalog.md,S-aljzuasy,unlocated:no-match,,,,,2026-10-10
 7627aa1c9200,security/baselines-catalog.md,S-cvu2vf7c,unlocated:no-match,,,,,2026-10-10
 7627aa1c9200,security/baselines-catalog.md,S-vxnukaep,unlocated:no-match,,,,,2026-10-10
+781bd3fe1c85,security/baselines-catalog.md,S1405,unlocated:no-match,,,,,2026-11-09
+781bd3fe1c85,security/baselines-catalog.md,S1406,located,Microsoft Windows Desktop > This CIS Benchmark is the product of a community consensus process and consists of secure configuration guidelines developed for Microsoft Windows Desktop > CIS Benchmark >,5.1.1;enterpris;window;microsoft,bb2094732374b927,,2026-11-09
+781bd3fe1c85,security/baselines-catalog.md,S1407,unlocated:no-match,,,,,2026-11-09
+781bd3fe1c85,security/baselines-catalog.md,S1408,located,CIS Benchmarks April 2026 Update > CIS Benchmarks Updated Last Month > CIS Microsoft Windows 11 Enterprise Benchmark v5.0.1,bugfix;5.0.1;enterpris;window;microsoft;benchmark;cis,a5f7473ab72574c3,We are excited to announce the publication of the CIS Microsoft Windows 11 Enterprise Benchmark v5.0.1. This bugfix addresses an issue with CIS-CAT and the,2026-11-09
 79b0a15c8541,security/baselines-catalog.md,S1405,unlocated:no-match,,,,,2026-10-23
 79b0a15c8541,security/baselines-catalog.md,S-m3qbkeev,unlocated:no-match,,,,,2026-10-23
 802da98f0009,security/baselines-catalog.md,S1402,unlocated:no-match,,,,,2026-10-21
@@ -15861,10 +16041,6 @@ e7c11a0c0a1a,security/baselines-catalog.csv,S-cwnwnkri,unlocated:no-match,,,,,20
 c56b74ff5f88,security/baselines-catalog.md,S-aljzuasy,unlocated:no-match,,,,,2026-10-10
 c56b74ff5f88,security/baselines-catalog.md,S-cwnwnkri,located,Microsoft Windows > Before you start,22h2;against;april;december;last;pack;test;guid,21778c0364950156,This configuration was last tested against Windows 10 22H2 in December 2024 and Windows 11 in April 2025. We recomend you check out the parent,2026-10-10
 e4938e12f10c,security/baselines-catalog.md,S-vxnukaep,unlocated:no-match,,,,,2026-10-10
-f89c7258e4ff,security/baselines-catalog.md,S1405,unlocated:no-match,,,,,2026-10-10
-f89c7258e4ff,security/baselines-catalog.md,S1406,located,Microsoft Windows Desktop > This CIS Benchmark is the product of a community consensus process and consists of secure configuration guidelines developed for Microsoft Windows Desktop > CIS Benchmark,version;benchmark;enterpris;cis;window;microsoft,ceb6b86639ef7e76,,2026-10-10
-f89c7258e4ff,security/baselines-catalog.md,S1407,located,CIS Benchmarks March 2026 Update > CIS Benchmarks Updated Last Month,enterpris;v5.0.0;window;microsoft;benchmark;cis,a346d03121731d5e,CIS Microsoft Windows 11 Enterprise Benchmark v5.0.0,2026-11-09
-f89c7258e4ff,security/baselines-catalog.md,S1408,located,CIS Benchmarks April 2026 Update > CIS Benchmarks Updated Last Month > CIS Microsoft Windows 11 Enterprise Benchmark v5.0.1,bugfix;v5.0.1;enterpris;window;microsoft;benchmark;cis,a5f7473ab72574c3,We are excited to announce the publication of the CIS Microsoft Windows 11 Enterprise Benchmark v5.0.1. This bugfix addresses an issue with CIS-CAT and the,2026-11-09
 f95f5a8986ca,security/baselines-catalog.md,S-3vkajr2c,unlocated:no-match,,,,,2026-10-10
 f98beab859d4,security/baselines-catalog.md,S-m3qbkeev,located,CIS Benchmarks September 2026 Update > CIS Benchmarks Updated Last Month > CIS Microsoft Windows Server 2025 Stand-alone Benchmark v2.0.0,antivirus;defender;now;own;docx;changelog;control;full,60fe7c7dd0eae00f,18 Control Mappings Updated All Microsoft Defender Antivirus recommendations removed as Defender now has its own Benchmark The full changelog is included in the DOCX,2026-10-10
 0a6bf8a403fb,security/dsc-coverage.md,S114,unlocated:not-text,,,,,2026-10-10

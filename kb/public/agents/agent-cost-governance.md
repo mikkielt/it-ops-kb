@@ -46,9 +46,9 @@ for any team running a multi-operation MCP tool set that wants per-operation cos
   endpoint's `service_tier` instead). Data lands within ~5 minutes of the API call; sustained polling of once per
   minute is supported. Claude Enterprise orgs use a separate Analytics API key instead of an Admin API key for the
   equivalent Enterprise Analytics API. [DOC S2013]
-- Per-user Claude Code cost specifically: the docs recommend the dedicated Claude Code Analytics API over slicing
-  the general Usage API by many API keys, "without the performance limitations of breaking down costs by many API
-  keys." [DOC S2013]
+- Per-user Claude Code cost specifically: the docs say to call the cost endpoint with
+  `products[]=claude_code&group_by[]=actor` (group by `api_key_id` for cost by API key), and note that the Claude Code
+  Analytics API also provides per-user estimated costs and productivity metrics. [DOC S2013]
 - Model-choice cost guidance: default to Sonnet for coding, reserve Opus for complex architecture/reasoning;
   subagents can be pinned to a cheaper model independently (e.g. `model: haiku`); multi-instance "agent teams" use
   roughly 7x more tokens than a standard session when teammates run in plan mode, because each teammate holds its

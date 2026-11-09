@@ -357,7 +357,7 @@ _Agent: auth_
 _Agent: security_
 
 ## QS1. CIS benchmark versions/dates and terms for reuse of IDs/titles
-- CIS Microsoft Windows 11 Enterprise Benchmark current version is v5.1.0 (published 2026-09-16
+- CIS Microsoft Windows 11 Enterprise Benchmark current version is v5.1.1 on the CIS listing page read 2026-11-09 (its date was not found; v5.1.0 was published 2026-09-16
   per publication-date digest; preceded by v5.0.0 in March 2026 and bugfix v5.0.1 in April 2026)
   [DOC S1405, S1406, S1407, S1408].
 - A CIS Microsoft Intune for Windows 11 Benchmark v4.0.0 exists per a third-party mirror of CIS
@@ -1405,9 +1405,10 @@ _Agent: agents-extra_
   `/v1/organizations/usage_report/messages` (token counts by model/workspace/API-key/service-tier/geo, bucket
   widths 1m/1h/1d, up to 1,440 1-minute buckets or 31 daily buckets) and `/v1/organizations/cost_report` (USD cost
   by workspace/description, daily buckets only); data lands within about 5 minutes of the API call completing, and
-  the API supports polling once per minute for sustained use. Per-user Claude Code cost specifically is better
-  served by the separate **Claude Code Analytics API**, which the Usage & Cost API's own docs recommend over
-  slicing usage by many individual API keys. [DOC S2013]
+  the API supports polling once per minute for sustained use. Per-user Claude Code cost specifically comes from the
+  cost endpoint with `products[]=claude_code&group_by[]=actor` (group by `api_key_id` for cost by API key); the separate
+  **Claude Code Analytics API** also provides per-user estimated costs and productivity metrics, as the Usage & Cost
+  API's own docs note. [DOC S2013]
 - **Model choice per task**: vendor guidance is to default to Sonnet for coding and reserve Opus for complex
   architecture/reasoning, since Opus costs more; subagents can be pinned to a cheaper model (e.g. `model: haiku`)
   independently of the main session; a multi-instance "agent teams" feature is stated to use roughly **7x more
@@ -2958,7 +2959,7 @@ _Agent: kb-research_
 _Agent: kb-research_
 
 ## QK-spacy-trained-pipeline-pinned-one-patch. How is a spaCy trained pipeline pinned to one patch version, packaged as a wheel and installed from a private index?
-- A pipeline package version `a.b.c` is spaCy major, spaCy minor and model version; spaCy's own patch number is not in it, and PyPI lists 3.8.0 to 3.8.16 as the patches of minor 3.8. [DOC S-7dzxtyeg, S-ix7uqv2r]
+- A pipeline package version `a.b.c` is spaCy major, spaCy minor and model version; spaCy's own patch number is not in it, and PyPI lists 3.8.0 to 3.8.18 as the patches of minor 3.8. [DOC S-7dzxtyeg, S-ix7uqv2r]
 - `spacy package <input_dir> <output_dir> --build wheel --name N --version V --meta-path meta.json --force` writes `<lang>_<name>-<version>/` with `meta.json`, `setup.py`, `MANIFEST.in`, README, the package directory and `dist/`; the build runs `python -m build`. [DOC S-pmc3phpi; CODE S-afy77hze: spacy/cli/package.py#package]
 - The meta's `spacy_version` defaults to `>=<packaging spaCy's full version>,<next minor>` (spaCy 3.8.16 writes `>=3.8.16,<3.9.0`); a value already in the `meta.json` file overrides it. [DOC S-yo4p2wby; CODE S-eem3ebzg: spacy/util.py#get_minor_version_range]
 - On load a mismatch is warning W095, not an error; `spacy validate` returns exit code 1 for an incompatible installed package. [CODE S-eem3ebzg: spacy/util.py#load_meta; DOC S-pmc3phpi]

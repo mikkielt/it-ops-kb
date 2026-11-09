@@ -19,7 +19,7 @@ status: partial
 
 ### Versions and compatibility
 - A pipeline package version `a.b.c` means: `a` spaCy major, `b` spaCy minor, `c` the model version (different data, parameters, iterations or vectors); the third number is not spaCy's patch number. [DOC S-7dzxtyeg]
-- PyPI lists spaCy 3.8.0 (2024-09-11) through 3.8.16 (2026-08-24) as the patch releases of minor 3.8; 3.8.16 declares Python `>=3.9,<3.15`. [DOC S-ix7uqv2r]
+- PyPI lists spaCy 3.8.0 (2024-09-11) through 3.8.18 (2026-10-26) as the patch releases of minor 3.8; 3.8.18 declares Python `>=3.10,<3.16` (3.8.16 declared `>=3.9,<3.15`). [DOC S-ix7uqv2r]
 - The meta field `spacy_version` defaults to the version used to create the pipeline "up to next minor version"; the docs' example is a pipeline trained with v3.0.0 getting `>=3.0.0,<3.1.0`. [DOC S-yo4p2wby]
 - The range is built from the full running version: `>={version},<{major}.{minor+1}.0`. [CODE S-eem3ebzg: spacy/util.py#get_minor_version_range]
 - `__version__` of the tagged source is `3.8.16`, so a pipeline packaged on it and left at the default carries `>=3.8.16,<3.9.0`; running 3.8.15 against it is outside the range. [DER S-eem3ebzg, S-uyjpiflf: the range formula applied to `about.__version__`]

@@ -18,8 +18,8 @@ status: partial
 ## Facts
 
 ### GLiNER library
-- Release 0.2.29 is the latest on PyPI (uploaded 2026-09-08); the metadata gives Apache-2.0 and Python 3.10 or newer, and the `LICENSE` file at tag v0.2.29 is the Apache License 2.0. [DOC S-7bjdu5bv, S-sw4xvzwh]
-- A plain install pulls `torch` (2.0.0 or newer), `transformers` (4.51.3 up to below 5.17.0), `huggingface_hub`, `safetensors` and `sentencepiece`; `onnxruntime` is the optional `onnx` extra, `onnxruntime-gpu` the `gpu` extra, and `stanza` and `langdetect` come with the `stanza` extra. [DOC S-7bjdu5bv]
+- Release 0.2.30 is the latest on PyPI (uploaded 2026-10-31; 0.2.29, which this article reads at its tag, was uploaded 2026-09-08); the metadata gives Apache-2.0 and Python 3.10 or newer, and the `LICENSE` file at tag v0.2.29 is the Apache License 2.0. [DOC S-7bjdu5bv, S-sw4xvzwh]
+- A plain install pulls `torch` (2.0.0 or newer), `transformers` (4.51.3 up to below 5.23.0 in 0.2.30; below 5.17.0 in 0.2.29), `huggingface_hub`, `safetensors` and `sentencepiece`; `onnxruntime` is the optional `onnx` extra, `onnxruntime-gpu` the `gpu` extra, and `stanza` and `langdetect` come with the `stanza` extra. [DOC S-7bjdu5bv]
 - API: `pip install gliner`, then `GLiNER.from_pretrained("<repo or local dir>")` and `model.predict_entities(text, labels, threshold=0.5)`; the README loop reads `entity["text"]` and `entity["label"]`. [DOC S-rvd2zkel]
 - `predict_entities(text, labels, flat_ner=True, threshold=0.5, multi_label=False, ...)` returns dicts with `start` and `end` (character positions), `text`, `label` and `score`; `inference` takes several texts and `batch_predict_entities` is deprecated. [CODE S-w7vp7g4j: gliner/model.py#BaseEncoderGLiNER.predict_entities]
 - Labels are free strings chosen per call, or a dict of label to description; `inference` also takes one label set per text, and a list of dicts means one dict per text, not several labels for one text. [DOC S-y42nqxiw]

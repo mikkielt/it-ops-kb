@@ -37,7 +37,7 @@ attribution. NCSC (UK), BSI and ANSSI publish narrower guidance (Intune packs, W
   changes since 24H2 include disabling NetBIOS name resolution on all adapters, adding the PSExec/WMI
   process-creation ASR rule in Audit (2), enabling command line in process creation events, and removing
   WDigest and Scan packed executables [DOC S1402].
-- CIS Microsoft Windows 11 Enterprise Benchmark current version is v5.1.0 (previous: v5.0.0, then
+- CIS Microsoft Windows 11 Enterprise Benchmark current version is v5.1.1 on the CIS listing page read 2026-11-09 (previous: v5.1.0 of 2026-09-16, v5.0.0, then
   bugfix v5.0.1) [DOC S1405, S1406, S1407, S1408].
 - CIS's September 2026 update summarises the Windows 11 Enterprise Benchmark 5.1.0 changes as 3 recommendations updated, all Microsoft Defender Antivirus
   recommendations removed (Defender now has its own benchmark), 1 recommendation removed and 18 control mappings
