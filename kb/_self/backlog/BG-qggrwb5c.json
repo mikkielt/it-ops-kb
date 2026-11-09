@@ -2,7 +2,7 @@
   "id": "BG-qggrwb5c",
   "kind": "bug",
   "title": "claim resolves the operator and asks coord inside the claims-ledger lock, so a slow claude or a slow served coord holds the lock that dispatch and other claims wait on past its stale age",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-mc4dzsfe",
   "priority": "P2",
   "rank": 0,
@@ -36,5 +36,7 @@
     "parked: SP-jwvaq2hu review"
   ],
   "notes": "Review G3: bl_items.py:376 calls take_claim inside ledger_lock; COORD_SECONDS 60 (bl_clean.py:104) equals LEDGER_LOCK_STALE_S 60 (bl_base.py:693). The repro reads the bound only; moving the call out of the lock also fixes it. Merged with ST-v2emks5y (dropped): cmd_claim calls operator_who() (claude auth status and git config, 5 s each) after take_claim, both inside ledger_lock; BG-qggrwb5c's review gap G3: bl_items.py cmd_claim calls take_claim inside ledger_lock and COORD_SECONDS 60 (bl_clean.py) equals LEDGER_LOCK_STALE_S 60 (bl_base.py). Premise run 2026-11-09 on the base: the repro runs a claim on a planted repo with spies and prints operator resolved under the ledger lock: 1, coord calls under it that can outlast its stale age: [60]. The fix is the worker's choice (take the run state outside the lock, or bound the coord call below the stale age); a claim keeps its refusals (a held run state, the busy session) and its race rule: the same key and a different key (ST-j2eeme66), so a planted second claim of the same item still loses.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-4bf1b2c2",
+  "operator": "op-f618a13e"
 }
