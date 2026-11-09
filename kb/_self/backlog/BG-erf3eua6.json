@@ -29,7 +29,8 @@
     "_tools/bl_items.py",
     "_tools/bl_base.py",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/querylog.md"
   ],
   "depends_on": [
     "BG-qggrwb5c"
