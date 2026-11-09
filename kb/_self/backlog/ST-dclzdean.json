@@ -2,7 +2,7 @@
   "id": "ST-dclzdean",
   "kind": "story",
   "title": "Research sprint goal: Publish, sync and the leak scan agree on tree causes, lanes and secret shapes, and the query-log spool and needs-you line stop naming dead deliveries",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-mut2pmu3",
   "goal_research": true,
   "priority": "P1",
@@ -23,6 +23,20 @@
   ],
   "notes": "No outside facts: every fix of the sprint is behaviour of this repository's own tools (kbpublic, kg_contrib, kg_lane, kblane, kbcommon, kbroot, ql_store, mon_needs); the planning premises were run against the tree and no kb article or source row is needed.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-ev3run01",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "94d968c4f3f652c4d2d00d3127480af0860c51ca",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-dclzdean"
+        ],
+        "exit": 0,
+        "sha256": "77d6369b90417b06"
+      }
+    ]
+  }
 }
