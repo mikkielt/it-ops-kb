@@ -7,7 +7,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
-  "goal": "Sync and publish agree on tree causes: the fixture roots under _tools/fixtures that say visibility: internal either leave publish's projection or stop counting as internal roots, sync reports any tree cause publish would give, and publish passes the range since refs/kb/published",
+  "goal": "kbpublic.tree_refusals and history_refusals read a _root.md under _tools/fixtures as a test input and not as a root, and sync's gate prints the tree causes of the range as publish gives them, so publish passes the range since refs/kb/published",
   "repro": {
     "run": [
       "python3",
@@ -15,6 +15,15 @@
       "import sys;sys.path.insert(0,'_tools');import kbpublic as k;n=len(k.tree_refusals('HEAD',k.tree_files('HEAD','.'),'.'));assert n==0,'publish tree refusal holds %d cause(s) at HEAD that sync never reports'%n"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport sys,os,subprocess as s,tempfile\nsys.path.insert(0,'_tools');import kbpublic as k\nd=tempfile.mkdtemp();g=lambda *a:s.run(['git','-C',d,*a],check=True,capture_output=True)\nrev=lambda:s.run(['git','-C',d,'rev-parse','HEAD'],capture_output=True,text=True).stdout.strip()\ng('init','-q')\ndef w(p,t):\n    os.makedirs(os.path.dirname(d+'/'+p),exist_ok=True);open(d+'/'+p,'w').write(t)\ndef cm(m):\n    g('add','-A');g('-c','user.name=t','-c','user.email=t'+chr(64)+'example.com','commit','-qm',m);return rev()\nR='---\\nroot: x\\nid_prefix: X\\nvisibility: internal\\ndescription: x\\n---\\n'\nw('a','x\\n');b0=cm('base')\nw('_tools/fixtures/lang/de/_root.md',R);w('_tools/fixtures/lang/de/a.md','x\\n');b1=cm('fixture')\nf=k.tree_files('HEAD',d);t=k.tree_refusals('HEAD',f,d);h=k.history_refusals('HEAD',b0,f,d,projected=False)\nok1=not t and not h[0]\nw('kb/team/_root.md',R);w('kb/team/a.md','x\\n');b2=cm('team')\nf=k.tree_files('HEAD',d);t2=k.tree_refusals('HEAD',f,d)\nok2=any('kb/team' in x for x in t2) and not any('fixtures' in x for x in t2)\nw('_tools/fixtures/lang/de/b.md','key '+'AKIA'+'A'*16+'\\n');b3=cm('secret')\nf=k.tree_files('HEAD',d);h3=k.history_refusals('HEAD',b2,f,d,projected=False)\nok3=bool(h3[1])\nprint(ok1,ok2,ok3)\nsys.exit(0 if ok1 and ok2 and ok3 else 1)\n"
+      ]
+    }
+  ],
   "touches": [
     "_tools/kbpublic.py",
     "_tools/kg_sync.py",
