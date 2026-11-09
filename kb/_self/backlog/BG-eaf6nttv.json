@@ -27,6 +27,28 @@
   "depends_on": [
     "BG-gnychh55"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which url forms lose their user part, and where else is the credential cut besides kj_store.remote_url?",
+      "options": [
+        "Cut the user and password of any scheme:// url in kj_store.bare_url, applied to remote_url, to --clone-url and to the server executor's clone argument and clone directory name; leave scp-like user@host:path as it is",
+        "Cut only in kj_store.remote_url"
+      ],
+      "recommendation": "Cut the user and password of any scheme:// url in kj_store.bare_url, applied to remote_url, to --clone-url and to the server executor's clone argument and clone directory name; leave scp-like user@host:path as it is",
+      "do": {
+        "Cut the user and password of any scheme:// url in kj_store.bare_url, applied to remote_url, to --clone-url and to the server executor's clone argument and clone directory name; leave scp-like user@host:path as it is": "BG-eaf6nttv",
+        "Cut only in kj_store.remote_url": "BG-eaf6nttv"
+      },
+      "class": "secrets",
+      "answer": "Cut the user and password of any scheme:// url in kj_store.bare_url, applied to remote_url, to --clone-url and to the server executor's clone argument and clone directory name; leave scp-like user@host:path as it is",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-432be86e",
   "operator": "op-f618a13e"
