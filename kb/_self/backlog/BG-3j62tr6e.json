@@ -17,7 +17,8 @@
     ]
   },
   "touches": [
-    "_tools/kg_hooks.py"
+    "_tools/kg_hooks.py",
+    "kb/_self/git.md"
   ],
   "links": [
     "parked: SP-mguax5m3 review"

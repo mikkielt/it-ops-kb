@@ -17,7 +17,8 @@
   },
   "touches": [
     "_tools/kbpublic.py",
-    "_tools/kg_sync.py"
+    "_tools/kg_sync.py",
+    "kb/_self/git.md"
   ],
   "links": [
     "parked: SP-n7zxspch review"

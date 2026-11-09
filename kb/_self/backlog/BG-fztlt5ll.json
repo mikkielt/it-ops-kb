@@ -16,7 +16,8 @@
     ]
   },
   "touches": [
-    "_tools/kbpublic.py"
+    "_tools/kbpublic.py",
+    "kb/_self/git.md"
   ],
   "depends_on": [
     "BG-v6h6rhfk"
