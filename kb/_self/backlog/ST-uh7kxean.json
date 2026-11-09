@@ -2,7 +2,7 @@
   "id": "ST-uh7kxean",
   "kind": "story",
   "title": "The sprint skill's plan step asks every leak-scan or redaction exemption for a check that plants a real-secret-shaped value beside it",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-moxpl354",
   "priority": "P2",
   "rank": 0,
@@ -32,6 +32,19 @@
     "parked: SP-osevumx6 close"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-a1b2c3d4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "aede941ec3d809370337b1e4cfb8d93bba302276",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,pathlib\nt=pathlib.Path('skills/sprint/SKILL.md').read_text(encoding='utf-8')\ns=t.split('## plan',1)[1].split('## start',1)[0].lower()\nmiss=[w for w in ['exemption', 'must still flag'] if w not in s]\nsys.exit('not yet: plan section lacks '+', '.join(miss) if miss else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
