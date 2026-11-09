@@ -2,7 +2,7 @@
   "id": "BG-qdsed6jk",
   "kind": "bug",
   "title": "A server executor clones any url a job names and runs that repository's tools with the placed identity",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-lwkdljxg",
   "priority": "P1",
   "rank": 0,
@@ -28,5 +28,7 @@
   "depends_on": [
     "BG-7b53bpeh"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-432be86e",
+  "operator": "op-f618a13e"
 }
