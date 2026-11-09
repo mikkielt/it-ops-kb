@@ -15,6 +15,15 @@
       "import sys; sys.path.insert(0,\"_tools\"); import bl_authority as b; c=b.class_reasons({\"touches\":[]},{\"id\":\"g1\",\"question\":\"Why does cache_read_input_tokens differ?\",\"options\":[\"one\",\"two\"]})[0]; print(\"class\",c); sys.exit(0 if c==\"design\" else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.path.insert(0,'_tools'); import bl_authority as b; c=lambda w: b.class_reasons({'touches':[]},{'id':'g1','question':'Why does '+w+' differ?','options':['one','two']})[0]; bad=[w for w in ('cache_read_input_tokens','cache_creation_input_tokens') if c(w)!='design']+[w for w in ('registration_token','vault_token','my_token') if c(w)!='secrets']; print(bad); sys.exit(1 if bad else 0)"
+      ]
+    }
+  ],
   "touches": [
     "_tools/bl_authority.py",
     "kb/_self/backlog.md",
@@ -23,6 +32,6 @@
   "links": [
     "parked: SP-w57bnhhx review"
   ],
-  "notes": "Found by the SP-w57bnhhx review on 2026-10-26 (fresh-context reviewer, probed on the tip of the main branch); not S1, so parked as a draft in no sprint.",
+  "notes": "Found by the SP-w57bnhhx review on 2026-10-26 (fresh-context reviewer, probed on the tip of the main branch); not S1, so parked as a draft in no sprint. Premise reproduces on origin/main (precheck 2026-11-09). The check reads both halves of the goal: the two usage fields design, the three credential names secrets.",
   "filed_in": "clone-0ea70e5c"
 }
