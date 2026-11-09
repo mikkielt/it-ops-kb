@@ -18,5 +18,8 @@
   "touches": [
     "_tools/bl_land.py"
   ],
+  "links": [
+    "parked: SP-yriisdti close"
+  ],
   "filed_in": "clone-0ea70e5c"
 }
