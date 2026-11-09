@@ -2,7 +2,7 @@
   "id": "BG-mwqxiqqx",
   "kind": "bug",
   "title": "backlog.py drop, move and reopen write item files with no --commit, so the main checkout stays dirty until the files are committed by hand",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-pww4aqis",
   "priority": "P3",
   "rank": 0,
@@ -42,6 +42,28 @@
   ],
   "notes": "Retro finding of the drain: the item files drop and move wrote left the main checkout dirty, which snagged land ('it has uncommitted changes') and sync until the files were committed by hand. reopen has the same gap (verified: reopen -h lists no --commit), so it is in the goal beside the two the retro named. The shared helper is commit_written (bl_items.py), which set calls with its ids; the repro plants a clone and runs move and drop with --commit. BG-gt4i6ec6 also edits bl_items.py (cmd_reopen): land one after the other. Order: same file bl_items.py as BG-g6usmwjt. Premise reproduces on origin/main (precheck 2026-11-09). The added check plants a clone and runs reopen and drop with --commit and --trailer; the repro covers move and drop.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-6b037793",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "5906b5e8b1f0917ed7fa9e1d9f044e699bffd067",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import glob, json, os, subprocess, sys, tempfile\nwith tempfile.TemporaryDirectory() as d:\n    def g(*a):\n        return subprocess.run([\"git\", \"-C\", d, *a], capture_output=True, text=True)\n    def bl(*a):\n        return subprocess.run([sys.executable, \"_tools/backlog.py\", \"--root\", d, *a], capture_output=True, text=True)\n    g(\"init\", \"-q\"); g(\"config\", \"user.email\", \"x@example.com\"); g(\"config\", \"user.name\", \"x\")\n    open(os.path.join(d, \"README\"), \"w\").write(\"x\\n\"); g(\"add\", \".\"); g(\"commit\", \"-qm\", \"init\")\n    t = \"Co-Authored-By: Planted <planted@example.com>\"\n    one = bl(\"new\", \"story\", \"--title\", \"One\", \"--goal\", \"g\", \"--commit\").stdout.split()[2]\n    two = bl(\"new\", \"story\", \"--title\", \"Two\", \"--goal\", \"g\", \"--commit\").stdout.split()[2]\n    path = glob.glob(os.path.join(d, \"**\", one + \".json\"), recursive=True)[0]\n    item = json.load(open(path)); item[\"status\"] = \"done\"; item[\"evidence\"] = {\"commit\": \"0\" * 40, \"checks\": []}\n    json.dump(item, open(path, \"w\"), indent=2); g(\"add\", \".\"); g(\"commit\", \"-qm\", \"done one\")\n    assert not g(\"status\", \"--porcelain\").stdout.strip(), \"planted clone is not clean\"\n    bad = []\n    for name, args, iid in ((\"reopen\", (\"reopen\", one, \"--why\", \"planted\"), one), (\"drop\", (\"drop\", two, \"--why\", \"planted\"), two)):\n        r = bl(*args, \"--commit\", \"--trailer\", t)\n        body = g(\"log\", \"-1\", \"--format=%B\").stdout\n        ok = r.returncode == 0 and not g(\"status\", \"--porcelain\").stdout.strip() and \"KB-Work: \" + iid in body and t in body\n        if not ok:\n            bad.append((name, r.returncode, (r.stdout + r.stderr)[-80:]))\n    print(bad)\n    sys.exit(1 if bad else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, subprocess, sys, tempfile\nwith tempfile.TemporaryDirectory() as d:\n    def g(*a):\n        return subprocess.run([\"git\", \"-C\", d, *a], capture_output=True, text=True)\n    def bl(*a):\n        return subprocess.run([sys.executable, \"_tools/backlog.py\", \"--root\", d, *a], capture_output=True, text=True)\n    g(\"init\", \"-q\"); g(\"config\", \"user.email\", \"x@example.com\"); g(\"config\", \"user.name\", \"x\")\n    open(os.path.join(d, \"README\"), \"w\").write(\"x\\n\"); g(\"add\", \".\"); g(\"commit\", \"-qm\", \"init\")\n    sp = bl(\"new\", \"sprint\", \"--title\", \"S\", \"--goal\", \"g\", \"--commit\").stdout.split()[2]\n    one = bl(\"new\", \"story\", \"--title\", \"One\", \"--goal\", \"g\", \"--sprint\", sp, \"--commit\").stdout.split()[2]\n    two = bl(\"new\", \"story\", \"--title\", \"Two\", \"--goal\", \"g\", \"--commit\").stdout.split()[2]\n    assert not g(\"status\", \"--porcelain\").stdout.strip(), \"the planted clone is not clean before the commands\"\n    moved = bl(\"move\", one, \"--sprint\", \"none\", \"--commit\")\n    assert moved.returncode == 0 and not g(\"status\", \"--porcelain\").stdout.strip(), (\"move --commit\", moved.returncode, (moved.stdout + moved.stderr)[-160:])\n    dropped = bl(\"drop\", two, \"--why\", \"planted\", \"--commit\")\n    assert dropped.returncode == 0 and not g(\"status\", \"--porcelain\").stdout.strip(), (\"drop --commit\", dropped.returncode, (dropped.stdout + dropped.stderr)[-160:])\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
