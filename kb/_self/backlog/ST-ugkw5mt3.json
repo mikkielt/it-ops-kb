@@ -106,6 +106,26 @@
         "skip it (KB_GATE_DONE=1): the guards for upstream, public home and lanes still run, and land gates the branch later": "ST-ugkw5mt3",
         "run the sync gate on every work-branch push": "ST-ugkw5mt3"
       },
+      "class": "push",
+      "answer": "skip it (KB_GATE_DONE=1): the guards for upstream, public home and lanes still run, and land gates the branch later",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    },
+    {
+      "id": "scope",
+      "kind": "blocking",
+      "question": "When does the stage-back push run and the land delete run?",
+      "options": [
+        "stage-back pushes after a commit or after finding nothing to copy, never with --check; land deletes the remote branch whenever it exists once the item landed",
+        "push only after a commit; delete only when this clone pushed it"
+      ],
+      "recommendation": "stage-back pushes after a commit or after finding nothing to copy, never with --check; land deletes the remote branch whenever it exists once the item landed",
+      "do": {
+        "stage-back pushes after a commit or after finding nothing to copy, never with --check; land deletes the remote branch whenever it exists once the item landed": "ST-ugkw5mt3",
+        "push only after a commit; delete only when this clone pushed it": "ST-ugkw5mt3"
+      },
       "class": "push"
     }
   ],
