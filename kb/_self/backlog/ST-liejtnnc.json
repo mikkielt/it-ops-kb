@@ -2,7 +2,7 @@
   "id": "ST-liejtnnc",
   "kind": "story",
   "title": "kbjob.py opa-config --print prints the OPA configuration and service unit that pull both bundles from coord, and writes nothing",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-p4guu2ip",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",
@@ -66,6 +66,19 @@
   ],
   "notes": "Research 2026-11-08: OPA bundle manifest roots, resource default bundles/<name>, Etag/304, bearer token_path, ${NAME} substitution only under opa run and only for defined variables, persistence_directory default $PWD/.opa, and test discovery by the test_ prefix are in kb public/agents/policy-as-code.md (QK-operations-placement-stories-need-opa-bundles).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-61c966d6",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "552cdcced05802ca1aa3d5fd6721dd3d454744b7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,tempfile,subprocess\nd=tempfile.mkdtemp(); h=os.path.join(d,\"home\"); os.mkdir(h); tf=os.path.join(d,\"tok\"); open(tf,\"w\").write(\"tok-placeholder\"); os.chmod(tf,0o600)\nr=subprocess.run([sys.executable,\"_tools/kbjob.py\",\"opa-config\",\"--print\",\"--url\",\"https://kb.corp.example.com\",\"--token-file\",tf,\"--key-env\",\"KB_BUNDLE_KEY\"],capture_output=True,text=True,timeout=60,env=dict(os.environ,HOME=h,KB_BUNDLE_KEY=\"bundle-key-placeholder\"))\no=r.stdout\nassert r.returncode==0 and \"kbjobs-overrides\" in o and \"persist: true\" in o and \"${KB_BUNDLE_KEY}\" in o and \"opa run --server\" in o, o\nassert \"tok-placeholder\" not in o and \"bundle-key-placeholder\" not in o and os.listdir(h)==[], o\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
