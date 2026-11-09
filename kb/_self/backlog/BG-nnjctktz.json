@@ -16,7 +16,9 @@
     ]
   },
   "touches": [
-    "_tools/mon_needs.py"
+    "_tools/mon_needs.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
   ],
   "links": [
     "parked: SP-osevumx6 review"
