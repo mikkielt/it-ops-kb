@@ -2,7 +2,7 @@
   "id": "BG-nglu4rg4",
   "kind": "bug",
   "title": "done's ledger check does not see a hyphen-prefixed source id such as S-5kvx24wm joined to more text",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-yriisdti",
   "priority": "P3",
   "rank": 0,
@@ -27,5 +27,7 @@
     "parked: SP-swavez3g review"
   ],
   "notes": "Found by the SP-swavez3g review (S3) of BG-r7c7dxia: splitting at every hyphen yields S, 5kvx24wm and related but never the whole id; most ledger ids are of this S-<8 hex> form. The other gate option, matching source-id shapes inside tokens, would have covered them.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev2run01",
+  "operator": "op-f618a13e"
 }
