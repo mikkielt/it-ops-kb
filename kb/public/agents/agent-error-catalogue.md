@@ -22,16 +22,21 @@ keeping a project's `CLAUDE.md`, skills and MCP tool definitions inside document
 - `429 rate_limit_error`: fires on an organization rate limit, a usage tier's monthly spend cap, or a spend limit on
   the Claude Code workspace; a tier spend-cap 429 has **no** `retry-after` header and keeps failing until access
   resumes — a caller must not treat a bare 429 as always transient/retryable. [DOC S1847]
+- `400 invalid_request_error`: also used for other 4XX status codes not listed on the page, and the API returns a 400
+  when usage reaches an organization or workspace spend limit you set, except limits on the Claude Code workspace,
+  which can return a 429 instead. [DOC S1847]
 - `529 overloaded_error`: "The API is temporarily overloaded"; can also surface as 429s if an organization's own
   traffic spikes sharply enough to hit acceleration limits — the documented mitigation is to ramp traffic up
-  gradually rather than retry harder. [DOC S1847]
-- Official SDKs retry transient failures (connection errors, rate limits, 5xx) with exponential backoff, twice by
-  default, honoring `retry-after` when present; retry count is configurable via `max_retries`. [DOC S1847]
+  gradually rather than retry harder. (valid 2026-10-21..2026-11-09) [DOC S1847]
+- `529 overloaded_error`: "The API is temporarily overloaded"; the page no longer names acceleration limits or says to ramp traffic up gradually, and the official SDK's automatic retry (exponential backoff, twice by default) covers 529 among transient failures. (valid 2026-11-09..) [DOC S1847]
+- The official SDK retries transient failures (connection errors, rate limits, 5xx) with exponential backoff, twice by
+  default, honoring `retry-after` when present; the SDK client's `max_retries` configures or disables this. [DOC S1847]
 - `413 request_too_large`: request exceeds a per-endpoint byte maximum (Messages API 32 MB, Token Counting API 32 MB,
-  Batch API 256 MB, Files API 500 MB); on the direct API, Cloudflare returns this before the request reaches
+  Batch API 256 MB, Files API 500 MB); on the first-party API, Cloudflare returns this before the request reaches
   Anthropic's servers. [DOC S1847]
-- `504 timeout_error`: "The request timed out while processing"; documented mitigation is the streaming Messages API
-  for long-running requests, and the SDKs validate that non-streaming requests are not expected to exceed a 10-minute
+- `504 timeout_error`: "The request timed out while processing"; the API also returns `timeout_error` with other
+  status codes, such as a 500 when a request reaches the server's time limit before the response starts (the 500
+  entry points to the 504 one); documented mitigation is the streaming Messages API for long-running requests, and the SDK validates that non-streaming requests are not expected to exceed a 10-minute
   timeout. [DOC S1847]
 - An orphaned `tool_result` (its `tool_use_id` has no matching `tool_use` block in the previous message) is rejected
   with a 400 `invalid_request_error` ("unexpected `tool_use_id` found in `tool_result` blocks"). The Claude Code

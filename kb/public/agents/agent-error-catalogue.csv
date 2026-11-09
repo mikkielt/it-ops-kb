@@ -8,8 +8,8 @@ Claude API,409 conflict_error,concurrent modification or uniqueness violation,re
 Claude API,413 request_too_large,request exceeds per-endpoint byte max (32MB Messages/Token Counting; 256MB Batch; 500MB Files),split or reduce payload before sending,S1847
 Claude API,429 rate_limit_error,org rate limit / monthly spend cap / Claude Code workspace spend limit,backoff honoring retry-after; treat spend-cap 429 (no retry-after) as non-retryable,S1847
 Claude API,500 api_error,internal Anthropic error,retry with exponential backoff; contact support with request_id if persistent,S1847
-Claude API,504 timeout_error,request timed out while processing,use streaming Messages API for long-running requests,S1847
-Claude API,529 overloaded_error,API temporarily overloaded across all users,retry with backoff; ramp own traffic gradually to avoid acceleration-limit 429s,S1847
+Claude API,504 timeout_error,request timed out while processing,use streaming Messages API for long-running requests; can also arrive with another status such as 500 when the server time limit is hit before the response starts,S1847
+Claude API,529 overloaded_error,API temporarily overloaded across all users,retry with backoff (the official SDK retries it automatically),S1847
 Claude API / Claude Code,tool_result without matching tool_use (400 invalid_request_error: unexpected tool_use_id found in tool_result blocks),message history reconstructed without one half of a tool_use/tool_result pair (reported after an interrupted session was resumed),avoid manually editing assistant/tool message history; start a fresh session if a resumed one keeps failing,S1858
 Claude API,tool name exceeds 128 character limit,MCP tool name (mcp__server__tool) too long,keep server and tool names short; shorten the mcp__<server>__<tool> spelling,S1857
 "MCP client (general, per Anthropic context-engineering guidance)",degraded tool selection with a bloated tool set,tools that cover too much functionality or leave ambiguous decision points about which tool to use,curate a minimal viable tool set with minimal overlap; each tool self-contained and clear about its intended use,S1855
