@@ -2581,21 +2581,35 @@ def window_start(unit, on):
 def rekey(path, old, new, root_file, also=None):
     """Move the rows of `path` (a CSV with a `key` column, or the anchors' `fact` column) from key `old` to key `new`;
     the number of rows moved. `also` is (column, old value, new value): a moved row that holds the old value there
-    gets the new one (a re-pointed source's id in an anchor row)."""
+    gets the new one (a re-pointed source's id in an anchor row). A moved row that then repeats a row already under the
+    new key (the same `path` and `also` column values, the anchors' one row per fact, path and source) is dropped, still
+    counted as moved: a fact that cited the old and the new id keeps one row for the new id."""
     if not os.path.exists(path):
         return 0
     with open(path, encoding="utf-8", newline="") as f:
         rows = list(csv.reader(f))
     col = rows[0].index(root_file)
     other = rows[0].index(also[0]) if also else None
-    n = 0
-    for r in rows[1:]:
+    ident = [i for i in (col, other, rows[0].index("path") if "path" in rows[0] else None) if i is not None] \
+        if also else list(range(len(rows[0])))  # no `also`: a row repeats another only when every column does
+    n, moved, drop = 0, set(), set()
+    for i, r in enumerate(rows[1:], 1):
         if r and r[col] == old:
             r[col] = new
             if also and r[other] == also[1]:
                 r[other] = also[2]
             n += 1
+            moved.add(i)
+    seen = set()
+    for i, r in enumerate(rows[1:], 1):  # a moved row after its twin is the one dropped; an earlier moved twin keeps its place
+        if not r:
+            continue
+        key = tuple(r[j] for j in ident)
+        if key in seen and i in moved:
+            drop.add(i)
+        seen.add(key)
     if n:
+        rows = [r for i, r in enumerate(rows) if i not in drop]
         with open(path, "w", encoding="utf-8", newline="") as f:
             f.write(kbcommon.rows_text(rows))
     return n
