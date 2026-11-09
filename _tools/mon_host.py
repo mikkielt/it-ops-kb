@@ -197,13 +197,18 @@ def ceiling(root):
 
 
 def disk(root):
-    """{free_bytes, total_bytes, free_pct} of the file system that holds ROOT (`free_pct` rounded to one decimal), or
-    `{"error": ...}` where `shutil.disk_usage` refuses it."""
+    """{free_bytes, total_bytes, free_pct} of the file system that holds ROOT (`free_pct` rounded to two decimals, cut
+    down to 9.99 where a share under LOW_DISK_PCT would round up to it), or `{"error": ...}` where `shutil.disk_usage`
+    refuses it."""
     try:
         u = shutil.disk_usage(root)
     except OSError as e:
         return {"error": " ".join(str(e).split())[:mon_base.ERROR_CHARS]}
-    return {"free_bytes": u.free, "total_bytes": u.total, "free_pct": round(u.free * 100 / u.total, 1) if u.total else 0.0}
+    pct = u.free * 100 / u.total if u.total else 0.0
+    shown = round(pct, 2)
+    if pct < LOW_DISK_PCT <= shown:  # a share just under the threshold must not round up to it
+        shown = int(pct * 100) / 100
+    return {"free_bytes": u.free, "total_bytes": u.total, "free_pct": shown}
 
 
 def alerts(data):
