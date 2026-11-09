@@ -4,23 +4,36 @@
   "title": "rag.py audit lists the open _gaps.md entries whose question the kb's own pack already answers",
   "status": "draft",
   "parent": "EP-jqjlwiar",
+  "sprint": "SP-2cq2hse4",
   "priority": "P2",
   "rank": 0,
-  "goal": "rag.py audit --stale-gaps runs the pack for each open gap entry's question and lists the entries whose pack is good with a cited line in another article than the gap's notes, so a gap sweep closes stale entries without a model; found 2026-11-09 when 9 of 15 gaps a research run chose were already answered (commit b7e486fe8)",
+  "goal": "rag.py audit --stale-gaps runs the pack for each open gap entry's question and lists the entries whose pack is good with a cited DOC, CODE or DER line in another article than the gap's own topic while skipping an entry whose lines are UNK lines or lines of the gap's own article that say the fact is not stated, so a gap sweep closes stale entries without a model",
   "checks": [
     {
       "run": [
         "python3",
-        "_tools/rag.py",
-        "audit",
-        "--stale-gaps"
+        "-c",
+        "import os, subprocess, sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport kbid, kbroot\nt = tempfile.mkdtemp()\nd = os.path.join(t, \"zq\")\nurl_a, url_b = \"https://example.org/docs/limits\", \"https://example.org/docs/audit\"\nsa, sb = kbid.source_id(url_a, \"ZQ\"), kbid.source_id(url_b, \"ZQ\")\ndef art(topic, sid, facts):\n    return \"\\n\".join([\"---\", \"topic: \" + topic, \"priority: P1\", \"applies_to: gizmo service\", \"retrieved_utc: 2026-01-01\", \"sources: [\" + sid + \"]\", \"status: complete\", \"---\", \"\",\n                      \"# \" + topic, \"\", \"## Summary\", \"- \" + facts[0], \"\", \"## Facts\"] + [\"- \" + f for f in facts] + [\"\"])\nfiles = {\"_root.md\": kbroot.root_md(\"zq\", \"ZQ\", \"internal\", \"planted\"), **{k: v.format(name=\"zq\") for k, v in kbroot.FILES.items()}}\nfiles[\"net/limits.md\"] = art(\"net/limits\", sa, [\"The limit on gizmos a tenant of the gizmo service can register is 20 per tenant. [DOC %s]\" % sa, \"A tenant that needs more than the limit of gizmos asks the gizmo service support to raise the limit. [DOC %s]\" % sa, \"The gizmo service counts a gizmo against the limit of its tenant when the gizmo is registered. [DOC %s]\" % sa])\nfiles[\"net/audit.md\"] = art(\"net/audit\", sb, [\"The retention period of the gizmo audit log is not stated on the page. [UNK %s]\" % sb])\nfiles[\"_sources.csv\"] += f\"{sa},{url_a},Limits,Example Org,CC BY 4.0,quote,2026-01-01,,,net/limits.md,\\n{sb},{url_b},Audit,Example Org,CC BY 4.0,quote,2026-01-01,,,net/audit.md,\\n\"\nfiles[\"_gaps.md\"] += (\"\\n## net-gizmo\\n\\n\"\n    \"- **What is the limit on gizmos a tenant of the gizmo service can register?** Not found in the first search.\\n  - Tried 2026-02-01: the overview page (topic: net/audit)\\n\"\n    \"- **What is the retention period of the gizmo audit log?** Not found in the first search.\\n  - Tried 2026-02-01: the audit page (topic: net/audit)\\n\"\n    \"- **Which colour theme does the zorblax dashboard use?** Not found.\\n  - Tried 2026-02-01: the overview page (topic: net/audit)\\n\")\nfor i in range(14):\n    fs = [\"Filler topic %d states that thing%d number %d relates to subject%d. [DOC %s]\" % (i, i, j, i, sa) for j in range(3)]\n    files[\"net/filler%d.md\" % i] = art(\"net/filler%d\" % i, sa, fs)\nfor rel, text in files.items():\n    os.makedirs(os.path.dirname(os.path.join(d, rel)) or d, exist_ok=True)\n    open(os.path.join(d, rel), \"w\", newline=\"\").write(text)\nenv = dict(os.environ, KB_ROOTS=d)\nsubprocess.run([sys.executable, \"_tools/build_index.py\", \"--root\", \"zq\"], env=env, capture_output=True)\nif len(sys.argv) > 1:\n    for q in (\"What is the limit on gizmos a tenant of the gizmo service can register?\", \"What is the retention period of the gizmo audit log?\", \"Which colour theme does the zorblax dashboard use?\"):\n        print(subprocess.run([sys.executable, \"_tools/rag.py\", \"pack\", \"--root\", \"zq\", q], env=env, capture_output=True, text=True).stdout[:600], \"\\n----\")\n    sys.exit(0)\nr = subprocess.run([sys.executable, \"_tools/rag.py\", \"audit\", \"--root\", \"zq\", \"--stale-gaps\"], env=env, capture_output=True, text=True)\nout = r.stdout\nprint(r.returncode, out[-400:], r.stderr[-200:])\nok = \"limit on gizmos\" in out and \"retention period\" not in out and \"zorblax\" not in out\nsys.exit(0 if r.returncode in (0, 1) and ok else 1)\n"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "rag.py audit --stale-gaps runs the pack for each open gap entry's question and lists the entries whose pack is good with a cited DOC, CODE or DER line in another article than the gap's own topic while skipping an entry whose lines are UNK lines or lines of the gap's own article that say the fact is not stated, so a gap sweep closes stale entries without a model",
+      "check": 0
     }
   ],
   "touches": [
     "_tools/rag.py",
-    "kb/_self/tools.md"
+    "_tools/kbfacts.py",
+    "kb/_self/tools.md",
+    "kb/_self/token-efficiency.md",
+    "AGENTS.md",
+    "kb/_self/content-rules.md"
   ],
-  "notes": "2026-11-09 gaps2 sweep: 60/60 open gaps packed good on the kb's own UNK not-stated lines and none was closable from the pack; the audit must skip UNK lines and lines inside the gap's own article that say not stated (see the false-good bug filed the same day).",
+  "depends_on": [
+    "BG-vdggaufg"
+  ],
+  "notes": "2026-11-09 gaps2 sweep: 60/60 open gaps packed good on the kb's own UNK not-stated lines and none was closable from the pack; the audit must skip UNK lines and lines inside the gap's own article that say not stated (see the false-good bug filed the same day). Found 2026-11-09 when 9 of 15 gaps a research run chose were already answered (commit b7e486fe8). The check plants a root with a gap answered in another article, a gap whose pack is good on the article's own UNK not-stated line (the false good of BG-vdggaufg) and an unanswered gap; the planted pack needs filler articles to reach coverage good.",
   "filed_in": "clone-0ea70e5c"
 }

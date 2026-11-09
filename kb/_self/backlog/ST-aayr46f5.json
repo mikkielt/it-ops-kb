@@ -1,25 +1,36 @@
 {
   "id": "ST-aayr46f5",
   "kind": "story",
-  "title": "A source a refresh read by hand is dated through one factdiff command, not a scratch census log",
+  "title": "A source a refresh read by hand is dated through one census.py read command, not a scratch census log",
   "status": "draft",
   "parent": "EP-mkzkd7in",
+  "sprint": "SP-2cq2hse4",
   "priority": "P3",
   "rank": 0,
-  "goal": "factdiff.py (or census.py) takes a source id and the fact lines a person or agent read on its current page and dates the source as confirmed, writing the same log row a census writes; found 2026-11-09 when a refresh run had to write a scratch census log and run census.py confirm to date 8 sources it had read by hand",
+  "goal": "census.py read ID... --note TEXT --date D dates each named source a person or agent read on its current page as confirmed: it writes the census log row a census writes (outcome confirmed, the note as outcome_note) and runs the confirm step on it, so the source row, the citing articles and the fetch state are dated as census.py confirm dates them, with no scratch census log",
   "checks": [
     {
       "run": [
         "python3",
-        "_tools/factdiff.py",
-        "confirm",
-        "-h"
+        "-c",
+        "import csv, io, os, subprocess, sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport kbid, kbroot, kbcommon\nt = tempfile.mkdtemp()\nd = os.path.join(t, \"zq\")\nurl = \"https://example.org/docs/page\"\nsid = kbid.source_id(url, \"ZQ\")\nart = [\"---\", \"topic: win/a\", \"priority: P1\", \"applies_to: x\", \"retrieved_utc: 2026-01-01\", \"sources: [\" + sid + \"]\", \"status: complete\", \"---\", \"\", \"# A\", \"\",\n       \"## Summary\", \"- Summary line one. [DOC \" + sid + \"]\", \"\", \"## Facts\", \"- The setting is on by default. [DOC \" + sid + \"]\", \"\"]\nfiles = {\"_root.md\": kbroot.root_md(\"zq\", \"ZQ\", \"internal\", \"planted\"), **{k: v.format(name=\"zq\") for k, v in kbroot.FILES.items()}, \"win/a.md\": \"\\n\".join(art)}\nfiles[\"_sources.csv\"] += sid + \",\" + url + \",Page,Example Org,CC BY 4.0,quote,2026-01-01,ms.date 2026-01-01,,win/a.md,\\n\"\ncols = kbcommon.STATE_COLS\nfiles[\"_fetch_state.csv\"] = \",\".join(cols) + \"\\n\" + \",\".join({\"id\": sid, \"url\": url, \"etag\": \"W/planted\", \"detected_utc\": \"2026-01-01T00:00:00Z\"}.get(c, \"\") for c in cols) + \"\\n\"\nfor rel, text in files.items():\n    os.makedirs(os.path.dirname(os.path.join(d, rel)) or d, exist_ok=True)\n    open(os.path.join(d, rel), \"w\", newline=\"\").write(text)\nenv = dict(os.environ, KB_ROOTS=d)\nr = subprocess.run([sys.executable, \"_tools/census.py\", \"--root\", \"zq\", \"read\", sid, \"--note\", \"read the page, the one fact holds\", \"--date\", \"2026-06-01\"],\n                   env=env, capture_output=True, text=True, timeout=60)\nrows = {x[\"id\"]: x for x in csv.DictReader(io.StringIO(open(os.path.join(d, \"_sources.csv\"), newline=\"\").read()))}\nrow = rows[sid]\nlogs = [os.path.join(d, \"_census\", n) for n in os.listdir(os.path.join(d, \"_census\"))] if os.path.isdir(os.path.join(d, \"_census\")) else []\nlogged = [x for p in logs for x in csv.DictReader(open(p, newline=\"\")) if x.get(\"id\") == sid and x.get(\"outcome\") == \"confirmed\" and \"the one fact holds\" in x.get(\"outcome_note\", \"\")]\nbad = []\nif row[\"retrieved_utc\"] != \"2026-06-01\" or \"confirmed 2026-06-01: read the page\" not in row[\"version_or_date\"]:\n    bad.append(\"source row not dated as confirmed\")\nif \"retrieved_utc: 2026-06-01\" not in open(os.path.join(d, \"win/a.md\")).read():\n    bad.append(\"article not re-dated\")\nif not logged:\n    bad.append(\"no census log row\")\nprint(\"read exit\", r.returncode, r.stderr[-150:], bad)\nsys.exit(1 if r.returncode or bad else 0)\n"
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "census.py read ID... --note TEXT --date D dates each named source a person or agent read on its current page as confirmed: it writes the census log row a census writes (outcome confirmed, the note as outcome_note) and runs the confirm step on it, so the source row, the citing articles and the fetch state are dated as census.py confirm dates them, with no scratch census log",
+      "check": 0
+    }
+  ],
   "touches": [
-    "_tools/factdiff.py",
+    "_tools/census.py",
+    "kb/_self/tools.md",
     "kb/_self/web-sources.md"
   ],
+  "depends_on": [
+    "BG-ivir5ulw"
+  ],
+  "notes": "Found 2026-11-09 when a refresh run had to write a scratch census log and run census.py confirm to date 8 sources it had read by hand. Premise: the planted-root check exits 1 on 55dde769f (census.py has no read subcommand). Lives in census.py (factdiff.py cannot import census); the log goes to _census/ of the root.",
   "filed_in": "clone-0ea70e5c"
 }

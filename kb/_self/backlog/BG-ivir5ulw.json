@@ -4,6 +4,7 @@
   "title": "census.py's LEARN_MAP win32 entry looks up a lower-case path that the mixed-case win32 repository does not hold, so its pages still go to Learn",
   "status": "draft",
   "parent": "EP-mkzkd7in",
+  "sprint": "SP-2cq2hse4",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -15,10 +16,20 @@
       "import os, subprocess, sys, tempfile\nsys.path.insert(0, '_tools')\nimport census\nt = tempfile.mkdtemp()\nw = os.path.join(t, 'w')\nos.makedirs(os.path.join(w, 'desktop-src', 'ADSI'))\nopen(os.path.join(w, 'desktop-src', 'ADSI', 'binding-with-encryption.md'), 'w').write('x\\n')\nfor a in (['init', '-q'], ['add', '.'], ['-c', 'user.name=a', '-c', 'user.email=a@corp.example.com', 'commit', '-qm', 'x']):\n    subprocess.run(['git', '-C', w] + a, check=True)\nrepo, path = census.learn_source('https://learn.microsoft.com/en-us/windows/win32/adsi/binding-with-encryption')\nv = census.check_learn(w, path, '2026-01-01')\nprint(repo, path, v)\nsys.exit(0 if v else 1)\n"
     ]
   },
+  "clauses": [
+    {
+      "clause": "check_learn finds a windows/win32/ page's file in MicrosoftDocs/win32 when the repository directory differs from the Learn path only in letter case (desktop-src/ADSI for adsi), so detect decides it by git history",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/census.py",
     "kb/_self/web-sources.md",
-    "kb/_self/reports/fact-diff.md"
+    "kb/_self/reports/fact-diff.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-imuczrcz"
   ],
   "links": [
     "parked: SP-gavrmuvx review"

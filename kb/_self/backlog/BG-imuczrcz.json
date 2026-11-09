@@ -4,6 +4,7 @@
   "title": "LEARN_MAP sends intune/ and windows/ pages to repositories that answer 404, so each run makes a failed clone",
   "status": "draft",
   "parent": "EP-mkzkd7in",
+  "sprint": "SP-2cq2hse4",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -15,10 +16,33 @@
       "import sys\nsys.path.insert(0, '_tools')\nimport census\ndead = ('MicrosoftDocs/memdocs', 'MicrosoftDocs/windows-itpro-docs')\nurls = ['https://learn.microsoft.com/en-us/intune/intune-service/fundamentals/what-is-intune',\n        'https://learn.microsoft.com/en-us/windows/client-management/mdm/policy-csp-update']\nhit = [(u, census.learn_source(u)[0]) for u in urls if census.learn_source(u)[0].endswith(dead)]\nprint('pages mapped to a repository that answers 404:', hit)\nsys.exit(1 if hit else 0)\n"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, \"_tools\")\nr = open(\"kb/_self/web-sources.md\", encoding=\"utf-8\").read()\nt = open(\"kb/_self/tools.md\", encoding=\"utf-8\").read()\nbad = []\nif \"intune/\" not in r:\n    bad.append(\"web-sources.md does not name the intune/ prefix as mapped to no repository\")\nif \"answers 404 included\" in t:\n    bad.append(\"tools.md still says LEARN_MAP names a repository that answers 404\")\nprint(bad)\nsys.exit(1 if bad else 0)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "LEARN_MAP maps only prefixes whose repository answers: intune/ and the windows/ fallback map to no repository, so their pages go to Learn without a clone attempt",
+      "check": 1
+    },
+    {
+      "clause": "web-sources.md says so",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/census.py",
     "kb/_self/web-sources.md",
+    "kb/_self/tools.md",
     "kb/_self/reports/fact-diff.md"
+  ],
+  "depends_on": [
+    "BG-47pkwj3t"
   ],
   "links": [
     "parked: SP-gavrmuvx review"

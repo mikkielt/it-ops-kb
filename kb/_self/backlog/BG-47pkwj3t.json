@@ -4,17 +4,37 @@
   "title": "census.py apply and factdiff.py apply write the same census.phase token, so the query log report cannot tell the phase-2 outcomes from factdiff's apply",
   "status": "draft",
   "parent": "EP-mkzkd7in",
+  "sprint": "SP-2cq2hse4",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "census.py apply records its census.phase row under a phase token factdiff.py does not write, and querylog.md and tools.md name it",
+  "goal": "census.py apply records its census.phase row under the phase token census-apply, which factdiff.py's apply does not write, and querylog.md and tools.md name it",
   "repro": {
     "run": [
       "python3",
       "-c",
-      "import sys\nsys.path.insert(0, '_tools')\nimport census, factdiff\nboth = sorted(set(census.PHASES) & set(factdiff.PHASES))\nprint('phase tokens census.py and factdiff.py both write:', both)\nsys.exit(1 if both else 0)\n"
+      "import os, runpy, subprocess, sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport ql_capture\nseen = []\ndef fake(phase, run, date):\n    seen.append(phase)\n    return 0\nql_capture.census_phase = fake\nt = tempfile.mkdtemp()\nlog = os.path.join(t, \"2026-01-01.csv\")\nopen(log, \"w\").write(\"id\\n\")\nres = os.path.join(t, \"r.json\")\nopen(res, \"w\").write(\"{}\")\ndef phase(script, argv):\n    seen.clear()\n    sys.argv = [script] + argv\n    try:\n        runpy.run_path(os.path.join(\"_tools\", script), run_name=\"__main__\")\n    except SystemExit:\n        pass\n    return seen[0] if seen else None\nc = phase(\"census.py\", [\"apply\", log, \"--group\", \"g\", \"--from\", res])\nf = phase(\"factdiff.py\", [\"apply\", log])\nprint(\"census.py apply writes\", c, \"; factdiff.py apply writes\", f)\nsys.exit(0 if c and f and c != f else 1)\n"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, \"_tools\")\nimport ql_capture\nt = \"census-apply\"\ndocs = [p for p in (\"kb/_self/querylog.md\", \"kb/_self/tools.md\") if t not in open(p, encoding=\"utf-8\").read()]\nprint(\"token valid:\", bool(ql_capture.OPS_TOKEN.fullmatch(t)), \"; docs not naming\", t + \":\", docs)\nsys.exit(1 if docs or not ql_capture.OPS_TOKEN.fullmatch(t) else 0)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "census.py apply records its census.phase row under the phase token census-apply, which factdiff.py's apply does not write",
+      "check": 1
+    },
+    {
+      "clause": "querylog.md and tools.md name it",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/census.py",
     "kb/_self/querylog.md",

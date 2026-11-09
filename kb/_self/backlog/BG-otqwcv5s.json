@@ -4,6 +4,7 @@
   "title": "A batch judge call retried after a reply that matched no item counts as one call in the census.phase row",
   "status": "draft",
   "parent": "EP-mkzkd7in",
+  "sprint": "SP-2cq2hse4",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -15,9 +16,20 @@
       "import collections, sys\nsys.path.insert(0, '_tools')\nimport factdiff as f\nitems = [{'fact': 'The setting is on by default. [DOC S1]', 'old': 'The setting is on by default.', 'new': 'The setting is on by default.'}]\nseen = []\ndef call(prompt, model, cap):\n    seen.append(1)\n    v = [] if len(seen) == 1 else [{'n': 1, 'verdict': 'supported', 'sentence': 'The setting is on by default.'}]\n    return {'verdicts': v, 'cost_usd': 0.01, 'usage': {}, 'error': ''}\nverdicts, calls = f.judge_items(items, size=5, jobs=1, cap_usd=0.1, call=call)\ntally = collections.Counter()\nf.judge_tally(tally, verdicts, calls)\nprint('model calls made', len(seen), 'calls tallied', tally['calls'])\nsys.exit(0 if tally['calls'] == len(seen) else 1)\n"
     ]
   },
+  "clauses": [
+    {
+      "clause": "judge_tally counts each model call a batch made, the retry included, so the census.phase row's calls match the calls billed",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/factdiff.py",
-    "kb/_self/web-sources.md"
+    "kb/_self/web-sources.md",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md"
+  ],
+  "depends_on": [
+    "BG-gt4egejo"
   ],
   "links": [
     "parked: SP-gavrmuvx review"
