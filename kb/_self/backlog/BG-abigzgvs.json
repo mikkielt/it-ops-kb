@@ -15,5 +15,8 @@
     ]
   },
   "repro_reason": "the wrong behaviour needs a mirrored job and a central cancel; the repro reads the workaround the fix removes",
+  "links": [
+    "parked: SP-lwkdljxg review"
+  ],
   "filed_in": "clone-0ea70e5c"
 }
