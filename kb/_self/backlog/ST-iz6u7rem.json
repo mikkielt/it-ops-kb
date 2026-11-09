@@ -2,7 +2,7 @@
   "id": "ST-iz6u7rem",
   "kind": "story",
   "title": "A central executor keeps its own query-log spool and the follower writes its row too, and the job is counted once",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-p4guu2ip",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",
@@ -44,5 +44,7 @@
     "ST-nfsozwhe"
   ],
   "notes": "Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: a CI job writes none",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-61c966d6",
+  "operator": "op-f618a13e"
 }
