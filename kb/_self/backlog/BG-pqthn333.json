@@ -12,7 +12,7 @@
     "run": [
       "python3",
       "-c",
-      "import sys;sys.path.insert(0,'_tools');import redact;s='-'.join(['396fb440','d928','4c33','9f3a','b375f1a2bc1d']);o=redact.redact('address me as '+s);print(o);sys.exit(0 if s in o else 1)"
+      "import subprocess as s,sys,tempfile as t,os;st=os.path.join(t.mkdtemp(),'coord.db');sid='-'.join(['396fb440','d928','4c33','9f3a','b375f1a2bc1d']);s.run([sys.executable,'_tools/coord.py','--store',st,'claim','session/'+sid,'--ttl','600'],check=True,capture_output=True);r=s.run([sys.executable,'_tools/kbask.py','ask','--store',st,'any','address me as '+sid],capture_output=True,text=True);v=s.run([sys.executable,'_tools/coord.py','--store',st,'get','ask/'+__import__('json').loads(r.stdout)['id']],capture_output=True,text=True).stdout;print(v);sys.exit(0 if sid in v else 1)"
     ]
   },
   "checks": [
@@ -40,6 +40,46 @@
   ],
   "depends_on": [
     "BG-jtnkjxsc"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does kbask decide a GUID in ask text names a live session, and for which texts?",
+      "options": [
+        "Look up each GUID of an ask or answer text (at most 8) as the lease session/ID with coord get; redact.redact takes the live ones as keep",
+        "Pass every GUID of an ask text through unchanged"
+      ],
+      "recommendation": "Look up each GUID of an ask or answer text (at most 8) as the lease session/ID with coord get; redact.redact takes the live ones as keep",
+      "do": {
+        "Look up each GUID of an ask or answer text (at most 8) as the lease session/ID with coord get; redact.redact takes the live ones as keep": "BG-pqthn333",
+        "Pass every GUID of an ask text through unchanged": "BG-pqthn333"
+      },
+      "class": "querylog",
+      "answer": "Look up each GUID of an ask or answer text (at most 8) as the lease session/ID with coord get; redact.redact takes the live ones as keep",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "The item's repro calls plain redact.redact with no store and expects a UUID kept, which cannot hold beside the goal (only a live session lease keeps one): which repro stands?",
+      "options": [
+        "Replace the repro by the first half of check 0 (a store with a planted lease, then kbask ask)",
+        "Keep every UUID that follows the words 'address me as'"
+      ],
+      "recommendation": "Replace the repro by the first half of check 0 (a store with a planted lease, then kbask ask)",
+      "do": {
+        "Replace the repro by the first half of check 0 (a store with a planted lease, then kbask ask)": "BG-pqthn333",
+        "Keep every UUID that follows the words 'address me as'": "BG-pqthn333"
+      },
+      "class": "querylog",
+      "answer": "Replace the repro by the first half of check 0 (a store with a planted lease, then kbask ask)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
   ],
   "links": [
     "parked: SP-3trnelzv work"

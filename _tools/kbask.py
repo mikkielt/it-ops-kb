@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """kbask: ask and answer through coord, and run one capped read-only observer session per alert (stdlib only). Docs: kb/_self/monitoring.md.
 
-  kbask.py ask TARGET QUESTION          put QUESTION, after redact.redact, as the coord value ask/ID and post an `ask`
+  kbask.py ask TARGET QUESTION          put QUESTION, after redact.redact (a GUID that names a live session/<id> lease of the
+                                        store stays), as the coord value ask/ID and post an `ask`
                                         event naming TARGET (a session, item or agent id, or `any`) and that key; prints
                                         the new ID and the key as JSON. A TARGET that is a session id whose process has
                                         ended (`bl_peers.reach`) is refused, exit 1, naming the live session that works on
@@ -132,6 +133,7 @@ SESSION_SECONDS = 1500  # the longest a session may run before it is stopped
 COORD_SECONDS = 120
 SETTLE_SECONDS = 6  # how long `cleanup` waits for its detached session to end before it reports the session as running
 MAX_TEXT = 8000  # characters of a question or an answer
+MAX_LIVE_IDS = 8  # GUIDs of one text looked up as session leases, a coord call each; the rest are replaced
 ASK_ID = re.compile(r"[A-Za-z0-9_.:#@-]{1,100}")  # one coord id, with no `/` (the key is ask/ID)
 ALERT_ID = re.compile(r"[A-Za-z0-9_.:/#@-]{1,100}")
 WEBHOOK_HOST = "127.0.0.1"  # loopback only, not an option
@@ -190,10 +192,28 @@ def need(result, what):
     return body
 
 
-def clean(text):
-    """TEXT after redact.redact, at most MAX_TEXT characters (the kind of text the query log keeps)."""
+def live_sessions(conn, text):
+    """The ids of the GUIDs in TEXT (at most MAX_LIVE_IDS, the first ones) that name a live presence lease `session/<id>`
+    of the store CONN points at: the ids a session gave another to address it by."""
     import redact
-    return redact.redact(text)[:MAX_TEXT]
+    found = []
+    for match in redact.GUID.finditer(text):
+        guid = match.group(0).lower()
+        if guid not in found:
+            found.append(guid)
+    live = set()
+    for guid in found[:MAX_LIVE_IDS]:
+        code, body, _err = run_coord(conn, "get", coord.SESSION_LEASE + guid)
+        if code == 0 and isinstance(body, dict) and body.get("holder"):
+            live.add(guid)
+    return live
+
+
+def clean(text, conn=None):
+    """TEXT after redact.redact, at most MAX_TEXT characters (the kind of text the query log keeps). With CONN (an ask or an
+    answer), a GUID that names a live session lease of its store stays: every other GUID is still replaced."""
+    import redact
+    return redact.redact(text, keep=live_sessions(conn, text) if conn is not None else ())[:MAX_TEXT]
 
 
 def put_text(conn, key, text):
@@ -217,12 +237,12 @@ def post(conn, kind, **fields):
 
 
 def send_ask(conn, ask_id, target, text):
-    put_text(conn, f"ask/{ask_id}", clean(text))
+    put_text(conn, f"ask/{ask_id}", clean(text, conn))
     return post(conn, "ask", id=ask_id, to=target, ref=f"ask/{ask_id}")
 
 
 def send_answer(conn, ask_id, state, text):
-    put_text(conn, f"answer/{ask_id}", clean(text))
+    put_text(conn, f"answer/{ask_id}", clean(text, conn))
     return post(conn, "answer", id=ask_id, state=state, ref=f"answer/{ask_id}")
 
 
