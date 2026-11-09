@@ -2124,8 +2124,9 @@ class GroupMapper(Mapper):
     map; one that raises or is of another shape is a note and maps nothing."""
     tool = ""
 
-    def __init__(self, language, spec, func, suffixes, commit):
+    def __init__(self, language, spec, func, suffixes, commit, source=""):
         self.language, self.name, self.spec, self.func, self.commit = language, f"{GROUP_POINT} {spec}", spec, func, commit
+        self.source = source  # a digest of the module's file: what a change to the mapper's code changes
         self.suffixes = tuple(s.lower() for s in suffixes)
         self.before = []  # the mappers ahead of this one in the run: a file one of them maps is theirs
 
@@ -2174,7 +2175,26 @@ def load_group_mapper(language, spec, commit, root):
     suffixes = getattr(func, "SUFFIXES", getattr(module, "SUFFIXES", None))
     if not isinstance(suffixes, (list, tuple)) or not suffixes or not all(is_text(s) and s.startswith(".") for s in suffixes):
         return None, f"no SUFFIXES (a list of suffixes such as '.foo') on {spec} or in its module"
-    return GroupMapper(language, spec, func, suffixes, commit), None
+    return GroupMapper(language, spec, func, suffixes, commit, module_digest(module)), None
+
+
+def module_digest(module):
+    """The sha256 of the file MODULE was loaded from (a package: its `__init__`), or "" when it has none or it is unreadable."""
+    try:
+        return hashlib.sha256(Path(module.__file__).read_bytes()).hexdigest()
+    except (AttributeError, TypeError, OSError):
+        return ""
+
+
+def group_inputs(mappers, notes):
+    """The digest of what a group's `ingest_mappers` contribute to a map: each group mapper's language, `module:attr`
+    and module file, and every load note (a refused mapper maps nothing, so its reason is an input). "" with none, the
+    value a map built without a group mapper holds. A map holding another digest is not the map of today's settings."""
+    parts = [[m.language, m.spec, m.source] for m in mappers if isinstance(m, GroupMapper)]
+    if not parts and not notes:
+        return ""
+    blob = json.dumps([sorted(parts), sorted(notes)], ensure_ascii=False)
+    return hashlib.sha256(blob.encode("utf-8")).hexdigest()[:16]
 
 
 def group_mappers(commit, root=None):
@@ -2291,7 +2311,9 @@ def build_map(repo, commit, rev, rows, langs=None, timeout=MAP_TIMEOUT, base_env
             doc["entry_points"] += ctx.entry_points
             doc["symbols"] += ctx.symbols
             doc["notes"] += [{"language": m.language, "note": n} for n in ctx.notes]
-    return redact_leaks(doc)
+    doc = redact_leaks(doc)
+    doc["group_mappers"] = group_inputs(mappers, load_notes)  # after the scan: a digest is no leak, and `where` compares it
+    return doc
 
 
 def redact_leaks(doc):
@@ -2488,6 +2510,8 @@ def where_map(a):
         return None, None, None, None, f"{repo.name}: not a git repository, or {a.rev!r} names no commit"
     out = INGEST_CACHE / f"{repo.name}-{commit[:12]}.json"
     doc = read_map(out)[0] if out.is_file() else None
+    if doc is not None and doc.get("group_mappers", "") != group_inputs(*effective_mappers(commit)):
+        doc = None  # built under other `ingest_mappers` settings or another mapper module
     if doc is None or doc.get("commit") != commit:
         try:
             doc = map_commit(repo, commit, a.rev)

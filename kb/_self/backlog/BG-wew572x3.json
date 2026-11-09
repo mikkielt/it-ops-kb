@@ -26,6 +26,27 @@
     "kb/_self/maintaining.md",
     "kb/_self/plugin.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the cached map record the group's ingest_mappers inputs so where can tell a stale one?",
+      "options": [
+        "a digest in the map's own group_mappers key, compared by where",
+        "a digest in the cache file name"
+      ],
+      "recommendation": "a digest in the map's own group_mappers key, compared by where",
+      "reason": "the file name map writes by default stays the same and an old map without the key still counts as built without a group mapper",
+      "do": {
+        "a digest in the map's own group_mappers key, compared by where": "BG-wew572x3",
+        "a digest in the cache file name": "BG-wew572x3"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "a digest in the map's own group_mappers key, compared by where",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ep7ck2ab review"
   ],
