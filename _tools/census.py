@@ -5,6 +5,7 @@
   census.py repin LOG [--date D] [--dry-run] [--commit]   phase 1: a pinned file whose facts are word for word at the newer commit is re-pinned
   census.py record LOG --from RESULTS.json | --id ID --outcome O [--note T]   phase 2: what reading decided
   census.py confirm LOG [--date D] [--dry-run]     phase 3: dates and evidence for the confirmed sources and articles
+  census.py read ID... --note TEXT [--date D] [--dry-run]   dates sources a reader read on their current page as confirmed
   census.py sample LOG [--changed 0.10] [--judged 0.10] [--ok 0.05] [--seed N] [--brief [--max-age DAYS]]   phase 4: the sources an independent check re-reads
   census.py summary LOG [--factdiff FLOG]          counts per bucket and outcome, the blocked, dns and connect hosts, and the size of phase 2's reading queue
   census.py baselines [--list]                     the live unpinned sources with no detection baseline, counted by host (exit 1 when any)
@@ -18,7 +19,8 @@
   census.py run [--date D] [--resume] [--dry-run]  phases 0-1 as one command: factdiff detect and apply, check, the index, the phase-1 commit, summary
   census.py finish LOG [--date D] [--dry-run]      phase 3 as one command: confirm, kbdecide sweep, the index, the confirmed-dates commit
 
-census.py --root NAME <command> works on that root of this repository's kb/ (default public): its _sources.csv,
+census.py --root NAME <command> works on that root of this repository's kb/ (default public; `read`, which runs no git, also on a
+KB_ROOTS root kept in another repository): its _sources.csv,
 _fetch_state.csv, articles and _census/ log. The clone cache (_cache/census/repos) is shared: a repository at a
 commit is the same for every root, and source ids never collide across roots (each root has its own prefix).
 A dispatched phase-2 session reads and edits only its group's owned files, and also reads every clone under that
@@ -88,6 +90,14 @@ _cache/factdiff, when it is a 200 with text for the source's url and was fetched
 fetched before the census or after its confirmation was compared with nothing, so it is no baseline. Nothing is fetched
 here. The next `check --factdiff` then takes detect's `unchanged` verdict (a baseline no later than the source's
 retrieved_utc) for a live page with no last-updated date, instead of bucket NEEDS-READING.
+
+read ID... --note TEXT [--date D] dates the named sources a person or agent read on their current page (a refresh's by-hand
+reading) as confirmed, with no scratch census log: it writes the row a census writes for each (outcome confirmed, TEXT as
+outcome_note, bucket NEEDS-READING, evidence `read by hand`) to _census/read-<D>.csv (D default today; a row of an id it
+already holds is replaced, the others kept, so a second read of the day adds to the file), then runs confirm on that log:
+the source rows, the articles whose sources all are confirmed and the fetch state are dated as confirm dates them.
+An id not in _sources.csv or a date that is not YYYY-MM-DD refuses the command (exit 2) before any write. --dry-run
+prints the confirm report, writes nothing.
 
 baselines prints how many live (not superseded) unpinned sources hold no detection baseline, and the count by host (the
 QUEUE_HOSTS with most; --list: every host, each with its ids and urls); no network, no model; exit 1 when any, 0 when none.
@@ -202,7 +212,7 @@ score takes a census log that holds the outcomes a census recorded and the resul
 sources, agreement, false confirms (`confirmed` where the census changed a fact: updated, superseded or gone, the error
 that dates a stale fact) of the changed sources, unconfirmed. It reads, writes nothing and asks no model.
 
-check, record, confirm, repin, judge, dispatch and apply (not their --dry-run) each append one ops row `census.phase` to the query log (phase, `census-apply` for apply,
+check, record, confirm, read, repin, judge, dispatch and apply (not their --dry-run) each append one ops row `census.phase` to the query log (phase, `census-apply` for apply,
 date, ms, exit and the rows per bucket or outcome; kb/_self/querylog.md): factdiff.py detect, apply and review write the same.
 
 run and finish chain the phases no model decides, each step a command of its own (its argv is printed first, its ops
@@ -220,12 +230,12 @@ outside the root under census (and, for finish, the decision ledgers) refuse the
 commit (exit 2); nothing is ever pushed. --dry-run prints each step's argv and runs nothing.
 
 Exit: 0 ok; 1 check could not write, confirm/record found an unknown id, or repin could not re-point a fact; 2 bad
-arguments, a missing log, or run/finish/apply refused;
+arguments (read: an unknown id or a bad date), a missing log, or run/finish/apply refused;
 run, finish and apply: the exit code of the step that failed.
 
 Answers: whether every source of a root is still current, phase by phase of a census
 Answers: how many sources changed, how many are left to read and which hosts blocked the check
-Use: python3 _tools/census.py check|summary|judge|groups|brief|dispatch|apply|confirm LOG
+Use: python3 _tools/census.py check|summary|judge|groups|brief|dispatch|apply|confirm LOG, or read ID... --note TEXT
 """
 import argparse, concurrent.futures as cf, csv, datetime, functools, hashlib, io, json, os, random, re, shlex, shutil, ssl, subprocess, sys
 import socket, tempfile, threading, time, types
@@ -1241,6 +1251,38 @@ def cmd_confirm(a, tally):
             f.write(new)
     kbcommon.write_csv(state_path, state_cols, sorted(state.values(), key=lambda r: kbid.sort_key(r["id"])), atomic=True)
     return 0
+
+
+def cmd_read(a, tally):
+    """Date sources read by hand: the census log row of each (outcome confirmed), then `confirm` on that log."""
+    date = a.date or today()
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", date):
+        print(f"read: --date {date!r} is not YYYY-MM-DD")
+        return 2
+    by_id = {r["id"]: r for r in kbcommon.read_sources()}
+    unknown = [i for i in a.ids if i not in by_id]
+    if unknown:
+        print(f"read: not in _sources.csv: {', '.join(unknown)}")
+        return 2
+    note = " ".join(a.note.split())
+    path = os.path.join(KB, kbcommon.CENSUS_DIR, f"read-{date}.csv")
+    rows = {r["id"]: r for r in read_log(path)} if os.path.exists(path) else {}
+    for sid in dict.fromkeys(a.ids):
+        r = by_id[sid]
+        c = classify(r["url"])
+        rows[sid] = {"id": sid, "url": r["url"], "kind": c["kind"], "repo": c["repo"], "pin": c["pin"], "path": c["path"],
+                     "retrieved_utc": r["retrieved_utc"], "http_status": "", "bucket": "NEEDS-READING", "evidence": "read by hand",
+                     "proof": "", "note": "", "used_in": r.get("used_in", ""), "outcome": "confirmed", "outcome_note": note}
+    tally["confirmed"] += len(set(a.ids))
+    if not a.dry_run:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        write_log(path, list(rows.values()))
+        print(f"read: {len(set(a.ids))} source(s) logged to {os.path.relpath(path, kbcommon.HOME)}")
+        return cmd_confirm(argparse.Namespace(log=path, date=date, dry_run=False), tally)
+    with tempfile.TemporaryDirectory() as tmp:  # the report of confirm over the rows, no file of the root touched
+        scratch = os.path.join(tmp, f"read-{date}.csv")
+        write_log(scratch, list(rows.values()))
+        return cmd_confirm(argparse.Namespace(log=scratch, date=date, dry_run=True), tally)
 
 
 def cmd_baselines(a, tally):
@@ -3757,7 +3799,7 @@ def cmd_finish(a, tally):
     return code
 
 
-PHASES = {"check": cmd_check, "record": cmd_record, "confirm": cmd_confirm, "repin": cmd_repin,
+PHASES = {"check": cmd_check, "record": cmd_record, "confirm": cmd_confirm, "read": cmd_read, "repin": cmd_repin,
           "judge": cmd_judge, "dispatch": cmd_dispatch, "apply": cmd_apply}  # each writes a census.phase ops row
 PHASE_TOKENS = {"apply": "census-apply"}  # the row's phase where the command's name is factdiff.py's too
 
@@ -3784,6 +3826,11 @@ def main():
     f.add_argument("log")
     f.add_argument("--date", help="confirmation date (default today)")
     f.add_argument("--dry-run", action="store_true", help="report, write nothing")
+    rd = sub.add_parser("read", help="date the sources a reader read on their current page as confirmed: the census log row and confirm")
+    rd.add_argument("ids", nargs="+", metavar="ID", help="source ids of the root")
+    rd.add_argument("--note", required=True, help="what the reading found (the row's outcome_note, then the date's proof)")
+    rd.add_argument("--date", help="confirmation date (default today)")
+    rd.add_argument("--dry-run", action="store_true", help="report, write nothing")
     s = sub.add_parser("sample", help="phase 4: the sources an independent check re-reads, as CSV, or with --brief as its brief")
     s.add_argument("log")
     s.add_argument("--brief", action="store_true", help="the checker's brief: each source's citing facts with their passage in "
@@ -3876,11 +3923,12 @@ def main():
     a = ap.parse_args()
     kbd = os.path.realpath(kbcommon.KB_DIR)
     try:
-        here = [r for r in kbcommon.roots() if os.path.dirname(os.path.realpath(r.path)) == kbd and r.name == a.root]
+        # read touches no git: it also dates a KB_ROOTS root kept in another repository; every other command works in this one
+        here = [r for r in kbcommon.roots() if r.name == a.root and (a.cmd == "read" or os.path.dirname(os.path.realpath(r.path)) == kbd)]
     except kbcommon.RootError as e:
         sys.exit(str(e))
     if not here:
-        ap.error(f"--root {a.root}: no such root in {kbcommon.repo_rel(kbcommon.KB_DIR)}/")
+        ap.error(f"--root {a.root}: no such root in {kbcommon.repo_rel(kbcommon.KB_DIR)}/" + (" or in KB_ROOTS" if a.cmd == "read" else ""))
     KB = kbcommon.KB = here[0].path
     factdiff.ROOT = here[0]
     if a.cmd == "record" and not a.from_json and not (a.id and a.outcome):

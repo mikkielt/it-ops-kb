@@ -67,7 +67,9 @@
         "any served root, KB_ROOTS roots included, for read only": "ST-aayr46f5",
         "only the roots of this repository's kb/, as every other command": "ST-aayr46f5"
       },
-      "class": "design"
+      "class": "design",
+      "answer": "any served root, KB_ROOTS roots included, for read only",
+      "by": "agent"
     }
   ],
   "notes": "Found 2026-11-09 when a refresh run had to write a scratch census log and run census.py confirm to date 8 sources it had read by hand. Premise: the planted-root check exits 1 on 55dde769f (census.py has no read subcommand). Lives in census.py (factdiff.py cannot import census); the log goes to _census/ of the root.",
