@@ -2,7 +2,7 @@
   "id": "BG-fuht4gyh",
   "kind": "bug",
   "title": "A group's locked list does nothing for a list or string key, so a later layer's extension_paths replaces the code of an extender the group locked",
-  "status": "draft",
+  "status": "doing",
   "parent": "EP-y7fe7qqx",
   "sprint": "SP-ga3lbnlk",
   "priority": "P2",
@@ -40,5 +40,7 @@
   "links": [
     "parked: SP-ep7ck2ab review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-0a3e91bc",
+  "operator": "op-f618a13e"
 }
