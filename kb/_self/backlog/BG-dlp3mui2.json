@@ -2,7 +2,7 @@
   "id": "BG-dlp3mui2",
   "kind": "bug",
   "title": "land's scope stop records its ops row under step rebase, not scope",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-yriisdti",
   "priority": "P3",
   "rank": 0,
@@ -28,6 +28,19 @@
     "related: ST-vwe6kopi",
     "parked: SP-jplczvj2 close"
   ],
-  "claimed_by": "claude-ev2run01",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "6759c68394a50893cef8917fd02ab5fdcb31f0b6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,re; t=open(\"_tools/bl_land.py\",encoding=\"utf-8\").read(); ok=re.search(r\"ops_mark\\(\\\"scope\\\"\\)\",t) is not None; print(\"scope step marked:\",ok); sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "5674f682316ede51"
+      }
+    ]
+  }
 }
