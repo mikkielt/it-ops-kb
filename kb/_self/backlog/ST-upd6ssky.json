@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "A plan settles the implementation choice of an item whose title or text names a gate-class word, so its worker asks no blocking gate",
   "status": "draft",
+  "sprint": "SP-moxpl354",
   "priority": "P3",
   "rank": 0,
   "goal": "the sprint plan step settles, in the goal of a committed item whose title or text holds a gate-class word (token, mirror, push, secret), the implementation choice a worker would otherwise ask as a blocking gate",
@@ -11,9 +12,15 @@
       "run": [
         "python3",
         "-c",
-        "import sys,pathlib; t=pathlib.Path('.claude/skills/kb-sprint/SKILL.md').read_text(encoding='utf-8').lower(); sys.exit(0 if 'gate-class word' in t else 'not yet: .claude/skills/kb-sprint/SKILL.md lacks gate-class word')"
+        "import sys,pathlib\nt=pathlib.Path('skills/sprint/SKILL.md').read_text(encoding='utf-8')\ns=t.split('## plan',1)[1].split('## start',1)[0].lower()\nmiss=[w for w in ['gate-class word'] if w not in s]\nsys.exit('not yet: plan section lacks '+', '.join(miss) if miss else 0)\n"
       ]
     }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "depends_on": [
+    "ST-tbtyolzp"
   ],
   "links": [
     "parked: SP-pww4aqis close"
