@@ -2,7 +2,7 @@
   "id": "BG-tje2kpiv",
   "kind": "bug",
   "title": "The kbmon-pane mod never retries a failed --receipt run while the alert set stays the same",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-hyfyn22d",
   "priority": "P3",
@@ -22,5 +22,7 @@
   ],
   "links": [
     "parked: SP-3hgirkur review"
-  ]
+  ],
+  "claimed_by": "claude-ev4run01",
+  "operator": "op-f618a13e"
 }
