@@ -2597,11 +2597,91 @@ def rekey(path, old, new, root_file):
     return n
 
 
+SHIFT_CITE = re.compile(r"(?<![\w./:-])((?:[\w.-]+/)*[\w.-]+\.md):([1-9]\d*)(?:([-–])([1-9]\d*))?\b"
+                        r"|(?<![\w:])(`?):([1-9]\d*)(?:([-–])([1-9]\d*))?\b")  # path:line[-end] (a bare file name too), `:N[-end]`
+SHIFT_SKIP = ("_cache", "_private", "_census", "_retrieval")  # logs and frozen sets keep the lines they cited then
+
+
+def shift_line(text, target, first, bare=False, root=None):
+    """`text` with every `path:line[-end]` citation (and the `:N` shorthand after one) of the article `target` moved one
+    line down when it names a line from `first` on, the line a bullet was inserted before. `bare` also moves a citation by
+    file name alone (`a.md:18`), which only a row that lists the article can mean. (new text, citations moved)."""
+    moved = [0]
+
+    def bump(n):
+        n = int(n)
+        moved[0] += n >= first
+        return str(n + 1 if n >= first else n)
+
+    def sub(m):
+        nonlocal cur
+        if m.group(1):
+            p = m.group(1)
+            cur = p == target or any(p == f"{pre}{target}" for pre in ("kb/" + root + "/", root + "/") if root) \
+                or bare and p == target.rsplit("/", 1)[-1]
+            line, sep, end = m.group(2), m.group(3), m.group(4)
+            head = f"{p}:"
+        elif cur is None:
+            return m.group(0)
+        else:
+            line, sep, end = m.group(6), m.group(7), m.group(8)
+            head = f"{m.group(5)}:"
+        if not cur:
+            return m.group(0)
+        return head + bump(line) + (sep + bump(end) if end else "")
+
+    cur = None
+    out = []
+    for ln in text.splitlines(keepends=True):
+        cur = None
+        out.append(SHIFT_CITE.sub(sub, ln))
+    return "".join(out), moved[0]
+
+
+def shift_citations(path, first, root_dir, root=None, skip=None):
+    """After a bullet was inserted before line `first` of the article `path` (root-relative): move that article's
+    `path:line` citations from `first` on one line down in the root's other articles and ledgers (`.md` files outside
+    the dated logs and frozen sets, but `skip`) and the notes of `_sources.csv`, so each still names the fact it named.
+    {file: citations moved}."""
+    res = {}
+    for dirpath, dirs, files in os.walk(root_dir):
+        dirs[:] = sorted(d for d in dirs if not d.startswith(".") and d not in SHIFT_SKIP)
+        for name in sorted(files):
+            full = os.path.join(dirpath, name)
+            rel = os.path.relpath(full, root_dir).replace(os.sep, "/")
+            if rel == skip:
+                continue
+            if name.endswith(".md") and name != "_coverage.md":
+                text = kbcommon.read(full, newline="")
+                new, n = shift_line(text or "", path, first, root=root)
+                if n:
+                    with open(full, "w", encoding="utf-8", newline="") as f:
+                        f.write(new)
+                    res[rel] = n
+            elif rel == kbcommon.SOURCES:
+                with open(full, encoding="utf-8", newline="") as f:
+                    rows = list(csv.reader(f))
+                col = rows[0].index("used_in")
+                n = 0
+                for r in rows[1:]:
+                    listed = path in r[col].split(";") if len(r) > col else False
+                    for i, cell in enumerate(r):
+                        if i not in (col, rows[0].index("url")):
+                            r[i], k = shift_line(cell, path, first, bare=listed, root=root)
+                            n += k
+                if n:
+                    with open(full, "w", encoding="utf-8", newline="") as f:
+                        f.write(kbcommon.rows_text(rows))
+                    res[rel] = n
+    return res
+
+
 def cmd_close(a):
     """Close a fact whose passage changed so it no longer holds: its validity window ends at `--on` (a date for a DOC or
     DER fact, a commit for a CODE fact) and `--text` is added after it as a new bullet whose window starts there and
     that cites the same sources. The old line's doc2query rows follow the new line; its anchor rows stay with the old
-    line's new text. Exit 2 for a line that is no bullet fact, a window that is closed already or of the wrong kind."""
+    line's new text; the `path:line` citations of the lines the new bullet pushed down are re-pointed (shift_citations).
+    Exit 2 for a line that is no bullet fact, a window that is closed already or of the wrong kind."""
     import doc2query
     path, _, line = a.target.rpartition(":")
     path = root_rel(path)
@@ -2642,6 +2722,9 @@ def cmd_close(a):
     while last + 1 < len(lines) and lines[last + 1].strip() and not BULLET.match(lines[last + 1]) \
             and not lines[last + 1].lstrip().startswith(("|", "#", "```", "~~~")):
         last += 1
+    text, own = shift_line(eol.join(lines), path, last + 2, root=ROOT.name)  # the article's own citations of lines below
+    lines = text.split(eol)
+    keys_before = unit_keys()
     old_key = kbfacts.fact_key(unit["text"])
     mark_old, mark_new = f"(valid {start}..{a.on})", f"(valid {a.on}..)"
     seg = lines[line - 1:last + 1]
@@ -2672,9 +2755,29 @@ def cmd_close(a):
     doc2query.use_root(ROOT.name)
     moved = rekey(doc2query.EXPANSIONS, old_key, new_key, "key")
     anchors = rekey(root_path(ANCHORS), old_key, kbfacts.fact_key(old_new["text"]), "fact")
+    cites = shift_citations(path, last + 2, ROOT.path, ROOT.name, skip=path)
+    keys_after = unit_keys()
+    keys_after[path] = [(n, k) for n, k in keys_after.get(path, []) if n != last + 2]
+    rekeyed = 0
+    for rel, pairs in keys_before.items():
+        now = keys_after.get(rel, [])
+        if len(now) != len(pairs):
+            continue
+        for (n, old), (_, key) in zip(pairs, now):
+            if old != key and not (rel == path and n == line):  # a fact whose cited line moved: its rows follow its new text
+                rekeyed += rekey(doc2query.EXPANSIONS, old, key, "key") + rekey(root_path(ANCHORS), old, key, "fact")
     print(f"closed {path}:{line} {mark_old}; added {path}:{last + 2} {mark_new}; doc2query rows moved={moved} anchor rows kept={anchors}"
+          f"; citations of {path} re-pointed={sum(cites.values()) + own} in {len(cites)} files, rows of reworded facts moved={rekeyed}"
           f"; anchor the new fact: factdiff.py anchor --file {path} --lines {last + 2}")
     return 0
+
+
+def unit_keys():
+    """{root-relative path: [(line, fact key)]} of the root's tagged facts, in file order."""
+    out = collections.defaultdict(list)
+    for u in kbfacts.units(ROOT.name, with_csv=False):
+        out[kbfacts.bare(u["path"])].append((u["line"], kbfacts.fact_key(u["text"])))
+    return out
 
 
 def select_ids(a, srcs):
