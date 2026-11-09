@@ -22,7 +22,8 @@
     "_tools/bench_load.py",
     "_tools/bench_repro.py",
     "_tools/bench_multi.py",
-    "_tools/bl_clean.py"
+    "_tools/bl_clean.py",
+    "kb/_self/backlog.md"
   ],
   "depends_on": [
     "BG-bh7mf3wv"
