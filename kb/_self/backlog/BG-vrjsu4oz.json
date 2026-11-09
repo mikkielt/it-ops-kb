@@ -23,6 +23,26 @@
   "depends_on": [
     "BG-dlp3mui2"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the rebase stop word a file whose newest change on main has no KB-Work trailer?",
+      "options": [
+        "name the commit and say it carries no KB-Work trailer",
+        "reuse the old line: no KB-Work commit changed it"
+      ],
+      "recommendation": "name the commit and say it carries no KB-Work trailer",
+      "do": {
+        "name the commit and say it carries no KB-Work trailer": "BG-vrjsu4oz",
+        "reuse the old line: no KB-Work commit changed it": "BG-vrjsu4oz"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "name the commit and say it carries no KB-Work trailer",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-basca7ae review"
   ],

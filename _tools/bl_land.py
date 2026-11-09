@@ -1502,8 +1502,9 @@ def rebase_merging_doc_rows(root, upstream, branch, onto=None):
 
 
 def conflict_owners(root, upstream, branch, files):
-    """[(path, ids of the `KB-Work` commit that last changed it on UPSTREAM since the branch's merge base, its short
-    sha)] for each of FILES; ids and sha are empty when no such commit changed it."""
+    """[(path, ids of the newest commit that changed it on UPSTREAM since the branch's merge base, its short sha)]
+    for each of FILES; ids are empty when that commit carries no `KB-Work` trailer (a later untrailed change is not
+    skipped for an older item's commit), ids and sha are both empty when no commit changed it."""
     out = subprocess.run(["git", "merge-base", upstream, branch], cwd=root, capture_output=True, text=True,
                          encoding="utf-8", errors="replace")
     span = f"{out.stdout.strip()}..{upstream}" if out.returncode == 0 and out.stdout.strip() else upstream
@@ -1515,8 +1516,8 @@ def conflict_owners(root, upstream, branch, files):
         found = ("", "")
         for record in log.stdout.split("\x1e"):
             sha, _, ids = record.partition("\x1f")
-            ids = ", ".join(i.strip() for i in ids.replace("\n", ",").split(",") if i.strip())
-            if sha.strip() and ids:
+            if sha.strip():  # git log lists the newest commit first: it alone names the file's last change
+                ids = ", ".join(i.strip() for i in ids.replace("\n", ",").split(",") if i.strip())
                 found = (ids, sha.strip())
                 break
         owners.append((name, *found))
@@ -1529,6 +1530,7 @@ def rebase_conflict_text(root, upstream, branch, iid, remote, files):
     lines = []
     for name, ids, sha in conflict_owners(root, upstream, branch, files):
         lines.append(f"  {name}: last changed on {remote}/main by {ids} (commit {sha})" if ids else
+                     f"  {name}: last changed on {remote}/main by commit {sha}, which carries no KB-Work trailer" if sha else
                      f"  {name}: no KB-Work commit on {remote}/main changed it since {branch} was cut")
     head = "conflicting file(s):\n" + "\n".join(lines) + "\n" if lines else ""
     return (f"{head}remedy: write the conflict to a file as the message (the paths above, what {remote}/main changed "
