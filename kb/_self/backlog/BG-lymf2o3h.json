@@ -19,5 +19,9 @@
     "_tools/ql_capture.py",
     "kb/_self/querylog.md"
   ],
+  "links": [
+    "parked: SP-osevumx6 review"
+  ],
+  "notes": "Found by the SP-osevumx6 review. The repro is a stub that always fails: the race is probabilistic. Reproduce with a dead lock file and a dead takeover guard file, both aged 100 s, then 8 threads calling ql_capture._take_ids_lock on the lock with FEEDBACK_IDS_LOCK_WAIT_S=0.3, 100 rounds: about 3 rounds give two holders. Replace the stub by a planted loop check when this is taken up.",
   "filed_in": "clone-0ea70e5c"
 }
