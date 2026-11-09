@@ -8,8 +8,8 @@
                                                                     and turn the coord hook on in <WS>/backlog.json
   kbsettings.py check                                               exit 1 when the table below and the doc disagree
 
-`effective(root, kb_root=None)` is the one reader of the coordination settings: the coord hook, kbmon and the explain
-command call it, never the files. It merges five layers key by key, later over earlier:
+`effective(root, kb_root=None)` is the one reader of the coordination settings: the coord hook and kbmon call it, never
+the files (`explain` reads the layers itself, to name the layer and file that set each value). It merges five layers key by key, later over earlier:
   default   DEFAULTS
   group     the file `group_settings` names in the clone file (a path, relative to WS when not absolute), else the file
             the environment variable `KB_GROUP_SETTINGS` names when the clone file names none
