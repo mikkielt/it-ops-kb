@@ -35,7 +35,9 @@
     }
   ],
   "touches": [
-    "_tools/bl_close.py"
+    "_tools/bl_close.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "BG-5b35ssgk"
