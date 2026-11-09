@@ -2,7 +2,7 @@
   "id": "BG-nznlxny5",
   "kind": "bug",
   "title": "kbgit.py sync sends code-lane commits straight to main when backlog.json does not parse, since has_code_lane reads the defaults then and the default lane_module is empty",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-mut2pmu3",
   "priority": "P2",
   "rank": 0,
@@ -38,5 +38,7 @@
     "_tools/kg_lane.py",
     "kb/_self/git.md"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev3run01",
+  "operator": "op-f618a13e"
 }
