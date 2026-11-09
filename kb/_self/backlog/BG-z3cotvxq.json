@@ -1,0 +1,21 @@
+{
+  "id": "BG-z3cotvxq",
+  "kind": "bug",
+  "title": "An interrupt between the creation of the landing lock file and the write of its record leaves an empty lock file that every landing of the clone waits out the grace period for",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "landing_lock removes the lock file it created on any interrupt, also one that lands between os.open of the lock file and the write of its record, and closes the file descriptor",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os, subprocess, sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport bl_close\nt = tempfile.mkdtemp()\nsubprocess.run([\"git\", \"init\", \"-q\", t], check=True)\npath = bl_close.landing_lock_path(t)\nreal, n = os.fdopen, [0]\ndef boom(*a, **k):\n    n[0] += 1\n    if n[0] == 2:\n        os.fdopen = real\n        raise KeyboardInterrupt\n    return real(*a, **k)\nos.fdopen = boom\ntry:\n    with bl_close.landing_lock(t, \"ST-aaaaaaaa\"):\n        pass\nexcept BaseException as e:\n    print(\"interrupted by\", type(e).__name__)\nfinally:\n    os.fdopen = real\nprint(\"lock file left behind:\", os.path.exists(path))\nsys.exit(0 if not os.path.exists(path) else 1)\n"
+    ]
+  },
+  "touches": [
+    "_tools/bl_close.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
