@@ -199,6 +199,17 @@ export const register: Register = on => {
     return next(e)
   })
 
+  // /clear, /resume and /branch (a fork) start the session's own state over, the fingerprint included, while this
+  // module's variables stay: the alert rows count as unseen again, so the next refresh appends the receipt even when
+  // the alert set is the one the last run saw. A startup has no earlier rows, and a compaction keeps the session.
+  on('classic.SessionStart', async (_$, e, next) => {
+    if (e.source === 'clear' || e.source === 'resume' || e.source === 'fork') {
+      lastAlerts = null
+    }
+
+    return next(e)
+  })
+
   on('command.run', { command: 'kbmon' }, async $ => {
     await $.ui.open({ id: PANE, title: 'kbmon' })
     void refresh($)

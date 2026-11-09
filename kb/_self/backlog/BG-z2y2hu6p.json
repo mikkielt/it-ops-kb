@@ -18,10 +18,31 @@
   },
   "repro_reason": "the mod runs only inside an interactive Claude Code session; no headless command drives /clear and the pane refresh, so the repro reads that the hooks module resets lastAlerts on a session reset",
   "touches": [
-    ".claude/skills/kbmon-pane/**"
+    ".claude/skills/kbmon-pane/**",
+    "kb/_self/monitoring.md"
   ],
   "depends_on": [
     "BG-tje2kpiv"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which session-start sources reset the mod's lastAlerts: clear, resume and fork only (hooked as classic.SessionStart), or also compact?",
+      "options": [
+        "clear, resume and fork only",
+        "clear, resume, fork and compact"
+      ],
+      "recommendation": "clear, resume and fork only",
+      "do": {
+        "clear, resume and fork only": "BG-z2y2hu6p",
+        "clear, resume, fork and compact": "BG-z2y2hu6p"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "clear, resume and fork only",
+      "by": "agent"
+    }
   ],
   "links": [
     "parked: SP-3hgirkur review"
