@@ -868,8 +868,9 @@ def _reredact_value(x, key, field, k, notes):
 
 def reredact_entry(e, k=None):
     """(entry, [(field, what)]): `e` with each value the current rules flag replaced by its redacted form (`replaced`)
-    and each fetch whose path the leak scan still flags then dropped (`dropped`); a value the rules still flag in any
-    other place stays and is noted `left`. Fields the rules do not flag stay as they are."""
+    and each fetch whose path the leak scan still flags, or whose host the public-host gate refuses, then dropped
+    (`dropped`, noted at `fetches[N].path` or `fetches[N].host`); a value the rules still flag in any other place stays
+    and is noted `left`. Fields the rules do not flag stay as they are."""
     import redact
     out, notes = {}, []
     for a, b in e.items():
@@ -879,9 +880,14 @@ def reredact_entry(e, k=None):
             out[a] = []
             for i, f in enumerate(b):
                 f = _reredact_value(f, a, f"{a}[{i}]", k, notes)
+                gone = []
+                if isinstance(f, dict) and "host" in f and not public_host(f["host"], k):
+                    gone.append("host")
                 if isinstance(f, dict) and isinstance(f.get("path"), str) and redact.scan(f["path"], k):
-                    notes[:] = [n for n in notes if not n[0].startswith(f"{a}[{i}].path")]
-                    notes.append((f"{a}[{i}].path", "dropped"))
+                    gone.append("path")
+                if gone:
+                    notes[:] = [n for n in notes if not n[0].startswith(f"{a}[{i}].")]
+                    notes += [(f"{a}[{i}].{g}", "dropped") for g in gone]
                 else:
                     out[a].append(f)
         else:

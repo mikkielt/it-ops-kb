@@ -32,6 +32,24 @@
     "kb/_self/tools.md",
     "kb/_self/usage.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "When reredact drops a fetch row, which notes of that row does it report?",
+      "options": [
+        "Only the dropped note per refused field",
+        "Dropped plus the row's replaced and left notes"
+      ],
+      "recommendation": "Only the dropped note per refused field",
+      "reason": "a dropped row holds no value that stays, so a left note would fail the exit for nothing",
+      "do": {
+        "Only the dropped note per refused field": "BG-c273hugw",
+        "Dropped plus the row's replaced and left notes": "BG-c273hugw"
+      },
+      "class": "querylog"
+    }
+  ],
   "links": [
     "parked: SP-osevumx6 review"
   ],
