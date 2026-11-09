@@ -17,7 +17,7 @@
   },
   "repro_reason": "needs a planted store with a closed entry and a new lookup of the same question; the planner writes the real repro",
   "touches": [
-    "_tools/ql_gap.py",
+    "_tools/ql_apply.py",
     "kb/_self/querylog.md"
   ],
   "filed_in": "clone-0ea70e5c"
