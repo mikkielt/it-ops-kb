@@ -1,0 +1,19 @@
+{
+  "id": "BG-vykp2umc",
+  "kind": "bug",
+  "title": "kbid.py's module docstring says the publisher comes from the page's og:site_name or application-name, which provider.read_page no longer reads",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "_tools/kbid.py's docstring names og:site_name alone as the page's publisher source, as provider.read_page, tools.md and web-sources.md say after BG-7po2pir4 dropped application-name (the HTML standard says it names a web application only).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.exit(1 if 'og:site_name or application-name' in open('_tools/kbid.py',encoding='utf-8').read() else 0)"
+    ]
+  },
+  "repro_reason": "a docstring is text; there is no behaviour to run",
+  "filed_in": "clone-0ea70e5c"
+}
