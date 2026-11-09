@@ -2,7 +2,7 @@
   "id": "BG-gpw257ro",
   "kind": "bug",
   "title": "kbmon's Needs-you disk line shows a share just under 10% as 10%, where the host alert shows it as 9.99%",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-zobzdhwi",
   "priority": "P3",
   "rank": 0,
@@ -24,6 +24,19 @@
     "parked: SP-yisvj7vd review"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-0f9262ec",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "7805e25368f3aadcded3ce45eec9c89b0e12770c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0, \"_tools\")\nimport mon_needs as m\nrows = m.disk_entries({\"disk\": {\"free_pct\": 10.0, \"free_bytes\": 99996, \"total_bytes\": 1000000}})\ntext = rows[0][\"text\"] if rows else \"\"\nprint(text)\nsys.exit(0 if text == \"disk 9.99% free\" else 1)"
+        ],
+        "exit": 0,
+        "sha256": "278f5ffacefc3ddb"
+      }
+    ]
+  }
 }
