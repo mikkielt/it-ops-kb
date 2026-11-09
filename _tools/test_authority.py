@@ -232,6 +232,10 @@ def test_an_agent_cannot_answer_or_provisionally_answer_an_operator_gate_the_ope
                 assert code == 2 and "ceiling" in out and "terminal of their own" in out, (args, out)
                 assert "integrated terminal" in out and "standalone terminal outside the IDE" in out, (args, out)
                 assert path(tmp_path, cid).read_bytes() == before, args
+        for env in (agent, child):  # `gate remove` is no way round it
+            code, out = bl(tmp_path, "gate", "remove", cid, "g", "--by", "operator", env=env)
+            assert code == 2 and "ceiling" in out and "terminal of their own" in out, out
+            assert path(tmp_path, cid).read_bytes() == before
         code, out = bl(tmp_path, "answer", cid, "g", "--answer", "a", "--by", "operator", env=terminal)
         assert code == 0, out
         assert (gate(tmp_path, cid)["answer"], gate(tmp_path, cid)["by"]) == ("a", "operator")
