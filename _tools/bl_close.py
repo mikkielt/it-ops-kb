@@ -549,8 +549,20 @@ def landing_lock(root, iid, poll=None):
                 waited += time.monotonic() - began
                 continue
             got = True
-            with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as f:
-                f.write(me)
+            try:
+                # an interrupt before the record is written would leave an empty lock file that the `got` release below
+                # (which removes only a file whose record names this pid) never removes
+                try:
+                    f = os.fdopen(fd, "w", encoding="utf-8", newline="\n")
+                except BaseException:
+                    os.close(fd)
+                    raise
+                with f:
+                    f.write(me)
+            except BaseException:
+                with contextlib.suppress(OSError):
+                    os.unlink(path)
+                raise
             break
         if ticket:
             with contextlib.suppress(OSError):
