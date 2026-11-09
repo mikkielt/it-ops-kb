@@ -2,7 +2,7 @@
   "id": "BG-4chg4xok",
   "kind": "bug",
   "title": "An interrupt in landing_lock between os.open of the lock file returning and the try that removes it leaves an empty lock file and an open descriptor",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-luspfajx",
   "priority": "P2",
   "rank": 0,
@@ -43,6 +43,19 @@
   ],
   "notes": "From the SP-luspfajx review (G1). The window is the gap between os.open returning and the try after got = True; BG-z3cotvxq closed only the part after it. Any design is fine that leaves no file without a record (for example writing the record to a pid-named temp file and os.link-ing it to the lock path, then the finally removes a lock file whose record names this pid with or without got), as long as the lock file keeps its format (pid, clone, start, item lines) and an older process that polls the same path still reads it, clears a dead holder's file as before and never sees a half-written one. Check the same repro with the interrupt raised after os.link too. Run through bl_base.run_check: the repro uses a temp git repo only.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-luspfajx",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "e4a394ebdaf78ee27621b98bd174633aad994bf2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, subprocess, sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport bl_close\nt = tempfile.mkdtemp()\nsubprocess.run([\"git\", \"init\", \"-q\", t], check=True)\npath = str(bl_close.landing_lock_path(t))\nreal = os.open\ndef open_then_interrupt(p, *a, **k):\n    fd = real(p, *a, **k)\n    if str(p) == path:\n        os.open = real\n        raise KeyboardInterrupt\n    return fd\nos.open = open_then_interrupt\ntry:\n    with bl_close.landing_lock(t, \"ST-aaaaaaaa\"):\n        pass\nexcept BaseException as e:\n    print(\"interrupted by\", type(e).__name__)\nfinally:\n    os.open = real\nprint(\"lock file left behind:\", os.path.exists(path))\nsys.exit(0 if not os.path.exists(path) else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "5a28754169f0b675"
+      }
+    ]
+  }
 }
