@@ -2,7 +2,7 @@
   "id": "BG-l3acexb4",
   "kind": "bug",
   "title": "benchmarks.md still says the real intake hook's cost is not measured and shows none of the 2026-10-28 intake-real rows",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-bpjqqauu",
   "priority": "P2",
   "rank": 0,
@@ -50,6 +50,19 @@
   ],
   "notes": "Review G3: benchmarks.md:1410 Setup and :1543 bullet; the 2026-10-28 record is in the records table with no figures. Premise: the bug's repro fails on the base (origin/main at the planning commit, 2026-11-09); precheck ran it through the landing's check runner. Sprint order: items that share one file are chained with depends_on.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-bdc0a493",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "bd3fc09e8664d37db21420be8e69dcbd5dce64c3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; r=open(\"kb/_self/reports/benchmarks.md\",encoding=\"utf-8\").read(); bad=\"the cost of the intake hook where those checks do run is not measured\" in r; print(\"intake real\" in r, bad); sys.exit(0 if (\"intake real\" in r and not bad) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "19446dabece9bf6d"
+      }
+    ]
+  }
 }
