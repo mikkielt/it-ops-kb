@@ -2,7 +2,7 @@
   "id": "BG-ouhonprv",
   "kind": "bug",
   "title": "url_holds_credential reads a password that holds a backslash in the scp form as no credential since the Windows-path fix banned every backslash",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-mut2pmu3",
   "priority": "P3",
   "rank": 0,
@@ -29,9 +29,33 @@
     "kb/_self/plugin.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does url_holds_credential tell a drive-letter path from an scp password that holds a backslash?",
+      "options": [
+        "Exempt only a leading drive letter and colon before a slash or backslash, and let the password hold a backslash",
+        "Keep banning every backslash and read the password's backslash by another marker"
+      ],
+      "recommendation": "Exempt only a leading drive letter and colon before a slash or backslash, and let the password hold a backslash",
+      "do": {
+        "Exempt only a leading drive letter and colon before a slash or backslash, and let the password hold a backslash": "BG-ouhonprv",
+        "Keep banning every backslash and read the password's backslash by another marker": "BG-ouhonprv"
+      },
+      "class": "secrets",
+      "answer": "Exempt only a leading drive letter and colon before a slash or backslash, and let the password hold a backslash",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "links": [
     "parked: SP-osevumx6 review"
   ],
-  "notes": "Outbound paths: url_holds_credential is called by kbcommon.py:724, kbroot.py:188 (the url a root registers) and census.py:2942; the change is inside the function in kbcommon.py, so all three read the same narrowed rule. Planted check runs the backslash password (a credential) and the drive-letter and UNC paths with an @ folder name (none). Run 2026-11-09: worker finished on branch work/BG-ouhonprv with its gate g1 (class secrets: how url_holds_credential tells a drive-letter path from an scp password with a backslash) left open for the operator; released so BG-pwhlp2sy can edit kbcommon.py. Re-claim, answer g1 and land.",
-  "filed_in": "clone-0ea70e5c"
+  "notes": "Outbound paths: url_holds_credential is called by kbcommon.py:724, kbroot.py:188 (the url a root registers) and census.py:2942; the change is inside the function in kbcommon.py, so all three read the same narrowed rule. Planted check runs the backslash password (a credential) and the drive-letter and UNC paths with an @ folder name (none). Run 2026-11-09: worker finished on branch work/BG-ouhonprv with its gate g1 (class secrets: how url_holds_credential tells a drive-letter path from an scp password with a backslash) left open for the operator; released so BG-pwhlp2sy can edit kbcommon.py. Re-claim, answer g1 and land. g1 answered by the operator in the manager terminal 21:23 (their own choice), recorded by the sprint runner.",
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev3run01",
+  "operator": "op-f618a13e"
 }
