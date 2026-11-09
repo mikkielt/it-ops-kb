@@ -1,5 +1,8 @@
 """`kbgit.py sync --push` end to end in a throwaway clone and bare origin: a commit the gate rejects does not reach main,
 and a code commit goes to a code/ branch while main stays."""
+import json
+import shlex
+
 import pytest
 
 import kbpublic
@@ -60,6 +63,22 @@ class TestRedGate:
         assert r.returncode == 1, r.stdout + r.stderr
         assert "check.py" in r.stdout and "ok: sources" not in r.stdout, r.stdout
         assert ": probe/leak.txt has a leak-scan hit (home)" in r.stdout and "realperson" not in r.stdout, r.stdout
+        assert scenario.origin.rev("main") == pushed
+
+    def test_a_failing_group_gate_checks_entry_refuses_the_push(self, scenario):
+        # the group's own check runs after every shipped one: a listed argv that exits non-zero refuses, naming itself
+        # and the layer that lists it, and main stays
+        c = clone(scenario)
+        article(c, "content", "S100", hooks=False)
+        c.git("push", "-q", "--no-verify", "origin", "HEAD:main")
+        pushed = c.rev("HEAD")
+        article(c, "group", "S100", hooks=False)
+        group = scenario.tmp / "group-settings.json"
+        argv = ["python3", "-c", "raise SystemExit(3)"]
+        group.write_text(json.dumps({"gate_checks": [argv]}), encoding="utf-8", newline="\n")
+        r = c.kbgit("sync", "--push", env={**ENV, "KB_GROUP_SETTINGS": str(group)})
+        assert r.returncode == 1, r.stdout + r.stderr
+        assert f"refused: gate check {shlex.join(argv)} (layer group) failed with exit code 3" in r.stdout, r.stdout
         assert scenario.origin.rev("main") == pushed
 
 
