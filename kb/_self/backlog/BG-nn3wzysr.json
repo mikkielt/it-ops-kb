@@ -26,6 +26,12 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "kbgit.py contribute checks up front that git merge-tree --write-tree is available and exits 2 naming the git version when it is not, as kb/_self/git.md says",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kg_contrib.py",
     "kb/_self/git.md"
