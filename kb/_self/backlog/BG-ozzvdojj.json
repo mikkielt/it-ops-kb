@@ -2,7 +2,7 @@
   "id": "BG-ozzvdojj",
   "kind": "bug",
   "title": "benchmarks.md says the paid record's cells are the mean of 3 reps, but the rows are medians",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-bpjqqauu",
   "priority": "P2",
   "rank": 0,
@@ -30,6 +30,19 @@
   ],
   "notes": "Review gap 2 of SP-wv3ob5vy: benchmarks.md:1422. Premise: the bug's repro fails on the base (origin/main at the planning commit, 2026-11-09); precheck ran it through the landing's check runner. Sprint order: items that share one file are chained with depends_on.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-bdc0a493",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "bd627aa032d6c920cd1331f691fca7be5e39e213",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; t=open(\"kb/_self/reports/benchmarks.md\",encoding=\"utf-8\").read(); ok=\"mean of 3 reps\" not in t and \"median of 3 reps\" in t; print(ok); sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "a9ac0c3ac83c40e1"
+      }
+    ]
+  }
 }
