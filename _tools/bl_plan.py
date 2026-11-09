@@ -17,7 +17,7 @@ import tempfile
 from pathlib import Path
 
 import bl_cli
-from bl_authority import derived_class
+from bl_authority import RULE_WORD, class_reasons
 from bl_base import (
     APPROVALS, CHECK_TIMEOUT_S, KB_CONTENT_RE, OPEN, RECURRING_MIN, Refused, START_GATE, WORKSPACE, commit_written,
     glob_re, id_re, in_scope, line, link_target, need, repositories, resolved_touch, run_check, say, scope,
@@ -354,16 +354,27 @@ def host_gates(bl, sid, answered=True):
 # Words that name a host setup in a gate's question or options (the operator's list): such a gate carries a
 # --host-check command, or `host_unchecked`, the reason it cannot be checked; start warns of one with neither.
 # `host` in another sense is no host setup: `host-bound`, a routed host, a web host, a url's host. A gate of class
-# `agents-rule` settles a rule's wording, which may mention a loaded host, and sets nothing up on one: it is skipped.
+# `agents-rule` settles a rule's wording, which may mention a loaded host, and sets nothing up on one: it is skipped,
+# and only by its own wording (`rule_wording_gate`), never by the item's touches alone.
 HOST_WORDS = re.compile(r"\b(?:(?<!routed )(?<!web )(?<!url )(?<!url's )hosts?(?!-bound)"
                         r"|services?|daemons?|credentials?|logins?|installed|enabled)\b", re.I)
+
+
+def rule_wording_gate(item, gate):
+    """Whether the gate is about a rule's wording: its own words (not the item's touches alone) class it
+    `agents-rule`, or they hold the word `rule` and the item's touches derive that class."""
+    if class_reasons(item, gate, touches=False)[0] == "agents-rule":
+        return True
+    text = " ".join(str(x) for x in [gate.get("question", "")] + list(gate.get("options") or []))
+    return bool(RULE_WORD.search(text)) and class_reasons(item, gate)[0] == "agents-rule"
 
 
 def free_text_host_gates(bl, sid):
     """(item id, gate, word) for each gate of the sprint's open items whose question or options name a host setup
     (HOST_WORDS) and that carries neither a `host_check` nor a `host_unchecked` reason: its setup is named only in
-    free text, so no host check proves it (start warns; ST-q4sgzlz6). A gate whose derived class is `agents-rule`
-    (a rule's wording: the item's touches and the gate's words) is no setup and is skipped."""
+    free text, so no host check proves it (start warns; ST-q4sgzlz6). A gate about a rule's wording
+    (`rule_wording_gate`) is no setup and is skipped; a touch that derives `agents-rule` does not skip a gate whose
+    words are about a host."""
     out = []
     for i in bl.sprint_items(sid):
         if bl.items[i].get("status") in ("done", "dropped"):
@@ -372,7 +383,7 @@ def free_text_host_gates(bl, sid):
             if not isinstance(g, dict) or g.get("id") == START_GATE or "host_check" in g \
                     or str(g.get("host_unchecked") or "").strip():
                 continue
-            if derived_class(bl.items[i], g) == "agents-rule":
+            if rule_wording_gate(bl.items[i], g):
                 continue
             text = " ".join(str(x) for x in [g.get("question", "")] + list(g.get("options") or []))
             m = HOST_WORDS.search(text)

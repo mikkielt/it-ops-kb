@@ -20,6 +20,28 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which wording makes free_text_host_gates skip a gate as a rule-wording gate?",
+      "options": [
+        "own words class it agents-rule, or hold the word rule on an item whose touches derive agents-rule",
+        "own words class it agents-rule only"
+      ],
+      "recommendation": "own words class it agents-rule, or hold the word rule on an item whose touches derive agents-rule",
+      "do": {
+        "own words class it agents-rule, or hold the word rule on an item whose touches derive agents-rule": "BG-qdswfli3",
+        "own words class it agents-rule only": "BG-qdswfli3"
+      },
+      "class": "agents-rule",
+      "answer": "own words class it agents-rule, or hold the word rule on an item whose touches derive agents-rule",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "links": [
     "parked: SP-hlt2tdel review"
   ],
