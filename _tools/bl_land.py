@@ -77,16 +77,23 @@ def delivery_evidence(root, ids, globs):
     import kbpublic
     ref = f"refs/remotes/{kbpublic.integration_remote(root)}/main"
     fetched = subprocess.run(["git", "rev-parse", "--verify", "-q", ref], cwd=root, capture_output=True).returncode == 0
+    after = None  # the commits that are proper descendants of every bound commit: one rev-list per bound, not per delivery
+    for b in bound:
+        below = set(git(root, "rev-list", "--ancestry-path", "--no-merges", f"{b}..HEAD").split())
+        after = below if after is None else after & below
+    undelivered = set(git(root, "rev-list", "--no-merges", f"{ref}..HEAD").split()) if fetched and auto else set()
+    names = {}  # the store files each commit changed: one log of the store, not one show per delivery
+    for rec in git(root, "log", "HEAD", "--no-merges", "--no-renames", "--name-only", "--format=%x1e%H%x00", "--",
+                   bl_intake.STORE_REL).split("\x1e") if auto else []:
+        head, _, body = rec.partition("\x00")
+        names[head.strip()] = [p for p in body.splitlines() if p]
     out = []
     for sha in auto:
-        if any(b == sha or subprocess.run(["git", "merge-base", "--is-ancestor", b, sha], cwd=root,
-                                          capture_output=True).returncode for b in bound):
+        if after is not None and sha not in after:
             continue  # not after the claim or the added file: made before the item existed
-        paths = [p for p in git(root, "show", "--no-renames", "--name-only", "--format=", sha).splitlines() if p]
-        if not any(p.startswith(bl_intake.STORE_REL + "/") and in_scope(p, globs) for p in paths):
+        if not any(p.startswith(bl_intake.STORE_REL + "/") and in_scope(p, globs) for p in names.get(sha, [])):
             continue
-        if fetched and subprocess.run(["git", "merge-base", "--is-ancestor", sha, ref], cwd=root,
-                                      capture_output=True).returncode:
+        if sha in undelivered:
             continue  # not delivered yet: the push that makes it the integration main's has not happened
         out.append(sha[:10])
     return out
@@ -705,11 +712,14 @@ def cmd_done(bl, a):
     it.pop("claimed_by", None)
     bl.save(it)
     say(f"done {bl.label(iid)} at {at[:10]}" + ("" if a.commit else f"; commit this with the trailer KB-Work: {iid}"))
+    before = git(bl.root, "rev-parse", "HEAD").strip()
     commit_written(bl, a, "done", iid)
     # a key still at `claimed` is an item finished in its own checkout, with no worker and no landing (a review or research
-    # story): nothing lands it later, so it ends `landed` here. A key `land` holds (`landing`) is moved by land, once verify
+    # story): nothing lands it later, so it ends `landed` here, once `done --commit` has made its commit. Without --commit
+    # the done file is only written, and a land's own done (`in_land`) leaves the key to land, which moves it once verify
     # has found the done commit on the integration main; any other state is left to `runs --reconcile`.
-    if run_state(iid) == "claimed":
+    if a.commit and not getattr(a, "in_land", False) and git(bl.root, "rev-parse", "HEAD").strip() != before \
+            and run_state(iid) == "claimed":
         move_run(iid, "landed", "done")
     return 0
 
@@ -2140,7 +2150,7 @@ def land_locked(bl, a):
                 say("land: done --commit")
                 ops_mark("done")
                 try:
-                    cmd_done(bl, argparse.Namespace(id=iid, dry_run=False, commit=True, trailer=a.trailer,
+                    cmd_done(bl, argparse.Namespace(id=iid, dry_run=False, commit=True, trailer=a.trailer, in_land=True,
                                                     repositories=repo_evidence(repos)))
                 except Refused as e:
                     raise land_stop("done", str(e)) from None
