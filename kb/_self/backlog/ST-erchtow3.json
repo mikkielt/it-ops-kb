@@ -1,0 +1,26 @@
+{
+  "id": "ST-erchtow3",
+  "kind": "story",
+  "title": "A plan whose goal names an identity or credential a job runs as carries a check that a forged record is refused",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the plan step asks, for a goal clause that names who or what a job runs as, a planted check that a record put by a second key holder with another group's identity is refused, beside the check that the honest record runs: SP-lwkdljxg's identity clause passed 31 checks and its review found that the executor took the identity from the client's record",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "s=open('.claude/skills/kb-sprint/SKILL.md').read(); assert 'forged' in s"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-lwkdljxg close"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

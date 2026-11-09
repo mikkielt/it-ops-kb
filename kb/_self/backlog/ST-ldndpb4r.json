@@ -1,0 +1,26 @@
+{
+  "id": "ST-ldndpb4r",
+  "kind": "story",
+  "title": "land of a code item without --wait-merge waits for its merge request as WAIT_MERGE_DEFAULT says, not stopping after the push",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py land ID with no --wait-merge waits up to WAIT_MERGE_DEFAULT seconds for the item's merge request and finishes in one run; the five code-lane landings of the SP-lwkdljxg review fixes each stopped with the item not done and needed a second run",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "s=open('_tools/bl_land.py').read(); assert 'WAIT_MERGE_DEFAULT' in s"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-lwkdljxg close"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

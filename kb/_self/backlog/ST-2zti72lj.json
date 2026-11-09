@@ -1,0 +1,26 @@
+{
+  "id": "ST-2zti72lj",
+  "kind": "story",
+  "title": "gate add does not make a design choice blocking because its option text names kbjob.py, a credential or a mirror",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the blocking classes (secrets, push, authority) match a gate's question and its options as the item's own subject, not a word inside an option that names a command or a data member: four of the five SP-lwkdljxg review fixes waited on gates the planner would have called detail only, a url form, an operator member and a clone argument",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "s=open('_tools/bl_items.py').read(); assert 'detail only' in s"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-lwkdljxg close"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

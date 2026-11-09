@@ -1,0 +1,26 @@
+{
+  "id": "ST-c3e5vui5",
+  "kind": "story",
+  "title": "land's siblings stop names how a done sibling's check is changed, since set --check refuses a done item",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "when land stops at step siblings because a done item's check fails with the branch's change, the stop message prints the route that works (backlog.py --root WORKTREE reopen ID --why TEXT, set ID --check, claim ID, done ID --commit on the worker's branch, touches widened by the item file first), so a worker or runner does not find it by a refused set; SP-lwkdljxg's review fixes stopped there four times",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "s=open('_tools/bl_land.py').read(); assert 'reopen' in s[s.index('siblings'):]"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-lwkdljxg close"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

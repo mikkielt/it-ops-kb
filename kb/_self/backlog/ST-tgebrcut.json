@@ -1,0 +1,26 @@
+{
+  "id": "ST-tgebrcut",
+  "kind": "story",
+  "title": "check warns at plan time of done items whose checks run the entry point an item's touches change",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "check (and precheck SP) lists, for a committed item, each done item whose check runs a tool the item's touches change (kbjob.py serve, coord.py serve and the like, found by the tool script named in the check's argv), so the planner widens touches to those items' files or orders a reopen before the start gate instead of meeting them as a land stop; SP-lwkdljxg's review fixes broke the checks of ST-kcdeil4w, ST-iz6u7rem, ST-ma2tluug and ST-vst4vom3",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "s=open('_tools/bl_check.py').read(); assert 'done item' in s and 'argv' in s"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_check.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-lwkdljxg close"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

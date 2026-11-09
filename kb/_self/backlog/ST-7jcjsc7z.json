@@ -1,0 +1,26 @@
+{
+  "id": "ST-7jcjsc7z",
+  "kind": "story",
+  "title": "close --summary reads a goal clause's words against item titles, so recovery and serialisation show as unmet beside items that deliver them",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "close --summary maps a goal clause fragment to an item by the item's clauses mapping or title words with their inflections (recovery to ST-5cqlfweg, serialisation to ST-iw7pe3mc), so a delivered fragment is not printed unmet",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "s=open('_tools/bl_close.py').read(); assert 'unmet' in s"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_close.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-lwkdljxg close"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
