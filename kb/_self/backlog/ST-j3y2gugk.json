@@ -2,7 +2,7 @@
   "id": "ST-j3y2gugk",
   "kind": "story",
   "title": "A source whose page moved is re-pointed by kbid.py repoint, which writes the new row, supersedes the old one and re-keys its anchor and doc2query rows",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-2cq2hse4",
   "priority": "P2",
@@ -37,5 +37,7 @@
     "ST-kqy75wsv"
   ],
   "notes": "Found 2026-11-09 when two refresh runs re-pointed 20 moved sources by hand with scratch scripts for 60 anchor and 15 doc2query rows, and kbid.py add refused hosts with no registry licence record. Premise: the planted-root check exits 1 on 55dde769f (no repoint subcommand). The command is registered in kbid.py main; its Use: docstring line and kbtools catalog follow.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-c41d77ea",
+  "operator": "op-f618a13e"
 }
