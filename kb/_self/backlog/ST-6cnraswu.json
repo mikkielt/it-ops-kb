@@ -1,0 +1,22 @@
+{
+  "id": "ST-6cnraswu",
+  "kind": "story",
+  "title": "Planning: a repro or check that plants two commits in one run orders them by ancestry, not by commit time",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the sprint skill's plan step tells the planner that a planted repro or check which compares the times of commits it makes in one run reads their order in history, since a fast landing run puts them in one second (SP-yriisdti: BG-2naamm5z passed in its worker and was refused at the landing checks)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.exit('to fill in at planning')"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
