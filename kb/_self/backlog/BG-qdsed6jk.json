@@ -1,0 +1,32 @@
+{
+  "id": "BG-qdsed6jk",
+  "kind": "bug",
+  "title": "A server executor clones any url a job names and runs that repository's tools with the placed identity",
+  "status": "todo",
+  "sprint": "SP-lwkdljxg",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "Home takes the urls a server executor serves (kj_exec.Home(base, allowed): the repeatable serve option --remote URL, compared after kj_store's credential-free form) and its prepare refuses a job whose remote is not among them, as an Unprepared naming the url, before any git call; the file transport is not in GIT_ALLOW_PROTOCOL for a server executor",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,inspect; sys.path.insert(0,'_tools'); import kj_exec; assert 'allowed' in inspect.signature(kj_exec.Home).parameters"
+    ]
+  },
+  "repro_reason": "the clone of an arbitrary url needs a served queue; the repro asks for the allowlist parameter and the fix carries a planted-url check",
+  "touches": [
+    "_tools/kj_exec.py",
+    "_tools/kbjob.py",
+    "_tools/kj_store.py",
+    "kb/_self/coordination.md",
+    "kb/_self/git.md",
+    "kb/_self/tools.md",
+    "kb/_self/runners.md"
+  ],
+  "depends_on": [
+    "BG-7b53bpeh"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

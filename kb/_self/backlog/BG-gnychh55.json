@@ -1,0 +1,30 @@
+{
+  "id": "BG-gnychh55",
+  "kind": "bug",
+  "title": "A server or CI executor runs the identity a job's own record names, so a coord key holder can run a job as another group's bot",
+  "status": "todo",
+  "sprint": "SP-lwkdljxg",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "kj_exec.verify_placement(record) re-asks the placement policy (kbjob place, the closed operation table's capabilities, the record's operator and root) for a queued job before an executor of a central queue takes it, and Sync.pull leaves the job queued, with a reason step, when the recorded placement (executor, identity, decided_by, budget_cap_usd) differs from that decision; job_env never reads an identity or group path from the record that the decision did not give",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,'_tools'); import kj_exec; assert hasattr(kj_exec,'verify_placement')"
+    ]
+  },
+  "repro_reason": "the hole needs a served coord, a server executor and a credential directory; the repro asks only for the named function, and the fix carries a planted-record check",
+  "touches": [
+    "_tools/kj_exec.py",
+    "_tools/kj_cred.py",
+    "_tools/kj_store.py",
+    "_tools/kbjob.py",
+    "kb/_self/coordination.md",
+    "kb/_self/git.md",
+    "kb/_self/tools.md",
+    "kb/_self/runners.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

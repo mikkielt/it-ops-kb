@@ -1,0 +1,26 @@
+{
+  "id": "ST-6nsiv3o6",
+  "kind": "story",
+  "title": "A job's process does not inherit the group tokens of its executor, and a credential file that is a symlink is refused",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kj_cred.clean drops every KB_GROUP_TOKEN_* name and the operator token names from the environment of a job whose identity is none or operator, and kj_cred refuses a credential file that is a symlink (lstat), as it refuses one with wider than 0600 permissions",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "s=open('_tools/kj_cred.py').read(); assert 'lstat' in s"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kj_cred.py",
+    "kb/_self/runners.md"
+  ],
+  "links": [
+    "parked: SP-lwkdljxg review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

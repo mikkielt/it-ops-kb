@@ -33,6 +33,9 @@
   "depends_on": [
     "ST-zom563hs"
   ],
+  "links": [
+    "parked: SP-lwkdljxg review"
+  ],
   "notes": "Research 2026-11-08: OPA bundle manifest roots, resource default bundles/<name>, Etag/304, bearer token_path, ${NAME} substitution only under opa run and only for defined variables, persistence_directory default $PWD/.opa, and test discovery by the test_ prefix are in kb public/agents/policy-as-code.md (QK-operations-placement-stories-need-opa-bundles).",
   "filed_in": "clone-0ea70e5c"
 }

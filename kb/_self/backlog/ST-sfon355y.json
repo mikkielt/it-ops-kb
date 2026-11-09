@@ -1,0 +1,26 @@
+{
+  "id": "ST-sfon355y",
+  "kind": "story",
+  "title": "An adopted job child that finished while its executor was down keeps its own exit instead of being counted as a loss",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kj_exec's recovery reads the exit of a child it adopts from the job's log or its pid record when the child ended while no executor ran, and moves the job to succeeded or failed with that exit; only a child with no recoverable end is lost and queued again, so a paid bench is not billed twice",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "s=open('_tools/kj_exec.py').read(); assert 'adopted_exit' in s"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kj_exec.py",
+    "kb/_self/coordination.md"
+  ],
+  "links": [
+    "parked: SP-lwkdljxg review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

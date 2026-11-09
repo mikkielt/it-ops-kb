@@ -1,0 +1,31 @@
+{
+  "id": "BG-k6tyqqbn",
+  "kind": "bug",
+  "title": "A group's daily cap counts no spend of a finished bench job, so it bounds only the budgets of jobs alive together",
+  "status": "todo",
+  "sprint": "SP-lwkdljxg",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "a finished paid job's record keeps the USD it spent (spent_usd, written by the executor at its end from the job's own spend rows), kj_store.finished_spend sums spent_usd of the finished jobs of the group submitted on the UTC day, whether or not the subject is a backlog item, and the daily cap check reads that sum and the live budgets inside one transaction",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,time; sys.path.insert(0,'_tools'); import kj_store; t=time.time(); r=[{'subject':'s1','state':'succeeded','submitted_ts':t,'placement':{'decided_by':'corp'},'spent_usd':4.5}]; v=kj_store.finished_spend('.', r, 'corp', t); assert v==4.5, v"
+    ]
+  },
+  "touches": [
+    "_tools/kj_store.py",
+    "_tools/kj_exec.py",
+    "_tools/kbjob.py",
+    "kb/_self/coordination.md",
+    "kb/_self/git.md",
+    "kb/_self/tools.md",
+    "kb/_self/runners.md"
+  ],
+  "depends_on": [
+    "BG-qdsed6jk"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

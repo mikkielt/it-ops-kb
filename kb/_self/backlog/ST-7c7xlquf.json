@@ -1,0 +1,25 @@
+{
+  "id": "ST-7c7xlquf",
+  "kind": "story",
+  "title": "The CI-yml check of the pipeline-trigger job reads each job by its top-level key, not blocks split at blank lines",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "a check parses .gitlab-ci.yml into its top-level job keys (a line at column 0 ending in a colon) and asserts of each job except kb-job that it keeps when: manual or its own rules, and of kb-job that its rules name the trigger pipeline source and a KB_JOB variable, so a blank line inside a job or a new job is read right and a comment cannot satisfy it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re; s=open('.gitlab-ci.yml').read(); jobs=re.findall(r'(?m)^([A-Za-z0-9_.-]+):\\s*$', s); assert 'kb-job' in jobs"
+      ]
+    }
+  ],
+  "touches": [
+    ".gitlab-ci.yml"
+  ],
+  "links": [
+    "parked: SP-lwkdljxg review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

@@ -1,0 +1,31 @@
+{
+  "id": "BG-eaf6nttv",
+  "kind": "bug",
+  "title": "A CI executor on a stock GitLab runner refuses every job, since the clone's origin url carries the job token and never equals the submitter's url, and a url with a credential reaches the job record",
+  "status": "todo",
+  "sprint": "SP-lwkdljxg",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kj_store.remote_url returns the integration remote's url without any user or password part (https://host/path from https://user:token@host/path), for the submitter's job record and for the executor's comparison alike, so Sync.fits matches a runner clone whose origin carries gitlab-ci-token and no credential enters a job record, an event or a server's git clone argument",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,subprocess,tempfile; sys.path.insert(0,'_tools'); import kj_store; d=tempfile.mkdtemp(); subprocess.run(['git','init','-q',d],check=True); subprocess.run(['git','-C',d,'remote','add','origin','https://gitlab-ci-token:TOK@host.example.org/g/p.git'],check=True); u=kj_store.remote_url(d); assert u=='https://host.example.org/g/p.git', u"
+    ]
+  },
+  "touches": [
+    "_tools/kj_store.py",
+    "_tools/kj_exec.py",
+    "_tools/kbjob.py",
+    "kb/_self/coordination.md",
+    "kb/_self/git.md",
+    "kb/_self/tools.md",
+    "kb/_self/runners.md"
+  ],
+  "depends_on": [
+    "BG-gnychh55"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

@@ -1,0 +1,27 @@
+{
+  "id": "ST-emkdkzss",
+  "kind": "story",
+  "title": "The job of a CI executor has its only counted row after someone follows it to the end",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "a CI executor's job is counted once without a follower: the pipeline's kb-job writes the job.run row to the central store's job record, or the digest counts a job record with no row of either origin once, so a job nobody follows is not missing from kbjob.py stats",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "s=open('_tools/ql_capture.py').read(); assert 'ci_without_follower' in s"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_capture.py",
+    "_tools/kj_exec.py",
+    "kb/_self/coordination.md"
+  ],
+  "links": [
+    "parked: SP-lwkdljxg review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

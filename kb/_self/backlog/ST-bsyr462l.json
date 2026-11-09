@@ -1,0 +1,26 @@
+{
+  "id": "ST-bsyr462l",
+  "kind": "story",
+  "title": "A central job record holds no executor path: a credential refusal names the credential, not its directory, and the log path stays on the host",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the reason an executor posts to the central record for a missing credential names the identity and the variable or file name, never CRED_DIR or a home directory, and note_log posts the log's job-relative name, with the host named by kbjob.py log as today, so coord holds states and events only",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "s=open('_tools/kj_exec.py').read(); assert 'log_file' not in s"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kj_exec.py",
+    "kb/_self/coordination.md"
+  ],
+  "links": [
+    "parked: SP-lwkdljxg review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
