@@ -622,16 +622,34 @@ def run_times(events):
     return times
 
 
-def record_run(store, job, record, state):
+FOLLOWER = "follower"  # the origin of the `job.run` row `kbjob.py follow` writes in the submitting clone
+CI = "ci"  # the executor kind of a job a GitLab pipeline runs: it writes no row
+
+
+def run_origin(store):
+    """The origin an executor gives its `job.run` rows: the kind of the executor serving STORE (`server`, `workstation`, `ci`), the
+    workstation for a clone's own queue."""
+    return getattr(store, "kind", None) or kj_store.WORKSTATION
+
+
+def record_run(store, job, record, state, origin=None, events=None):
     """Write the ops row `job.run` of a job that ended in STATE (succeeded, refused, failed or cancelled; none for another): its operation,
-    the end as `class`, its attempt and the milliseconds it queued, waited for a lock or a merge, and ran, read from the job's own
-    events (`ql_deliver.ops_row`: nothing in a test run). Never raises: a job never fails for its log."""
+    the end as `class`, its attempt, the milliseconds it queued, waited for a lock or a merge, and ran, read from the job's own
+    events (EVENTS, else the store's), and the job id and the ORIGIN of the row (the executor kind that ended the job, else
+    `follower` for `kbjob.py follow`, which counts the job once more than the executor does: `kbjob.py stats` and the digest take
+    the executor's). A job of the ci executor writes none (the follower's row is then the job's only one). Rows go through
+    `ql_deliver.ops_row`: nothing in a test run. Never raises: a job never fails for its log."""
     try:
         if state not in RUN_ENDS:
             return
+        origin = origin or run_origin(store)
+        now = record if origin == FOLLOWER else kj_store.read_record(store, job) or record
+        if origin == CI:
+            return
         import ql_deliver
-        now = kj_store.read_record(store, job) or record
-        ql_deliver.ops_row("job.run", op=record["op"], **{"class": state}, attempt=int(now.get("attempt", 1)), **run_times(job_events(store, job)))
+        events = job_events(store, job) if events is None else events
+        ql_deliver.ops_row("job.run", op=record["op"], **{"class": state}, attempt=int(now.get("attempt", 1)), job=job.lower(), origin=origin,
+                           **run_times(events))
     except Exception:  # noqa: BLE001 - see the docstring
         pass
 

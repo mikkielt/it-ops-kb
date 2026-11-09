@@ -36,12 +36,58 @@
     "_tools/kj_exec.py",
     "_tools/kbjob.py",
     "kb/_self/querylog.md",
-    "kb/_self/coordination.md"
+    "kb/_self/coordination.md",
+    "_tools/ql_capture.py",
+    "_tools/ql_report.py",
+    "kb/_self/tools.md",
+    "_tools/test_redact.py"
   ],
   "depends_on": [
     "ST-liirkdss",
     "ST-vst4vom3",
     "ST-nfsozwhe"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does a job.run row carry the job id and its origin?",
+      "options": [
+        "optional keys job (the lower-cased job id, a token) and origin (server, workstation or follower) in the closed job.run row",
+        "a new event job.ended beside job.run"
+      ],
+      "recommendation": "optional keys job (the lower-cased job id, a token) and origin (server, workstation or follower) in the closed job.run row",
+      "do": {
+        "optional keys job (the lower-cased job id, a token) and origin (server, workstation or follower) in the closed job.run row": "ST-iz6u7rem",
+        "a new event job.ended beside job.run": "ST-iz6u7rem"
+      },
+      "class": "secrets",
+      "answer": "optional keys job (the lower-cased job id, a token) and origin (server, workstation or follower) in the closed job.run row",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Where does a server executor write its job rows, and does the follower write one for a ci job?",
+      "options": [
+        "to the spool its own process resolves (the plugin data home when set, else the clone's), none from a ci executor or a follower of a ci job",
+        "to a spool kept under the server's data directory, a follower row also for a ci job"
+      ],
+      "recommendation": "to the spool its own process resolves (the plugin data home when set, else the clone's), none from a ci executor or a follower of a ci job",
+      "do": {
+        "to the spool its own process resolves (the plugin data home when set, else the clone's), none from a ci executor or a follower of a ci job": "ST-iz6u7rem",
+        "to a spool kept under the server's data directory, a follower row also for a ci job": "ST-iz6u7rem"
+      },
+      "class": "design",
+      "answer": "to the spool its own process resolves (the plugin data home when set, else the clone's); a ci executor writes none, but the follower of a ci job does write its origin follower row, since that is then the job's only row and the goal counts each job once",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
   ],
   "notes": "Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: a CI job writes none",
   "filed_in": "clone-0ea70e5c",

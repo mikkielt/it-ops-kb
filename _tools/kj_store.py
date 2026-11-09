@@ -626,6 +626,17 @@ def active_remote(remote):
     return [{**r, "placement": placement_of(r)} for r in remote.records() if r.get("state", "none") not in TERMINAL]
 
 
+def follower_row(remote, job, record, state):
+    """The `job.run` row of a job the follower saw end on the central queue, with origin `follower`, its times read from the
+    job's events on the queue (`kj_exec.record_run`); never raises."""
+    try:
+        import kj_exec
+        events = [(e["fields"].get("state"), e["at"]) for e in remote.events(job, 0, 0).get("events", []) if e["fields"].get("job") == job]
+        kj_exec.record_run(None, job, record, state, origin=kj_exec.FOLLOWER, events=events)
+    except Exception:  # noqa: BLE001 - a follow never fails for its log
+        pass
+
+
 def follow_remote(remote, job, since, timeout, out):
     """`follow` on a central queue (`kj_follow.follow`'s lines and exits; the end line names the host that has the log)."""
     import kj_follow
@@ -644,6 +655,7 @@ def follow_remote(remote, job, since, timeout, out):
             parts = [job, state] + ([f"step={record['step']}"] if record.get("step") is not None else [])
             parts += [f"exit={'-' if record.get('exit') is None else record['exit']}", f"log=host:{record.get('log_host') or '-'}"]
             print(" ".join(parts), file=out, flush=True)
+            follower_row(remote, job, record, state)
             return kj_follow.FOLLOW_EXIT[state]
         if time.monotonic() >= deadline:
             print(f"follow: still running, continue with --since {cursor}", file=out, flush=True)
