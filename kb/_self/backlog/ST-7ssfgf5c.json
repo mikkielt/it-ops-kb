@@ -32,6 +32,16 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "planning a story that changes the leak scan or a guard lists every outbound path, each path that hands content outside the clone (each caller of kbpublic.file_hits and of kbcommon.leak_hits, with whether it passes shipped=True), in the item's notes",
+      "check": 0
+    },
+    {
+      "clause": "a gate is asked for each outbound path the goal leaves open, before the start gate",
+      "check": 1
+    }
+  ],
   "touches": [
     "skills/sprint/SKILL.md"
   ],
