@@ -1,0 +1,18 @@
+{
+  "id": "BG-5fkb3rvh",
+  "kind": "bug",
+  "title": "kbmon prints the needs-you ask time, the sprint panel's landing time and the kb.eval alert's since as bare UTC without saying UTC",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Every wall-clock time kbmon prints in the needs-you line, the sprint panel's landing row and the kb.eval alert carries UTC, as mon_status.when and mon_querylog.when now do.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import mon_kb;sys.exit('UTC' not in mon_kb.alerts({'eval':{'state':'failed','when':'2026-11-08T22:56:00Z'}})[0]['since'])"
+    ]
+  },
+  "filed_in": "clone-0ea70e5c"
+}
