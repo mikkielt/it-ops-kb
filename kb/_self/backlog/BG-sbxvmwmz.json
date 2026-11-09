@@ -2,7 +2,7 @@
   "id": "BG-sbxvmwmz",
   "kind": "bug",
   "title": "kbmon's kb panel counts closed and non-UNK gap entries as open gaps",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-zobzdhwi",
   "priority": "P3",
   "rank": 0,
@@ -26,5 +26,7 @@
   "links": [
     "parked: SP-5gph7fh6 review"
   ],
-  "notes": "Planner 2026-11-09 premise run: the conflicts half does not reproduce today. kbmon --json --panel kb gives conflicts 125, the number of ledger entries with no settling line, and none of those starts with Resolved, Closed or Superseded (every Resolved entry holds a settling line); only the gaps figure (361) is checked against the rule."
+  "notes": "Planner 2026-11-09 premise run: the conflicts half does not reproduce today. kbmon --json --panel kb gives conflicts 125, the number of ledger entries with no settling line, and none of those starts with Resolved, Closed or Superseded (every Resolved entry holds a settling line); only the gaps figure (361) is checked against the rule.",
+  "claimed_by": "claude-0f9262ec",
+  "operator": "op-f618a13e"
 }
