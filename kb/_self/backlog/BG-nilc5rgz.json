@@ -17,5 +17,9 @@
   "touches": [
     "_tools/kbpublic.py"
   ],
+  "links": [
+    "parked: SP-mut2pmu3 review"
+  ],
+  "notes": "SP-mut2pmu3 review gap 4 (S3). The commit that made a _root.md under _tools/fixtures a test input changed what the scan flags in those files (secrets-only before, every kind now) but kbpublic.py SCAN_FORM stays 8, and the verdict cache key (verdicts-<TIP>-<digest of scan_form, allowlist, pinned, placeholders>) holds no internal prefixes: a clone whose _cache holds a verdict of a commit that wrote fixture files keeps the old one. Fix: bump SCAN_FORM to 9, as its comment says a change to what the scan flags does.",
   "filed_in": "clone-0ea70e5c"
 }
