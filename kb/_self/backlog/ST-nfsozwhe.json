@@ -71,7 +71,12 @@
         "kbjob.py --url \"$KB_COORD_URL\" --key-file \"$KB_COORD_KEY\" serve --kind ci --job \"$KB_JOB\" --once, the url a project variable and the key a file-type variable": "ST-nfsozwhe",
         "the bare serve --kind ci --job $KB_JOB --once the goal names, which exits 2 without --url": "ST-nfsozwhe"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "kbjob.py --url \"$KB_COORD_URL\" --key-file \"$KB_COORD_KEY\" serve --kind ci --job \"$KB_JOB\" --once, the url a project variable and the key a file-type variable",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     },
     {
       "id": "g2",
