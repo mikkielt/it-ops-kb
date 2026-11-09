@@ -50,6 +50,27 @@
     "kb/_self/tools.md",
     "kb/_self/querylog.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does the item file's later answer get kept: in Backlog.save for every command, or only in done and set?",
+      "options": [
+        "Backlog.save, every command, gate fields the loaded copy lacked",
+        "only done and set call a merge helper"
+      ],
+      "recommendation": "Backlog.save, every command, gate fields the loaded copy lacked",
+      "reason": "one write path covers every command that loads before a long step, and a key the command removed stays removed",
+      "do": {
+        "Backlog.save, every command, gate fields the loaded copy lacked": "ST-u2e3rbit",
+        "only done and set call a merge helper": "ST-u2e3rbit"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "Backlog.save, every command, gate fields the loaded copy lacked",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ep7ck2ab close"
   ],
