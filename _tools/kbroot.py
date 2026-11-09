@@ -267,13 +267,14 @@ def run_bounded(args, cwd, timeout):
 
 
 ABS_PATH_QUOTED = re.compile(r"\s*'(?:/|[A-Za-z]:[\\/]|\\\\)[^']*'")
-ABS_PATH_BARE = re.compile(r"(?<![\w/.\\])(?:/|[A-Za-z]:[\\/]|\\\\).+?(?=: |$)")
+ABS_PATH_BARE = re.compile(r"(?<![\w/.\\])(?:/|[A-Za-z]:[\\/]|\\\\).+?(?=: |$)", re.M)
 
 
 def without_paths(line):
     """`line` without the absolute paths it names (git reports the directory it could not create in quotes): the
     home directory of the user never reaches a session. An unquoted path may hold spaces, so it runs to the next
-    `: ` (git's reason follows it) or the end of the line, and a line that names it stays without any of its tail."""
+    `: ` (git's reason follows it) or the end of its line (a newline ends it too, so a multi-line text keeps its later
+    lines), and a line that names it stays without any of its tail."""
     return ABS_PATH_BARE.sub("a path", ABS_PATH_QUOTED.sub("", line))
 
 
