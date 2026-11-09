@@ -2,7 +2,7 @@
   "id": "BG-v6h6rhfk",
   "kind": "bug",
   "title": "A _root.md or pointer that is not valid UTF-8 passes publish's tree refusal and the sync range gate, since blobs() drops undecodable files",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-mut2pmu3",
   "priority": "P2",
   "rank": 0,
@@ -46,6 +46,28 @@
   ],
   "notes": "Review gap G2 of SP-n7zxspch. kbpublic.py:510-512 and :515-518 read through blobs()/texts() (:454-457), which drop undecodable blobs; history_refusals :860-866 and :879-882 and internal_prefixes :620-623 do the same. A cp1250 byte in a Polish description is enough. kbcommon.load_root raises UnicodeDecodeError on such a file (not RootError), so other tools fail on it while publish and sync pass it. Premise run 2026-11-09: the repro fails on the base (an undecodable _root.md gives no tree cause). Outbound paths: tree_refusals and history_refusals serve publish (shipped=True) and the sync range gate; internal_prefixes serves tree_hits (the tracked-file scan test_leaks and bl_check read), so one fix in kbpublic.py covers all of them; the planted check plants an undecodable _root.md that says visibility: public and asks all three functions. An unreadable file counts as not public (the closed rule), so no exemption is added.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-ev3run01",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "f6d3e5b1fe9af70cffe9cfca8d31ef8479764dc0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport sys,os,subprocess as s,tempfile\nsys.path.insert(0,'_tools');import kbpublic as k\nd=tempfile.mkdtemp();g=lambda *a:s.run(['git','-C',d,*a],check=True,capture_output=True)\nrev=lambda:s.run(['git','-C',d,'rev-parse','HEAD'],capture_output=True,text=True).stdout.strip()\ng('init','-q')\ndef w(p,t):\n    os.makedirs(os.path.dirname(d+'/'+p),exist_ok=True);open(d+'/'+p,'wb').write(t)\ndef cm(m):\n    g('add','-A');g('-c','user.name=t','-c','user.email=t'+chr(64)+'example.com','commit','-qm',m);return rev()\nw('a',b'x\\n');b0=cm('base')\nw('kb/team/_root.md',b'---\\nroot: team\\nid_prefix: T\\nvisibility: public\\ndescription: x\\xb3\\n---\\n');w('kb/team/a.md',b'x\\n');cm('team')\nf=k.tree_files('HEAD',d)\nt=k.tree_refusals('HEAD',f,d);h=k.history_refusals('HEAD',b0,f,d,projected=False)[0];p=k.internal_prefixes('HEAD',f,d)\nprint(t,h,p)\nsys.exit(0 if t and h and 'kb/team/' in p and any('read' in x for x in t) else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "5ee5a4d4c6367c11"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,subprocess as s,tempfile;sys.path.insert(0,'_tools');import kbpublic as k;d=tempfile.mkdtemp();g=lambda *a:s.run(['git','-C',d,*a],check=True,capture_output=True);g('init','-q');os.makedirs(d+'/kb/team');open(d+'/kb/team/_root.md','wb').write(b'---\\nroot: team\\nid_prefix: T\\nvisibility: internal\\ndescription: x\\xb3\\n---\\n');open(d+'/kb/team/a.md','w').write('x\\n');g('add','-A');g('-c','user.name=t','-c','user.email=t'+chr(64)+'example.com','commit','-qm','t');r=k.tree_refusals('HEAD',k.tree_files('HEAD',d),d);print('a _root.md that is not UTF-8 gives tree causes:',len(r));sys.exit(0 if r else 1)"
+        ],
+        "exit": 0,
+        "sha256": "1767c6aa6d80c2b9"
+      }
+    ]
+  }
 }
