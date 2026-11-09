@@ -19,6 +19,29 @@
     "_tools/redact.py",
     "kb/_self/querylog.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does redact.redact take a url password that holds an angle bracket?",
+      "options": [
+        "A redact-only pattern URL_USERINFO_ANGLE in _tools/redact.py",
+        "Widen kbcommon.URL_USERINFO's password class"
+      ],
+      "recommendation": "A redact-only pattern URL_USERINFO_ANGLE in _tools/redact.py",
+      "reason": "kbcommon.py is outside the item's touches and an in-flight sibling changes it",
+      "do": {
+        "A redact-only pattern URL_USERINFO_ANGLE in _tools/redact.py": "BG-5dcfyrks",
+        "Widen kbcommon.URL_USERINFO's password class": "BG-5dcfyrks"
+      },
+      "class": "secrets",
+      "answer": "A redact-only pattern URL_USERINFO_ANGLE in _tools/redact.py",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "links": [
     "parked: SP-w57bnhhx review"
   ],
