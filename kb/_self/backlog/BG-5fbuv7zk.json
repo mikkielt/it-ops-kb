@@ -2,7 +2,7 @@
   "id": "BG-5fbuv7zk",
   "kind": "bug",
   "title": "The kbsettings.py meaning of announce.needs_you_after_min still says an open question waits, while kbmon names an ask at once and delays only an undecided overlap",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-hyfyn22d",
   "priority": "P3",
   "rank": 0,
@@ -25,6 +25,19 @@
   ],
   "notes": "Found while planning SP-f2o3aqm2 (2026-10-24) for ST-i6jrzflk: kbsettings.py lines for the setting (module docstring and the SETTINGS meaning that explain and the kb_settings tool print) carry the same stale claim as the coordination.md bullet. Code item (code lane); the docs it maps to are coordination.md and tools.md. Not in the sprint: outside the listed items.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-ev4run01",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "886c901fdeae159e127319b947141a44b0dcb218",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0, \"_tools\"); import kbsettings; m = kbsettings.SETTINGS[\"announce.needs_you_after_min\"]; sys.exit(1 if \"open question\" in m or \"open question\" in (kbsettings.__doc__ or \"\") else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
