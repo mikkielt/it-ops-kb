@@ -2,7 +2,7 @@
   "id": "ST-fmx7e2wd",
   "kind": "story",
   "title": "kb-probe's list of curated provider columns names organisation, which kbid.py add reads for a new row's publisher",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-c6tr77jl",
   "priority": "P3",
   "rank": 0,
@@ -24,5 +24,7 @@
   "links": [
     "parked: SP-b36246xo review"
   ],
-  "notes": "AGENTS.md and maintaining.md are in the touches only because the docs map sends the skill there; edit them only if a line there is stale (AGENTS.md has its 4 KB cap, and ST-j3y2gugk of SP-2cq2hse4 also edits it: the landing rebase merges). Premise run 2026-11-09: kb-probe SKILL.md has no word organisation. Planned 2026-11-09 by a headless plan session; left out as off the theme or in a file another live session plans: BG-55zjrwpn and BG-cgbpg3lq (kbfacts.py). AGENTS.md left out of the touches: SP-2cq2hse4's held ST-j3y2gugk claims it and held paths block a claim. The change needs no AGENTS.md line (a skill column list); a worker that finds one stale stops with a report."
+  "notes": "AGENTS.md and maintaining.md are in the touches only because the docs map sends the skill there; edit them only if a line there is stale (AGENTS.md has its 4 KB cap, and ST-j3y2gugk of SP-2cq2hse4 also edits it: the landing rebase merges). Premise run 2026-11-09: kb-probe SKILL.md has no word organisation. Planned 2026-11-09 by a headless plan session; left out as off the theme or in a file another live session plans: BG-55zjrwpn and BG-cgbpg3lq (kbfacts.py). AGENTS.md left out of the touches: SP-2cq2hse4's held ST-j3y2gugk claims it and held paths block a claim. The change needs no AGENTS.md line (a skill column list); a worker that finds one stale stops with a report.",
+  "claimed_by": "claude-1d0b0461",
+  "operator": "op-f618a13e"
 }
