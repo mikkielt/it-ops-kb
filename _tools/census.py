@@ -1210,8 +1210,10 @@ def cmd_confirm(a, tally):
         r["retrieved_utc"] = date
         n_src += 1
     # confirmed by this census, or a row it added (phase 2 read those in full); a row merely retrieved on the same
-    # day by other work, or left unconfirmed, does not count
-    fresh = {sid for sid, lr in log.items() if confirmed(lr)} | {r["id"] for r in rows if r["id"] not in log and r["retrieved_utc"][:10] == date}
+    # day by other work, or left unconfirmed, does not count; `read` names the sources it read, so it adds none
+    fresh = {sid for sid, lr in log.items() if confirmed(lr)}
+    if getattr(a, "added", True):
+        fresh |= {r["id"] for r in rows if r["id"] not in log and r["retrieved_utc"][:10] == date}
     articles = []
     for rel in article_files():
         path = os.path.join(KB, rel)
@@ -1279,11 +1281,11 @@ def cmd_read(a, tally):
         os.makedirs(os.path.dirname(path), exist_ok=True)
         write_log(path, list(rows.values()))
         print(f"read: {len(set(a.ids))} source(s) logged to {os.path.relpath(path, kbcommon.HOME)}")
-        return cmd_confirm(argparse.Namespace(log=path, date=date, dry_run=False), tally)
+        return cmd_confirm(argparse.Namespace(log=path, date=date, dry_run=False, added=False), tally)
     with tempfile.TemporaryDirectory() as tmp:  # the report of confirm over the rows, no file of the root touched
         scratch = os.path.join(tmp, f"read-{date}.csv")
         write_log(scratch, list(rows.values()))
-        return cmd_confirm(argparse.Namespace(log=scratch, date=date, dry_run=True), tally)
+        return cmd_confirm(argparse.Namespace(log=scratch, date=date, dry_run=True, added=False), tally)
 
 
 def cmd_baselines(a, tally):
