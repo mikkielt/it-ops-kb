@@ -23,6 +23,29 @@
   "depends_on": [
     "BG-rrutf5bf"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "drop --commit: name the neighbour items it cleaned in KB-Work, or keep naming only the deleted ids and reword the docs?",
+      "options": [
+        "name the cleaned neighbours",
+        "name deleted ids only"
+      ],
+      "recommendation": "name the cleaned neighbours",
+      "reason": "the goal says every id whose item file the commit changes, and check-trailers allows a changed id",
+      "do": {
+        "name the cleaned neighbours": "BG-m2yejjrh",
+        "name deleted ids only": "BG-m2yejjrh"
+      },
+      "class": "agents-rule",
+      "answer": "name the cleaned neighbours",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "links": [
     "parked: SP-pww4aqis review"
   ],
