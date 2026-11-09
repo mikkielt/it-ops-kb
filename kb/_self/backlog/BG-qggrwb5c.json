@@ -32,6 +32,27 @@
     "kb/_self/coordination.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does claim keep its operator lookup and coord call from outlasting the claims-ledger lock's stale age?",
+      "options": [
+        "Move both before the lock and put the run state back to released when a refusal under the lock follows",
+        "Keep take_claim under the lock and bound the coord call below the stale age"
+      ],
+      "recommendation": "Move both before the lock and put the run state back to released when a refusal under the lock follows",
+      "reason": "a bound below 60 s would cut a slow but healthy coord short, and the claude and git calls in operator_who have no bound under it either",
+      "do": {
+        "Move both before the lock and put the run state back to released when a refusal under the lock follows": "BG-qggrwb5c",
+        "Keep take_claim under the lock and bound the coord call below the stale age": "BG-qggrwb5c"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "Move both before the lock and put the run state back to released when a refusal under the lock follows",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-jwvaq2hu review"
   ],
