@@ -57,6 +57,12 @@ decision's `fallback` is its kind: the job's placement becomes its kind (`fallba
 stays queued and one event with step `offline-since-<UTC time>` says why. `serve --kind K` with no --url serves the clone's own queue so
 (`kj_store.LocalRemote` in place of the central queue's `Remote`).
 
+A server executor (`serve --kind server [--data DIR]`) serves every integration remote url its queue's jobs name, not the clone it was started in:
+`Home` keeps one clone per url under DIR (cloned at the first job, fetched before each, the tree detached on `origin/main`), runs the job's
+argument list there as the CLI does on a workstation, and gives a land job the worktree `.claude/worktrees/agent-<id>` of the remote's `work/<id>`,
+where `backlog.py land` finds the pushed worker branch; the jobs of one url run one at a time (`serial_key`). A job that tests.py refused over the
+seconds of its test ceiling ends failed with the reason `host condition` (`host_condition`, `note_condition`) and is not run again.
+
 The job's record keeps the pid of its child (the member `pid`, written after the child starts, dropped when the job is queued
 again). Serve runs `recover` at its start and every RECOVER_S seconds, and follows each adopted child (the lease renewed
 until its pid ends) instead of starting a second process. An adopted child's exit is not known to serve, so its end is a
@@ -101,14 +107,25 @@ ENSURE_WAIT_S = 10.0  # how long `ensure` waits for the host file to name the ex
 LOGIN_LABEL = "dev.it-ops-kb.jobs"  # the LaunchAgent label and the systemd unit's name that `login-item --print` gives
 LOG_FALLBACK = "serve.log"
 STOP_LINE = re.compile(r"^[a-z][a-z-]* stopped at step ([^:\n]+):", re.MULTILINE)
+HOST_CONDITION = "host condition"  # the reason of a job that tests.py refused over the seconds of its test ceiling: the host was busy, the code is not at fault
+CEILING_LINE = re.compile(r"tests\.py: over the ceiling: the full run took \d+ s")  # the line tests.py prints for that refusal (`tests.ceiling_report`)
+
+
+def host_condition(code, text):
+    """Whether a job that ended with exit CODE and the output TEXT was refused by the seconds of the test ceiling: the line
+    `tests.py: over the ceiling: the full run took N s, ...` (a count over the ceiling, ids or files, is a finding of the code)."""
+    return code != 0 and bool(CEILING_LINE.search(text or ""))
 
 
 def classify(code, text):
     """(state, step) of a job's end: exit CODE and the output TEXT it wrote. `refused` takes exit 1 and a stop line naming a
     step (the last one), the step as an ops token (lower case, other characters one `-`) because a job field holds no
-    space; `failed` is every other end; `succeeded` exit 0. The step is None unless the state is refused."""
+    space; `failed` is every other end, a test ceiling refused over its seconds (`host_condition`) always; `succeeded` exit 0.
+    The step is None unless the state is refused."""
     if code == 0:
         return "succeeded", None
+    if host_condition(code, text):
+        return "failed", None
     if code == 1:
         found = STOP_LINE.findall(text or "")
         if found:
@@ -179,6 +196,7 @@ def post_move(store, job, state, given):
 
 
 SYNC_S = 2.0  # the wait between two syncs of a mirror with its central queue
+SERVER = "server"  # the executor kind that keeps one clone per integration remote url (`Home`)
 NO_CLONE = "no-clone"  # the step of the event that says a queued job names an integration remote url this executor's clone lacks
 
 
@@ -232,7 +250,9 @@ class Sync:
 
     def fits(self, record):
         """Whether this executor's clone is the one the job names: the one with its integration remote url (a central queue's job),
-        else the submitting clone (the clone's own queue)."""
+        else the submitting clone (the clone's own queue); for a server executor, whether the job names an integration remote url."""
+        if self.kind == SERVER:  # the server keeps a clone per url (`Home`): the job only has to name one
+            return bool(record.get("remote"))
         if isinstance(self.remote, kj_store.LocalRemote):
             return record.get("clone") == self.clone
         url = kj_store.remote_url(self.clone)
@@ -287,7 +307,8 @@ class Sync:
             elif self.kind == kj_store.WORKSTATION and (placed.get("host") != self.host or self.remote.owner(job) != self.remote.operator()):
                 continue
             if not self.fits(record):
-                self.reason(job, NO_CLONE, "no clone here with the job's integration remote url")
+                self.reason(job, NO_CLONE, "the job names no integration remote url" if self.kind == SERVER
+                            else "no clone here with the job's integration remote url")
                 continue
             mirrored = {k: v for k, v in record.items() if k not in ("state", "exit", "step")}
             mirrored.update(host=self.host, clone=self.clone, operator=self.operator)
@@ -345,6 +366,91 @@ class Presence:
             self.stamp()
             self.remote.release(self.key, self.token)
         self.token = None
+
+
+class Unprepared(Exception):
+    """The clone a server job runs in could not be made ready: the message says why (a url, a clone, a fetch or a worktree)."""
+
+
+class Home:
+    """The clones of a server executor (`serve --kind server`): one directory per integration remote url under BASE, named by a short
+    hash of the url, cloned at the first job that names the url and fetched before each. `prepare` brings the one of a job to the
+    integration main (`origin/main`, detached: the executor's own tree, never a worker's) and, for a land job, makes the worktree
+    `.claude/worktrees/agent-<id>` of the remote's branch `work/<id>`, where a workstation has the worker's own, so the CLI's `land`
+    finds and releases it as it does there. Every git call is a child the executor's leases are kept up through (KEEP), under a
+    time limit, with prompts off and only the transports of GIT_ALLOW_PROTOCOL."""
+
+    CLONE_S, FETCH_S = 900.0, 300.0
+    PROTOCOLS = "file:https:http:ssh:git"
+
+    def __init__(self, base):
+        self.base = Path(base)
+
+    def dir_of(self, url):
+        return self.base / hashlib.sha256(url.encode("utf-8")).hexdigest()[:12]
+
+    def run(self, args, cwd, limit, keep):
+        """`git ARGS` in CWD: its last output line when it ends 0, else Unprepared naming the command and the line."""
+        env = dict(os.environ, GIT_TERMINAL_PROMPT="0", GIT_ALLOW_PROTOCOL=self.PROTOCOLS)
+        group = {"start_new_session": True} if os.name == "posix" else {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
+        try:
+            proc = subprocess.Popen(["git", *args], cwd=cwd, env=env, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                                    stderr=subprocess.STDOUT, text=True, encoding="utf-8", errors="replace", **group)
+        except OSError as error:
+            raise Unprepared(f"git {args[0]} did not start: {str(error)[:150]}") from None
+        until = time.monotonic() + limit
+        try:
+            while True:
+                try:
+                    text = proc.communicate(timeout=1.0)[0]
+                    break
+                except subprocess.TimeoutExpired:
+                    keep()
+                    if time.monotonic() > until:
+                        kg_lock.end_group(proc)
+                        proc.communicate()
+                        raise Unprepared(f"git {args[0]} took more than {limit:g} s") from None
+        except BaseException:
+            if proc.poll() is None:
+                kg_lock.end_group(proc)
+            raise
+        if proc.returncode != 0:
+            raise Unprepared(f"git {args[0]} exit {proc.returncode}: {last_line(text)}")
+        return (text or "").strip()
+
+    def has_ref(self, clone, ref):
+        p = subprocess.run(["git", "rev-parse", "--verify", "--quiet", ref], cwd=clone, capture_output=True, text=True)
+        return p.returncode == 0
+
+    def prepare(self, record, keep=lambda: None):
+        """The directory a job runs in: its url's clone made ready as the class says. Unprepared for a job with no usable url."""
+        url = str(record.get("remote") or "")
+        if not url or url.startswith("-") or any(c.isspace() or ord(c) < 32 for c in url):
+            raise Unprepared(f"the job names no usable integration remote url: {url[:60]!r}")
+        clone = self.dir_of(url)
+        if not (clone / ".git").exists():
+            self.base.mkdir(parents=True, exist_ok=True)
+            self.run(["clone", "--quiet", "--", url, str(clone)], self.base, self.CLONE_S, keep)
+        self.run(["fetch", "--quiet", "--prune", "origin"], clone, self.FETCH_S, keep)
+        if self.has_ref(clone, "refs/remotes/origin/main"):
+            self.run(["checkout", "--quiet", "--force", "--detach", "origin/main"], clone, self.FETCH_S, keep)
+            self.run(["clean", "-fdq"], clone, self.FETCH_S, keep)
+        if record.get("op") == "land":
+            self.worktree(clone, str(record.get("subject") or ""), keep)
+        return clone
+
+    def worktree(self, clone, item, keep):
+        """The worktree of the remote's `work/<item>` under the clone's .claude/worktrees (the name `agent-<item>` a worker's has), made
+        again for each land job, so a stale one an earlier job left is replaced; Unprepared when the remote has no such branch."""
+        branch = f"work/{item}"
+        if not self.has_ref(clone, f"refs/remotes/origin/{branch}"):
+            raise Unprepared(f"the integration remote has no branch {branch}: push the worker's branch there before the land job")
+        path = clone / ".claude" / "worktrees" / f"agent-{item}"
+        if path.exists():
+            self.run(["worktree", "remove", "--force", str(path)], clone, self.FETCH_S, keep)
+        self.run(["worktree", "prune"], clone, self.FETCH_S, keep)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        self.run(["worktree", "add", "--quiet", "-B", branch, str(path), f"origin/{branch}"], clone, self.FETCH_S, keep)
 
 
 def own_store(root, store):
@@ -485,6 +591,35 @@ def start_job(store, job, record, clone, log, out):
     return proc, start
 
 
+def note_log(store, job, log):
+    """Keep the path of a server job's output log in its record, here and on the queue (`log_file`: the log is in the clone of the server
+    that ran it, not in the submitting clone, so `kbjob.py log` reads it from there when it runs on that host)."""
+    with contextlib.suppress(sqlite3.Error):
+        amend(store, job, log_file=str(log))
+    remote = getattr(store, "remote", None)
+    if remote is not None:
+        with contextlib.suppress(kj_ops.Refusal, coord.Refused):
+            remote.amend(job, log_file=str(log))
+
+
+def note_condition(store, job, code, text, state, out):
+    """A job that ended failed because tests.py refused the seconds of its test ceiling (`host_condition`) keeps the members `reason`
+    (HOST_CONDITION) and `platform` (this host's, the central host's where the queue is central) in its record, on the queue
+    too, and one line says so. The job is not run again, with this ceiling or another: a failed job is final, the ceiling is
+    the project's file and no option of a job reaches it."""
+    if state != "failed" or not host_condition(code, text):
+        return
+    members = {"reason": HOST_CONDITION, "platform": sys.platform}
+    with contextlib.suppress(sqlite3.Error):
+        amend(store, job, **members)
+    remote = getattr(store, "remote", None)
+    if remote is not None:
+        with contextlib.suppress(kj_ops.Refusal, coord.Refused):
+            remote.amend(job, **members)
+    print(f"{job}: {HOST_CONDITION}: the seconds of the test ceiling were passed on this host ({sys.platform}); "
+          "the job is not run again", file=out, flush=True)
+
+
 def finish_job(store, job, record, code, text, out):
     """Move a job whose child ended with exit CODE and output TEXT to the state classify gives, with one line printed; returns the
     state it moved to. A job cancelled meanwhile (kbjob.py cancel) stays cancelled, one line says so and cancelled is returned."""
@@ -505,6 +640,7 @@ def finish_job(store, job, record, code, text, out):
     elif state == "failed":
         note += f", exit {number}: {last_line(text)}"
     print(note, file=out, flush=True)
+    note_condition(store, job, number, text, state, out)
     return state
 
 
@@ -846,6 +982,7 @@ class LandRun(threading.Thread):
             elif state == "failed":
                 note += f", exit {fields.get('exit')}: {last_line(self.text)}"
             print(note, file=self.out, flush=True)
+            note_condition(self.store, self.job, fields.get("exit") or 0, self.text, state, self.out)
 
     def lose(self):
         """The executor ended while a pass ran (the child's group is ended): the job moves to lost, as any running job's does."""
@@ -882,17 +1019,21 @@ def serial_key(job):
     """(the key of the one-at-a-time class of JOB, the lock a holder outside the executor keeps it waiting for), each None for none:
     land is one at a time per clone (the clone's landing lock `landing`), sync-push per host (the host main lock `host-main`),
     the check tests-full per host (the host test lock `host-test`), done and stage-back per item (the run-state table); every
-    other job is of no class."""
+    other job is of no class. A job placed on a server (`Home`) is of the class of its integration remote url, whatever its operation:
+    one at a time per clone (the lock a holder outside the executor keeps it waiting for stays the operation's)."""
     op, opts = job.get("op"), job.get("options") or {}
+    key, lock = None, None
     if op == "land":
-        return ("land", job.get("clone")), "landing"
-    if op == "sync-push":
-        return ("sync-push",), "host-main"
-    if op == "check" and opts.get("name") == "tests-full":
-        return ("tests-full",), "host-test"
-    if op in ("done", "stage-back"):
-        return ("item", job.get("subject")), None
-    return None, None
+        key, lock = ("land", job.get("clone")), "landing"
+    elif op == "sync-push":
+        key, lock = ("sync-push",), "host-main"
+    elif op == "check" and opts.get("name") == "tests-full":
+        key, lock = ("tests-full",), "host-test"
+    elif op in ("done", "stage-back"):
+        key = ("item", job.get("subject"))
+    if (job.get("placement") or {}).get("executor") == SERVER and job.get("remote"):
+        key = ("server", job["remote"])  # one job at a time in a clone of the server (`Home`): a job moves its tree to the integration main
+    return key, lock
 
 
 def next_runnable(jobs, running, holders, slots=SLOTS):
@@ -980,12 +1121,13 @@ def wait_step(lock):
     return LOCK_STEPS[lock]
 
 
-def drain(store, clone, host, operator, out, slots=SLOTS, tick=None):
+def drain(store, clone, host, operator, out, slots=SLOTS, tick=None, home=None):
     """Run the queued jobs of this host, clone and operator to the end, at most SLOTS at a time and as `next_runnable` places them
     (submit order inside a class); the ids of the jobs that failed or were lost. A job whose lock a process outside the executor
     holds is moved to waiting-lock (event step: the lock; record member `holder`: its pid, clone and step) and started once the lock is free. A job another
     executor leased, or that left queued before this one moved it, is passed over. TICK, when given, is called at the start of each pass
-    (an executor of a central queue syncs its mirror there, `Sync`)."""
+    (an executor of a central queue syncs its mirror there, `Sync`). HOME, a `Home` (a server executor), makes each job's clone ready
+    before it starts and is where it runs, as the CLI would on a workstation; a job whose clone cannot be made ready ends failed."""
     failed, passed, active, waiting = [], set(), {}, {}  # active: job -> child state; waiting: job -> {record, token, renewed}
     slots = max(1, int(slots))
 
@@ -999,6 +1141,27 @@ def drain(store, clone, host, operator, out, slots=SLOTS, tick=None):
                 coord.renew(Namespace(key=lease_key(job), token=token, ttl=None, store=store), time.time)
             one["renewed"] = time.monotonic()
 
+    def keep_up(job, token, one):
+        """The leases of the jobs that run, and the job's own, renewed while its clone is made ready (a clone can take minutes)."""
+        for other, mine in list(active.items()):
+            if mine.get("run") is None:
+                renew(other, mine["token"], mine)
+        renew(job, token, one)
+
+    def unprepared(job, record, token, error):
+        """A job whose clone could not be made ready ends failed (exit 1), the reason in its log and in one line."""
+        log = kj_store.log_path(clone, job)
+        with contextlib.suppress(OSError):
+            log.parent.mkdir(parents=True, exist_ok=True)
+            with open(log, "a", encoding="utf-8", newline="\n") as sink:
+                sink.write(f"kbjob.py: the clone could not be made ready: {error}\n")
+        with contextlib.suppress(coord.Refused):
+            move(store, job, "failed", exit=1)
+        record_run(store, job, record, "failed")
+        print(f"{job} {record['op']} {record.get('subject') or '-'}: failed, exit 1: the clone could not be made ready: {error}", file=out, flush=True)
+        failed.append(job)
+        release(job, token)
+
     def begin(job, record, token):
         """Take the job out of queued or waiting-lock into running and start its child; False when it did not start."""
         try:
@@ -1006,17 +1169,28 @@ def drain(store, clone, host, operator, out, slots=SLOTS, tick=None):
         except coord.Refused:
             release(job, token)
             return False
+        where = clone
+        if home is not None:
+            one = {"renewed": time.monotonic()}
+            try:
+                where = str(home.prepare(record, lambda: keep_up(job, token, one)))
+            except Unprepared as error:
+                unprepared(job, record, token, error)
+                return True
+        if home is not None:
+            note_log(store, job, kj_store.log_path(where, job))
         if record.get("op") == "land":  # a thread of its own drives the passes and the wait (`LandRun`)
-            run = LandRun(store, clone, {**record, "state": "running"}, token, out)
+            run = LandRun(store, where, {**record, "state": "running"}, token, out)
             active[job] = {"record": record, "token": token, "run": run, "renewed": time.monotonic()}
             run.start()
             return True
-        proc, start = start_job(store, job, record, clone, kj_store.log_path(clone, job), out)
+        log = kj_store.log_path(where, job)
+        proc, start = start_job(store, job, record, where, log, out)
         if proc is None:
             failed.append(job)
             release(job, token)
             return True
-        active[job] = {"record": record, "token": token, "proc": proc, "start": start, "renewed": time.monotonic()}
+        active[job] = {"record": record, "token": token, "proc": proc, "start": start, "log": log, "renewed": time.monotonic()}
         return True
 
     try:
@@ -1038,7 +1212,7 @@ def drain(store, clone, host, operator, out, slots=SLOTS, tick=None):
                     continue
                 del active[job]
                 try:
-                    text = finish_text(kj_store.log_path(clone, job), one["start"])
+                    text = finish_text(one["log"], one["start"])
                     if finish_job(store, job, one["record"], code, text, out) in ("failed", "lost"):
                         failed.append(job)
                 finally:
@@ -1060,7 +1234,7 @@ def drain(store, clone, host, operator, out, slots=SLOTS, tick=None):
                     if token is None:
                         passed.add(job)
                         continue
-                    run = LandRun(store, clone, record, token, out)
+                    run = LandRun(store, str(home.dir_of(record["remote"])) if home is not None and record.get("remote") else clone, record, token, out)
                     active[job] = {"record": record, "token": token, "run": run, "renewed": time.monotonic()}
                     run.start()
             queued = [(j, r) for j, r in seen if r["state"] == "queued" and j not in waiting]
@@ -1071,7 +1245,7 @@ def drain(store, clone, host, operator, out, slots=SLOTS, tick=None):
             candidates.sort(key=lambda r: (r.get("submitted_ts", 0), r["job"]))
             mine = {os.getpid()} | {one["proc"].pid for one in active.values() if one.get("proc")}
             mine |= {one["run"].proc.pid for one in active.values() if one.get("run") and one["run"].proc}
-            holders = outside(lock_holders(clone), mine)
+            holders = outside(lock_holders(None if home is not None else clone), mine)  # a server's lands run in clones of its own: no landing lock of the executor's clone
             running = [one["record"] for one in active.values() if one.get("run") is None or one["run"].passing]
             run, wait = next_runnable(candidates, running, holders, slots)
             for record, lock, held in wait:
@@ -1260,9 +1434,17 @@ def serve(root, store, once=False, out=None, idle_exit=None, slots=SLOTS, kind=N
     store (in DATA, else in the clone's `kb-jobs`) and `Sync` takes and posts them."""
     out = out or sys.stdout
     clone = kj_store.clone_path(root)
-    sync = None
+    sync = home = None
     if remote is not None:
-        store = kj_store.Mirror(kj_store.mirror_path(root, remote, kind, data), remote, kind)
+        where = data
+        if kind == SERVER:  # the mirror and the clones of a server are one directory under DATA: its home
+            base = Path(data) if data else Path(coord.store_of(root)).parent.parent / kj_store.LOG_DIR
+            digest = hashlib.sha256("\0".join((remote.url, remote.operator())).encode("utf-8")).hexdigest()[:8]
+            where = base / f"server-{digest}"
+            home = Home(where / "clones")
+        if where is not None:
+            Path(where).mkdir(parents=True, exist_ok=True)
+        store = kj_store.Mirror(kj_store.mirror_path(root, remote, kind, where), remote, kind)
         sync = Sync(root, store, clone, out)
     if kj_store.log_path(clone, "JB-00000000") is None:
         print("kbjob.py: serve needs a git clone for its job logs", file=sys.stderr)
@@ -1290,7 +1472,7 @@ def serve(root, store, once=False, out=None, idle_exit=None, slots=SLOTS, kind=N
             if recovered is None or time.monotonic() - recovered >= RECOVER_S:
                 failed += recovery_pass(root, store, out)
                 recovered = time.monotonic()
-            failed += drain(store, clone, host, operator, out, slots, tick)
+            failed += drain(store, clone, host, operator, out, slots, tick, home)
             if once:
                 break
             if idle_exit is not None:

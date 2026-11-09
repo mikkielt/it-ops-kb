@@ -15,23 +15,125 @@
         "-c",
         "import sys,os,json,time,tempfile,subprocess,threading,http.server\nclass H(http.server.BaseHTTPRequestHandler):\n    seen=[]; out={}\n    def do_POST(s):\n        n=int(s.headers.get(\"Content-Length\") or 0); H.seen.append((s.path,json.loads(s.rfile.read(n) or b\"{}\")))\n        b=json.dumps(H.out).encode(); s.send_response(200); s.send_header(\"Content-Length\",str(len(b))); s.end_headers(); s.wfile.write(b)\n    def log_message(s,*a): pass\nsrv=http.server.HTTPServer((\"127.0.0.1\",0),H); threading.Thread(target=srv.serve_forever,daemon=True).start()\nOPA=f\"http://127.0.0.1:{srv.server_port}\"\ndec=lambda **k: {\"result\":dict({\"executor\":\"workstation\",\"identity\":\"none\",\"fallback\":None,\"fallback_after_s\":0,\"budget_cap_usd\":None,\"decided_by\":\"default\"},**k)}\nd=tempfile.mkdtemp(); env=dict(os.environ,KB_COORD_STORE=os.path.join(d,\"c.sqlite\"))\nkj=lambda *x,e=None: subprocess.run([sys.executable,\"_tools/kbjob.py\",*x],capture_output=True,text=True,timeout=300,env=e or env)\no=os.path.join(d,\"o.git\"); subprocess.run([\"git\",\"clone\",\"-q\",\"--bare\",\"--local\",\".\",o],check=True)\nH.out=dec(executor=\"server\")\nj1=json.loads(kj(\"submit\",\"check\",\"--name\",\"backlog-check\",\"--no-ensure\",\"--opa\",OPA,\"--clone-url\",\"file://\"+o).stdout)[\"job\"]\nr=kj(\"serve\",\"--kind\",\"server\",\"--data\",os.path.join(d,\"srv\"),\"--once\")\nj2=json.loads(kj(\"submit\",\"check\",\"--name\",\"tests-changed\",\"--no-ensure\",\"--opa\",OPA,\"--clone-url\",\"file://\"+o).stdout)[\"job\"]\nkj(\"serve\",\"--kind\",\"server\",\"--data\",os.path.join(d,\"srv\"),\"--once\")\ns=[json.loads(kj(\"status\",j).stdout)[\"state\"] for j in (j1,j2)]\nassert all(x in (\"succeeded\",\"failed\") for x in s) and len(os.listdir(os.path.join(d,\"srv\")))==1, (s,r.stderr)\n"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,json,tempfile,subprocess,threading,http.server,pathlib\nclass H(http.server.BaseHTTPRequestHandler):\n    def do_POST(s):\n        n=int(s.headers.get(\"Content-Length\") or 0); s.rfile.read(n)\n        b=json.dumps({\"result\":{\"executor\":\"server\",\"identity\":\"none\",\"fallback\":None,\"fallback_after_s\":0,\"budget_cap_usd\":None,\"decided_by\":\"default\"}}).encode(); s.send_response(200); s.send_header(\"Content-Length\",str(len(b))); s.end_headers(); s.wfile.write(b)\n    def log_message(s,*a): pass\nsrv=http.server.HTTPServer((\"127.0.0.1\",0),H); threading.Thread(target=srv.serve_forever,daemon=True).start()\nOPA=f\"http://127.0.0.1:{srv.server_port}\"\nd=tempfile.mkdtemp(); env=dict(os.environ,KB_COORD_STORE=os.path.join(d,\"c.sqlite\"))\nkj=lambda *x: subprocess.run([sys.executable,\"_tools/kbjob.py\",*x],capture_output=True,text=True,timeout=300,env=env)\ngit=lambda *x,cwd=d: subprocess.run([\"git\",\"-c\",\"user.name=t\",\"-c\",\"user.email=t@example.com\",*x],cwd=cwd,check=True,capture_output=True,text=True)\nsrc=os.path.join(d,\"src\"); os.makedirs(os.path.join(src,\"_tools\")); git(\"init\",\"-q\",\"-b\",\"main\",src)\npathlib.Path(src,\"_tools\",\"backlog.py\").write_text(\"import os\\nprint(os.getcwd(), os.path.isdir(\\\".claude/worktrees/agent-ST-vst4vom3\\\"))\\n\")\npathlib.Path(src,\"_tools\",\"tests.py\").write_text(\"import sys\\nprint(\\\"tests.py: over the ceiling: the full run took 99 s, the ceiling is 60 s on \\\" + sys.platform, file=sys.stderr)\\nsys.exit(1)\\n\")\ngit(\"add\",\"-A\",cwd=src); git(\"commit\",\"-q\",\"-m\",\"x\",cwd=src); git(\"branch\",\"work/ST-vst4vom3\",cwd=src)\no=os.path.join(d,\"o.git\"); git(\"clone\",\"-q\",\"--bare\",src,o)\nsub=lambda *a: json.loads(kj(\"submit\",*a,\"--no-ensure\",\"--opa\",OPA,\"--clone-url\",\"file://\"+o).stdout)[\"job\"]\njc=sub(\"check\",\"--name\",\"tests-changed\"); jl=sub(\"land\",\"ST-vst4vom3\")\nr=kj(\"serve\",\"--kind\",\"server\",\"--data\",os.path.join(d,\"srv\"),\"--once\")\nst=json.loads(kj(\"status\",jc).stdout); sl=json.loads(kj(\"status\",jl).stdout)\nran=[e[\"fields\"][\"state\"] for e in st[\"events\"]].count(\"running\")\nassert (st[\"state\"],st[\"reason\"],st[\"platform\"],ran)==(\"failed\",\"host condition\",sys.platform,1), (st,r.stdout,r.stderr)\nassert sl[\"state\"]==\"succeeded\" and kj(\"log\",jl).stdout.split()[-1]==\"True\" and len(os.listdir(os.path.join(d,\"srv\")))==1, (sl,r.stdout)\n"
+      ]
     }
   ],
   "clauses": [
     {
       "clause": "kbjob.py serve --kind server --data DIR takes the queued jobs placed on server, keeps one clone per integration remote url under DIR (cloned at the first job, fetched before each), runs the job's argv there as the CLI would on a workstation and lands an item from the remote work/<id> in a worktree of that clone",
       "check": 0
+    },
+    {
+      "clause": "a test-ceiling refusal ends the job failed with the reason host condition and the central host's platform, never retried with another ceiling",
+      "check": 1
     }
   ],
   "touches": [
     "_tools/kj_exec.py",
     "_tools/kj_land.py",
     "_tools/kbjob.py",
-    "kb/_self/coordination.md"
+    "kb/_self/coordination.md",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "ST-gf2rlzcc",
     "ST-ugkw5mt3"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does a job of the clone's own queue name the integration remote url a server runs it against?",
+      "options": [
+        "submit takes --clone-url URL, and records remote on a job a server may run, this clone's url when none is given",
+        "a server reads the url from the submitting clone's path only"
+      ],
+      "recommendation": "submit takes --clone-url URL, and records remote on a job a server may run, this clone's url when none is given",
+      "do": {
+        "submit takes --clone-url URL, and records remote on a job a server may run, this clone's url when none is given": "ST-vst4vom3",
+        "a server reads the url from the submitting clone's path only": "ST-vst4vom3"
+      },
+      "class": "design",
+      "answer": "submit takes --clone-url URL, and records remote on a job a server may run, this clone's url when none is given",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Where does a server executor keep its mirror store and its clones under --data DIR?",
+      "options": [
+        "one directory DIR/server-<8 hex> holding the mirror store and clones/<12 hex of the url>",
+        "the mirror store and a clones directory side by side in DIR"
+      ],
+      "recommendation": "one directory DIR/server-<8 hex> holding the mirror store and clones/<12 hex of the url>",
+      "do": {
+        "one directory DIR/server-<8 hex> holding the mirror store and clones/<12 hex of the url>": "ST-vst4vom3",
+        "the mirror store and a clones directory side by side in DIR": "ST-vst4vom3"
+      },
+      "class": "push",
+      "answer": "one directory DIR/server-<8 hex> holding the mirror store and clones/<12 hex of the url>",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Where does a server run a land job's command, and from what code?",
+      "options": [
+        "in the clone's own tree on the integration main, with a worker worktree of the remote work branch made beside it, as a workstation has",
+        "inside the worktree of the work branch, so the code under test runs the landing"
+      ],
+      "recommendation": "in the clone's own tree on the integration main, with a worker worktree of the remote work branch made beside it, as a workstation has",
+      "do": {
+        "in the clone's own tree on the integration main, with a worker worktree of the remote work branch made beside it, as a workstation has": "ST-vst4vom3",
+        "inside the worktree of the work branch, so the code under test runs the landing": "ST-vst4vom3"
+      },
+      "class": "design",
+      "answer": "in the clone's own tree on the integration main, with a worker worktree of the remote work branch made beside it, as a workstation has",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "Which output ends a job failed as a host condition, and where is it kept?",
+      "options": [
+        "only the seconds line of the test run's refusal; the reason and platform are members of the job record, shown by status",
+        "any refusal line of the test run, counts of ids and files too"
+      ],
+      "recommendation": "only the seconds line of the test run's refusal; the reason and platform are members of the job record, shown by status",
+      "do": {
+        "only the seconds line of the test run's refusal; the reason and platform are members of the job record, shown by status": "ST-vst4vom3",
+        "any refusal line of the test run, counts of ids and files too": "ST-vst4vom3"
+      },
+      "class": "design",
+      "answer": "only the seconds line of the test run's refusal; the reason and platform are members of the job record, shown by status",
+      "by": "agent"
+    },
+    {
+      "id": "g5",
+      "kind": "provisional",
+      "question": "How do the jobs of one remote url share a clone of a server?",
+      "options": [
+        "one job at a time per url, whatever the operation; other urls run in parallel",
+        "jobs of one url run in parallel, each moving the tree as it starts"
+      ],
+      "recommendation": "one job at a time per url, whatever the operation; other urls run in parallel",
+      "do": {
+        "one job at a time per url, whatever the operation; other urls run in parallel": "ST-vst4vom3",
+        "jobs of one url run in parallel, each moving the tree as it starts": "ST-vst4vom3"
+      },
+      "class": "design",
+      "answer": "one job at a time per url, whatever the operation; other urls run in parallel",
+      "by": "agent"
+    }
   ],
   "notes": "Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: a test-ceiling refusal ends the job failed with the reason host condition and the central host's platform, never retried with another ceiling",
   "filed_in": "clone-0ea70e5c",
