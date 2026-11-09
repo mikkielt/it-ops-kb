@@ -1,0 +1,18 @@
+{
+  "id": "BG-c273hugw",
+  "kind": "bug",
+  "title": "querylog.py reredact neither replaces nor reports a fetch host that fails the public-host gate, so the note's remedy leaves check red",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "reredact reports a fetch host or source host that the public-host gate refuses (replaced, dropped or left), so a stored entry that fails with 'fetch host is not a public host' is not passed over silently",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import ql_store as s;e={'id':'a','fetches':[{'host':'pc01.corp','outcome':'ok'}]};sys.exit(1 if s.reredact_entry(e)[1]==[] and not s.public_host('pc01.corp') else 0)"
+    ]
+  },
+  "filed_in": "clone-0ea70e5c"
+}
