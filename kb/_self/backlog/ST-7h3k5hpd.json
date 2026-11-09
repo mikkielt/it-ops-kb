@@ -1,0 +1,26 @@
+{
+  "id": "ST-7h3k5hpd",
+  "kind": "story",
+  "title": "A plan that adds a skill-text sentence fixes the step it sits in, so the worker asks no placement gate",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb-sprint plan says the goal of an item that adds one sentence to a skill names the step and the neighbouring sentence it follows, since a worker asks a blocking gate for the placement of a rule-guarding file",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,pathlib\nt=pathlib.Path('skills/sprint/SKILL.md').read_text(encoding='utf-8').lower()\nmiss=[w for w in ['placement of the sentence'] if w not in t]\nsys.exit('not yet: skills/sprint/SKILL.md lacks '+', '.join(miss) if miss else 0)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-moxpl354 close"
+  ],
+  "notes": "SP-moxpl354: four of the thirteen items (ST-h2bxcrcd, ST-rosm4sdw, ST-525ypepb, ST-4wlxi33c) stopped on a blocking agents-rule gate about where a sentence or rule sits; each cost a worker pause and the orchestrator's answer.",
+  "filed_in": "clone-0ea70e5c"
+}
