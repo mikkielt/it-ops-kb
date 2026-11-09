@@ -1,0 +1,23 @@
+{
+  "id": "BG-vdggaufg",
+  "kind": "bug",
+  "title": "A pack whose closest line to the question is the article's own UNK not-stated line says coverage good with no check: line",
+  "status": "draft",
+  "parent": "EP-jqjlwiar",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "rag.py pack prints a check: line (or a weaker verdict) when the line that matches the question's key words best is an UNK line saying the fact is not stated, so a lookup and a gap sweep do not read the kb's own not-stated line as an answer; found 2026-11-09 by a gap sweep where 60 of 60 open gaps packed good on such lines",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys;o=subprocess.run([sys.executable,\"_tools/rag.py\",\"pack\",\"Whether /MIR and /PURGE delete destination files that /XF or /XD exclude\"],capture_output=True,text=True).stdout;g=o.startswith(\"coverage: good\");c=any(l.startswith(\"check:\") for l in o.splitlines());print(\"good\",g,\"check\",c);sys.exit(1 if g and not c else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/rag.py",
+    "kb/_self/tools.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
