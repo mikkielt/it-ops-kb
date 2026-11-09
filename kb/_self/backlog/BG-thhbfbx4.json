@@ -12,7 +12,7 @@
     "run": [
       "python3",
       "-c",
-      "import sys;sys.path.insert(0,'_tools');import kbpublic as k;n=len(k.tree_refusals('HEAD',k.tree_files('HEAD','.'),'.'));assert n==0,'publish tree refusal holds %d cause(s) at HEAD that sync never reports'%n"
+      "import sys;sys.path.insert(0,'_tools');import kbpublic as k;n=len(k.tree_refusals('HEAD',k.tree_files('HEAD','.'),'.'));print('publish tree refusal causes at HEAD that sync never reports:',n);sys.exit(1 if n else 0)"
     ]
   },
   "checks": [
@@ -60,6 +60,24 @@
     "_tools/kbpublic.py",
     "_tools/kg_sync.py",
     "kb/_self/git.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the tree check treat the tracked fixture roots under _tools/fixtures that say visibility: internal?",
+      "options": [
+        "Read a _root.md under _tools/fixtures as a test input, not a root; the fixture files are then scanned as ordinary files",
+        "Keep reading them as internal roots and keep _tools/fixtures out of the projection"
+      ],
+      "recommendation": "Read a _root.md under _tools/fixtures as a test input, not a root; the fixture files are then scanned as ordinary files",
+      "reason": "the goal's design, one rule in tree_refusals and history_refusals",
+      "do": {
+        "Read a _root.md under _tools/fixtures as a test input, not a root; the fixture files are then scanned as ordinary files": "BG-thhbfbx4",
+        "Keep reading them as internal roots and keep _tools/fixtures out of the projection": "BG-thhbfbx4"
+      },
+      "class": "push"
+    }
   ],
   "links": [
     "parked: SP-n7zxspch review"
