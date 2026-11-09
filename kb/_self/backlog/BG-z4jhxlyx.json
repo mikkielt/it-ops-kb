@@ -2,7 +2,7 @@
   "id": "BG-z4jhxlyx",
   "kind": "bug",
   "title": "kbmon --split passes a relative --store or --key-file unchanged into a pane that starts in the clone's root",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-zobzdhwi",
   "priority": "P3",
@@ -48,6 +48,19 @@
   "links": [
     "parked: SP-3hgirkur review"
   ],
-  "claimed_by": "claude-0f9262ec",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "04b367f68b932c3e93660d0a90a05c55d07d6e44",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,subprocess as s,sys,tempfile;t=tempfile.mkdtemp();r=os.getcwd();p=s.run([sys.executable,os.path.join(r,'_tools/kbmon.py'),'--split','--dry-run','--store','rel/store','--key-file','k.txt'],cwd=t,capture_output=True,text=True,env=dict({k:v for k,v in os.environ.items() if k not in ('TMUX','WT_SESSION')},WEZTERM_PANE='3'));o=p.stdout;print(o);sys.exit(1 if (p.returncode!=0 or 'split-pane' not in o or ' rel/store' in o or ' k.txt' in o) else 0)"
+        ],
+        "exit": 0,
+        "sha256": "7939d58968c1864e"
+      }
+    ]
+  }
 }
