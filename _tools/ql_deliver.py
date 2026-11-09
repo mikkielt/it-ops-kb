@@ -761,6 +761,15 @@ class Pusher:
             self.say(f"commit failed: {(o + e).strip()[-300:]}")
         return code
 
+    @staticmethod
+    def refusal_tail(text, report, code):
+        """The lines under `kbgit.py sync exit N: nothing pushed`: the sync's last 600 characters when it printed no
+        report line, else, for a refusal (exit 2: a dirty tree, an operation in progress, another sync's lock), the
+        lines that are no report line, so a `pushed: no` line never hides the reason."""
+        rest = [ln for ln in text.splitlines() if ln not in report and ln.strip()] if code == 2 else []
+        shown = "\n".join(rest) if report else text.strip()
+        return f"\n{shown.strip()[-600:]}" if shown.strip() else ""
+
     def deliver(self, run_id):
         """kbgit.py sync --push from the worktree (fetch, rebase on origin/<branch>, fix, gate, push to origin). A
         conflict it cannot resolve (exit 3) pushes the commits as they were before the rebase to
@@ -780,7 +789,7 @@ class Pusher:
             self.refused = push_refusal(o + e)
             self.say(f"kbgit.py sync exit {code}: nothing pushed to {self.branch}" +
                      (f" (refused for want of rights: {self.refused})" if self.refused else "") +
-                     ("" if report else f"\n{(o + e).strip()[-600:]}"))
+                     self.refusal_tail(o + e, report, code))
             return code
         self.git("rebase", "--abort")
         if self.branch != BRANCH:

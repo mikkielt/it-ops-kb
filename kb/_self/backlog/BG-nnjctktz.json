@@ -1,0 +1,18 @@
+{
+  "id": "BG-nnjctktz",
+  "kind": "bug",
+  "title": "The needs-you line names a refused query-log delivery although the panel counts no undelivered entry",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "mon_needs.delivery_entries returns no entry while the querylog panel's data counts no undelivered entry, as mon_querylog.alerts does, so the needs-you line and the alert agree",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import mon_needs as m;last={'outcome':'refused','why':'sync exit 2'};r=m.delivery_entries({'last_delivery':last,'undelivered':0});print(len(r));sys.exit(1 if r else 0)"
+    ]
+  },
+  "filed_in": "clone-0ea70e5c"
+}
