@@ -15,6 +15,32 @@
       "import sys;sys.path.insert(0,'_tools');import kbcommon as k;lt,gt,at=chr(60),chr(62),chr(64);u='https://'+lt+'user'+gt+':Pwd9xQ7'+at+'host/p';r=k.structured_secrets(u);print(r);sys.exit(0 if r else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport sys;sys.path.insert(0,'_tools');import kbcommon as k,redact as r\nlt,gt,at=chr(60),chr(62),chr(64)\npw='Pwd9xQ7'\nbad='https://'+lt+'user'+gt+':'+pw+at+'host/p'\nbad2='https://a'+lt+'b:'+pw+at+'host/p'\nok='https://'+lt+'user'+gt+':'+lt+'password'+gt+at+'host/p'\nres=[bool(k.structured_secrets(bad)),bool(k.structured_secrets(bad2)),pw not in r.redact(bad),pw not in r.redact(bad2),not k.structured_secrets(ok),r.redact(ok)==ok]\nprint(res);sys.exit(0 if all(res) else 1)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport sys;a=open('_tools/kbcommon.py',encoding='utf-8').read();b=open('_tools/redact.py',encoding='utf-8').read()\nn=(a.count('URL_USERINFO_ANGLE ='),b.count('URL_USERINFO_ANGLE ='),'URL_USERINFO_ANGLE' in b)\nprint(n);sys.exit(0 if n==(1,0,True) else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbcommon.structured_secrets reports and redact.redact masks a url whose user part holds angle-bracket pieces and whose password is no whole placeholder",
+      "check": 0
+    },
+    {
+      "clause": "URL_USERINFO_ANGLE is defined once in kbcommon.py and redact.py imports it",
+      "check": 1
+    }
+  ],
   "touches": [
     "_tools/kbcommon.py",
     "_tools/redact.py",
@@ -22,5 +48,6 @@
     "kb/_self/tools.md",
     "kb/_self/querylog.md"
   ],
+  "notes": "Found by the SP-mut2pmu3 second review (gap 1 S1 and gap 2 S3, commits b3f18ecce3 and 46ab17012d): https://<user>:realpw@host passes both the scan and redact because the user class bans angle brackets; the whole-placeholder test stays on the password only, as the operator chose for BG-pwhlp2sy g1. Settled in the goal so the worker has no open choice: user part is (?:[^\\s/:@\"'<>]|<[^<>\\s]*>)* in URL_USERINFO and URL_USERINFO_ANGLE; redact.py imports the one definition. The check plants the password at run time (kbcommon, redact, the callers url_holds_credential in kbroot and census already refuse a colon in the user).",
   "filed_in": "clone-0ea70e5c"
 }
