@@ -23,7 +23,8 @@
   ],
   "touches": [
     "_tools/mon_host.py",
-    "kb/_self/monitoring.md"
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "ST-ngfxdk42"
