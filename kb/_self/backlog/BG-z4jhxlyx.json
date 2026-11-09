@@ -2,7 +2,7 @@
   "id": "BG-z4jhxlyx",
   "kind": "bug",
   "title": "kbmon --split passes a relative --store or --key-file unchanged into a pane that starts in the clone's root",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-zobzdhwi",
   "priority": "P3",
@@ -27,5 +27,7 @@
   ],
   "links": [
     "parked: SP-3hgirkur review"
-  ]
+  ],
+  "claimed_by": "claude-0f9262ec",
+  "operator": "op-f618a13e"
 }
