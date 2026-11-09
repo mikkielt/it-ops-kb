@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: the goal is about the backlog tool's own bookkeeping; every committed bug carries a repro that failed on origin/main when planned (precheck 2026-11-09), and the kb holds no source for any of it.",
   "filed_in": "clone-0ea70e5c"
 }
