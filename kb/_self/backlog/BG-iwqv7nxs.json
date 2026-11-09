@@ -2,7 +2,7 @@
   "id": "BG-iwqv7nxs",
   "kind": "bug",
   "title": "provider.GITLAB_DOC_FILE gives CC BY-SA to a doc/../ code path and misses the legacy blob and the -/tree doc forms",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-c6tr77jl",
   "priority": "P3",
   "rank": 0,
@@ -45,5 +45,7 @@
   "links": [
     "parked: SP-b36246xo review"
   ],
-  "notes": "Premise run on the base 2026-11-09 by precheck of SP-c6tr77jl: the repro and each added check fail on the premise (an assertion), none on a traceback. Planned 2026-11-09 by a headless plan session; left out as off the theme or in a file another live session plans: BG-55zjrwpn and BG-cgbpg3lq (kbfacts.py)."
+  "notes": "Premise run on the base 2026-11-09 by precheck of SP-c6tr77jl: the repro and each added check fail on the premise (an assertion), none on a traceback. Planned 2026-11-09 by a headless plan session; left out as off the theme or in a file another live session plans: BG-55zjrwpn and BG-cgbpg3lq (kbfacts.py).",
+  "claimed_by": "claude-1d0b0461",
+  "operator": "op-f618a13e"
 }
