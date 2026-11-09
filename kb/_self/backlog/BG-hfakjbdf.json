@@ -2,7 +2,7 @@
   "id": "BG-hfakjbdf",
   "kind": "bug",
   "title": "Snapshot S2194 starts with page chrome (Repository navigation, You must be signed in) although its header says page chrome removed",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-c6tr77jl",
   "priority": "P3",
   "rank": 0,
@@ -48,5 +48,7 @@
   "links": [
     "parked: SP-5bvg4tnl review"
   ],
-  "notes": "Premise: the reducer is fetch._PageText (provider.doc_text calls it), not provider.py; run on a fresh GitHub page it still writes the chrome (2026-11-09). Orders after BG-rhql6r5i, which also edits fetch._PageText. The planted page in the check is shaped from the live page: a visually hidden h2 before the nav, and a role=tooltip span. S2194 is also named by the kb/public/** globs of other sessions' research stories (SP-2cq2hse4 census, SP-osevumx6); only a census that re-reads S2194 itself would clash, and the landing rebase settles a snapshot edit. The worker rewrites the snapshot with the fixed reducer from a live fetch (the page is fetchable), not by hand. Planned 2026-11-09 by a headless plan session; left out as off the theme or in a file another live session plans: BG-55zjrwpn and BG-cgbpg3lq (kbfacts.py)."
+  "notes": "Premise: the reducer is fetch._PageText (provider.doc_text calls it), not provider.py; run on a fresh GitHub page it still writes the chrome (2026-11-09). Orders after BG-rhql6r5i, which also edits fetch._PageText. The planted page in the check is shaped from the live page: a visually hidden h2 before the nav, and a role=tooltip span. S2194 is also named by the kb/public/** globs of other sessions' research stories (SP-2cq2hse4 census, SP-osevumx6); only a census that re-reads S2194 itself would clash, and the landing rebase settles a snapshot edit. The worker rewrites the snapshot with the fixed reducer from a live fetch (the page is fetchable), not by hand. Planned 2026-11-09 by a headless plan session; left out as off the theme or in a file another live session plans: BG-55zjrwpn and BG-cgbpg3lq (kbfacts.py).",
+  "claimed_by": "claude-1d0b0461",
+  "operator": "op-f618a13e"
 }
