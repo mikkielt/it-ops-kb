@@ -64,7 +64,9 @@
       },
       "class": "design",
       "answer": "the line with the most key words, all its tags UNK, its text saying not stated, and no other-kind tagged fact holding as many",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Found 2026-11-09 by a gap sweep where 60 of 60 open gaps packed good on such lines. Premise: the repro fails on 55dde769f (good True, check False). The pack is built in kf_index.py (check lines near evidence_note) and kbfacts.py; the lookup eval at landing guards against false check: lines on expected-good rows (rag.py eval, NOTED_BASELINE).",
