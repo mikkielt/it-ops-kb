@@ -26,6 +26,24 @@
     "_tools/ql_apply.py",
     "kb/_self/querylog.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where in the gap step's decision order does a closed _gaps.md entry of the same question decide",
+      "options": [
+        "after the pack's passes and held decisions, before domain_article",
+        "before the pack, right after the pasted and tool checks"
+      ],
+      "recommendation": "after the pack's passes and held decisions, before domain_article",
+      "reason": "a question the kb now answers or holds the words for still goes to learn, which records fixed-since or an eval finding",
+      "do": {
+        "after the pack's passes and held decisions, before domain_article": "BG-ept67yjj",
+        "before the pack, right after the pasted and tool checks": "BG-ept67yjj"
+      },
+      "class": "design"
+    }
+  ],
   "notes": "Found 2026-11-09 when 'which coordination strategy does a session suggest when another item touching the same files is working' (asked 4 times) was filed again as F-ed67905154ee hours after F-debac1b47a9e closed it as a _self question. The _self branch (a question the _self root's pack answers good with a tested question) is not in this item. Premise: the repro, ql_apply.gap_decision on that question against the committed ledger, gives keep on 55dde769f.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-c41d77ea",
