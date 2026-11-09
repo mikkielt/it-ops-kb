@@ -2,7 +2,7 @@
   "id": "BG-zexhpoqi",
   "kind": "bug",
   "title": "backlog.py new --commit and set --commit commit an item file whose text holds a leak-scan hit, and print only a to-fill-in note with exit 0",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-yriisdti",
   "priority": "P3",
   "rank": 0,
@@ -41,5 +41,7 @@
     "kb/_self/tools.md"
   ],
   "notes": "Premise (planted clone, 2026-10-26): backlog.py new bug --commit --goal with a home-path shape built at run time exits 0, prints 'to fill in: field goal has a leak-scan hit' and commits it; backlog.py check refuses the same text afterwards, so the author rewords it in a second commit and the first stays in history, which kbgit.py publish refuses (BG-okrkeohe). Cause: bl_check.leak_errors runs only in backlog.py check; new, set and the other writers call commit_written without it. Fix in commit_written (_tools/bl_base.py), which every --commit goes through (referrers: bl_close, bl_items, bl_land, bl_plan, bl_upstream); mind the import direction (bl_base never imports bl_check; reuse bl_check.item_leak_hits and the clone allowlist as leak_errors reads them, do not copy the scan). No suite test: a bug gets its repro and user feedback (kb/_self/code.md); BG-okrkeohe's planted gate case covers the range. No claim on these files at planning. 2026-11-09 plan: set --commit already stops on the same hit (exit 2, file unchanged, via check) on this tree; only new --commit commits it. The fix keeps set as it is.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev2run01",
+  "operator": "op-f618a13e"
 }
