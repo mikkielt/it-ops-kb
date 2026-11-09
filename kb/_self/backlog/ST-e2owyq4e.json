@@ -2,7 +2,7 @@
   "id": "ST-e2owyq4e",
   "kind": "story",
   "title": "Review sprint: Workers and dispatch are safe: no paid claude from a worker, runner watch spares live workers, stage-back and claim survive interrupts, briefs and usage tell the truth",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-rzwljgxv",
   "review": true,
   "priority": "P1",
@@ -38,5 +38,44 @@
       ]
     }
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "evidence": {
+    "commit": "df96958e27417063ecbee12b8edae47c982fd183",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "c158c1f7bfea881f"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "7c7fd7a3317ea3d1"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval",
+          "--file",
+          "kb/public/_retrieval/lookup_heldout.csv",
+          "--root",
+          "public",
+          "--min",
+          "86",
+          "--max-false-good",
+          "8"
+        ],
+        "exit": 0,
+        "sha256": "a7691346f9c30601"
+      }
+    ]
+  }
 }
