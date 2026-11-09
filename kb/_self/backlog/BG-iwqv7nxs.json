@@ -2,7 +2,7 @@
   "id": "BG-iwqv7nxs",
   "kind": "bug",
   "title": "provider.GITLAB_DOC_FILE gives CC BY-SA to a doc/../ code path and misses the legacy blob and the -/tree doc forms",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-c6tr77jl",
   "priority": "P3",
   "rank": 0,
@@ -68,6 +68,28 @@
     "parked: SP-b36246xo review"
   ],
   "notes": "Premise run on the base 2026-11-09 by precheck of SP-c6tr77jl: the repro and each added check fail on the premise (an assertion), none on a traceback. Planned 2026-11-09 by a headless plan session; left out as off the theme or in a file another live session plans: BG-55zjrwpn and BG-cgbpg3lq (kbfacts.py).",
-  "claimed_by": "claude-1d0b0461",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "268b1bed1a7252d0bb572c76d69c2ede5b845e84",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import provider as p;p.request=lambda *a,**k:{'status':404,'error':'x','body':b'','headers':{}};b='https://gitlab.com/gitlab-org/gitlab/';bad=[s for s in ('-/blob/master/doc/a.md','-/raw/master/doc/a.md','-/tree/master/doc','-/tree/master/doc/user','blob/master/doc/a.md') if not p.read_licence(b+s)['licence'].startswith('CC BY-SA')]+[s for s in ('-/blob/master/lib/a.rb','-/blob/master/doc/%2e%2e/lib/a.rb','-/blob/master/doc/../lib/a.rb') if p.read_licence(b+s)['licence'].startswith('CC BY-SA')];print(bad);sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import provider as p;p.request=lambda *a,**k:{'status':404,'error':'x','body':b'','headers':{}};l=p.read_licence('https://gitlab.com/gitlab-org/gitlab/-/blob/master/doc/../lib/a.rb')['licence'];print(l);sys.exit(1 if l.startswith('CC BY-SA') else 0)"
+        ],
+        "exit": 0,
+        "sha256": "01ba4719c80b6fe9"
+      }
+    ]
+  }
 }
