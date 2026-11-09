@@ -1,0 +1,24 @@
+{
+  "id": "ST-zjip4beb",
+  "kind": "story",
+  "title": "claim says on an interrupt after the saved item file that the claim stands and a rerun records it, and its interrupt read tells its own lost transition from a concurrent claim of the same --by",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "claim's interrupt message names the claim as saved and says to rerun claim to record it in the ledger and commit it, and a second claim of one item with the same --by that read the state first never moves the key to released under the first claim",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; t = open('_tools/bl_items.py').read(); i = t.index('def cmd_claim'); s = t[i:i + 9000]; sys.exit(0 if 'rerun' in s else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "kb/_self/backlog.md",
+    "kb/_self/coordination.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
