@@ -2,7 +2,7 @@
   "id": "BG-4runl4ai",
   "kind": "bug",
   "title": "An ext-v tag that ext-release made is never sent when sync --push rebases the commit it points at, and ext-release refuses to make it again",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-y7fe7qqx",
   "sprint": "SP-ga3lbnlk",
   "priority": "P2",
@@ -27,5 +27,7 @@
   "links": [
     "parked: SP-ep7ck2ab review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-0a3e91bc",
+  "operator": "op-f618a13e"
 }
