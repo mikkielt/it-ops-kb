@@ -924,12 +924,22 @@ def stems(key):
     return out
 
 
+def row_name(text):
+    """The first cell's value of a data-row fact (`property=lastIpAddress; type=String; ...`, factdiff.row_parts), which
+    names the property or setting the row is about, lower-cased; None for any other fact."""
+    import factdiff
+    if factdiff.row_parts(text) is None:
+        return None
+    return factdiff.ROW_SPLIT.split(text)[0].split("=", 1)[1].strip().lower()
+
+
 def match_facts(a, b):
     """[(i, j)] the facts of `a` and `b` that are one claim, whatever article each is written in: a pair on the same
     article path whose difflib ratio (factdiff.unit_sim of their claims) is at least SAME_CLAIM, or a pair, on any path,
     that cites one source (`source_keys`) and whose claims share at least TOKEN_OVERLAP of their content words (`stems`,
     so a claim worded differently on the same article still pairs), taken best first, each fact in one pair at most. A pair whose ratio cannot reach SAME_CLAIM by its lengths or letters
-    (difflib's two upper bounds) is judged by its words only."""
+    (difflib's two upper bounds) is judged by its words only. Two data rows of one CSV path whose first cells differ
+    (`row_name`: two properties or settings of one table) are never a pair, whatever they share."""
     import difflib, factdiff
     by_path, by_source = {}, {}
     for i, f in enumerate(a):
@@ -940,15 +950,19 @@ def match_facts(a, b):
     keys_a = [factdiff.words_key(t) for t in texts_a]
     stems_a = [stems(k) for k in keys_a]
     norms_a = [factdiff.norm(t) for t in texts_a]
+    rows_a = [row_name(t) for t in texts_a]
     sm = difflib.SequenceMatcher(None, autojunk=False)
     found = []
     for j, f in enumerate(b):
         text, key = claim(f), factdiff.words_key(claim(f))
         words = stems(key)
+        row = row_name(text)
         sm.set_seq2(factdiff.norm(text))
         near = set(by_path.get(f["path"], []))
         shared = {i for k in source_keys(f) for i in by_source.get(k, [])}
         for i in sorted(near | shared):
+            if row is not None and rows_a[i] not in (None, row) and a[i]["path"] == f["path"]:
+                continue
             if keys_a[i] == key:
                 found.append((-1.0, i, j))
                 continue

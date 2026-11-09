@@ -20,6 +20,26 @@
     "kb/_self/benchmarks.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does match_facts tell two different rows of one CSV table apart?",
+      "options": [
+        "first cell differs: no pair at all, by ratio or stem share",
+        "first cell differs: no stem-share pair only"
+      ],
+      "recommendation": "first cell differs: no pair at all, by ratio or stem share",
+      "reason": "since rows differing in the property name only reach a 0.8 ratio too",
+      "do": {
+        "first cell differs: no pair at all, by ratio or stem share": "BG-skqyzfeq",
+        "first cell differs: no stem-share pair only": "BG-skqyzfeq"
+      },
+      "class": "design",
+      "answer": "first cell differs: no pair at all, by ratio or stem share",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-jxf76aa2 review"
   ],
