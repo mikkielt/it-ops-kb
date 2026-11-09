@@ -2,7 +2,7 @@
   "id": "BG-j4736uwa",
   "kind": "bug",
   "title": "A landing whose own ticket another landing removed counts every later ticket as ahead and is starved behind later askers until its wait bound",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-luspfajx",
   "priority": "P3",
   "rank": 0,
@@ -67,6 +67,28 @@
     "parked: SP-6aegt3bs review"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-luspfajx",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "50366483e44383a164657e88262c4768fad75003",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, subprocess, sys, tempfile, time\nsys.path.insert(0, \"_tools\")\nimport bl_close\nt = tempfile.mkdtemp()\nsubprocess.run([\"git\", \"init\", \"-q\", t], check=True)\nqdir = bl_close.landing_queue_dir(bl_close.landing_lock_path(t))\nolder = subprocess.Popen([sys.executable, \"-c\", \"import time; time.sleep(60)\"])\ntime.sleep(1)\nqdir.mkdir(parents=True, exist_ok=True)\n(qdir / (\"%020d-%d\" % (time.time_ns(), older.pid))).write_text(\"pid=%d\\nclone=%s\\nstarted=x\\nitem=ST-bbbbbbbb\\n\" % (older.pid, t))\nprog = \"import sys; sys.path.insert(0, '_tools'); import bl_close\\nwith bl_close.landing_lock(sys.argv[1], 'ST-aaaaaaaa', poll=0.1):\\n    pass\\n\"\nme = subprocess.Popen([sys.executable, \"-c\", prog, t], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)\ncode = 1\ntry:\n    def mine():\n        return [f for f in os.listdir(qdir) if f.endswith(\"-%d\" % me.pid)]\n    for _ in range(100):\n        if mine():\n            break\n        time.sleep(0.1)\n    seen = mine()\n    for f in seen:\n        os.unlink(qdir / f)\n    time.sleep(2)\n    again = mine()\n    print(\"ticket of the waiting landing after another landing removed it:\", again)\n    code = 0 if (seen and again) else 1\n    print('ticket seen before removal:', bool(seen))\nfinally:\n    me.kill()\n    older.kill()\nsys.exit(code)\n"
+        ],
+        "exit": 0,
+        "sha256": "31cdede0cc69d7dc"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, subprocess, sys, tempfile, time\nsys.path.insert(0, \"_tools\")\nimport bl_close\nt = tempfile.mkdtemp()\nsubprocess.run([\"git\", \"init\", \"-q\", t], check=True)\nqdir = bl_close.landing_queue_dir(bl_close.landing_lock_path(t))\nqdir.mkdir()\nchild = subprocess.Popen([sys.executable, \"-c\", \"import time; time.sleep(60)\"])\ntry:\n    time.sleep(1)\n    now = time.time_ns()\n    later = \"%020d-%d\" % (now + 5 * 10 ** 9, child.pid)\n    (qdir / later).write_text(\"pid=%d\\nclone=%s\\nstarted=x\\nitem=ST-bbbbbbbb\\n\" % (child.pid, t))\n    mine = \"%020d-%d\" % (now, os.getpid())\n    ahead = [a[0] for a in bl_close.landing_tickets_ahead(qdir, mine)]\n    print(\"tickets this landing waits for, all asked after it:\", ahead)\n    sys.exit(0 if not ahead else 1)\nfinally:\n    child.kill()\n"
+        ],
+        "exit": 0,
+        "sha256": "bbdd17b774448382"
+      }
+    ]
+  }
 }
