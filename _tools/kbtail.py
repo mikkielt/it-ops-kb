@@ -205,7 +205,7 @@ def history(path, count):
         if start > 0 and pieces:
             pieces = pieces[1:]  # the first piece may begin before the window
         shown, skipped = [], 0
-        for raw in reversed(pieces):
+        for raw in reversed(pieces if count else []):  # no lines wanted: none read, so none skipped
             if not raw.strip():
                 continue
             got, counted = parse(raw.decode("utf-8", "replace"))
