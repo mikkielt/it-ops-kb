@@ -23,6 +23,29 @@
   "depends_on": [
     "BG-2naamm5z"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does bl_land.token_words name a hyphen-prefixed source id inside a longer token?",
+      "options": [
+        "join each two neighbouring hyphen parts",
+        "match source-id shapes with a regex"
+      ],
+      "recommendation": "join each two neighbouring hyphen parts",
+      "reason": "needs no id shape, covers S-5kvx24wm-related and S-5kvx24wm-S-abcd1234",
+      "do": {
+        "join each two neighbouring hyphen parts": "BG-nglu4rg4",
+        "match source-id shapes with a regex": "BG-nglu4rg4"
+      },
+      "class": "secrets",
+      "answer": "join each two neighbouring hyphen parts",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "links": [
     "parked: SP-swavez3g review"
   ],
