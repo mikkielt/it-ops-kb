@@ -1,0 +1,21 @@
+{
+  "id": "BG-vwwjwawd",
+  "kind": "bug",
+  "title": "An interrupt between the creation of a landing ticket and the assignment of its name leaves the ticket in the queue, and the landing lock's SIGTERM handler is not restored",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "landing_lock removes a ticket it created on any interrupt, also one that lands between os.open and the assignment of the ticket name, and restores the SIGTERM handler it replaced",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os, subprocess, sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport bl_close\nt = tempfile.mkdtemp()\nsubprocess.run([\"git\", \"init\", \"-q\", t], check=True)\nqdir = bl_close.landing_queue_dir(bl_close.landing_lock_path(t))\nreal = os.fdopen\ndef boom(*a, **k):\n    os.fdopen = real\n    raise KeyboardInterrupt\nos.fdopen = boom  # an interrupt lands between the creation of the ticket and the assignment of its name\ntry:\n    with bl_close.landing_lock(t, \"ST-aaaaaaaa\"):\n        pass\nexcept BaseException as e:\n    print(\"interrupted by\", type(e).__name__)\nfinally:\n    os.fdopen = real\nleft = os.listdir(qdir) if qdir.is_dir() else []\nprint(\"tickets left in the queue:\", left)\nsys.exit(0 if not left else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_close.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
