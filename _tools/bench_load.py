@@ -727,7 +727,7 @@ def live_class(args, clone):
     """The class of a live process: `process_class`, with `kbtail` (the follower of `kbtail.py`) and a `kbmon` named by its
     bare script name (a Python program started in `_tools` as `kbmon.py ...`, which `mon_host.kind_of` cannot place)."""
     words = [os.path.basename(w) for w in args.split()]
-    python = bool(words) and re.fullmatch(r"python[\d.]*", words[0]) is not None
+    python = bool(words) and re.fullmatch(r"python[\d.]*", words[0].lower()) is not None
     if python and "kbtail.py" in words:
         return "kbtail"
     cls = process_class(args, clone)
