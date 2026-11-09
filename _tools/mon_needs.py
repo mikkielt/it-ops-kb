@@ -168,7 +168,7 @@ def stalled_claim_entries(sessions, coord):
 
 def delivery_entries(data):
     last = data.get("last_delivery")
-    if not isinstance(last, dict) or last.get("outcome") != "refused":
+    if not isinstance(last, dict) or last.get("outcome") != "refused" or data.get("undelivered") == 0:
         return []
     why = " ".join(str(last.get("why") or "").split())
     return [{"kind": "delivery", "text": "query-log delivery refused" + (f": {cause(why)}" if why else ""), "why": why}]
