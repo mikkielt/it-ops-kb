@@ -2,7 +2,7 @@
   "id": "BG-wrlrde6m",
   "kind": "bug",
   "title": "kbsettings.py module docstring names the explain command as a caller of effective, while explain reads the layers itself",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ga3lbnlk",
   "priority": "P2",
   "rank": 0,
@@ -24,5 +24,7 @@
   "depends_on": [
     "BG-myligl24"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-0a3e91bc",
+  "operator": "op-f618a13e"
 }
