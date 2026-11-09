@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "An operator answer to a gate that blocks by a strict signal, a querylog or delete text class, an option path or the item's title carries no agent_session flag when an agent session records it",
   "status": "draft",
+  "sprint": "SP-pww4aqis",
   "priority": "P3",
   "rank": 0,
   "severity": "S2",

@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "runs --reconcile writes landed for a done item whose done commit is not yet on the integration main",
   "status": "draft",
+  "sprint": "SP-pww4aqis",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

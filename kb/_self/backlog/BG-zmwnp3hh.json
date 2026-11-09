@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "A credential word glued by a hyphen, dot, slash or colon to a code identifier (vault-read_token) leaves the gate classed design, not secrets",
   "status": "draft",
+  "sprint": "SP-pww4aqis",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

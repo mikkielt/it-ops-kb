@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "reopen leaves the run state of an item that had landed at landed, so land refuses every step and runs --reconcile does not repair it",
   "status": "draft",
+  "sprint": "SP-pww4aqis",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

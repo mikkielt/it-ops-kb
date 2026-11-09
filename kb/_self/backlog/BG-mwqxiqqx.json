@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "backlog.py drop, move and reopen write item files with no --commit, so the main checkout stays dirty until the files are committed by hand",
   "status": "draft",
+  "sprint": "SP-pww4aqis",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

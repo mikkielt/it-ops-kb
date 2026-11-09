@@ -4,6 +4,7 @@
   "title": "Operator-class answers recorded from the orchestrator's agent session carry no agent_session flag, so horizon and the review list none",
   "status": "draft",
   "parent": "EP-n4dci4w7",
+  "sprint": "SP-pww4aqis",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

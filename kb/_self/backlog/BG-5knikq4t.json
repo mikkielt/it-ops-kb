@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "The detail-only lint never fires for a gate added with the default kind, since --kind blocking is itself a block reason",
   "status": "draft",
+  "sprint": "SP-pww4aqis",
   "priority": "P3",
   "rank": 0,
   "severity": "S2",

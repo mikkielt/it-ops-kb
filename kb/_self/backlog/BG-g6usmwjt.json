@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "gate remove --by operator in an agent session removes a ceiling-class gate, which answer refuses there whatever --by says",
   "status": "draft",
+  "sprint": "SP-pww4aqis",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

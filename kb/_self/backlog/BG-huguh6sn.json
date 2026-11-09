@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "A gate option that names a token budget floor ('a 200-token floor per question') is classed secrets",
   "status": "draft",
+  "sprint": "SP-pww4aqis",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

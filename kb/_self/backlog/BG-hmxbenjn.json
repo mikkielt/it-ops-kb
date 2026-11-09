@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "A gate whose option names a local mirror store of an executor is classed push and made blocking",
   "status": "draft",
+  "sprint": "SP-pww4aqis",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",
