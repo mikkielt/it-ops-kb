@@ -42,6 +42,27 @@
   "depends_on": [
     "BG-fwqcimiv"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the EC/PGP armor lookahead tell a camel-case abbreviation piece (ConfigMgr, UserSvc) from random base64?",
+      "options": [
+        "A piece that is a word of four letters or more followed only by capitalised words is a path piece whatever its humps",
+        "Drop the one- to two-letter hump rule entirely",
+        "Allow a short hump only in the last piece of the path"
+      ],
+      "recommendation": "A piece that is a word of four letters or more followed only by capitalised words is a path piece whatever its humps",
+      "do": {
+        "A piece that is a word of four letters or more followed only by capitalised words is a path piece whatever its humps": "BG-c3vnscx7",
+        "Drop the one- to two-letter hump rule entirely": "BG-c3vnscx7",
+        "Allow a short hump only in the last piece of the path": "BG-c3vnscx7"
+      },
+      "class": "design",
+      "answer": "A piece that is a word of four letters or more followed only by capitalised words is a path piece whatever its humps",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-mk6ikval review"
   ],
