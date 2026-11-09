@@ -1,0 +1,19 @@
+{
+  "id": "ST-7drozeza",
+  "kind": "story",
+  "title": "A risk a worker names in its report is filed as a draft bug before the item lands",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "a risk of its own fix that a worker names in its report (a stale checkout, a host state) is filed as a draft bug, or run through the review brief, before the orchestrator lands the item",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,pathlib; t=pathlib.Path('.claude/skills/kb-sprint/SKILL.md').read_text(encoding='utf-8').lower(); sys.exit(0 if 'risk named in a worker report' in t else 'not yet: .claude/skills/kb-sprint/SKILL.md lacks risk named in a worker report')"
+      ]
+    }
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
