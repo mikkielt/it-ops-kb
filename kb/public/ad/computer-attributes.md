@@ -2,8 +2,8 @@
 topic: ad/computer-attributes
 priority: P1
 applies_to: "Active Directory schema (Windows 2000 Server - Windows Server 2012+ pages, ms.date 05/31/2018)"
-retrieved_utc: 2026-10-21
-sources: [S560, S561, S562, S563, S564, S565, S566, S549, S552, S548, S-7365hqko, S-gv5dk5hs]
+retrieved_utc: 2026-11-09
+sources: [S560, S561, S562, S563, S564, S565, S566, S549, S552, S548, S-7365hqko, S-gv5dk5hs, S-5ekneeom]
 status: complete
 ---
 
@@ -20,6 +20,7 @@ status: complete
 - `lastLogonTimestamp`: large integer, 100-ns intervals since 1601-01-01 UTC; updated at logon only if older than `current_time - msDS-LogonTimeSyncInterval`; indexed and in GC from Windows Server 2008 on (neither in Windows Server 2003 / 2003 R2). [DOC S562]
 - The first update after raising the domain functional level is 14 days minus a random percentage of 5 days. [DOC S562]
 - `msDS-LogonTimeSyncInterval` sets, in days, how finely the last logon time in `lastLogonTimestamp` is replicated to all DCs in a domain; it is a domain-wide policy value. [DOC S563]
+- No Microsoft page read states a default value for `msDS-LogonTimeSyncInterval` when unset; the Configuration Manager troubleshooting article says the design and default configuration of Active Directory may update `lastLogonTimestamp` only when its current value is 9 to 14 days older than the logon, which fits a 14-day interval less up to 5 days. [DOC S-5ekneeom]
 - `lastLogonTimestamp` lists class User; the computer class is a subclass of User. [DOC S562,S566]
 - `dNSHostName`: computer name as registered in DNS; each label up to 63 chars, whole name up to 255; in GC; not indexed. [DOC S564]
 - `userCertificate`: multi-valued DER-encoded X.509v3 certificates; in GC. [DOC S565]

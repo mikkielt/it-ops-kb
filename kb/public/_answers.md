@@ -4729,3 +4729,13 @@ _Agent: kb-research_
 - See intune/configuration-policies.md, defender/asr-and-antivirus.md.
 
 _Agent: kb-research_
+
+## QK-claude-code-support-mcp-tasks-extension. Does Claude Code support the MCP Tasks extension?
+- Yes, as a public beta in the Claude Code CLI on v2.1.304 or later: on a 2026-07-28 connection a `tools/call` request that can become a task carries `"io.modelcontextprotocol/tasks": {}` under `extensions` in the client capabilities. [DOC S740]
+- A call becomes a task only from the main conversation (not a subagent), on a server that supports tasks, in a session that fetches feature flags, and in terminal CLI, Agent SDK and GitHub Actions sessions; the VS Code extension and the desktop app have no MCP tasks, and a one-shot `claude -p` run gets none. [DOC S740]
+- The changelog lists "Added support for MCP tasks in the terminal" under 2.1.319, and `CLAUDE_CODE_DISABLE_MCP_TASKS=1` turns them off. [DOC S746]
+- Conclusion: a server author can answer a long `tools/call` with a task for Claude Code only when the request carries the extension; otherwise the server answers with a plain result. [DER S740, S746: the request-side condition above]
+- Open: whether a second principal may read or cancel another's task is still not stated by the specification. [UNK]
+- See mcp/tasks-extension.md.
+
+_Agent: kb-research_

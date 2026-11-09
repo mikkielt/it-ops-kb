@@ -1,5 +1,5 @@
 topic,priority,status,files,n_sources
-ad/computer-attributes,P1,complete,ad/computer-attributes.md;ad/computer-attributes.csv,12
+ad/computer-attributes,P1,complete,ad/computer-attributes.md;ad/computer-attributes.csv,13
 ad/krbtgt-password-reset,P1,complete,ad/krbtgt-password-reset.md,7
 ad/ldap-paging-filters,P1,complete,ad/ldap-paging-filters.md,6
 ad/fsmo-roles,P2,complete,ad/fsmo-roles.md,4

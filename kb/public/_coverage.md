@@ -5,7 +5,7 @@ Every topic of this root with its priority (the research order, not importance),
 <!-- coverage:start -->
 | Topic | Priority | Status | Files | Sources |
 |---|---|---|---|---|
-| `ad/computer-attributes` | P1 | complete | `ad/computer-attributes.md`, `ad/computer-attributes.csv` | 12 |
+| `ad/computer-attributes` | P1 | complete | `ad/computer-attributes.md`, `ad/computer-attributes.csv` | 13 |
 | `ad/krbtgt-password-reset` | P1 | complete | `ad/krbtgt-password-reset.md` | 7 |
 | `ad/ldap-paging-filters` | P1 | complete | `ad/ldap-paging-filters.md` | 6 |
 | `ad/fsmo-roles` | P2 | complete | `ad/fsmo-roles.md` | 4 |

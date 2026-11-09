@@ -2,7 +2,7 @@
 topic: mcp/tasks-extension
 priority: P1
 applies_to: "MCP Tasks extension io.modelcontextprotocol/tasks for 2026-07-28"
-retrieved_utc: 2026-10-21
+retrieved_utc: 2026-11-09
 sources: [S713, S714, S-kkc22tjk, S718, S701, S740, S746, S-2j2leiio, S-mqa2z3kr]
 status: partial
 ---
@@ -31,7 +31,10 @@ and may `tasks/cancel`. `tasks/result` (blocking) and `tasks/list` were removed.
 - The spec text does not say whether a task created by one principal may be read or updated by another (a subagent, a second client) when the server's authorization allows it; it names only "permission to access a task". [UNK S718: security section read 2026-10-16]
 - Extensions are disabled by default and need explicit opt-in; SDKs may choose whether to implement them. [DOC S714]
 - The community-maintained extension matrix lists no Tasks column and no Claude Code row. [DOC S-mqa2z3kr]
-- Claude Code's MCP page lists the client capabilities it declares on 2026-07-28 connections (elicitation form and URL) and names no Tasks extension; the changelog has no Tasks entry either. [DER S740, S746: pages searched 2026-09-28]
+- Claude Code's MCP page (read 2026-11-09) documents MCP tasks as in public beta in the Claude Code CLI, requiring v2.1.304 or later, and says a `tools/call` request that can become a task carries `"io.modelcontextprotocol/tasks": {}` under `extensions` in `params._meta["io.modelcontextprotocol/clientCapabilities"]` on a 2026-07-28 connection; a request that cannot become a task omits it. The page read 2026-09-28 named no Tasks extension. [DOC S740]
+- A tool call becomes an MCP task in Claude Code only when the server supports tasks and is connected on protocol revision 2026-07-28 (HTTP, stdio or claude.ai connector), the session fetches feature flags (not Bedrock, not with telemetry off), Anthropic has turned tasks on for the session kind (terminal CLI, Agent SDK and GitHub Actions on v2.1.304 or later; not the VS Code extension or the desktop app), the call comes from the main conversation and not a subagent, and a non-interactive run reads `--input-format stream-json` with `CLAUDE_AUTO_BACKGROUND_TASKS` at `1`. A one-shot `claude -p "<prompt>"` run gets no MCP tasks. [DOC S740]
+- Claude Code moves a task to the background at once and tells Claude the result when it ends; a task has no Claude Code time limit once in the background, `x` in `/tasks` stops following it and asks the server to cancel (the server may still finish it), and `CLAUDE_CODE_MCP_AUTO_BACKGROUND_MS` at `0` or `CLAUDE_CODE_DISABLE_MCP_TASK_BACKGROUND` at `1` makes Claude wait for the result. A server answers with a task only when the request carries the extension, else the call fails with `Unsupported result type 'task' for tools/call`. [DOC S740]
+- The Claude Code changelog lists "Added support for MCP tasks in the terminal" under 2.1.319 (2026-11-06), and the same release changed tasks to work in the terminal without feature-flag fetching (Bedrock, Vertex, Foundry, LLM gateways, telemetry off), which the MCP page's condition list on feature flags does not yet reflect; `CLAUDE_CODE_DISABLE_MCP_TASKS=1` turns them off. [DOC S746]
 - Each task is uniquely identified by a server-generated task id. [DOC S718]
 - In the earlier 2025-11-25 specification a tool declared task support in its `tools/list` entry as `execution.taskSupport`
   with the values `"required"`, `"optional"` or `"forbidden"`; an absent field or `"forbidden"` is the default, and a client

@@ -2,7 +2,7 @@
 topic: claude/permissions-mcp
 priority: P1
 applies_to: "Claude Code 2.1.281 docs (retrieved 2026-09-23)"
-retrieved_utc: 2026-10-21
+retrieved_utc: 2026-11-09
 sources: [S742, S740, S-rjw74jiz, S743, S746, S-vrff4evh]
 status: complete
 ---
@@ -28,6 +28,8 @@ Parameter-level matching for MCP tools is only possible via `--disallowedTools` 
 - Claude Code displays tool annotations and titles in the `/mcp` view (since 1.0.44). [DOC S746]
 - In the Agent SDK, `readOnlyHint` (default false) decides whether a custom tool may run in parallel with other read-only tools, and `destructiveHint` (default true) is informational only. [DOC S-vrff4evh]
 - Neither the permissions page nor the MCP page says Claude Code's permission prompts use `readOnlyHint` or `destructiveHint`; the documented permission annotation is `anthropic/requiresUserInteraction`. [DER S742, S740, S-vrff4evh: annotations named on each page]
+- The MCP page (read 2026-11-09) names two further annotations Claude Code acts on, both unrelated to permission prompts: `idempotentHint` and `readOnlyHint` set to `true` in a tool's `tools/list` entry let Claude Code repeat a call that was pending when a connection closed, once and on a new connection, to an HTTP server or a claude.ai connector, and a `readOnlyHint` tool's calls also run in parallel with other read-only calls. [DOC S740]
+- The changelog lists, under 2.1.246 (2026-08-25), a fix for MCP tools marked `requiresUserInteraction` that still offered "Yes, and don't ask again", an option that wrote an allow rule the tool then ignored; it is the only changelog line naming the annotation, and none records the release that added it. [DOC S746]
 
 ## Reference
 | Rule | Matches |
