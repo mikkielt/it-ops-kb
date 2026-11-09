@@ -397,7 +397,7 @@ def repoint_source(root, old_id, new_url, today=None):
     for rel in paths:
         full = os.path.join(root.path, rel)
         text = kbcommon.read(full, newline="")
-        text = kbfacts.TAG.sub(lambda m: tag_id.sub(nid, m.group(0)), text)
+        text = kbfacts.TAG.sub(lambda m: _once(tag_id.sub(nid, m.group(0)), nid), text)
         text = re.sub(r"(?m)^(sources:.*)$", lambda m: _swap_listed(m.group(1), old_id, nid), text, count=1)
         with open(full, "w", encoding="utf-8", newline="") as f:
             f.write(text)
@@ -410,6 +410,17 @@ def repoint_source(root, old_id, new_url, today=None):
     left = sum(1 for u in kbfacts.units(root.name) if any(old_id in t["ids"] for t in u["tags"]))
     return {"new": nid, "written": have is None, "facts": len(moves), "files": paths, "anchors": anchors,
             "expansions": expansions, "left": left}
+
+
+def _once(tag, sid):
+    """`tag` with `sid` listed once in each comma-separated id list: a later repeat is dropped with its comma, the
+    result of a re-point onto an id the fact cited already (`[DER S-a, S-b]` -> `[DER S-b, S-b]` -> `[DER S-b]`)."""
+    rep = re.compile(rf"(?<![\w-])({re.escape(sid)})(?![\w-])((?:\s*,\s*(?:{ID_PATTERN})(?![\w-]))*?)\s*,\s*{re.escape(sid)}(?![\w-])")
+    while True:
+        out = rep.sub(r"\1\2", tag)
+        if out == tag:
+            return tag
+        tag = out
 
 
 def _swap_listed(line, old_id, new_id):
