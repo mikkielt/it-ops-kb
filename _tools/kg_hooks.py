@@ -202,9 +202,11 @@ def cmd_install_hooks(a):
     if a.uninstall:
         if hooks_path_is_ours(cur):
             git("config", "--unset", "core.hooksPath")
+            unset = ["core.hooksPath"]
             if (git("config", "--get", "push.recurseSubmodules") or "").strip() == "check":
                 git("config", "--unset", "push.recurseSubmodules")
-            print(f"uninstalled: core.hooksPath and push.recurseSubmodules unset ({HOOKS_DIR}/ stays in the repo)")
+                unset.append("push.recurseSubmodules")
+            print(f"uninstalled: {' and '.join(unset)} unset ({HOOKS_DIR}/ stays in the repo)")
         else:
             print("not installed" + (f" (core.hooksPath is {cur!r}; left alone)" if cur else ""))
         return 0
