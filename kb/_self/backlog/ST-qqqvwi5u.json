@@ -23,6 +23,16 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "The plan step of skills/sprint/SKILL.md says to run a bug's repro against the goal's design choice before the start gate (a repro that plain redact.redact keeps a UUID contradicted the goal that only a live lease keeps one, SP-osevumx6 BG-pqthn333)",
+      "check": 0
+    },
+    {
+      "clause": "notes that a worker whose fix voids the repro cannot replace it with set --repro in its own tree because that refuses a passing command",
+      "check": 1
+    }
+  ],
   "touches": [
     "skills/sprint/SKILL.md"
   ],
