@@ -45,6 +45,45 @@
     "ST-gf2rlzcc",
     "ST-ugkw5mt3"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does a job of the clone's own queue name the integration remote url a server runs it against?",
+      "options": [
+        "submit takes --clone-url URL, and records remote on a job a server may run, this clone's url when none is given",
+        "a server reads the url from the submitting clone's path only"
+      ],
+      "recommendation": "submit takes --clone-url URL, and records remote on a job a server may run, this clone's url when none is given",
+      "do": {
+        "submit takes --clone-url URL, and records remote on a job a server may run, this clone's url when none is given": "ST-vst4vom3",
+        "a server reads the url from the submitting clone's path only": "ST-vst4vom3"
+      },
+      "class": "design",
+      "answer": "submit takes --clone-url URL, and records remote on a job a server may run, this clone's url when none is given",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Where does a server executor keep its mirror store and its clones under --data DIR?",
+      "options": [
+        "one directory DIR/server-<8 hex> holding the mirror store and clones/<12 hex of the url>",
+        "the mirror store and a clones directory side by side in DIR"
+      ],
+      "recommendation": "one directory DIR/server-<8 hex> holding the mirror store and clones/<12 hex of the url>",
+      "do": {
+        "one directory DIR/server-<8 hex> holding the mirror store and clones/<12 hex of the url>": "ST-vst4vom3",
+        "the mirror store and a clones directory side by side in DIR": "ST-vst4vom3"
+      },
+      "class": "push",
+      "answer": "one directory DIR/server-<8 hex> holding the mirror store and clones/<12 hex of the url>",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "notes": "Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: a test-ceiling refusal ends the job failed with the reason host condition and the central host's platform, never retried with another ceiling",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-61c966d6",
