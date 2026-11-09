@@ -23,6 +23,19 @@
                                         clone's own; a server (`serve --kind server`) runs it in its clone of that url. --clone-url takes
                                         no white space and no leading `-`, and exits 2 on a central queue, whose job names this clone's url
 
+  kbjob.py submit OP ... --gitlab URL --project ID --trigger-token-file PATH [--ref BRANCH] [--plain-http]
+                                        a job placed on ci (the decision's executor, on either queue) gets its pipeline at the submit
+                                        (`kj_ci`): POST URL/api/v4/projects/ID/trigger/pipeline with the form `token` (read from PATH,
+                                        which must be a 0600 file), `ref` (BRANCH, default this clone's branch) and `variables[KB_JOB]`
+                                        (the job's id); the `kb-job` job of `.gitlab-ci.yml` runs only in such a pipeline. The three
+                                        flags go together (exit 2 for one or two, for a url that is no http(s) url or a plain http one
+                                        beyond loopback without --plain-http, and for a token file that is missing, empty or open to
+                                        others). The job record keeps `pipeline` {id, web_url}, printed by submit and `status`, and
+                                        `log` prints `pipeline ID URL` first; a failed trigger (an HTTP status, or no answer) leaves the
+                                        job queued with `reason` `pipeline trigger failed: HTTP N` in submit's JSON and `status`, said on
+                                        stderr, and a submit of the job again (deduped) starts the pipeline again; the token is in no
+                                        output. A job placed on another executor starts no pipeline
+
   kbjob.py [--store PATH] serve [--once] [--parallel N] [--idle-exit S]
                                         run the queued jobs of this host, clone and operator in submit order, at most N at once
                                         (--parallel, default 3; `kj_exec.next_runnable`): lands of the clone, sync-pushes of the host,
@@ -154,6 +167,7 @@ from pathlib import Path
 
 import bl_base
 import coord
+import kj_ci
 import kj_exec
 import kj_follow
 import kj_ops
@@ -180,6 +194,10 @@ def build_parser():
     p.add_argument("--no-ensure", action="store_true", help="queue the job without starting an executor when none runs")
     p.add_argument("--opa", default=None, metavar="URL", help="the OPA server to ask for the placement (default: KB_OPA_URL; with neither, the workstation)")
     p.add_argument("--clone-url", default=None, metavar="URL", help="the integration remote url a server runs the job in the clone of (default: this clone's own; on the clone's own queue only)")
+    p.add_argument("--gitlab", default=None, metavar="URL", help="the GitLab url to start a pipeline on for a job placed on ci (with --project and --trigger-token-file)")
+    p.add_argument("--project", default=None, metavar="ID", help="the id or path of the integration project whose pipeline trigger API is called")
+    p.add_argument("--trigger-token-file", default=None, metavar="PATH", help="the file (mode 0600) holding the project's pipeline trigger token")
+    p.add_argument("--ref", default=None, metavar="BRANCH", help="the branch the pipeline starts on (default: this clone's branch)")
     pl = sub.add_parser("place", help="ask the OPA placement policy where and as whom an operation runs; any failure to answer decides the workstation")
     pl.add_argument("op", help="one of " + ", ".join(coord.PLACEMENT_OPS))
     pl.add_argument("subject", nargs="?", default="", help="the backlog id, or the name of a check")
@@ -301,9 +319,34 @@ def server_log(record, count):
     return lines[max(len(lines) - count, 0):] if count > 0 else []
 
 
+def start_pipeline(config, body, remote):
+    """After a submit that queued a job on the queue REMOTE: when CONFIG (`kj_ci.trigger_config`) is set and the job is placed on ci,
+    start its pipeline (`kj_ci.start`) and return BODY with the member `pipeline` ({id, web_url}), or, for a trigger that failed, `reason`
+    (the HTTP status, said on stderr too): the job stays queued. BODY as it is for any other job."""
+    if config is None or body.get("state") != "queued":
+        return body
+    record = remote.record(body["job"]) or {}
+    if kj_store.placement_of(record).get("executor") != "ci":
+        return body
+    reason = kj_ci.start(remote, record, config)
+    if reason:
+        print(f"kbjob: {body['job']} stays queued: {reason}", file=sys.stderr, flush=True)
+        return {**body, "reason": reason}
+    return kj_ci.members(body, remote.record(body["job"]))
+
+
+def pipeline_line(record):
+    """The line `log` prints first for a job that has a pipeline: `pipeline ID WEB_URL` (nothing for any other job)."""
+    found = (record or {}).get("pipeline")
+    if isinstance(found, dict) and found.get("id") is not None:
+        print(f"pipeline {found['id']} {found.get('web_url') or '-'}")
+
+
 def with_reason(body, record):
-    """BODY (kj_store.status's JSON) with the `reason` and `platform` the executor kept in the record of a job that ended failed
+    """BODY (kj_store.status's JSON) with the `pipeline` of a job placed on ci (`kj_ci.members`: the reason of a failed trigger too) and the
+    `reason` and `platform` the executor kept in the record of a job that ended failed
     for a host condition (the test ceiling's seconds); the body of any other job as it is."""
+    body = kj_ci.members(body, record)
     if body.get("state") == "failed" and record and record.get("reason"):
         return {**body, "reason": record["reason"], **({"platform": record["platform"]} if record.get("platform") else {})}
     return body
@@ -361,7 +404,9 @@ def run_central(args, remote):
         given = options_of(args)
         kj_ops.check_job(args.op, args.subject, args.by or None, given)  # a refused job asks no policy
         placement = decide(args.op, args.subject or str(given.get("name", "")), args.opa, remote)
-        print(json.dumps(kj_store.submit_remote(str(ROOT), remote, args.op, args.subject, args.by, given, placement), sort_keys=True, ensure_ascii=False))
+        config = kj_ci.trigger_config(ROOT, args.gitlab, args.project, args.trigger_token_file, args.ref, args.plain_http)
+        body = kj_store.submit_remote(str(ROOT), remote, args.op, args.subject, args.by, given, placement)
+        print(json.dumps(start_pipeline(config, body, remote), sort_keys=True, ensure_ascii=False))
         return 0
     if args.command == "follow":
         return kj_store.follow_remote(remote, args.job, args.since, args.timeout, sys.stdout)
@@ -370,6 +415,7 @@ def run_central(args, remote):
         print(json.dumps(body, sort_keys=True, ensure_ascii=False))
         return 0
     if args.command == "log":
+        pipeline_line(remote.record(args.job))
         kept = server_log(remote.record(args.job), args.tail)
         if kept is not None and args.tail >= 0:
             if kept:
@@ -451,6 +497,7 @@ def run(args, parser):
     if args.command == "ensure":
         return ensure_command(kj_store.resolve_store(ROOT, args.store))
     if args.command == "submit":
+        config = kj_ci.trigger_config(ROOT, args.gitlab, args.project, args.trigger_token_file, args.ref, args.plain_http)
         if not args.no_ensure:
             given = options_of(args)
             kj_ops.check_job(args.op, args.subject, args.by or None, given)  # a refused job starts no executor
@@ -470,6 +517,7 @@ def run(args, parser):
         placement = decide(args.op, args.subject or str(given.get("name", "")), args.opa, None)
         body = kj_store.submit(str(ROOT), args.op, args.subject, args.by, given, store=args.store, placement=placement)
         name_remote(body, placement, url, kj_store.resolve_store(ROOT, args.store))
+        body = start_pipeline(config, body, kj_store.LocalRemote(kj_store.resolve_store(ROOT, args.store)))
         print(json.dumps(body, sort_keys=True, ensure_ascii=False))
         return 0
     store = kj_store.resolve_store(ROOT, args.store)
@@ -483,6 +531,7 @@ def run(args, parser):
         print(json.dumps(body, sort_keys=True, ensure_ascii=False))
         return 0
     if args.command == "log":
+        pipeline_line(kj_store.read_record(store, args.job))
         kept = server_log(kj_store.read_record(store, args.job), args.tail)
         if kept is not None and args.tail >= 0:
             if kept:

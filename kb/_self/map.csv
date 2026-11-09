@@ -189,3 +189,6 @@ kb/_self/git.md,_tools/kj_exec.py
 kb/_self/git.md,_tools/kj_land.py
 kb/_self/coordination.md,_tools/kj_place.py
 kb/_self/coordination.md,_tools/kj_cred.py
+kb/_self/coordination.md,_tools/kj_ci.py
+kb/_self/runners.md,_tools/kj_ci.py
+kb/_self/runners.md,_tools/kbjob.py
