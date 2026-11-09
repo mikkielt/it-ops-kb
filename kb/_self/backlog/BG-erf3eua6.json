@@ -35,6 +35,27 @@
   "depends_on": [
     "BG-qggrwb5c"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does claim go on when ledger_lock cannot make its lock file?",
+      "options": [
+        "ledger_lock takes optional=True and yields False, claim skips the ledger write and warns; dispatch keeps the refusal",
+        "claim catches the Refused from ledger_lock and reruns its body without the lock"
+      ],
+      "recommendation": "ledger_lock takes optional=True and yields False, claim skips the ledger write and warns; dispatch keeps the refusal",
+      "reason": "the refusal for a lock that stays held is a different Refused and stays, and dispatch needs the git dir anyway",
+      "do": {
+        "ledger_lock takes optional=True and yields False, claim skips the ledger write and warns; dispatch keeps the refusal": "BG-erf3eua6",
+        "claim catches the Refused from ledger_lock and reruns its body without the lock": "BG-erf3eua6"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "ledger_lock takes optional=True and yields False, claim skips the ledger write and warns; dispatch keeps the refusal",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-z3hyk4eh review"
   ],

@@ -349,11 +349,14 @@ def cmd_claim(bl, a):
     # (the item claimed meanwhile, another session's claim in this checkout) puts the run state back
     who = operator_who()[0]
     moved = take_claim(iid, a.by, mine=it.get("status") == "doing" and it.get("claimed_by") == a.by)
+    recorded = True
     try:
         # the ledger is read and written under the lock `dispatch` takes to add a worker's pid and session, and through
         # a temp file of this process's own, so a claim made beside a dispatch waits and neither side drops the other's
-        # record
-        with ledger_lock(ledger) if ledger else contextlib.nullcontext():
+        # record; a lock file that cannot be made (a git dir that is not writable) does not refuse the claim, which
+        # goes on without the ledger and says so, while a lock that stays held does refuse it
+        with ledger_lock(ledger, optional=True) if ledger else contextlib.nullcontext(True) as locked:
+            recorded = bool(locked)
             try:
                 here = json.loads(ledger.read_text(encoding="utf-8")) if ledger else {}
             except (OSError, ValueError):
@@ -389,15 +392,18 @@ def cmd_claim(bl, a):
             here = {i: r for i, r in here.items() if i in bl.items and bl.items[i].get("status") == "doing"}
             here[iid] = {"by": a.by, "session": session}
             try:
-                if ledger:
+                if ledger and locked:
                     write_ledger(ledger, here)
             except OSError:
-                pass  # the record guards the next claim; a checkout it cannot be written in is not refused for it
+                recorded = False  # the record guards the next claim; a checkout it cannot be written in is not refused
     except Refused:
         if moved:
             move_run(iid, "released", "claim")
         raise
     say(f"claimed {bl.label(iid)} for {a.by}")
+    if not recorded:
+        say(f"warning: the claims ledger {ledger} was not recorded (its git dir cannot be written), so another session's "
+            "claim in this checkout is not refused for this one")
     commit_written(bl, a, "claim", iid)
     return 0
 
