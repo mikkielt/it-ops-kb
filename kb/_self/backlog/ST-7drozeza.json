@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "A risk a worker names in its report is filed as a draft bug before the item lands",
   "status": "draft",
+  "sprint": "SP-moxpl354",
   "priority": "P3",
   "rank": 0,
   "goal": "a risk of its own fix that a worker names in its report (a stale checkout, a host state) is filed as a draft bug, or run through the review brief, before the orchestrator lands the item",
@@ -11,9 +12,15 @@
       "run": [
         "python3",
         "-c",
-        "import sys,pathlib; t=pathlib.Path('.claude/skills/kb-sprint/SKILL.md').read_text(encoding='utf-8').lower(); sys.exit(0 if 'risk named in a worker report' in t else 'not yet: .claude/skills/kb-sprint/SKILL.md lacks risk named in a worker report')"
+        "import sys,pathlib\nt=pathlib.Path('skills/sprint/SKILL.md').read_text(encoding='utf-8')\ns=t.split('## run',1)[1].split('## review',1)[0].lower()\nmiss=[w for w in ['risk named in a worker report'] if w not in s]\nsys.exit('not yet: run section lacks '+', '.join(miss) if miss else 0)\n"
       ]
     }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "depends_on": [
+    "ST-upd6ssky"
   ],
   "links": [
     "parked: SP-pww4aqis close"
