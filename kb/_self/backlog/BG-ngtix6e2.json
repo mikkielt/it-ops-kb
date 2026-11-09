@@ -2,7 +2,7 @@
   "id": "BG-ngtix6e2",
   "kind": "bug",
   "title": "kbroot.py fetch failure lines keep the tail of an unquoted absolute path that holds a space",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-c6tr77jl",
   "priority": "P3",
   "rank": 0,
@@ -48,6 +48,19 @@
   ],
   "notes": "Premise run on the base 2026-11-09 by precheck of SP-c6tr77jl: the repro and each added check fail on the premise (an assertion), none on a traceback. Planned 2026-11-09 by a headless plan session; left out as off the theme or in a file another live session plans: BG-55zjrwpn and BG-cgbpg3lq (kbfacts.py). Gate g1 (class secrets, matched the word token in option 3) was answered with its recommendation on the night manager's instruction (ask A84a15ca963): the class is topical, not a real secret choice, and the answer leaks less than the old behaviour. The operator may re-confirm.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-1d0b0461",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "112032b5a344de4d35429dcc6671b032d21dc603",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0, \"_tools\")\nimport kbroot\nout = kbroot.without_paths(\"fatal: cannot mkdir /home/jan.kowalski/my cache/roots/x.part: Permission denied\")\nprint(out)\nsys.exit(1 if \"cache\" in out or \"roots\" in out else 0)"
+        ],
+        "exit": 0,
+        "sha256": "988a8f46a151a34a"
+      }
+    ]
+  }
 }
