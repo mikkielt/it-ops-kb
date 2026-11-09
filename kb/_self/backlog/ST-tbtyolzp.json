@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "A planned repro or check that plants an extender at one signature breaks the landing of a later item that changes how the point is called",
   "status": "draft",
+  "sprint": "SP-moxpl354",
   "priority": "P2",
   "rank": 0,
   "goal": "planning orders items that share an extension point by their repros' planted shapes: a repro plants the shape the point documents (every optional parameter included), or the later item's checks name the earlier item's repro as one to rerun",
@@ -11,9 +12,15 @@
       "run": [
         "python3",
         "-c",
-        "import sys; sys.exit(\"not yet: a planned follow-up, no check yet\")"
+        "import sys,pathlib\nt=pathlib.Path('skills/sprint/SKILL.md').read_text(encoding='utf-8')\ns=t.split('## plan',1)[1].split('## start',1)[0].lower()\nmiss=[w for w in ['planted shape'] if w not in s]\nsys.exit('not yet: plan section lacks '+', '.join(miss) if miss else 0)\n"
       ]
     }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "depends_on": [
+    "ST-qqqvwi5u"
   ],
   "links": [
     "parked: SP-ga3lbnlk close"
