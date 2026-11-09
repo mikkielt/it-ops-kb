@@ -41,6 +41,27 @@
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does kbmon's cleanup panel show the ask rows, and are answered rows (bl_clean.answer_of) applied here?",
+      "options": [
+        "head line count and per-class ask count; answer_of stays out of this item",
+        "also apply answer_of to the rows"
+      ],
+      "recommendation": "head line count and per-class ask count; answer_of stays out of this item",
+      "reason": "the notes' answer_of widening is parked for another item",
+      "do": {
+        "head line count and per-class ask count; answer_of stays out of this item": "BG-ayamhfdy",
+        "also apply answer_of to the rows": "BG-ayamhfdy"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "head line count and per-class ask count; answer_of stays out of this item",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ep7cyuob review"
   ],

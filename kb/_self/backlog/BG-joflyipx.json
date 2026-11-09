@@ -1,0 +1,18 @@
+{
+  "id": "BG-joflyipx",
+  "kind": "bug",
+  "title": "kbmon's cleanup metrics (mon_export.cleanup_points) export only the verdicts remove and keep, so rows with the verdict ask are missing from kbmon.cleanup.leftovers",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "mon_export.cleanup_points emits a kbmon.cleanup.leftovers point with verdict ask beside remove and keep, and kb/_self/monitoring.md names the verdict in the metric's attributes",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, \"_tools\"); import mon_export as m; pts = m.cleanup_points({\"counts\": {\"worktree\": {\"remove\": 0, \"keep\": 0, \"ask\": 2}}}); sys.exit(0 if any(\"ask\" in str(p) for p in pts) else 1)"
+    ]
+  },
+  "filed_in": "clone-0ea70e5c"
+}

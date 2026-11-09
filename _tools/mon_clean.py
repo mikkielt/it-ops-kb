@@ -3,10 +3,11 @@
 
 The data is `bl_selfcheck.leftovers`, the read `selfcheck`'s leftovers line shares: `rows` (each `{class, verdict, reason,
 bytes}` with the `path` or the `branch`, the `item` when a record names one and `approximate` where the walk that measures
-the bytes was cut), `counts` ({class: {remove, keep}} for worktree, branch, sandbox and scratch), `removable` (the rows
+the bytes was cut), `counts` ({class: {remove, keep, ask}} for worktree, branch, sandbox and scratch), `removable` (the rows
 with verdict `remove`), `bytes` (what they free), `approximate`, `free_gib` of the clone's volume, `limit_gib` (tidy's
 disk-pressure limit) and `pressure`. The bytes of all the `remove` rows are walked for `bl_selfcheck.BYTES_BUDGET_S`
 seconds together, so the panel stays inside its timeout; a row past the budget keeps 0 bytes and is `approximate`. The
+`ask` rows wait for the operator's `tidy --decide` answer and show in the head line. The
 text view shows the removable rows first, `ROWS_SHOWN` at most, then the kept ones, with the count of the rest.
 
 The panel reads and removes nothing: it takes the verdict, never acts on it (`tidy --apply` removes). It reads the local coord
@@ -67,11 +68,14 @@ def lines(data):
     counts = data.get("counts") or {}
     rows = sorted(data.get("rows") or [], key=lambda r: r.get("verdict") != "remove")
     free = data.get("free_gib")
+    asking = sum(c.get("ask", 0) for c in counts.values())
     head = (f"{data.get('removable', 0)} removable ({size_text(data.get('bytes', 0), data.get('approximate'))}) of {len(rows)}"
+            + (f", {asking} ask (wait for tidy --decide)" if asking else "")
             + (f", {free:g} GiB free of the {data.get('limit_gib', 0):g} GiB limit" if free is not None else "")
             + ("; disk pressure" if data.get("pressure") else ""))
     out = ["! " + head if data.get("pressure") else head,
-           "  ".join(f"{cls} {c.get('remove', 0)}/{c.get('remove', 0) + c.get('keep', 0)}" for cls, c in counts.items())
+           "  ".join(f"{cls} {c.get('remove', 0)}/{sum(c.values())}" + (f" ask {c['ask']}" if c.get("ask") else "")
+                     for cls, c in counts.items())
            + "  (remove/all)"]
     for r in rows[:ROWS_SHOWN]:
         name = r.get("branch") or Path(str(r.get("path", ""))).name

@@ -45,7 +45,8 @@ The eight checks, each independent and each a result {name, state, detail, remed
                `unknown` with no row, which `backlog.py red-pipeline --status` reads from the forge (this check reads
                the rows only and makes no forge call of its own)
   leftovers    the recorded leftovers `backlog.py tidy` lists (`leftovers`, read through `bl_clean.safe_to_remove`):
-               the detail names how many `remove` and the bytes they free; it fails only when the free space of the
+               the detail names how many `remove` and the bytes they free, of how many leftovers in all (the `ask`
+               rows count in the total); it fails only when the free space of the
                clone's volume is under tidy's disk-pressure limit (`bl_clean.DISK_FREE_GB`), else it is `ok`; `unknown`
                when the coord store, the integration main or git cannot be read
 
@@ -476,7 +477,8 @@ def run_checks(bl, now=None):
 def leftovers(bl, seconds=BYTES_BUDGET_S):
     """What `backlog.py tidy` lists, as one dict, read without a change: `rows` (tidy's rows, `bl_clean.safe_to_remove`'s
     verdict, reason and the bytes a removal frees; `approximate` where a walk was cut), `counts` ({class: {"remove": n,
-    "keep": n}}), `removable` (the `remove` rows), `bytes` (what they free, a nested path counted once), `approximate`,
+    "keep": n, "ask": n}}, `ask` the rows that wait for the operator's `tidy --decide` answer),
+    `removable` (the `remove` rows), `bytes` (what they free, a nested path counted once), `approximate`,
     `free_gib` of the clone's volume, `limit_gib` (tidy's disk-pressure limit) and `pressure`. The bytes of all the
     `remove` rows are walked for SECONDS together, a row past it keeps 0 bytes and is `approximate`. Raises
     `bl_base.Rejected` where there is no integration main or the coord store cannot be read, `bl_clean.CoordLocked`."""
@@ -505,7 +507,7 @@ def leftovers(bl, seconds=BYTES_BUDGET_S):
     paths = [r["path"] for r in gone if "path" in r]
     size = sum(r["bytes"] for r in gone if not any(o != r.get("path") and bl_clean.inside(o, r.get("path", "")) for o in paths))
     counts = {cls: {v: sum(1 for r in rows if r["class"] == cls and r["verdict"] == v)
-                    for v in (bl_clean.REMOVE, bl_clean.KEEP)} for cls in bl_clean.TIDY_CLASSES}
+                    for v in (bl_clean.REMOVE, bl_clean.KEEP, bl_clean.ASK)} for cls in bl_clean.TIDY_CLASSES}
     free = bl_clean.free_gib(snap, bl.root)
     return {"rows": [bl_clean.public(r) for r in rows], "counts": counts, "removable": len(gone), "bytes": size,
             "approximate": any(r.get("approximate") for r in gone),
