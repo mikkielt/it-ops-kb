@@ -2,7 +2,7 @@
   "id": "BG-vry5r7pe",
   "kind": "bug",
   "title": "A stale feedback.ids lock taken by two writers that both saw it stale can be held by both",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-osevumx6",
   "priority": "P2",
   "rank": 0,
@@ -24,5 +24,7 @@
     "parked: SP-4ppjbh4k review"
   ],
   "notes": "Planned 2026-11-09 in SP-osevumx6: items that share a file wait on each other (kbcommon.py, redact.py then kbask.py, ql_capture.py then ql_deliver.py); no open item of the other live sprints touches this item's code files.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-cdcea91c",
+  "operator": "op-f618a13e"
 }
