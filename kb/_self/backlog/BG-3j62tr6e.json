@@ -34,7 +34,12 @@
         "List only the keys it unset, so a left value is not named": "BG-3j62tr6e",
         "Keep one fixed line and add a second line saying the value was left alone": "BG-3j62tr6e"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "List only the keys it unset, so a left value is not named",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "links": [
