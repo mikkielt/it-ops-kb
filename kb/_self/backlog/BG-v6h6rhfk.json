@@ -18,6 +18,9 @@
   "touches": [
     "_tools/kbpublic.py"
   ],
+  "depends_on": [
+    "BG-thhbfbx4"
+  ],
   "links": [
     "parked: SP-n7zxspch review"
   ],
