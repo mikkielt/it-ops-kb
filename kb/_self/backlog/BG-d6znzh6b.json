@@ -28,6 +28,27 @@
   "depends_on": [
     "BG-ayamhfdy"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How do selfcheck and backlog.py procs learn which orphaned claude pids have a fresh transcript?",
+      "options": [
+        "snapshot reads the transcript of the claude process's working directory",
+        "snapshot calls mon_sessions to bind each pid to a session id"
+      ],
+      "recommendation": "snapshot reads the transcript of the claude process's working directory",
+      "reason": "needs no coord store, ledger or hook state, so every caller of snapshot agrees, and bl_procs gains no import of a mon_ module",
+      "do": {
+        "snapshot reads the transcript of the claude process's working directory": "BG-d6znzh6b",
+        "snapshot calls mon_sessions to bind each pid to a session id": "BG-d6znzh6b"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "snapshot reads the transcript of the claude process's working directory",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-fn7letri review"
   ],

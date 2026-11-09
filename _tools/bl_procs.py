@@ -5,8 +5,8 @@ checkout and worktrees), each as an orphan or foreign (kb/_self/backlog.md, Proc
   procs                 list them (read only): pid, parent, age, class, command name, and where it runs
 
 Classes: `orphan` (its parent is gone: a background run a session left behind), `detached` (its parent is gone, but an
-`own PID --class process` record names it, or its session wrote its transcript under FRESH_S seconds ago (kbmon's sessions
-panel says so through `classify`'s `fresh`), or it leads its own process group, started with `start_new_session`, and still
+`own PID --class process` record names it, or a transcript of a session started in its working directory was written under FRESH_S seconds ago (`fresh_pids`,
+which `snapshot` passes to `classify` as `fresh`: `procs`, `selfcheck` and kbmon's sessions panel agree), or it leads its own process group, started with `start_new_session`, and still
 has a live child: a launcher a session started apart and left at work; named in no alert and by no `selfcheck`), `hook` (an orphan whose standard output
 is the query log's distill.log and that is still at work: the run a session's end hook started, which waits for the
 distill lock up to the query log's USAGE_LOCK_WAIT_S, delivers with its parent gone, and ends on its own; it is at work
@@ -409,6 +409,36 @@ def classify(procs, tab, hooks=(), now=None, holders=(), recorded=None, fresh=()
     return out
 
 
+def transcript_age(cwd, now):
+    """The seconds since the newest write to a transcript of a Claude Code session started in CWD (`<Claude config
+    dir>/projects/<project>/*.jsonl`, or a subagent's under `<session>/subagents/`), or None when it has none."""
+    import kbusage
+    base = kbusage.config_dir() / "projects" / kbusage.project_name(cwd)
+    stamps = []
+    try:
+        for f in [*base.glob("*.jsonl"), *base.glob("*/subagents/agent-*.jsonl")]:
+            try:
+                stamps.append(f.stat().st_mtime)
+            except OSError:
+                continue
+    except OSError:
+        return None
+    return max(0, int(now - max(stamps))) if stamps else None
+
+
+def fresh_pids(procs, cwds, now=None):
+    """The pids of the `claude` processes of PROCS (`inventory`'s rows) whose working directory (CWDS, `cwd_map`'s) holds a
+    transcript written less than FRESH_S ago: a session at work, which `classify` takes for detached, not an orphan. No
+    other process is named: a transcript says a session is at work, not what it started."""
+    now = time.time() if now is None else now
+    out = set()
+    for p in procs:
+        age = transcript_age(cwds[p["pid"]], now) if p["comm"] == "claude" and p["pid"] in cwds else None
+        if age is not None and age < FRESH_S:
+            out.add(p["pid"])
+    return out
+
+
 def age_text(seconds):
     s = max(0, int(seconds))
     if s < 60:
@@ -434,7 +464,8 @@ def snapshot(root):
     bases = checkouts(root)
     procs = inventory(root, tab, cwds, bases)
     hooks = hook_pids(root, [p["pid"] for p in procs if orphaned(tab, p["pid"])], bases)
-    return classify(procs, tab, hooks, holders=lock_holders(bases), root=root), tab, None
+    gone = [p for p in procs if orphaned(tab, p["pid"])]
+    return classify(procs, tab, hooks, holders=lock_holders(bases), root=root, fresh=fresh_pids(gone, cwds)), tab, None
 
 
 # ---------------------------------------------------------------- the command
