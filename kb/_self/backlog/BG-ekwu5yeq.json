@@ -15,12 +15,23 @@
       "import sys; sys.path.insert(0, '_tools'); import bl_land; sys.exit(1 if bl_land.is_whole_suite(['python3', '_tools/tests.py', '--collect-only']) else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.path.insert(0,\"_tools\"); import bl_land as b; sel=[\"--co\",\"--lf\",\"--ff\",\"--deselect=x\",\"--ignore=y\",\"--help\"]; bad=[a for a in sel if b.is_whole_suite([\"python3\",\"_tools/tests.py\",a])]; whole=b.is_whole_suite([\"python3\",\"_tools/tests.py\"]); print(bad,whole); sys.exit(0 if not bad and whole else 1)"
+      ]
+    }
+  ],
   "touches": [
     "_tools/bl_land.py",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ],
   "links": [
     "parked: SP-yriisdti review"
   ],
+  "notes": "Planned in SP-uz3rhdlq: repro/checks fail on the base, touches and order set.",
   "filed_in": "clone-0ea70e5c"
 }

@@ -15,11 +15,26 @@
       "import sys; sys.path.insert(0, '_tools'); import bl_land; sys.exit(0 if 'S-5kvx24wm' in bl_land.token_words('S-5kvx24wm_old') else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.path.insert(0,\"_tools\"); import bl_land as b; w=b.token_words(\"x_S-5kvx24wm\"); sys.exit(0 if \"S-5kvx24wm\" in w and \"S-5kvx24wm\" in b.token_words(\"S-5kvx24wm_old\") else 1)"
+      ]
+    }
+  ],
   "touches": [
-    "_tools/bl_land.py"
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-ekwu5yeq"
   ],
   "links": [
     "parked: SP-yriisdti review"
   ],
+  "notes": "Planned in SP-uz3rhdlq: repro/checks fail on the base, touches and order set.",
   "filed_in": "clone-0ea70e5c"
 }

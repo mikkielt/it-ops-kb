@@ -7,21 +7,47 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "The pattern-row guard refuses a rules row whose variable-width atoms overlap across a fixed atom and over any Unicode class (not only chr(0) to chr(0x2ff)); one pattern-mapped line cannot run past PATTERN_FILE_TIMEOUT_S, or tools.md states the bound as per line",
+  "goal": "The pattern-row guard refuses a rules row whose variable-width atoms overlap across a fixed atom and over any Unicode class (not only chr(0) to chr(0x2ff)); tools.md states that the 10-second file bound is read between lines, so one slow line is not cut",
   "repro": {
     "run": [
       "python3",
       "-c",
-      "import sys;sys.path.insert(0,'_tools');import kbingest as k;rows=[r'\\w+.\\w+.\\w+(?P<name>y)',chr(91)+chr(0x430)+'-'+chr(0x44f)+chr(93)+'+'+chr(91)+chr(0x430)+'-'+chr(0x44f)+chr(93)+'+(?P<name>y)'];bad=[p for p in rows if k.rule_row({'language':'lua','role':'def','kind':'function','pattern':p},1,'sensitive')[0] is not None];assert not bad,'guard accepts %r'%bad"
+      "import sys;sys.path.insert(0,\"_tools\");import kbingest as k;rows=[r\"\\w+.\\w+.\\w+(?P<name>y)\",chr(91)+chr(0x430)+\"-\"+chr(0x44f)+chr(93)+\"+\"+chr(91)+chr(0x430)+\"-\"+chr(0x44f)+chr(93)+\"+(?P<name>y)\"];bad=[p for p in rows if k.rule_row({\"language\":\"lua\",\"role\":\"def\",\"kind\":\"function\",\"pattern\":p},1,\"sensitive\")[0] is not None];sys.exit(\"guard accepts %r\"%bad if bad else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open(\"kb/_self/tools.md\",encoding=\"utf-8\").read();i=t.index(\"or after 10 seconds\");sys.exit(0 if \"between lines\" in t[i:i+300] else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "The pattern-row guard refuses a rules row whose variable-width atoms overlap across a fixed atom and over any Unicode class (not only chr(0) to chr(0x2ff))",
+      "check": 1
+    },
+    {
+      "clause": "tools.md states that the 10-second file bound is read between lines, so one slow line is not cut",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kbingest.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    ".claude/skills/kb-ingest/SKILL.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/plugin.md"
+  ],
+  "depends_on": [
+    "BG-5lnmlpua"
   ],
   "links": [
     "parked: SP-n7zxspch review"
   ],
-  "notes": "Review gap G4 of SP-n7zxspch. kbingest.py:1759 PATTERN_PROBE spans chr(0) to chr(0x2ff), so a class outside it compares as empty: [a-ya Cyrillic]+[same]+ passes the guard and takes about 0.4 s on 990 letters. kbingest.py:1764 adjacent_overlap stops at a fixed atom: \\w+.\\w+.\\w+ is accepted, is cubic, and takes 7 s on a 400-letter line. kbingest.py:2009 reads the clock once per line (gate g1 of BG-76mclha4), so the file timeout does not bound a slow line, while tools.md says a file stops after 10 seconds. Never run these regexes on 1000 characters in a check.",
+  "notes": "Review gap G4 of SP-n7zxspch. kbingest.py:1759 PATTERN_PROBE spans chr(0) to chr(0x2ff), so a class outside it compares as empty: [a-ya Cyrillic]+[same]+ passes the guard and takes about 0.4 s on 990 letters. kbingest.py:1764 adjacent_overlap stops at a fixed atom: \\w+.\\w+.\\w+ is accepted, is cubic, and takes 7 s on a 400-letter line. kbingest.py:2009 reads the clock once per line (gate g1 of BG-76mclha4), so the file timeout does not bound a slow line, while tools.md says a file stops after 10 seconds. Never run these regexes on 1000 characters in a check. Choice settled in the plan: the timeout part is a doc fix, not new code (the clock stays read once per line), so tools.md says 'read between lines'. Clause 1 is the repro; run its regexes only on short lines in a check. Planned in SP-uz3rhdlq: repro/checks fail on the base, touches and order set.",
   "filed_in": "clone-0ea70e5c"
 }

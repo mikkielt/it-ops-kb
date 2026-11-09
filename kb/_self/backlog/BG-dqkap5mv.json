@@ -16,12 +16,31 @@
     ]
   },
   "repro_reason": "a wording claim about what the suite runs; the behaviour (no test runs rag.py eval) is shown by listing the test files, which no single command exercises",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open(\"kb/_self/backlog.md\",encoding=\"utf-8\").read();sys.exit(0 if \"landing's eval step\" in t and \"held-out\" in t else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "The checks paragraph of kb/_self/backlog.md no longer says the suite runs the lookup eval",
+      "check": 1
+    },
+    {
+      "clause": "it names what runs the eval now (the landing's eval step and the held-out gate files)",
+      "check": 0
+    }
+  ],
   "touches": [
     "kb/_self/backlog.md"
   ],
   "links": [
     "parked: SP-sgfucsn6 review"
   ],
-  "notes": "Review gap of SP-sgfucsn6 (S4), found by the sprint reviewer in ST-qwipu6df landing. Premise ran on today base: backlog.md line 216 says the suite runs the lookup eval; no _tools/test_*.py runs rag.py eval and _tools/test_live_kb.py is gone.",
+  "notes": "Review gap of SP-sgfucsn6 (S4), found by the sprint reviewer in ST-qwipu6df landing. Premise ran on today base: backlog.md line 216 says the suite runs the lookup eval; no test file under _tools runs rag.py eval and the live-kb test file is gone. Planned in SP-uz3rhdlq: repro/checks fail on the base, touches and order set.",
   "filed_in": "clone-0ea70e5c"
 }

@@ -15,12 +15,23 @@
       "import sys;sys.path.insert(0,\"_tools\");import bl_authority as a;i={\"title\":\"x\",\"touches\":[\"kb/_self/tools.md\"]};g={\"id\":\"g1\",\"kind\":\"provisional\",\"question\":\"which way?\",\"options\":[\"Drop it\",\"Keep it and reword tools.md\"],\"recommendation\":\"Drop it\"};r=a.block_reasons(i,g,False);print(r);sys.exit(1 if r else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,\"_tools\");import bl_authority as a;g=lambda o,t:{\"id\":\"g1\",\"kind\":\"provisional\",\"question\":\"which way?\",\"options\":[\"Drop it\",o],\"recommendation\":\"Drop it\"};i={\"title\":\"x\",\"touches\":[\"kb/_self/tools.md\"]};ok=a.block_reasons(i,g(\"Keep it and reword tools.md\",0),False);bad=a.block_reasons(i,g(\"Keep it and reword web-sources.md\",0),False);print(ok,bad);sys.exit(0 if not ok and bad else 1)"
+      ]
+    }
+  ],
   "touches": [
     "_tools/bl_authority.py",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ],
   "links": [
     "parked: SP-c6tr77jl close"
   ],
+  "notes": "Planned in SP-uz3rhdlq: repro/checks fail on the base, touches and order set.",
   "filed_in": "clone-0ea70e5c"
 }

@@ -7,21 +7,44 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
-  "goal": "kb/_self/tools.md (the check row) and kb/_self/backlog.md Sprints name the item kinds the two ST-a5q6vaji warnings of _tools/bl_check.py cover (subtasks included), and skills/sprint/SKILL.md plan step 6 does not promise a check warning for code outside the paths the code reads (only _tools/ code and _tools/test_*.py files), or the code reads a project's code paths from its config. Found in the SP-4jfepy6u review: tools.md:64 and backlog.md:212 say story, task or bug; the plugin skill says touches that name code.",
+  "goal": "kb/_self/backlog.md Sprints (the check warning paragraph) names the item kinds the two ST-a5q6vaji warnings of _tools/bl_check.py cover (subtasks included), and skills/sprint/SKILL.md plan step 6 says the check warns only of code under _tools/ (and _tools/test_*.py files), not of any code",
   "repro": {
     "run": [
       "python3",
       "-c",
-      "import sys;t=open('kb/_self/tools.md',encoding='utf-8').read();sys.exit(0 if 'subtask' in t.split('only read files')[0][-400:]+t.split('only read files')[1][:400] else 1)"
+      "import sys;t=open(\"kb/_self/backlog.md\",encoding=\"utf-8\").read();sys.exit(1 if \"story, task or bug of a planned sprint whose\" in t else 0)"
     ]
   },
   "repro_reason": "the defect is doc wording against the warning's item kinds; the code is right",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open(\"skills/sprint/SKILL.md\",encoding=\"utf-8\").read();sys.exit(1 if \"whose touches name code has at least one check\" in t else 0)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb/_self/backlog.md Sprints (the check warning paragraph) names the item kinds the two ST-a5q6vaji warnings of _tools/bl_check.py cover (subtasks included)",
+      "check": 1
+    },
+    {
+      "clause": "skills/sprint/SKILL.md plan step 6 says the check warns only of code under _tools/ (and _tools/test_*.py files), not of any code",
+      "check": 0
+    }
+  ],
   "touches": [
     "kb/_self/tools.md",
     "kb/_self/backlog.md",
     "skills/sprint/SKILL.md"
   ],
+  "depends_on": [
+    "BG-g4atoeyw"
+  ],
   "links": [
     "parked: SP-4jfepy6u review"
-  ]
+  ],
+  "notes": "Found in the SP-4jfepy6u review: backlog.md says story, task or bug; the sprint skill says touches that name code. tools.md holds no such sentence today, so only backlog.md and the sprint skill change. Planned in SP-uz3rhdlq: repro/checks fail on the base, touches and order set."
 }

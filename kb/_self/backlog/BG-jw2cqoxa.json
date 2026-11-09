@@ -15,14 +15,26 @@
       "import sys; sys.path.insert(0,\"_tools\"); import bl_authority as b; bad=[q for q in (\"Is the removed flag content-addressed?\",\"Is removal of the flag content-addressed?\") if b.class_reasons({\"touches\":[]},{\"id\":\"g1\",\"question\":q,\"options\":[\"one\",\"two\"]})[0]==\"delete\"]; print(\"delete:\",bad); sys.exit(1 if bad else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.path.insert(0,\"_tools\"); import bl_authority as b; f=lambda q: b.class_reasons({\"touches\":[]},{\"id\":\"g1\",\"question\":q,\"options\":[\"one\",\"two\"]})[0]; r=[f(\"Are the old rows removed from kb history?\"),f(\"Is the removed flag content-addressed?\")]; print(r); sys.exit(0 if r[0]==\"delete\" and r[1]!=\"delete\" else 1)"
+      ]
+    }
+  ],
   "touches": [
     "_tools/bl_authority.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "depends_on": [
+    "BG-fdxeot43"
+  ],
   "links": [
     "parked: SP-pww4aqis review"
   ],
-  "notes": "Review gap 4 of SP-pww4aqis (probed 2026-11-09 on origin/main): the delete pattern \\bremov(?:e|es|ed|ing|al) .*(?:kb|content|history) widened by BG-a65lzrjf matches the new endings anywhere before kb, content or history; fails closed (a blocking gate for the operator). Same file as BG-a65lzrjf, which landed.",
+  "notes": "Review gap 4 of SP-pww4aqis (probed 2026-11-09 on origin/main): the delete pattern \\bremov(?:e|es|ed|ing|al) .*(?:kb|content|history) widened by BG-a65lzrjf matches the new endings anywhere before kb, content or history; fails closed (a blocking gate for the operator). Same file as BG-a65lzrjf, which landed. Choices settled in the plan so the worker asks none: narrow the existing delete pattern in bl_authority.py in place (the removal word must govern kb, content or history, not a flag before it), no new helper, no new class; one sentence each in backlog.md and tools.md. Planned in SP-uz3rhdlq: repro/checks fail on the base, touches and order set.",
   "filed_in": "clone-0ea70e5c"
 }
