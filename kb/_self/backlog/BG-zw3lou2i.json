@@ -18,5 +18,9 @@
   "touches": [
     "_tools/kg_hooks.py"
   ],
+  "links": [
+    "parked: SP-mut2pmu3 review"
+  ],
+  "notes": "SP-mut2pmu3 review gap 8 (S4). kg_hooks.py:203-209 does not read the result of git config --unset core.hooksPath (nor push.recurseSubmodules): when git fails (read-only or locked config, exit 5) the line still says the key is unset. Fix: add a key to the unset list only when git returned success, print a refusal and return 1 for a failed core.hooksPath.",
   "filed_in": "clone-0ea70e5c"
 }
