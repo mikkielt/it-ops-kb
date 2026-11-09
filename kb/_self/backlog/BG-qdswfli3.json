@@ -7,7 +7,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "free_text_host_gates in _tools/bl_plan.py skips only a gate whose own wording is about a rule, so a gate naming a service account on an item touching _tools/bl_items.py still warns at start (SP-hlt2tdel review gap 5, ST-dbyng654)",
+  "goal": "a gate naming a service account on an item touching _tools/bl_items.py still warns at start, since free_text_host_gates in _tools/bl_plan.py skips only a gate whose own wording is about a rule",
   "repro": {
     "run": [
       "python3",
@@ -22,5 +22,6 @@
   ],
   "links": [
     "parked: SP-hlt2tdel review"
-  ]
+  ],
+  "notes": "Premise reproduces on origin/main (precheck 2026-11-09). SP-hlt2tdel review gap 5, on ST-dbyng654."
 }
