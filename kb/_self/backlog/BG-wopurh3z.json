@@ -20,6 +20,26 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does claim tell that an interrupt which ended the take_claim call lost a taken run state?",
+      "options": [
+        "read the key after the interrupt: released only when it was not claimed before, is claimed now and the claimed event names this claimer",
+        "release the key on any interrupt in the call"
+      ],
+      "recommendation": "read the key after the interrupt: released only when it was not claimed before, is claimed now and the claimed event names this claimer",
+      "do": {
+        "read the key after the interrupt: released only when it was not claimed before, is claimed now and the claimed event names this claimer": "BG-wopurh3z",
+        "release the key on any interrupt in the call": "BG-wopurh3z"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "read the key after the interrupt: released only when it was not claimed before, is claimed now and the claimed event names this claimer",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-6aegt3bs review"
   ],
