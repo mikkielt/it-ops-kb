@@ -1,0 +1,24 @@
+{
+  "id": "BG-vsiw4lo6",
+  "kind": "bug",
+  "title": "bl_check.leak_errors walks an item's fields with its own copy of the walker that bl_base.item_leak_fields now holds for commit_written",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "bl_check.leak_errors and bl_base.commit_written read an item's leak-scan fields through one walker, bl_base.item_leak_fields, with the allowlist read once in bl_base, and bl_check keeps no second copy of that walk",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.exit(0 if 'item_leak_fields' in open('_tools/bl_check.py', encoding='utf-8').read() else 1)"
+    ]
+  },
+  "repro_reason": "the duplication is a source shape: two walkers of an item's text for one scan; no run shows it",
+  "touches": [
+    "_tools/bl_check.py",
+    "_tools/bl_base.py",
+    "kb/_self/backlog.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

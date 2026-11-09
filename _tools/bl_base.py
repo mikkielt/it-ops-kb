@@ -1173,6 +1173,31 @@ def commit_message(subject, ids, trailers=(), body=""):
     return "\n\n".join(parts) + "\n"
 
 
+def leak_allowlist(root):
+    """The clone's leak-scan allowlist, parsed from its _tools/tests_allowlist.txt ({} when it is missing or unreadable)."""
+    import kbpublic
+    path = Path(root) / kbpublic.ALLOWLIST_PATH
+    try:
+        return kbpublic.parse_allowlist(path.read_text(encoding="utf-8")) if path.is_file() else {}
+    except (OSError, UnicodeDecodeError):
+        return {}
+
+
+def item_leak_fields(item, allow, path=""):
+    """[(field path, sorted kinds)] of each string field of one item (dict keys left out: `gates[0].question`) whose text
+    holds a leak-scan hit, read as `bl_check.leak_errors` reads it (`kbpublic.file_hits`, the clone's scan): kinds only."""
+    import kbpublic
+    if isinstance(item, str):
+        kinds = sorted({k for k, _ in kbpublic.file_hits("item.json", item, allow)})
+        return [(path, kinds)] if kinds else []
+    pairs = (item.items() if isinstance(item, dict) else enumerate(item) if isinstance(item, list) else ())
+    out = []
+    for k, v in pairs:
+        sub = f"{path}.{k}" if path and isinstance(item, dict) else f"{path}[{k}]" if isinstance(item, list) else str(k)
+        out += item_leak_fields(v, allow, sub)
+    return out
+
+
 def commit_written(bl, a, verb, iid, ids=None, body="", title=None):
     """With --commit: commit exactly the item files this run wrote or deleted (`git commit --only`, so changes staged
     before it stay staged and out of the commit), subject `chore(backlog): VERB ID "title"`, KB-Work: the ids."""
@@ -1183,6 +1208,16 @@ def commit_written(bl, a, verb, iid, ids=None, body="", title=None):
     if not paths:
         say("--commit: no item file written, nothing committed")
         return
+    allow = leak_allowlist(bl.root)
+    for p in paths:
+        try:
+            item = json.loads((bl.root / p).read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue  # a deleted or non-item file: nothing to scan
+        for field, kinds in item_leak_fields(item, allow) if isinstance(item, dict) else []:
+            raise Refused(f"--commit: {item.get('id', p)}: field {field} has a leak-scan hit ({', '.join(kinds)}; value "
+                          "not printed): the item file is written and not committed; write a placeholder instead "
+                          "(kb/_self/backlog.md, Writing about items), then commit it")
     git(bl.root, "add", "-A", "--", *paths)
     if not git(bl.root, "status", "--porcelain", "--", *paths).strip():
         say("--commit: the item files are unchanged, nothing committed")
