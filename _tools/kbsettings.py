@@ -43,7 +43,8 @@ announce (what a session says about its work):
   when                 list of start, claim, midrun, edit: the moments a session announces itself
   to_other_sessions    true or false: tell the other sessions on the clone
   operator             list of terminal, kbmon, needs_you: where the operator is told
-  needs_you_after_min  whole minutes (0 or more) an open question waits before it shows as needing the operator
+  needs_you_after_min  whole minutes (0 or more) an undecided overlap of two live sessions is old before it shows as
+                       needing the operator (an open ask to the operator is named at once, never delayed)
 strategy (what a session does when another item is in the state the key names):
   working, landing, blocked, returned   the other item's run state
   same_item                             another session already holds the same item
@@ -109,8 +110,8 @@ SETTINGS = {
                                   "can see it before they touch the same item or files.",
     "announce.operator": "Where the operator is told about a session's work: in the terminal, on the kbmon panels, "
                          "or as a needs-you alert.",
-    "announce.needs_you_after_min": "How many whole minutes an open question may wait before it shows as needing "
-                                    "the operator.",
+    "announce.needs_you_after_min": "How many whole minutes an undecided overlap of two live sessions is old before "
+                                    "it shows as needing the operator. An open ask to the operator is not delayed.",
     "strategy.same_item": "What a session suggests when another session already holds the item it was about to take.",
     "strategy.working": "What a session suggests when another item that touches the same files is in the run state "
                         "working (a worker is running it).",
