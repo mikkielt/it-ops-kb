@@ -21,6 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: every fix of the sprint is behaviour of this repository's own tools (kbpublic, kg_contrib, kg_lane, kblane, kbcommon, kbroot, ql_store, mon_needs); the planning premises were run against the tree and no kb article or source row is needed.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-ev3run01",
   "operator": "op-f618a13e"
