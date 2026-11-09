@@ -3,17 +3,22 @@
   "kind": "story",
   "title": "begin right after start stops at the claim push because start leaves the sprint's item files unstaged",
   "status": "draft",
+  "sprint": "SP-moxpl354",
   "priority": "P2",
   "rank": 0,
-  "goal": "backlog.py start commits the item files it rewrites (or begin commits them), so the first begin of a sprint pushes its claims without a hand commit",
+  "goal": "backlog.py start SP commits the item files it rewrites in one commit that names the sprint in KB-Work, whether or not --commit is passed, so the first begin of the sprint finds a clean tree and pushes its claims with no hand commit",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import sys; sys.exit(\"not yet: a planned follow-up, no check yet\")"
+        "import sys, os, json, pathlib, subprocess, tempfile\nsys.path.insert(0, \"_tools\")\nimport bl_base\nr = pathlib.Path(tempfile.mkdtemp()); d = r / bl_base.rel_dir(); d.mkdir(parents=True)\ndef g(*a): return subprocess.run([\"git\", \"-C\", str(r), *a], capture_output=True, text=True, check=True).stdout\nimport shutil; shutil.copy(\"backlog.json\", r / \"backlog.json\")\ng(\"init\", \"-q\"); g(\"config\", \"user.email\", \"t@example.com\"); g(\"config\", \"user.name\", \"t\")\ndef put(it): (d / (it[\"id\"] + \".json\")).write_text(bl_base.canonical(it), encoding=\"utf-8\")\nput({\"id\": \"SP-aaaaaaaa\", \"kind\": \"sprint\", \"title\": \"s\", \"goal\": \"g one\", \"status\": \"draft\", \"gates\": [{\"id\": \"start\", \"kind\": \"blocking\", \"question\": \"q\", \"options\": [\"approve\", \"change\", \"cancel\"], \"recommendation\": \"approve\", \"answer\": \"approve\", \"by\": \"operator\"}]})\nfor i in (\"BG-bbbbbbbb\", \"ST-cccccccc\"):\n    put({\"id\": i, \"kind\": \"bug\" if i[0] == \"B\" else \"story\", \"title\": \"t \" + i, \"goal\": \"g\", \"status\": \"draft\", \"sprint\": \"SP-aaaaaaaa\", \"touches\": [\"_tools/zz.py\"], \"checks\": [{\"run\": [\"true\"]}]})\nput({\"id\": \"ST-dddddddd\", \"kind\": \"story\", \"title\": \"review\", \"goal\": \"g\", \"status\": \"draft\", \"sprint\": \"SP-aaaaaaaa\", \"review\": True, \"checks\": [{\"run\": [\"true\"]}]})\ng(\"add\", \"-A\"); g(\"commit\", \"-q\", \"-m\", \"plan\")\np = subprocess.run([sys.executable, \"_tools/backlog.py\", \"--root\", str(r), \"start\", \"SP-aaaaaaaa\"], capture_output=True, text=True)\ndirty = g(\"status\", \"--porcelain\", \"--\", bl_base.rel_dir()).strip()\nbody = g(\"log\", \"-1\", \"--format=%B\")\nn = int(g(\"rev-list\", \"--count\", \"HEAD\").strip())\nok = p.returncode == 0 and not dirty and n == 2 and \"KB-Work: SP-aaaaaaaa\" in body\nprint(\"start committed its item files in one commit\" if ok else \"start left them: exit %s dirty=%r commits=%s\" % (p.returncode, dirty[:120], n))\nsys.exit(0 if ok else 1)\n"
       ]
     }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "kb/_self/backlog.md"
   ],
   "links": [
     "parked: SP-ga3lbnlk close"
