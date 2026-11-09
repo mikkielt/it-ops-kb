@@ -7,7 +7,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
-  "goal": "kg_contrib.old_git refuses a git older than 2.40 up front, naming its version, with exit 2, and the cherry_pick message and the git.md contribute paragraph say 2.40",
+  "goal": "kg_contrib.old_git refuses a git older than 2.40 up front with exit 2 naming its version, and the cherry_pick message and the git.md contribute paragraph say 2.40 too",
   "repro": {
     "run": [
       "python3",
@@ -19,5 +19,6 @@
     "_tools/kg_contrib.py",
     "kb/_self/git.md"
   ],
+  "notes": "Found by the SP-mut2pmu3 review of BG-nn3wzysr's provisional answer g1: reading git --version is right, the threshold is wrong (merge-tree --merge-base is new in git 2.40, RelNotes 2.40.0). Reading git --version and refusing below 2.40 is the recommended fix; a probe of merge-tree on an empty tree is the alternative.",
   "filed_in": "clone-0ea70e5c"
 }
