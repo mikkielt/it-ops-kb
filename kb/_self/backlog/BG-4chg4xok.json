@@ -1,0 +1,24 @@
+{
+  "id": "BG-4chg4xok",
+  "kind": "bug",
+  "title": "An interrupt in landing_lock between os.open of the lock file returning and the try that removes it leaves an empty lock file and an open descriptor",
+  "status": "todo",
+  "sprint": "SP-luspfajx",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "landing_lock leaves no recordless lock file of its own behind on an interrupt at any point after it created the lock file, also right after os.open returned, before the block that removes the file opens; a lock file and a ticket stay readable by older code, and kb/_self/backlog.md says what the code covers",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os, subprocess, sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport bl_close\nt = tempfile.mkdtemp()\nsubprocess.run([\"git\", \"init\", \"-q\", t], check=True)\npath = str(bl_close.landing_lock_path(t))\nreal = os.open\ndef open_then_interrupt(p, *a, **k):\n    fd = real(p, *a, **k)\n    if str(p) == path:\n        os.open = real\n        raise KeyboardInterrupt\n    return fd\nos.open = open_then_interrupt\ntry:\n    with bl_close.landing_lock(t, \"ST-aaaaaaaa\"):\n        pass\nexcept BaseException as e:\n    print(\"interrupted by\", type(e).__name__)\nfinally:\n    os.open = real\nprint(\"lock file left behind:\", os.path.exists(path))\nsys.exit(0 if not os.path.exists(path) else 1)\n"
+    ]
+  },
+  "touches": [
+    "_tools/bl_close.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
