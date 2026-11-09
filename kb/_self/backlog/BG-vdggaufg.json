@@ -2,7 +2,7 @@
   "id": "BG-vdggaufg",
   "kind": "bug",
   "title": "A pack whose closest line to the question is the article's own UNK not-stated line says coverage good with no check: line",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-jqjlwiar",
   "sprint": "SP-2cq2hse4",
   "priority": "P2",
@@ -30,5 +30,7 @@
     "kb/_self/token-efficiency.md"
   ],
   "notes": "Found 2026-11-09 by a gap sweep where 60 of 60 open gaps packed good on such lines. Premise: the repro fails on 55dde769f (good True, check False). The pack is built in kf_index.py (check lines near evidence_note) and kbfacts.py; the lookup eval at landing guards against false check: lines on expected-good rows (rag.py eval, NOTED_BASELINE).",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-c41d77ea",
+  "operator": "op-f618a13e"
 }
