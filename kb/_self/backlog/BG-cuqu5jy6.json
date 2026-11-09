@@ -2,7 +2,7 @@
   "id": "BG-cuqu5jy6",
   "kind": "bug",
   "title": "A worker's session can start real paid claude sessions: nothing in its environment stops a smoke test from calling claude",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rzwljgxv",
   "priority": "P2",
   "rank": 0,
@@ -28,5 +28,7 @@
     "retro: drain 2026-10-27..11-08"
   ],
   "notes": "Retro finding of the drain: ST-i5az334d's worker started 4 real Haiku 5.5 sessions (about 0.011 USD) as a smoke test though only other items of the sprint had an approved spend; the brief's rule on spending is text only. Premise (reproduces: the repro): worker_env (bl_dispatch.py) passes the dispatching session's PATH, so a worker's child call of claude reaches the real binary whatever its item's gates say. The stub is the retro's first example; the other, a spend check at done, would find the spend only afterwards and is left to the planner. Popen resolves argv[0] with the PATH it is given, so the stub directory must go on the PATH only after dispatch has resolved the real claude to a path; worker_env is also called by bench_load.py: keep its signature compatible. The repro plants a fake claude as the dispatched binary and as its child's target (no model call). Related: ST-ybksk2f2 (the opposite rule: an item whose code starts claude -p proves one capped real call). Planner settled the worker's choices so none becomes a blocking gate: the stub lives in stub-bin of the item's scratch directory and is written by dispatch at each start, approval is any gate of the item with an answer whose strict_signals include money (a public helper of bl_authority, no change there), worker_env keeps its signature (bench_load.py calls it). Check: the repro runs both cases (no gate: the paid call is stopped, an answered money gate: it reaches the real binary). Run order dependency dropped at 20:10 (landings take about 45 minutes each; the planned chain would not finish before the sprint's worker cutoff). Rebase merges separate hunks of the shared file.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev1run01",
+  "operator": "op-f618a13e"
 }
