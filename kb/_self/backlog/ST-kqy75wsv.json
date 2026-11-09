@@ -2,7 +2,7 @@
   "id": "ST-kqy75wsv",
   "kind": "story",
   "title": "factdiff.py close re-points the path:line citations to the lines its inserted bullet shifted, in the ledgers and other articles",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-2cq2hse4",
   "priority": "P3",
@@ -33,5 +33,7 @@
     "BG-x4lhztge"
   ],
   "notes": "Found 2026-11-09 when a refresh run re-pointed 24 citations with a scratch diff-based script; any other tool that inserts a fact line is a later story. Premise: the planted-root check exits 1 on 55dde769f (close exits 0, no citation moves).",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-c41d77ea",
+  "operator": "op-f618a13e"
 }
