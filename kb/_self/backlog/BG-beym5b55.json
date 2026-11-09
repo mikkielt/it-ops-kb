@@ -2,7 +2,7 @@
   "id": "BG-beym5b55",
   "kind": "bug",
   "title": "kblane.path_lane classes any top-level file kb/<file> as content, not only a submodule root's gitlink",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-mut2pmu3",
   "priority": "P3",

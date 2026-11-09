@@ -2,7 +2,7 @@
   "id": "BG-c273hugw",
   "kind": "bug",
   "title": "querylog.py reredact neither replaces nor reports a fetch host that fails the public-host gate, so the note's remedy leaves check red",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-mut2pmu3",
   "priority": "P2",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "BG-v6h6rhfk",
   "kind": "bug",
   "title": "A _root.md or pointer that is not valid UTF-8 passes publish's tree refusal and the sync range gate, since blobs() drops undecodable files",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-mut2pmu3",
   "priority": "P2",
   "rank": 0,

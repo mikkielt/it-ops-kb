@@ -2,7 +2,7 @@
   "id": "SP-mut2pmu3",
   "kind": "sprint",
   "title": "Publish, sync and the leak scan agree on tree causes, lanes and secret shapes, and the query-log spool and needs-you line stop naming dead deliveries",
-  "status": "planned",
+  "status": "active",
   "goal": "Publish passes the range since the last publish: a _root.md under _tools/fixtures counts as a test input and not a root, and sync's gate reports the tree causes publish gives; an unreadable _root.md or pointer counts as not public; contribute holds back every root and pointer that does not say visibility: public and checks the git version up front; sync treats every commit as content when lane_module is empty, and a plain top-level file of the kb directory is code while a submodule gitlink stays content; install-hooks --uninstall names only what it unset; the leak scan reports a url password with an angle bracket and one with a backslash in the scp form, and hands the file's root to a replacing extender; kbroot.without_paths removes an unquoted path with a space whole before a newline; reredact drops a fetch row whose host the public-host gate refuses and reports it by field; the needs-you line names no refused delivery while the panel counts no undelivered entry",
   "gates": [
     {

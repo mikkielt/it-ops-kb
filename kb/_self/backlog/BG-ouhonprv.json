@@ -2,7 +2,7 @@
   "id": "BG-ouhonprv",
   "kind": "bug",
   "title": "url_holds_credential reads a password that holds a backslash in the scp form as no credential since the Windows-path fix banned every backslash",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-mut2pmu3",
   "priority": "P3",
   "rank": 0,
