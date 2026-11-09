@@ -37,7 +37,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "read the key after the interrupt: released only when it was not claimed before, is claimed now and the claimed event names this claimer",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [

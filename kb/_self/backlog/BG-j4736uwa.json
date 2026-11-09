@@ -60,7 +60,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "at the back of the queue, with a new ticket named by the time it asks again",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
