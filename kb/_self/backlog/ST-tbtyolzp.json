@@ -16,6 +16,12 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "planning orders items that share an extension point by their repros' planted shapes: a repro plants the shape the point documents (every optional parameter included), or the later item's checks name the earlier item's repro as one to rerun",
+      "check": 0
+    }
+  ],
   "touches": [
     "skills/sprint/SKILL.md"
   ],
