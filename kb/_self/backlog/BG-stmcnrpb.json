@@ -1,0 +1,24 @@
+{
+  "id": "BG-stmcnrpb",
+  "kind": "bug",
+  "title": "The sync gate refuses every commit that writes under an internal root or pointer in any clone with an upstream, although only publish to the public home must refuse a team's own internal root",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kg_sync's range tree-cause check refuses internal-root and pointer writes only where the clone publishes to a public home, and keeps the _private and _cache causes everywhere, or git.md states that sync refuses them",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.exit(1)"
+    ]
+  },
+  "repro_reason": "a design question for the operator first: the planted input is in the notes",
+  "touches": [
+    "_tools/kg_sync.py",
+    "_tools/kbpublic.py",
+    "kb/_self/git.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
