@@ -67,11 +67,7 @@
         "Jobs placed by the same decided_by, counted on the UTC day of their submit": "ST-iueyyz5f",
         "Jobs of the same operator group path, counted on the UTC day of their last event": "ST-iueyyz5f"
       },
-      "class": "design",
-      "answer": "Jobs placed by the same decided_by, counted on the UTC day of their submit",
-      "by": "operator",
-      "operator": "op-f618a13e",
-      "role": "interactive"
+      "class": "design"
     },
     {
       "id": "g2",
@@ -86,6 +82,26 @@
       "do": {
         "Any lowercase slug as the scenario, run as benchmarks.py run SCENARIO --max-usd USD": "ST-iueyyz5f",
         "Only the names benchmarks.py lists, refused otherwise": "ST-iueyyz5f"
+      },
+      "class": "design",
+      "answer": "Any lowercase slug as the scenario, run as benchmarks.py run SCENARIO --max-usd USD",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "How does submit treat dispatch and begin, which the goal names as paid but which have no row in the operation table?",
+      "options": [
+        "Refuse them naming --budget when it is missing, and as no operation when it is given",
+        "Add rows for them now"
+      ],
+      "recommendation": "Refuse them naming --budget when it is missing, and as no operation when it is given",
+      "reason": "the goal's table gains bench only, their rows belong to later items",
+      "do": {
+        "Refuse them naming --budget when it is missing, and as no operation when it is given": "ST-iueyyz5f",
+        "Add rows for them now": "ST-iueyyz5f"
       },
       "class": "design"
     }
