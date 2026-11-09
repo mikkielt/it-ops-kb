@@ -42,6 +42,83 @@
     "ST-gf2rlzcc",
     "ST-iueyyz5f"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "From when is a workstation counted offline for fallback_after_s: the later of its lease's last renewal and the job's submit, or the lease's last renewal alone?",
+      "options": [
+        "later of last renewal and submit",
+        "last renewal alone"
+      ],
+      "recommendation": "later of last renewal and submit",
+      "reason": "a job queued after an executor stopped long ago still waits its fallback_after_s before moving",
+      "do": {
+        "later of last renewal and submit": "ST-ma2tluug",
+        "last renewal alone": "ST-ma2tluug"
+      },
+      "class": "design",
+      "answer": "later of last renewal and submit",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How does a job event carry the reason executor offline since T and the new placement, given coord's job events hold only the fields job, state, op, item, exit, step, by and attempt?",
+      "options": [
+        "step offline-since-TIME[-fallback-KIND], read by status as reason and placement",
+        "a new reason field in coord's job events"
+      ],
+      "recommendation": "step offline-since-TIME[-fallback-KIND], read by status as reason and placement",
+      "reason": "coord.py stays as it is and an event keeps holding ids, not free text",
+      "do": {
+        "step offline-since-TIME[-fallback-KIND], read by status as reason and placement": "ST-ma2tluug",
+        "a new reason field in coord's job events": "ST-ma2tluug"
+      },
+      "class": "design",
+      "answer": "step offline-since-TIME[-fallback-KIND], read by status as reason and placement",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "How does an executor of one kind serve the clone's own queue (serve --kind K with no --url, the form the item's check runs)?",
+      "options": [
+        "through a mirror store and LocalRemote, as a central queue's executor does",
+        "a filter on placement inside the plain local drain"
+      ],
+      "recommendation": "through a mirror store and LocalRemote, as a central queue's executor does",
+      "reason": "one code path for both queues",
+      "do": {
+        "through a mirror store and LocalRemote, as a central queue's executor does": "ST-ma2tluug",
+        "a filter on placement inside the plain local drain": "ST-ma2tluug"
+      },
+      "class": "push",
+      "answer": "through a mirror store and LocalRemote, as a central queue's executor does",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "How long does the workstation executor's lease last and how often is it renewed?",
+      "options": [
+        "60 s lease renewed every 20 s",
+        "30 s lease renewed every 10 s"
+      ],
+      "recommendation": "60 s lease renewed every 20 s",
+      "reason": "the same renewal period as a job's lease, so one missed renewal never shows the workstation offline",
+      "do": {
+        "60 s lease renewed every 20 s": "ST-ma2tluug",
+        "30 s lease renewed every 10 s": "ST-ma2tluug"
+      },
+      "class": "design",
+      "answer": "60 s lease renewed every 20 s",
+      "by": "agent"
+    }
+  ],
   "notes": "Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: a live lease keeps the job on its workstation",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-61c966d6",
