@@ -1,0 +1,22 @@
+{
+  "id": "BG-lwalma2o",
+  "kind": "bug",
+  "title": "bench_core.run_commit compares only _tools and .claude, so a branch that changes kb articles records the merge-base commit whose kb is not what the scenarios measured",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bench_core.run_commit records HEAD, with the stderr note, when the kb tree of HEAD differs from the merge-base's as well as when _tools or .claude differ, since the lookup, pool and retrieval scenarios measure the clone's kb",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "\nimport os, subprocess, sys, tempfile\nwith tempfile.TemporaryDirectory() as t:\n    clone = os.path.join(t, \"clone\"); bindir = os.path.join(t, \"bin\"); os.mkdir(bindir)\n    open(os.path.join(bindir, \"claude\"), \"w\").write(\"#!/bin/sh\\necho 0.0.0\\n\"); os.chmod(os.path.join(bindir, \"claude\"), 0o755)\n    env = dict(os.environ, PATH=bindir + os.pathsep + os.environ[\"PATH\"])\n    def git(*a):\n        return subprocess.run([\"git\", \"-c\", \"user.name=t\", \"-c\", \"user.email=t@example.com\", *a], cwd=clone, capture_output=True, text=True, check=True).stdout.strip()\n    subprocess.run([\"git\", \"clone\", \"-q\", \"--local\", \".\", clone], check=True)\n    git(\"update-ref\", \"refs/remotes/origin/main\", \"HEAD\")\n    git(\"switch\", \"-q\", \"-c\", \"work/ST-x\")\n    open(os.path.join(clone, \"kb\", \"zz_probe.txt\"), \"w\").write(\"x\")\n    git(\"add\", \"kb/zz_probe.txt\")\n    git(\"commit\", \"-q\", \"-m\", \"worker commit that changes kb\")\n    code = \"import sys; sys.path.insert(0, \\x27_tools\\x27); import bench_core; print(bench_core.Bench(sys.argv[1], 1).commit)\"\n    p = subprocess.run([sys.executable, \"-c\", code, os.path.join(t, \"scratch\")], cwd=clone, capture_output=True, text=True, env=env, timeout=120)\n    head = git(\"rev-parse\", \"--short=7\", \"HEAD\")\n    out = p.stdout.strip().splitlines()[-1] if p.stdout.strip() else \"\"\n    print(p.returncode, out, head)\n    sys.exit(0 if p.returncode == 0 and out == head else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bench_core.py",
+    "kb/_self/benchmarks.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
