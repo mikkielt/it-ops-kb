@@ -282,7 +282,7 @@ def lines(data, width=None, taken=None):
     if not data.get("sprints"):
         rows.append("sprints none")
     for lg in data.get("landings", [])[:LANDING_ROWS]:
-        rows.append(f"landing  {lg['item']}  {lg['step']}  since {str(lg['since']).replace('T', ' ')}")
+        rows.append(f"landing  {lg['item']}  {lg['step']}  since {str(lg['since'])[:16].replace('T', ' ')} UTC")
     if len(data.get("landings", [])) > LANDING_ROWS:
         rows.append(f"+{len(data['landings']) - LANDING_ROWS} more landings")
     return rows
