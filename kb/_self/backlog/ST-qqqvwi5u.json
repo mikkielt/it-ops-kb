@@ -1,0 +1,22 @@
+{
+  "id": "ST-qqqvwi5u",
+  "kind": "story",
+  "title": "The sprint skill's plan step checks that a bug's repro still passes beside the goal and each gate option, and the worker brief says a goal change that voids the repro goes to a gate",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The plan step of .claude/skills/kb-sprint/SKILL.md says to run a bug's repro against the goal's design choice before the start gate (a repro that plain redact.redact keeps a UUID contradicted the goal that only a live lease keeps one, SP-osevumx6 BG-pqthn333), and notes that a worker whose fix voids the repro cannot replace it with set --repro in its own tree because that refuses a passing command",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();import sys;sys.exit(0 if 'repro still passes beside the goal' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
