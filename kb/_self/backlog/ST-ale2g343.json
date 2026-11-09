@@ -1,0 +1,23 @@
+{
+  "id": "ST-ale2g343",
+  "kind": "story",
+  "title": "land's lock-wait lines say how many landings queue ahead and how long the lock has been held",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the landing-lock wait lines of bl_close.py name the number of landings queued ahead and the minutes the holder has run, so a runner sees a queue behind other sessions' landings as a wait and not a hang (SP-hyfyn22d: thirteen landings queued behind other sessions' landings for up to 35 minutes each, shown only as repeated asked-first lines)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open(\"_tools/bl_close.py\",encoding=\"utf-8\").read();sys.exit(0 if \"queued ahead\" in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_close.py",
+    "kb/_self/backlog.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
