@@ -27,6 +27,60 @@
   "depends_on": [
     "BG-qdsed6jk"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does the executor read a paid job's own spend from at its end?",
+      "options": [
+        "the spend line benchmarks.py prints for each scenario that paid, in the job's output",
+        "the spend_usd rows of benchmarks.csv for the job's scenario"
+      ],
+      "recommendation": "the spend line benchmarks.py prints for each scenario that paid, in the job's output",
+      "do": {
+        "the spend line benchmarks.py prints for each scenario that paid, in the job's output": "BG-k6tyqqbn",
+        "the spend_usd rows of benchmarks.csv for the job's scenario": "BG-k6tyqqbn"
+      },
+      "class": "design",
+      "answer": "the spend line benchmarks.py prints for each scenario that paid, in the job's output",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Does finished_spend keep its root parameter, which the sum no longer reads?",
+      "options": [
+        "keep it, unread, as the repro's call shape has it",
+        "drop it from finished_spend"
+      ],
+      "recommendation": "keep it, unread, as the repro's call shape has it",
+      "do": {
+        "keep it, unread, as the repro's call shape has it": "BG-k6tyqqbn",
+        "drop it from finished_spend": "BG-k6tyqqbn"
+      },
+      "class": "design",
+      "answer": "keep it, unread, as the repro's call shape has it",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "Which ends of a job write its spent_usd, and what does an attempt add?",
+      "options": [
+        "every end of the child, a cancelled job too, each attempt adding its spend to what the record keeps",
+        "only a succeeded or failed end, the last attempt replacing the figure"
+      ],
+      "recommendation": "every end of the child, a cancelled job too, each attempt adding its spend to what the record keeps",
+      "do": {
+        "every end of the child, a cancelled job too, each attempt adding its spend to what the record keeps": "BG-k6tyqqbn",
+        "only a succeeded or failed end, the last attempt replacing the figure": "BG-k6tyqqbn"
+      },
+      "class": "design"
+    }
+  ],
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-432be86e",
   "operator": "op-f618a13e"
