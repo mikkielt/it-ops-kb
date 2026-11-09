@@ -23,6 +23,16 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "backlog.py show of a sprint's review story and horizon --sprint SP list every provisional answer an agent gave that the operator has not confirmed, held or not, so the review brief and the operator's confirmation see all of them before the review's done",
+      "check": 0
+    },
+    {
+      "clause": "kb/_self/tools.md names it as every unconfirmed provisional answer",
+      "check": 1
+    }
+  ],
   "touches": [
     "_tools/bl_view.py",
     "kb/_self/tools.md"
