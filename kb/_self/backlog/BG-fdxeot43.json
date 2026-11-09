@@ -19,5 +19,9 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "links": [
+    "parked: SP-pww4aqis review"
+  ],
+  "notes": "Review gap 2 of SP-pww4aqis (probed 2026-11-09 on origin/main): GLUED_BEFORE in bl_authority.py treats the usage. prefix as a possible credential name, so SNAKE_TOKEN_IDENT keeps the identifier; fails closed (a blocking gate for the operator). usage[\"cache_read_input_tokens\"] is design. The docs (tools.md, backlog.md) say the glue rule keeps vault-read_token but not that usage.<field> keeps the class. Same file as BG-6vy5sy74 and BG-zmwnp3hh, which landed.",
   "filed_in": "clone-0ea70e5c"
 }
