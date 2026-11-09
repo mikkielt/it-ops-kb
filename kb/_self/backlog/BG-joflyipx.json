@@ -7,7 +7,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S4",
-  "goal": "mon_export.cleanup_points emits a kbmon.cleanup.leftovers point with verdict ask beside remove and keep, and kb/_self/monitoring.md names the verdict in the metric's attributes",
+  "goal": "mon_export.cleanup_points emits a kbmon.cleanup.leftovers point with verdict ask beside remove and keep, and kb/_self/monitoring.md lists ask among the verdicts of the metric",
   "repro": {
     "run": [
       "python3",
@@ -15,6 +15,15 @@
       "import sys; sys.path.insert(0, \"_tools\"); import mon_export as m; pts = m.cleanup_points({\"counts\": {\"worktree\": {\"remove\": 0, \"keep\": 0, \"ask\": 2}}}); sys.exit(0 if any(\"ask\" in str(p) for p in pts) else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; t=open(\"kb/_self/monitoring.md\",encoding=\"utf-8\").read(); i=t.find(\"kbmon.cleanup.leftovers\"); sys.exit(0 if i>=0 and \"ask\" in t[i:i+200] else 1)"
+      ]
+    }
+  ],
   "touches": [
     "_tools/mon_export.py",
     "kb/_self/monitoring.md",
