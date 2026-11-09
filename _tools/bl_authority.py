@@ -516,14 +516,15 @@ def names_rule_text(word):
         "/" in low and any(touch_names(low, p) for p in RULE_TEXT_PATHS))
 
 
-def block_reasons(item, gate):
-    """Why the gate blocks, [] when none of the reasons holds: it is the sprint's start gate or is `blocking`, its own
-    words (the item's touches left out) give a class of BLOCK_CLASSES, they name a strict signal, an option names a
-    path outside the item's touches or a rule-text path, or the item's title names TITLE_CLASSES."""
+def block_reasons(item, gate, kind=True):
+    """Why the gate blocks, [] when none of the reasons holds: it is the sprint's start gate or is `blocking` (`kind`
+    false leaves that one out: `gate add` stores `blocking` for a gate given no kind), its own words (the item's touches
+    left out) give a class of BLOCK_CLASSES, they name a strict signal, an option names a path outside the item's touches
+    or a rule-text path, or the item's title names TITLE_CLASSES."""
     why = []
     if gate.get("id") == START_GATE:
         why.append("the sprint's start gate")
-    if gate.get("kind") == "blocking":
+    if kind and gate.get("kind") == "blocking":
         why.append("kind blocking")
     cls, reasons = class_reasons(item, gate, touches=False)
     if cls in BLOCK_CLASSES:
@@ -544,13 +545,13 @@ def block_reasons(item, gate):
     return why
 
 
-def disposition(item, gate):
+def disposition(item, gate, kind=True):
     """(`block`, `hold` or `agent`, reasons): who settles the gate. `block`: the operator answers it and no agent does
     (block_reasons), and so does a gate the item's touches class `ceiling` or `secrets`, which always reaches the
     operator. `hold`: the gate is not blocking and only the item's touches give the class `agents-rule` or `push` (HOLD_CLASSES), so the agent goes on with its recommendation (`answer --provisional`)
     and the operator confirms it at the review; the reasons name those touches. `agent`: every other gate. The class
-    stays what `gate_class` derives."""
-    why = block_reasons(item, gate)
+    stays what `gate_class` derives. `kind` false leaves the gate's own kind `blocking` out of the reasons."""
+    why = block_reasons(item, gate, kind)
     if why:
         return "block", why
     found = touch_found(item)
@@ -574,8 +575,9 @@ DETAIL_LINE = ("detail only: settle it in the goal before the start or answer it
 
 def detail_only(item, gate):
     """Whether the gate asks only an implementation detail (DETAIL_RE) and has no reason to block (`disposition` is not
-    `block`), so planning settles it in the item's goal."""
-    return disposition(item, gate)[0] != "block" and bool(DETAIL_RE.search(str(gate.get("question") or "")))
+    `block`) besides its kind `blocking`, which is the default `gate add` gives, so planning settles it in the item's
+    goal."""
+    return disposition(item, gate, kind=False)[0] != "block" and bool(DETAIL_RE.search(str(gate.get("question") or "")))
 
 
 def sprint_scope(item, gate, members):
