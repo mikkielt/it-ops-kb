@@ -1814,8 +1814,8 @@ def group_call(prefixed, call):
 
 def group_tools():
     """([tool dicts], {name: handler}) of the group's own tools, extension point mcp_tools: each served as
-    `<group>_<name>` with the group's name at the start of its description, beside the shipped tools. A tool whose
-    prefixed name is a shipped tool's is left out, one stderr line naming it; no group name or a load failure leaves all
+    `<group>_<name>` with the group's name at the start of its description, beside the shipped tools; the prefix is the
+    group's name as written, a hyphen included. A tool whose prefixed name is a shipped tool's or over 64 characters is left out, one stderr line naming it; no group name or a load failure leaves all
     of the group's tools out, one stderr line naming the point. Read once per process."""
     root = os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
     key = (root, os.environ.get("KB_GROUP_SETTINGS"))
@@ -1828,8 +1828,8 @@ def group_tools():
         if not kbext.configured("mcp_tools", root):
             return listed, handlers
         group = group_name(root)
-        if not group or not re.fullmatch(r"[a-z][a-z0-9_]*", group):
-            raise kbext.ExtensionError("the settings name no group (key group, lower-case letters, digits and "
+        if not group or not (kbext.GROUP_NAME_RE.fullmatch(group) or re.fullmatch(r"[a-z][a-z0-9_]*", group)):
+            raise kbext.ExtensionError("the settings name no group (key group, lower-case letters, digits, hyphens and "
                                        "underscores), so the tools carry no prefix")
         tools = group_dicts(kbext.load_all("mcp_tools", root))
     except (kbext.ExtensionError, kbsettings.SettingsError) as e:
@@ -1838,6 +1838,9 @@ def group_tools():
     shipped = {t["name"] for t in shipped_tools(every=True)}
     for tool in tools:
         prefixed = f"{group}_{tool['name']}"
+        if len(prefixed) > 64:  # the MCP tool-name limit
+            group_note(f"point mcp_tools: tool {prefixed} is left out: its name is over 64 characters")
+            continue
         if prefixed in shipped or prefixed in handlers:
             group_note(f"point mcp_tools: tool {prefixed} is left out: its name is already "
                        f"{'a shipped' if prefixed in shipped else 'a group'} tool's")
