@@ -2,7 +2,7 @@
   "id": "BG-zmwnp3hh",
   "kind": "bug",
   "title": "A credential word glued by a hyphen, dot, slash or colon to a code identifier (vault-read_token) leaves the gate classed design, not secrets",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-pww4aqis",
   "priority": "P3",
   "rank": 0,
@@ -36,5 +36,7 @@
     "parked: SP-w57bnhhx review"
   ],
   "notes": "Found by the SP-w57bnhhx review on 2026-10-26 (fresh-context reviewer, probed on the tip of the main branch); not S1, so parked as a draft in no sprint. Order: same file bl_authority.py as BG-huguh6sn. Premise reproduces on origin/main (precheck 2026-11-09). The check reads both halves of the goal: the five glued names secrets, bare_token after a space or a backtick not secrets.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-6b037793",
+  "operator": "op-f618a13e"
 }
