@@ -2,7 +2,7 @@
   "id": "ST-ugkw5mt3",
   "kind": "story",
   "title": "A worker branch is pushed to the integration remote at stage-back when its landing is placed off the workstation, and land deletes it after",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-p4guu2ip",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",
@@ -136,6 +136,37 @@
   ],
   "notes": "Order agreed 2026-11-08 with SP-ep7ck2ab's manager (ask A1e21b0d155): shared files (_tools/kbpublic.py, _tools/kbcommon.py, _tools/bl_land.py, kb/_self/map.csv) land by first claim; the later item rebases. No hard dependency. Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: stage-back calls it when kbjob.py place land ITEM gives an executor other than workstation",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-61c966d6",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "215a94cfa29517679f4d0b3810cc94e98540d049",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,tempfile,subprocess\nsys.path.insert(0,os.path.abspath(\"_tools\")); import bl_dispatch,bl_land\nd=tempfile.mkdtemp(); o=os.path.join(d,\"o.git\"); w=os.path.join(d,\"w\"); g=lambda *x,cwd=w: subprocess.run([\"git\",*x],cwd=cwd,capture_output=True,text=True)\nsubprocess.run([\"git\",\"init\",\"-q\",\"--bare\",o],check=True); subprocess.run([\"git\",\"clone\",\"-q\",o,w],check=True)\ng(\"config\",\"user.email\",\"jan.kowalski@corp.example.com\"); g(\"config\",\"user.name\",\"jan.kowalski\"); g(\"commit\",\"-q\",\"--allow-empty\",\"-m\",\"base\"); g(\"push\",\"-q\",\"origin\",\"HEAD:main\")\ng(\"checkout\",\"-q\",\"-b\",\"work/ST-aaaaaaaa\"); g(\"commit\",\"-q\",\"--allow-empty\",\"-m\",\"work\")\nr1=bl_dispatch.push_work_branch(w,\"ST-aaaaaaaa\"); on=g(\"ls-remote\",\"origin\",\"refs/heads/work/ST-aaaaaaaa\").stdout\nw2=os.path.join(d,\"w2\"); subprocess.run([\"git\",\"clone\",\"-q\",o,w2],check=True); g(\"config\",\"user.email\",\"a@corp.example.com\",cwd=w2); g(\"config\",\"user.name\",\"a\",cwd=w2)\ng(\"checkout\",\"-q\",\"work/ST-aaaaaaaa\",cwd=w2); g(\"commit\",\"-q\",\"--allow-empty\",\"-m\",\"other\",cwd=w2); g(\"push\",\"-q\",\"origin\",\"work/ST-aaaaaaaa\",cwd=w2)\ng(\"commit\",\"-q\",\"--allow-empty\",\"-m\",\"more\"); r2=bl_dispatch.push_work_branch(w,\"ST-aaaaaaaa\")\nbl_land.delete_remote_work_branch(w,\"ST-aaaaaaaa\"); off=g(\"ls-remote\",\"origin\",\"refs/heads/work/ST-aaaaaaaa\").stdout\nassert r1==0 and on.strip() and r2==1 and not off.strip(), (r1,r2,on,off)\n"
+        ],
+        "exit": 0,
+        "sha256": "ecb318d3f10a1e39"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,tempfile,subprocess\nsys.path.insert(0,os.path.abspath(\"_tools\")); import kbpublic\nd=tempfile.mkdtemp(); w=os.path.join(d,\"w\"); p=os.path.join(d,\"pub.git\"); g=lambda *x: subprocess.run([\"git\",*x],cwd=w,capture_output=True,text=True)\nsubprocess.run([\"git\",\"init\",\"-q\",\"--bare\",p],check=True); subprocess.run([\"git\",\"init\",\"-q\",w],check=True)\ng(\"config\",\"user.email\",\"jan.kowalski@corp.example.com\"); g(\"config\",\"user.name\",\"jan.kowalski\"); g(\"commit\",\"-q\",\"--allow-empty\",\"-m\",\"base\"); g(\"remote\",\"add\",\"pub\",p); g(\"config\",\"kb.publishRemote\",\"pub\")\nsha=g(\"rev-parse\",\"HEAD\").stdout.strip()\nassert kbpublic.guard_push(\"pub\",p,[(\"refs/heads/work/ST-aaaaaaaa\",sha)],w), \"a work branch to the publish remote is not refused\"\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,tempfile,subprocess,threading,json,http.server\nsys.path.insert(0,os.path.abspath(\"_tools\")); import bl_dispatch\ndef serve(executor):\n    class H(http.server.BaseHTTPRequestHandler):\n        def do_POST(self):\n            self.rfile.read(int(self.headers.get(\"Content-Length\", 0)))\n            body = json.dumps({\"result\": {\"executor\": executor, \"identity\": \"none\", \"decided_by\": \"plant\", \"reason\": \"planted\"}}).encode()\n            self.send_response(200); self.send_header(\"Content-Length\", str(len(body))); self.end_headers(); self.wfile.write(body)\n        def log_message(self, *x): pass\n    srv = http.server.HTTPServer((\"127.0.0.1\", 0), H); threading.Thread(target=srv.serve_forever, daemon=True).start()\n    return srv\nd=tempfile.mkdtemp(); o=os.path.join(d,\"o.git\"); w=os.path.join(d,\"w\"); g=lambda *x: subprocess.run([\"git\",*x],cwd=w,capture_output=True,text=True)\nsubprocess.run([\"git\",\"init\",\"-q\",\"--bare\",o],check=True); subprocess.run([\"git\",\"clone\",\"-q\",o,w],check=True)\ng(\"config\",\"user.email\",\"jan.kowalski@corp.example.com\"); g(\"config\",\"user.name\",\"jan.kowalski\"); g(\"commit\",\"-q\",\"--allow-empty\",\"-m\",\"base\"); g(\"push\",\"-q\",\"origin\",\"HEAD:main\")\ng(\"checkout\",\"-q\",\"-b\",\"work/ST-aaaaaaaa\"); g(\"commit\",\"-q\",\"--allow-empty\",\"-m\",\"work\")\nclass Bl:\n    root = w\n    def label(self, iid): return iid\nhere = lambda: g(\"ls-remote\",\"origin\",\"refs/heads/work/ST-aaaaaaaa\").stdout.strip()\nres = {}\nfor executor in (\"workstation\", \"ci\"):\n    srv = serve(executor); os.environ[\"KB_OPA_URL\"] = f\"http://127.0.0.1:{srv.server_address[1]}\"\n    res[executor] = (bl_dispatch.push_after_stage_back(Bl(), \"ST-aaaaaaaa\"), bool(here())); srv.shutdown()\nassert res[\"workstation\"] == (0, False) and res[\"ci\"] == (0, True), res\n"
+        ],
+        "exit": 0,
+        "sha256": "67c11b2610d93bdb"
+      }
+    ]
+  }
 }
