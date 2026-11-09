@@ -2,7 +2,7 @@
   "id": "BG-7likh33e",
   "kind": "bug",
   "title": "Operator-class answers recorded from the orchestrator's agent session carry no agent_session flag, so horizon and the review list none",
-  "status": "draft",
+  "status": "dropped",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-pww4aqis",
   "priority": "P2",
@@ -26,5 +26,6 @@
   "links": [
     "parked: SP-fn7letri review"
   ],
+  "notes": "Dropped: already fixed on origin/main by e3455be8d: answer --by operator from an agent session stores agent_session: true for every operator class (ceiling, secrets, push, agents-rule); its repro read a closed sprint's horizon",
   "filed_in": "clone-0ea70e5c"
 }
