@@ -2,7 +2,7 @@
   "id": "BG-ff6fhfoo",
   "kind": "bug",
   "title": "kbgit.py contribute holds back only roots that say visibility: internal while publish refuses every root that does not say public",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-mut2pmu3",
   "priority": "P2",
   "rank": 0,
@@ -54,6 +54,37 @@
   ],
   "notes": "Review gap G3 of SP-n7zxspch. kg_contrib.py:69 and :71 test == internal; the docstring at :51-53 claims it reads them as tree_refusals does, which is false since BG-2iqdafwm. git.md:116 repeats visibility: internal. kg_contrib.py:95 calls file_hits(x, added, allow, pinned) with no root, so a listed placeholder still refuses there (S4, stricter only). Fix: kbpublic.not_public in both lines. Premise run 2026-11-09: the repro fails on the base (kg_contrib.py tests == internal at lines 69 and 71). The goal leaves out the S4 half of the review gap (file_hits called with no root at kg_contrib.py:95, which only makes the scan stricter). Contribute reads the same roots as publish, so it follows BG-thhbfbx4's rule for _tools/fixtures: ordered after it (depends_on), and the fixture check plants a fixture _root.md beside an internal root. Outbound path: contribute is an outbound path of file_hits (shipped_file_hits, never the group's replacing scan); this item changes only which roots are held back, not the scan, and a planted secret in a commit still reaches added_hits.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-ev3run01",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "7916e1d21b5cb5d64bc019182da27a95e003363d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import kbpublic as p,kg_contrib as c;p.tree_files=lambda rev,cwd:[\"kb/t1/_root.md\",\"kb/_roots/t2.md\",\"kb/t3/_root.md\",\"_tools/fixtures/lang/de/_root.md\"];p.texts=lambda specs,cwd:{s:(\"---\\nroot: x\\nvisibility: public\\n---\\n\" if \"t3\" in s else \"---\\nroot: x\\nvisibility: restricted\\n---\\n\") for s in specs};r,q=c.internal_dirs(\"H\",\"U\",[]);print(sorted(r),sorted(q));sys.exit(0 if r>={\"kb/t1\"} and \"kb/t3\" not in r and \"kb/t2\" in q and not any(\"fixtures\" in x for x in r) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "84e50740ef34259c"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import kg_contrib as c;d=c.internal_dirs.__doc__;g=[l for l in open(\"kb/_self/git.md\",encoding=\"utf-8\") if l.startswith(\"**`python3 _tools/kbgit.py contribute\")][0];ok=\"not say\" in d and \"visibility: public\" in d and \"not saying `visibility: public`\" in g;print(ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "a9ac0c3ac83c40e1"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('_tools/kg_contrib.py').read();sys.exit('contribute holds back only visibility == internal' if chr(61)*2+' '+chr(34)+'internal'+chr(34) in t else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
