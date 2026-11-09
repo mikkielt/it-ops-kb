@@ -2,7 +2,7 @@
   "id": "BG-3ji4fsfo",
   "kind": "bug",
   "title": "bench_multi duplicate_research prints one line per research key the owner holds on the article, so one duplicate fact counts several times",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-hyfyn22d",
   "priority": "P3",
   "rank": 0,
@@ -44,6 +44,19 @@
     "parked: SP-n7f53pgv review"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-ev4run01",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "558910fb65d83ecc8413cbba72a89b50020dd962",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0,'_tools')\nimport bench_multi as B, coord\nB.origin_path=lambda root:'bare'; B.agent_email=lambda n:'a%d@example.com'%n\nterms=['batch size','page limit','retry delay']\nkeys=['research:public/x/y:'+coord.term_id(t,60) for t in terms]\nB.claim_windows=lambda store:[(k,'multi-agent1',90.0,200.0) for k in keys]\ndef run(f1,f2,real=True):\n    def af(bare,base,email):\n        t=f1 if email[1]=='1' else f2\n        return [{'path':'public/x/y.md','text':t,'at':100.0,'ids':['S1'],'doc':['S1']}]\n    B.added_facts=af\n    return B.duplicate_research('root',{'base':'b','agents':[{'coord_store':'s'}]},[{'n':1,'agent':'agent-1'},{'n':2,'agent':'agent-2'}])\nsame=run('Exports send 512 records in each request. [DOC S1]','Exports send 512 records in each request call. [DOC S1]')\nprint('same fact, owner holds 3 keys ->',len(same),'lines')\ndiff=run('Exports send 512 records in each request. [DOC S1]','Retry delay doubles after every failed upload attempt. [DOC S1]')\nsys.exit(0 if len(same)==1 else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "0bad4c6969094401"
+      }
+    ]
+  }
 }
