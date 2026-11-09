@@ -2,7 +2,7 @@
   "id": "BG-5tvbfivn",
   "kind": "bug",
   "title": "runs --reconcile writes landed for a done item whose done commit is not yet on the integration main",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-pww4aqis",
   "priority": "P3",
   "rank": 0,

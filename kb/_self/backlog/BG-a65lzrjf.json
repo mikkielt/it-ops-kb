@@ -2,7 +2,7 @@
   "id": "BG-a65lzrjf",
   "kind": "bug",
   "title": "The delete class misses removed, removes and removal, and the execute signal misses program and run once a file name's dot ends the clause",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-pww4aqis",
   "priority": "P3",
   "rank": 0,
