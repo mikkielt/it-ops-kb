@@ -678,10 +678,12 @@ def _pointer_stem(path):
 def url_holds_credential(url):
     """Whether a repository `url` carries a secret: a `user:password@` part, or, for http and https, any `user@` part
     (a bare token is the credential). `ssh://git@host`, `git@host:path` and a Windows path with an `@` in a folder
-    name (a backslash before the `@`) hold none."""
+    name (a drive letter and colon before a backslash, or a leading `\\\\`) hold none; a backslash inside the
+    password of the scp form is part of the secret."""
     m = re.match(r"([a-z][a-z0-9+.-]*)://([^/?#]*)", url.strip(), re.I)
     if not m:
-        return bool(re.match(r"[^/\\@\s]*:[^/\\@\s]*@", url.strip()))  # scp-style `user:password@host:path`
+        # scp-style `user:password@host:path`; a drive-letter path (`C:\\...`) is none, and the user never holds a backslash
+        return bool(re.match(r"(?![a-z]:[\\/])[^/\\@\s]*:[^/@\s]*@", url.strip(), re.I))
     if "@" not in m.group(2):
         return False
     userinfo = m.group(2).rsplit("@", 1)[0]
