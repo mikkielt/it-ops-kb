@@ -2,7 +2,7 @@
   "id": "BG-erf3eua6",
   "kind": "bug",
   "title": "backlog.py claim is refused in a checkout whose git dir cannot be written, since ledger_lock refuses any OSError, where it claimed without a ledger record before",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-mc4dzsfe",
   "priority": "P2",
   "rank": 0,
@@ -38,5 +38,7 @@
   "links": [
     "parked: SP-z3hyk4eh review"
   ],
-  "notes": "SP-z3hyk4eh review gap 5 (S4), on ST-zqbo7xgc: _tools/bl_items.py:222 takes ledger_lock, which raises Refused for a non-FileExistsError OSError; the old write's 'except OSError: pass' let the claim through. Repro (planted repo, git dir mode 0555) fails on origin/main f105ef2e4 with Errno 13 on the .lock file. Same function as BG-qggrwb5c (cmd_claim in bl_items.py), so it runs after it. Plan-time premise run on the base 2026-11-09: see the repro below this item's goal; the repro's planted repo has a git dir of mode 0555."
+  "notes": "SP-z3hyk4eh review gap 5 (S4), on ST-zqbo7xgc: _tools/bl_items.py:222 takes ledger_lock, which raises Refused for a non-FileExistsError OSError; the old write's 'except OSError: pass' let the claim through. Repro (planted repo, git dir mode 0555) fails on origin/main f105ef2e4 with Errno 13 on the .lock file. Same function as BG-qggrwb5c (cmd_claim in bl_items.py), so it runs after it. Plan-time premise run on the base 2026-11-09: see the repro below this item's goal; the repro's planted repo has a git dir of mode 0555.",
+  "claimed_by": "claude-4bf1b2c2",
+  "operator": "op-f618a13e"
 }
