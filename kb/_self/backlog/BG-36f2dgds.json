@@ -12,7 +12,7 @@
     "run": [
       "python3",
       "-c",
-      "import sys;sys.exit(1)"
+      "\nimport subprocess,sys,tempfile\nsys.path.insert(0,\"_tools\")\nimport kbpublic\nd=tempfile.mkdtemp()\ndef g(*a,i=None): return subprocess.run([\"git\",\"-c\",\"user.name=t\",\"-c\",\"user.email=t@example.com\",*a],cwd=d,check=True,capture_output=True,input=i).stdout.decode().strip()\ng(\"init\",\"-q\")\nb=g(\"hash-object\",\"-w\",\"--stdin\",i=b\"visibility: internal\\n\")\ng(\"update-index\",\"--add\",\"--cacheinfo\",\"100644,\"+b+\",kb/a\\nb/_root.md\")\ng(\"commit\",\"-qm\",\"x\")\nfiles=kbpublic.tree_files(\"HEAD\",d)\nr=kbpublic.internal_prefixes(\"HEAD\",files,d)\nsys.exit(0 if any(chr(10) in p for p in r) else 1)\n"
     ]
   },
   "repro_reason": "needs a git tree with a path holding a newline; the planted input is in the notes",
