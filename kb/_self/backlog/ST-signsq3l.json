@@ -21,6 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: the goal's open questions are about the clone's own lock and claim code and coordination.md, which the six items' repros and checks read; no kb article or source row is needed.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-luspfajx",
   "operator": "op-f618a13e"
