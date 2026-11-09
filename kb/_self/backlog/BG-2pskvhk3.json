@@ -43,7 +43,9 @@
       },
       "class": "design",
       "answer": "guard in ql_capture.record for the ops surface, foreign_probe moved to ql_base",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
