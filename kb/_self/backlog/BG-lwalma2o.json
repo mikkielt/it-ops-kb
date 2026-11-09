@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "bench_core.run_commit compares only _tools and .claude, so a branch that changes kb articles records the merge-base commit whose kb is not what the scenarios measured",
   "status": "draft",
+  "sprint": "SP-hyfyn22d",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

@@ -4,6 +4,7 @@
   "title": "The kbmon-pane mod never retries a failed --receipt run while the alert set stays the same",
   "status": "draft",
   "parent": "EP-wqgicmmj",
+  "sprint": "SP-hyfyn22d",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

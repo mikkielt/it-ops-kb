@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kbmon --status host and the host panel's data show a disk share just under 10% as 10%, where the host alert says 9.96%",
   "status": "draft",
+  "sprint": "SP-hyfyn22d",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

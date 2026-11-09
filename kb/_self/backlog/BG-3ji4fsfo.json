@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "bench_multi duplicate_research prints one line per research key the owner holds on the article, so one duplicate fact counts several times",
   "status": "draft",
+  "sprint": "SP-hyfyn22d",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

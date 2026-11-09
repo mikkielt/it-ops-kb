@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kbmon's cleanup metrics (mon_export.cleanup_points) export only the verdicts remove and keep, so rows with the verdict ask are missing from kbmon.cleanup.leftovers",
   "status": "draft",
+  "sprint": "SP-hyfyn22d",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",

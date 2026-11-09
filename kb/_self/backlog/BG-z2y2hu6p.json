@@ -4,6 +4,7 @@
   "title": "The kbmon-pane mod gives no receipt after /clear, /resume or /branch until the alert set changes",
   "status": "draft",
   "parent": "EP-wqgicmmj",
+  "sprint": "SP-hyfyn22d",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

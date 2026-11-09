@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kbmon.py --status all cuts the sprints topic to four lines, so with five or more active sprints the run states of the later sprints are not shown",
   "status": "draft",
+  "sprint": "SP-hyfyn22d",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
