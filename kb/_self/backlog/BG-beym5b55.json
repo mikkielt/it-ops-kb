@@ -2,7 +2,7 @@
   "id": "BG-beym5b55",
   "kind": "bug",
   "title": "kblane.path_lane classes any top-level file kb/<file> as content, not only a submodule root's gitlink",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-mut2pmu3",
   "priority": "P3",
@@ -38,5 +38,7 @@
   "links": [
     "parked: SP-c6w5hjmc review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev3run01",
+  "operator": "op-f618a13e"
 }
