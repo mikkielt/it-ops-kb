@@ -2,7 +2,7 @@
   "id": "BG-j4736uwa",
   "kind": "bug",
   "title": "A landing whose own ticket another landing removed counts every later ticket as ahead and is starved behind later askers until its wait bound",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-luspfajx",
   "priority": "P3",
   "rank": 0,
@@ -45,5 +45,7 @@
   "links": [
     "parked: SP-6aegt3bs review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-luspfajx",
+  "operator": "op-f618a13e"
 }
