@@ -53,7 +53,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "ledger_lock takes optional=True and yields False, claim skips the ledger write and warns; dispatch keeps the refusal",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [

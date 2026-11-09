@@ -50,7 +50,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "Move both before the lock and put the run state back to released when a refusal under the lock follows",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
