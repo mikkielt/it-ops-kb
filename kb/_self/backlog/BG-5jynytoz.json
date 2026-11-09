@@ -20,6 +20,29 @@
     "_tools/kbpublic.py",
     "kb/_self/git.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does guard_push learn the remote ref of a pushed line?",
+      "options": [
+        "refs entries carry an optional third element, the remote ref",
+        "guard_push takes a separate remote_refs list"
+      ],
+      "recommendation": "refs entries carry an optional third element, the remote ref",
+      "reason": "one list, callers with pairs keep working",
+      "do": {
+        "refs entries carry an optional third element, the remote ref": "BG-5jynytoz",
+        "guard_push takes a separate remote_refs list": "BG-5jynytoz"
+      },
+      "class": "push",
+      "answer": "refs entries carry an optional third element, the remote ref",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "notes": "Taken into SP-lwkdljxg 2026-11-09: ST-ugkw5mt3 added the work-branch refusal to guard_push; this bug closes the gap in the hook that feeds it. Touches from referrers guard_push (kg_hooks.py:132, kbpublic.py:1174) plus git.md, which describes the pre-push guard.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-61c966d6",
