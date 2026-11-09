@@ -231,7 +231,7 @@ def guard_upstream(remote, url, refs, cwd):
     counts: the upstream is only fetched from."""
     if not is_upstream(remote, cwd, url):
         return []
-    return [(ref, "the upstream is only fetched from; no ref is pushed to it") for ref, _ in refs]
+    return [(ref, "the upstream is only fetched from; no ref is pushed to it") for ref, *_ in refs]
 
 
 def private_commits(rev, cwd, limit=20):
@@ -1172,16 +1172,22 @@ def cmd_check_public(a, cwd):
 
 
 def guard_push(remote, url, refs, cwd):
-    """The pre-push guard: [(ref, reason)] of pushed refs (local ref, local sha) that would carry a PRIVATE path to a
-    public remote, or are a worker branch (work/*), which only the integration remote holds. Deletes are skipped."""
+    """The pre-push guard: [(ref, reason)] of pushed refs ((local ref, local sha) or (local ref, local sha, remote
+    ref)) that would carry a PRIVATE path to a public remote, or are a worker branch (work/*) by the local or the
+    remote ref, which only the integration remote holds. Deletes are skipped."""
     if not is_public(remote, cwd, url):
         return []
     res = []
-    for ref, sha in refs:
+    for ref, sha, *rest in refs:
         if ZERO_RE.match(sha):
             continue
         if ref.startswith(WORK_REF_PREFIX):
             res.append((ref, "is a worker branch (work/*): it goes to the integration remote only"))
+            continue
+        to_work = [r for r in rest if r.startswith(WORK_REF_PREFIX)]
+        if to_work:
+            res.append((ref, f"goes to {to_work[0]}, a worker branch name (work/*): it goes to the integration "
+                             "remote only"))
             continue
         bad = private_commits(sha, cwd, limit=3)
         if bad is None or bad:
