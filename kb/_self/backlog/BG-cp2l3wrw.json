@@ -7,7 +7,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "kb_mcp.py --register-local --project DIR names a DIR that does not exist as the cause, exit 2, and keeps 'the claude CLI is not installed' for a missing claude executable only",
+  "goal": "kb_mcp.py --register-local --project DIR names a DIR that does not exist as the cause with exit 2, not that the claude CLI is not installed",
   "repro": {
     "run": [
       "python3",
@@ -17,7 +17,10 @@
   },
   "touches": [
     "_tools/kb_mcp.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/embedding.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md"
   ],
   "links": [
     "parked: SP-3trnelzv review"
