@@ -23,6 +23,16 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "the brief of an item whose touches name _tools/ files states that another module never calls a name that starts with an underscore and that a needed helper is added as a public name in the module that owns it",
+      "check": 0
+    },
+    {
+      "clause": "the brief of an item whose touches name no _tools/ file does not state it",
+      "check": 1
+    }
+  ],
   "touches": [
     "_tools/bl_dispatch.py",
     "kb/_self/backlog.md"
