@@ -2,7 +2,7 @@
   "id": "BG-bpy4x4os",
   "kind": "bug",
   "title": "kbmon's shared snapshot is one per checkout, not one per clone as its goal says, and the pane's receipt and needs-you runs stay unshared",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-zobzdhwi",
   "priority": "P2",
   "rank": 0,
@@ -43,5 +43,7 @@
     "parked: SP-wpttdu7u review"
   ],
   "notes": "Review gap 4 of SP-wpttdu7u: kbmon.py:93 and shared() use a.root.resolve()/_cache/kbmon/shared.json; register.tsx lines 111 and 166 run --receipt and notifyNeeds runs --status all per pane.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-0f9262ec",
+  "operator": "op-f618a13e"
 }
