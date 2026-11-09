@@ -57,7 +57,12 @@
         "only where the project's root has selfdoc.py": "ST-525ypepb",
         "every project": "ST-525ypepb"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "only where the project's root has selfdoc.py",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "links": [
