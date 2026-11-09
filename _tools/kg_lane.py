@@ -5,7 +5,7 @@ kbgit.py and backlog.py import it, and it imports no facade. Its `lane` and `che
 read git in KB, this module's own copy of the repository directory (a caller may point it at a scratch clone); the
 default range comes in as an argument.
 """
-import os, re
+import json, os, re
 
 import kblane
 import kg_merge
@@ -45,11 +45,29 @@ def code_branch(root, up, rev):
 
 def has_code_lane(root):
     """False when the project at ROOT has no code lane: no extension point `lane` and an empty `lane_module` in its
-    backlog.json (read for ROOT itself, not for the root this process runs on), as bl_base.lane says it; else True."""
+    backlog.json (read for ROOT itself, not for the root this process runs on), as bl_base.lane says it; else True.
+    A backlog.json that is unreadable, not valid JSON or gives `lane_module` a value that is no string says nothing
+    about the lane, so the code lane stays: reading the defaults then would send code to `main`."""
     import bl_base, kbext  # noqa: PLC0415 - at call time, the rules only (never the backlog facade)
     if kbext.configured("lane", root):
         return True
-    return bool(bl_base.read_settings(root)[0]["lane_module"])
+    if bl_base.read_settings(root)[0]["lane_module"]:
+        return True
+    return _lane_setting_unknown(bl_base.config_path(root))
+
+
+def _lane_setting_unknown(path):
+    """True when the settings file at PATH is there but its `lane_module` cannot be told: it cannot be read, is no
+    JSON object, or gives the key a value that is no string. A missing file is known (the defaults)."""
+    if not path.is_file():
+        return False
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return True
+    if not isinstance(data, dict):
+        return True
+    return "lane_module" in data and not isinstance(data["lane_module"], str)
 
 
 def lane_plan(root, up, rev, target=LANE_BRANCH):
