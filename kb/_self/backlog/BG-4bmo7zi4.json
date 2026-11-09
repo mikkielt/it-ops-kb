@@ -1,0 +1,22 @@
+{
+  "id": "BG-4bmo7zi4",
+  "kind": "bug",
+  "title": "url_holds_credential accepts a domain-user url with a password in the scp form, since the user part still bans every backslash",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbcommon.url_holds_credential reads corp-backslash-user:password@host:path as a credential while a UNC path and a drive-letter path stay no credential, if the operator wants that shape refused",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.exit(1)"
+    ]
+  },
+  "repro_reason": "a decision-adjacent S3 of the SP-mut2pmu3 second review; the planted input is in the notes",
+  "touches": [
+    "_tools/kbcommon.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
