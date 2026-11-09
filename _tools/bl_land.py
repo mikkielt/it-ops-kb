@@ -2480,7 +2480,9 @@ def land_refused_step(error):
 
 def land_move_run(bl, a):
     """Land with the run state moved: landing before the first step (`enter_run`), refused with the step's name when land
-    stops (landed is moved by land_locked once verify has found the done commit on main). Stops at step `run state`,
+    stops (landed is moved by land_locked once verify has found the done commit on main), and refused at step
+    merge-request when a pass ends not done yet, read from the key, whether or not a merge request is left to wait
+    for (a code branch gone and no merge found). Stops at step `run state`,
     before any other, changing nothing, while a stage-back holds the state at staging, or another land holds it at
     landing with a process record that runs; a land that died at landing is taken over."""
     iid = need(bl, a.id)
@@ -2497,7 +2499,7 @@ def land_move_run(bl, a):
             raise
         if code:
             move_run(iid, "refused", "land", step="land")
-        elif LAND_OPS.get("pending") and not getattr(a, "wait_merge", None):  # a merge request still to merge, no wait
+        elif run_state(iid) == "landing":  # a pass that ended not done yet: its merge request is still to merge, or is gone
             move_run(iid, "refused", "land", step=ops_token("merge request"))
         return code
     finally:
