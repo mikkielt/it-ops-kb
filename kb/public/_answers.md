@@ -4720,3 +4720,12 @@ _Agent: kb-research_
 - See python/stdlib-re-backtracking.md, privacy/presidio-recognizer-yaml.md.
 
 _Agent: kb-research_
+
+## QK-i-find-intune-policy-that-blocks. How do I find the Intune policy that blocks USB storage?
+- A USB drive can be blocked by a settings-catalog or ADMX device-installation profile (Device Installation Restrictions, with "Prevent installation of devices not described by other policy settings" enabled), by the device restrictions template's **Removable storage** block (`System/AllowStorageCard`), by an endpoint-security device control setting such as **Block write access to removable storage** (`Storage/RemovableDiskDenyWriteAccess`), or by Defender for Endpoint device control. [DOC S-kr4n5qkd, S-66rjvius, S-776xbad3, S-a6nob3c2]
+- On the device, `%windir%\inf\setupapi.dev.log` shows an installation restriction ("Restricted installation of devices not described by policy"); in advanced hunting `PnPDeviceBlocked` marks an installation restriction and `RemovableStoragePolicyTriggered` names a Defender device control policy, its access and verdict. [DOC S-kr4n5qkd, S-a6nob3c2]
+- Conclusion: there is no one place to look; check the per-setting status of each of the four kinds of profile for the device, the setup log for an installation restriction and the two advanced hunting event types for a Defender policy. [DER S-kr4n5qkd, S-66rjvius, S-776xbad3, S-a6nob3c2]
+- Open: a tenant-wide search that lists every profile configuring a given setting or CSP is stated on no page read. [UNK]
+- See intune/configuration-policies.md, defender/asr-and-antivirus.md.
+
+_Agent: kb-research_

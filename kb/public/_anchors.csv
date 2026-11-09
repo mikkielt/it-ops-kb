@@ -1665,6 +1665,8 @@ f4fc31d620c6,agents/decision-records.csv,S-6ek6kqhq,located,Introduction > How t
 0a35a44f0372,agents/decision-records.md,S-neg7qqfq,unlocated:no-match,,,,,2026-10-10
 0bbaf706970b,agents/decision-records.md,S-mzo2wbzm,located,Document history,march,f9a07ea1a2205c96,"March 16, 2022",2026-10-21
 0d01e2603d3b,agents/decision-records.md,S-neg7qqfq,unlocated:no-match,,,,,2026-10-10
+0f5bf9e15083,agents/decision-records.md,S744,unlocated:no-match,,,,,2026-11-09
+0f5bf9e15083,agents/decision-records.md,S-t6ibresy,unlocated:no-match,,,,,2026-11-09
 13c9f7ff486c,agents/decision-records.md,S-jqks66nz,located,Architectural decision record process > ADR review process,old;treat;immutabl;supers;new;approv;adrs;chang,2c737e7e0571b3ef,"The team should treat ADRs as immutable documents after the team accepts or rejects them. Changes to an existing ADR requires creating a new ADR,",2026-10-10
 1b06fd5c3de7,agents/decision-records.md,S-ebr4i7g5,unlocated:no-match,,,,,2026-10-10
 25644606b8c4,agents/decision-records.md,S-efm54uef,located,Maintain an architecture decision record (ADR) - Microsoft Azure Well-Architected Framework | Microsoft Learn > Implement an ADR,append;append-only;edit;new;two;accept;link;original,7d2d36e419c093f6,"The ADR serves as an append-only log. Don't go back and edit accepted records. If a decision changes, write a new record that supersedes the",2026-10-10
@@ -1675,9 +1677,10 @@ f4fc31d620c6,agents/decision-records.csv,S-6ek6kqhq,located,Introduction > How t
 36d9ae4195f0,agents/decision-records.md,S-6ek6kqhq,unlocated:no-match,,,,,2026-10-10
 36d9ae4195f0,agents/decision-records.md,S-cs7vd6kx,unlocated:no-match,,,,,2026-10-10
 36d9ae4195f0,agents/decision-records.md,S-jqks66nz,unlocated:no-match,,,,,2026-10-10
-38709bc6b52f,agents/decision-records.md,S-t6ibresy,unlocated:no-match,,,,,2026-10-28
 3d886e94b809,agents/decision-records.md,S-efm54uef,unlocated:no-match,,,,,2026-10-10
 41aeab400533,agents/decision-records.md,S-ebr4i7g5,unlocated:no-match,,,,,2026-10-10
+41cfc563e2e2,agents/decision-records.md,S-mtfmjxym,located,Our framework for developing safe and trustworthy agents > Principles for trustworthy agents > Keeping humans in control while enabling agent autonomy,high;high-stak;made;stak;decision;particularly;retain;befor,6937ef86dd3c8ef0,"But humans should retain control over how their goals are pursued, particularly before high-stakes decisions are made.",2026-11-09
+42df8fd15b9a,agents/decision-records.md,S-mtfmjxym,located,Our framework for developing safe and trustworthy agents > Principles for trustworthy agents > Keeping humans in control while enabling agent autonomy,analyz;default;modify;read;read-only;taking;approval;asking,a9d6d15e9a2a0c0d,must ask for human approval before taking any actions that modify code or systems.,2026-11-09
 4efa0d456a57,agents/decision-records.md,S-cs7vd6kx,unlocated:no-match,,,,,2026-10-10
 4efa0d456a57,agents/decision-records.md,S-efm54uef,unlocated:no-match,,,,,2026-10-10
 4efa0d456a57,agents/decision-records.md,S-jqks66nz,unlocated:no-match,,,,,2026-10-10
@@ -1706,6 +1709,8 @@ a0a506c2c685,agents/decision-records.md,S-l52pzhgp,unlocated:no-match,,,,,2026-1
 a375d9ba3e41,agents/decision-records.md,S-efm54uef,unlocated:no-match,,,,,2026-10-10
 a713e9929287,agents/decision-records.md,S-jqks66nz,unlocated:no-match,,,,,2026-10-10
 a94773a413a1,agents/decision-records.md,S-l52pzhgp,unlocated:no-match,,,,,2026-10-10
+af41c69cd992,agents/decision-records.md,S-mtfmjxym,unlocated:no-match,,,,,2026-11-09
+af41c69cd992,agents/decision-records.md,S-zcuxapgb,unlocated:no-match,,,,,2026-11-09
 b9b285ef0a2c,agents/decision-records.md,S-t6ibresy,located,Measuring AI agent autonomy in practice > What causes Claude Code to stop?,correction;technical;miss;provid;context,62bb1b85a6a8ef32,To provide missing technical context or corrections (32%),2026-10-28
 bcc1d76b5d41,agents/decision-records.md,S-6ek6kqhq,unlocated:no-match,,,,,2026-10-10
 bcc1d76b5d41,agents/decision-records.md,S-cs7vd6kx,unlocated:no-match,,,,,2026-10-10
@@ -3304,6 +3309,8 @@ fb2882f1098b,agents/peer-state-sync.md,S-fmrgts5l,located,,name;trash;replac;fil
 83f47c9868b7,agents/policy-as-code.md,S-ksyczslf,located,How Cedar authorization works {#how-cedar-authorization-works} > Request creation {#request-creation},part;four;parc;authorization;request,64299ee8960081ed,"an authorization request has four parts, abbreviated",2026-10-15
 8470e83d4696,agents/policy-as-code.md,S-o43a4uum,located,Bundle build > Signing > Signature Format,currently;one;signatur,0468373f95af5a76,Currently you will be limited to one signature,2026-11-08
 855eb3e2c39c,agents/policy-as-code.md,S-o43a4uum,located,Bundle build > Signing > Signature Format,algorithm;hash;file,8b4162dbf71a111f,Output of the hashing algorithm applied to the file.,2026-11-08
+85d5d40fa96a,agents/policy-as-code.md,S-o43a4uum,unlocated:no-match,,,,,2026-11-09
+870b9de5c2f5,agents/policy-as-code.md,S-o43a4uum,located,Bundle build > Signing > Signature Format,alg;typ;kid;standard;alway;algorithm;header;jwt,e376821d589e462d,"The JWT has the standard headers alg (for algorithm), typ (always JWT), and kid (for key id).",2026-11-09
 8c0bab4ca858,agents/policy-as-code.md,S-ksyczslf,unlocated:no-match,,,,,2026-10-15
 8c0bab4ca858,agents/policy-as-code.md,S-nfmfjmf4,unlocated:no-match,,,,,2026-10-15
 8c0bab4ca858,agents/policy-as-code.md,S-sfwmzlty,unlocated:no-match,,,,,2026-10-15

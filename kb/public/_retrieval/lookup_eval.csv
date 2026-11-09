@@ -336,3 +336,4 @@ EV-claude-code-commit-attribution-include-co-authored-by,"Which Claude Code sett
 EV-bug-severity-table-s1-s2-definitions,bug severity table S1 S2 definitions,security/linux-patching-and-pins.md,good,
 EV-ru-maxrss-unit-resource-getrusage-os,ru_maxrss unit in resource.getrusage and os.wait4 on macOS and Linux,python/macos-fs-usage-output.md,good,
 EV-claude-code-permissions-allow-rules-bash,Claude Code permissions allow rules Bash command matching in settings.json for headless claude -p,claude/ci-and-headless.md,good,
+EV-opa-bundle-signing-signatures-json-jwt,OPA bundle signing .signatures.json JWT payload files hash algorithm keyid HS256 hash.go walk,agents/policy-as-code.md,good,

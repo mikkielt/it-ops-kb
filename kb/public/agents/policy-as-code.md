@@ -2,7 +2,7 @@
 topic: agents/policy-as-code
 priority: P3
 applies_to: "Open Policy Agent v1.21.2 and v1.21.3 (Rego, bundles, bundle signing and configuration, REST API); Cedar docs at commit 3a37098e (2026-09-25); Amazon Verified Permissions (Cedar 4.7); Policy in Amazon Bedrock AgentCore (GA 2026-03-03); Azure Policy effects, remediation and Policy as Code workflow (Learn, 2026-10)"
-retrieved_utc: 2026-11-08
+retrieved_utc: 2026-11-09
 sources: [S-tcvnt2sk, S-iq6vp7q2, S-hvug6eux, S-fnw2pa3v, S-qbgkkkgs, S-lyw4ziag, S-ksyczslf, S-fd4vxmr2, S-gbndonu5, S-mflbdcpq, S-o6ybh6w2, S-tlwezbfd, S-3wgje3ri, S-sfwmzlty, S-dyazlyh5, S-nfmfjmf4, S-y5rp4spd, S-xgmsiz27, S-yzbv3f7p, S-gca2wrxp, S-prq2x4xt, S-ady4i6kn, S-o43a4uum, S-nvgcf3ru, S-777jjbr6, S-mz4pgiw4, S-xrw6ar44, S-iqk7tct2, S-rv5ikahl, S-jyby5slx, S-rjjydcbh]
 status: partial
 ---
@@ -47,6 +47,8 @@ Policy-as-code moves an authorization or governance rule out of the code that en
 - The hasher writes an object as `{`, each key JSON-encoded in sorted order, `:` and the value's encoding, with `,` between members and `}` at the end, an array as `[`, its elements and `]`, and every other value through Go's JSON encoder with HTML escaping off and the trailing newline removed. [CODE S-iqk7tct2: v1/bundle/hash.go#walk, HashingAlgorithm]
 - Verification checks the JWT signature with the configured key, that the payload and the bundle hold the same set of files, and each file's hash; any failure leaves the previous bundle active and reports an activation failure in the Status API and the logs. [DOC S-o43a4uum]
 - The key is chosen by `keyid` from the command line, else from the bundle's `signing` configuration, else from the JWT header's `kid`; a payload `scope` must equal the configured scope exactly, and `iat` and `iss` play no part in verification. [DOC S-o43a4uum]
+- The signature JWT has the standard headers `alg` (the algorithm), `typ` (always `JWT`) and `kid` (the key id); a `kid` in the header dictates which key and algorithm verification uses, the key itself being supplied to OPA out of band. [DOC S-o43a4uum]
+- The bundles page's sample `.signatures.json` token decodes to the header `{"alg":"HS256","typ":"JWT"}` and a payload with two `files` entries (`.manifest` with `algorithm` `SHA256`, and `roles/bindings/data.json` with a `hash` and no `algorithm`), `iat`, `iss`, `scope` `write` and a `keyid` claim `myPublicKey`; the page's payload table lists no `keyid` claim and marks `files[_].algorithm` as required, so the sample is not a model of the table. [DER S-o43a4uum: the sample token's two base64url parts decoded and compared with the claims table]
 - Any `bundles[_].signing` block, even an empty one, enforces verification. Top-level `keys` without one verify only bundles that carry `.signatures.json`, so an unsigned bundle still activates, with a warning logged at startup. [DOC S-o43a4uum, S-mz4pgiw4]
 - Delta bundles cannot be signed: a bundle configured to verify signatures rejects them unless `bundles[_].signing.allow_unsigned_delta_bundles` is set, and activated delta bundles are not persisted. [DOC S-o43a4uum, S-mz4pgiw4]
 - A `keys` entry has `key` (described as a PEM public key), `private_key`, `algorithm` (default `RS256`) and `scope`, and a scope in the bundle's `signing` block takes precedence over the key's. [DOC S-mz4pgiw4]

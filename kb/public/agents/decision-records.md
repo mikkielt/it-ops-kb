@@ -2,8 +2,8 @@
 topic: agents/decision-records
 priority: P3
 applies_to: "architecture decision records (ADRs) and decision logs as the vendors and the ADR community describe them: Nygard 2011, MADR 4.0.0, AWS Prescriptive Guidance, Azure Well-Architected Framework, Google Cloud Architecture Center, the UK GDS ADR framework, adr-tools README at commit b3279ba (retrieved 2026-10-01)"
-retrieved_utc: 2026-10-28
-sources: [S-neg7qqfq, S-2u3gjgpw, S-cs7vd6kx, S-jqks66nz, S-ebr4i7g5, S-gb6pcwtm, S-efm54uef, S-l52pzhgp, S-6ek6kqhq, S-lrsbmzgx, S-mzo2wbzm, S-t6ibresy, S-zcuxapgb, S744]
+retrieved_utc: 2026-11-09
+sources: [S-neg7qqfq, S-2u3gjgpw, S-cs7vd6kx, S-jqks66nz, S-ebr4i7g5, S-gb6pcwtm, S-efm54uef, S-l52pzhgp, S-6ek6kqhq, S-lrsbmzgx, S-mzo2wbzm, S-t6ibresy, S-zcuxapgb, S744, S-mtfmjxym]
 status: partial
 ---
 
@@ -62,6 +62,9 @@ An architecture decision record (ADR) is a short document that records one signi
 - The study measures autonomy as turn duration, the time from when Claude starts working to when it stops "whether because it finished the task, asked a question, or was interrupted"; it calls this an imperfect proxy: the median turn is about 45 seconds and the 99.9th percentile grew from under 25 to over 45 minutes between October 2025 and January 2026. [DOC S-t6ibresy]
 - In the page read 2026-10-28 the study reports no measure of how long an agent waits for a person's answer after it stops, nor the share of an agent's questions answered with the agent's own suggestion; its turn duration ends at the stop, so a person's wait is outside it. Claude Code's own beta tracing does time one kind of wait, the permission decision, as a `claude_code.tool.blocked_on_user` span under each tool span (`claude/otel-monitoring.md`, Facts), and the tracing facts of that article list no span for a question the agent asks in words. [DER S-t6ibresy, S744: the study page read in full for wait, latency and response-time words, none found; the span hierarchy of the tracing page]
 - Neither this study, the Claude Code permission-modes page nor the UK framework above defines an answer that an agent records provisionally and a person confirms later; they describe approval before an action (the classifier, the decision body by scope), monitoring with intervention, and review after the fact (`acceptEdits` with `git diff`). A held answer confirmed at a review is a design built from those parts, not a documented vendor mechanism. [DER S-t6ibresy, S-zcuxapgb, S-6ek6kqhq: pages read 2026-10-28 for a provisional or deferred-confirmation status, none found]
+- Anthropic's framework for safe and trustworthy agents (page modified 2026-10-06) says humans "should retain control over how their goals are pursued, particularly before high-stakes decisions are made", and its one example of an approval point is a spend-related change: an agent that finds the company overspending on software subscriptions should get a human's approval before it cancels subscriptions or downgrades service tiers. It gives no list of approval classes. [DOC S-mtfmjxym]
+- The same page describes Claude Code's default: read-only permissions, so it can analyze information in its directory without asking, but it "must ask for human approval before taking any actions that modify code or systems", with persistent permissions a user can grant for routine tasks; it says the right balance between autonomy and oversight varies by scenario. [DOC S-mtfmjxym]
+- Putting the sources together for when an agent stops for a person (derived): the vendor pages give a default (ask before an action that modifies code or systems, which covers destructive acts and running changes), a classifier that blocks by effect (`claude/settings-and-scopes.md:92`), and one spend-related example of a high-stakes approval; none names a rule for spending money as a class or for a change of the task's scope, so those two stay choices of the operator's own rules. [DER S-mtfmjxym, S-zcuxapgb: the framework page's example and default read with the classifier's lists]
 
 ## Reference
 | Source | Statuses it names | Who decides |

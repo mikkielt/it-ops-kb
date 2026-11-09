@@ -2,9 +2,9 @@
 topic: intune/configuration-policies
 priority: P2
 applies_to: "Microsoft Intune service 2026-09, Windows 10/11 client, Graph beta deviceManagementConfigurationPolicy"
-retrieved_utc: 2026-10-21
-sources: [S-lz7th2mw, S-ld2qiclx, S-hw4p6ks6, S-v3kf7d4m, S-vmpbvsv4, S-ytjbd4n5, S-4krq7dui, S-wz4ujka5, S-4gg3zmhr, S-v5cttaej, S1593, S-l5tq6fyo, S-xggskgmu, S-rhemzip3, S-hyfjrtuc, S-h7ijeucf, S-d2p4emn5, S-sjt243fo, S-jicw45tl, S-77gkdi7q]
-status: complete
+retrieved_utc: 2026-11-09
+sources: [S-lz7th2mw, S-ld2qiclx, S-hw4p6ks6, S-v3kf7d4m, S-vmpbvsv4, S-ytjbd4n5, S-4krq7dui, S-wz4ujka5, S-4gg3zmhr, S-v5cttaej, S1593, S-l5tq6fyo, S-xggskgmu, S-rhemzip3, S-hyfjrtuc, S-h7ijeucf, S-d2p4emn5, S-sjt243fo, S-jicw45tl, S-77gkdi7q, S-kr4n5qkd, S-66rjvius, S-776xbad3, S-a6nob3c2]
+status: partial
 ---
 
 # Intune configuration policies: settings catalog, custom OMA-URI, ADMX, refresh
@@ -32,6 +32,17 @@ and `security/baselines-catalog.md` for the security-baseline flavor of settings
 - A device-configuration profile (including settings catalog) can be scoped further with **applicability rules** (OS edition include/exclude; OS version min/max, e.g. `10.0.16299.0`–`10.0.17134.0`). [DOC S-xggskgmu]
 - Starting with the **December 2412** service release, the **Templates > Administrative Templates** profile type is deprecated and **read-only** in the admin center; the equivalent built-in ADMX settings live in the settings catalog's Administrative Templates category instead. Custom ADMX templates can still be imported (see below). [DOC S-hw4p6ks6]
 - A settings-catalog policy, whatever its contents, is governed entirely by the co-management **Device Configuration** slider (see `intune/co-management.md:23`). [DOC S1593]
+
+### Blocking USB storage: which policy can be the one
+- The settings-catalog route Microsoft documents for restricting USB devices: a Windows 10 and later settings-catalog profile with the settings from **Administrative templates > System > Device installation > Device Installation Restrictions**: **Allow installation of devices that match any of these Device IDs**, **Allow installation of devices using drivers that match these device setup classes** and **Prevent installation of devices not described by other policy settings**; the page's example profile is named "Restrict USB devices", and the role needed is Policy and Profile Manager. [DOC S-kr4n5qkd]
+- With that profile a device whose ID or class is not on the allow lists is blocked from installing: the device shows "The installation of this device is forbidden by system policy". Enabling **Prevent installation of devices not described by other policy settings** is what blocks everything not allowed by ID or class, so a profile of this kind can be the policy that blocks USB drives without naming storage at all. [DOC S-kr4n5qkd]
+- To see on a device which restriction blocked it: open `%windir%\inf\setupapi.dev.log` and search for "Restricted installation of devices not described by policy"; the same section shows the `Class GUID of device changed to: {GUID}` line whose GUID the profile must allow when a wanted device is blocked. [DOC S-kr4n5qkd]
+- The Windows device restrictions template (Devices > Configuration, Templates) has a **Removable storage** setting: **Block** prevents users from using external storage devices, like USB drives or SD cards; the default is **Not configured**, where Intune does not change the setting; it maps to the `System/AllowStorageCard` CSP. [DOC S-66rjvius]
+- Endpoint security's attack surface reduction node holds a **Device control** profile whose older format (profiles created before 2022-05-23, still editable) lists **Block write access to removable storage** (`Storage/RemovableDiskDenyWriteAccess`: **Yes** denies write access to removable storage) and block lists of hardware IDs and device instance IDs; profiles created after that date use the settings catalog format, whose setting names Intune no longer lists on that page. [DOC S-776xbad3]
+- Microsoft Defender for Endpoint device control is a further source of a block: it restricts only removable media, Windows portable devices, CD/DVDs and printers, and a device is a removable media device only if it creates a disk such as `E:`; it applies to Windows 10 and 11 with anti-malware client `4.18.2103.3` or later and the page says servers are not supported. It can be deployed through Intune, the Defender portal or Group Policy. [DOC S-a6nob3c2]
+- Advanced hunting records which mechanism acted: `DeviceEvents` rows with `ActionType` `PnPDeviceBlocked` come from device installation restrictions (`PnPDeviceAllowed` when an install is allowed), and `RemovableStoragePolicyTriggered` rows, written when a device control policy has an audit entry, carry the policy's name, the access requested and the verdict (allow or deny). [DOC S-a6nob3c2]
+- How to find the blocking policy for a device (derived): the four documented sources are a settings-catalog or ADMX device-installation profile, the device restrictions template, an endpoint-security device control or removable-storage setting, and Defender device control; check each profile's per-setting status for the device (see Reporting above), read `setupapi.dev.log` on it for an installation restriction, and run the two advanced hunting event types for a Defender policy name. [DER S-kr4n5qkd, S-66rjvius, S-776xbad3, S-a6nob3c2: the four pages' settings and event names read together]
+- No Intune page read states a tenant-wide search that lists every profile configuring a given setting or CSP (looked 2026-11-09 with the Microsoft Learn search for Intune USB blocking and in the four pages above); the per-device route above is the documented one. [UNK]
 
 ### Custom OMA-URI (Templates > Custom)
 - Create path: **Devices > Manage devices > Configuration > Create > New policy**, platform **Windows 10 and later**, profile type **Custom** or **Templates > Custom**; then add one OMA-URI row per setting under **Configuration settings**. [DOC S-l5tq6fyo, S-v3kf7d4m]

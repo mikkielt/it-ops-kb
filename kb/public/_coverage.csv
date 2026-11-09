@@ -46,7 +46,7 @@ agents/agent-troubleshooting-method,P3,complete,agents/agent-troubleshooting-met
 agents/codebase-mapping,P3,complete,agents/codebase-mapping.md;agents/codebase-mapping.csv,114
 agents/coding-agent-codebase-context,P3,complete,agents/coding-agent-codebase-context.md,20
 agents/coordination-tools,P3,partial,agents/coordination-tools.md,11
-agents/decision-records,P3,partial,agents/decision-records.md;agents/decision-records.csv,14
+agents/decision-records,P3,partial,agents/decision-records.md;agents/decision-records.csv,15
 agents/doc-change-detection,P3,complete,agents/doc-change-detection.md,90
 agents/gitops-for-agents,P3,partial,agents/gitops-for-agents.md,22
 agents/herdr-agent-state,P3,partial,agents/herdr-agent-state.md,5
@@ -248,7 +248,7 @@ intune/tenant-attach,P1,complete,intune/tenant-attach.md,5
 intune/app-protection-mam,P2,complete,intune/app-protection-mam.md,25
 intune/certificates-pki,P2,complete,intune/certificates-pki.md;intune/certificate-variables.csv,11
 intune/compliance-policies,P2,complete,intune/compliance-policies.md;intune/compliance-policies.csv,14
-intune/configuration-policies,P2,complete,intune/configuration-policies.md,20
+intune/configuration-policies,P2,partial,intune/configuration-policies.md,24
 intune/device-inventory-analytics,P2,complete,intune/device-inventory-analytics.md,21
 intune/ios-android-management,P2,complete,intune/ios-android-management.md,16
 intune/macos-management,P2,complete,intune/macos-management.md,17
