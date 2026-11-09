@@ -109,7 +109,7 @@ Sync (kg_sync.py; the only way to push; people push straight to main, CI is a sa
      items and the query log store, the suite without the git scenarios for kb content only, the whole suite for any other path; KB_SYNC_NO_TESTS=1 skips it, for the tool's own tests), check-trailers REMOTE/BRANCH..HEAD. A red gate: exit 1,
      nothing pushed.
   e. --push: git push REMOTE HEAD:BRANCH, never --force, with the `ext-v` tags that point at commits of the range
-     (tags_to_push, missing_ext_tags; not on a code/<id> push). Rejected because the remote moved: fetch and rebase once more,
+     (tags_to_push, which first moves a tag whose commit the rebase rewrote onto the rebased commit; missing_ext_tags; not on a code/<id> push). Rejected because the remote moved: fetch and rebase once more,
      then give up (exit 1). A push to main whose range has a code-lane commit (kblane.py) goes instead as the branch
      code/<id> with merge-request push options, main not moving (lane_plan); code_branch picks <id>: the first KB-Work
      id of the range's first code-lane commit that has one, else the range's first KB-Work id, else HEAD's short hash.

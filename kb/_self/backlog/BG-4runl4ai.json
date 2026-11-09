@@ -24,6 +24,30 @@
   "depends_on": [
     "BG-myligl24"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does sync find an ext-v tag whose commit a rebase rewrote, and what does it do with it?",
+      "options": [
+        "match by patch id and move the tag onto the rebased commit, inside tags_to_push",
+        "list the tag at its old commit and push that",
+        "match by commit subject"
+      ],
+      "recommendation": "match by patch id and move the tag onto the rebased commit, inside tags_to_push",
+      "do": {
+        "match by patch id and move the tag onto the rebased commit, inside tags_to_push": "BG-4runl4ai",
+        "list the tag at its old commit and push that": "BG-4runl4ai",
+        "match by commit subject": "BG-4runl4ai"
+      },
+      "class": "push",
+      "answer": "match by patch id and move the tag onto the rebased commit, inside tags_to_push",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "links": [
     "parked: SP-ep7ck2ab review"
   ],
