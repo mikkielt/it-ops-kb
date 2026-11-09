@@ -78,7 +78,12 @@
         "every end of the child, a cancelled job too, each attempt adding its spend to what the record keeps": "BG-k6tyqqbn",
         "only a succeeded or failed end, the last attempt replacing the figure": "BG-k6tyqqbn"
       },
-      "class": "design"
+      "class": "design",
+      "answer": "every end of the child, a cancelled job too, each attempt adding its spend to what the record keeps",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "filed_in": "clone-0ea70e5c",
