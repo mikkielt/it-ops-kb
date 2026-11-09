@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kbpublic.file_hits calls a replacing leak_scan extender without the root, so an extender declared with root=None never gets the file's root",
   "status": "draft",
+  "sprint": "SP-mut2pmu3",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",

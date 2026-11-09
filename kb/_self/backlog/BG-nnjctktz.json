@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "The needs-you line names a refused query-log delivery although the panel counts no undelivered entry",
   "status": "draft",
+  "sprint": "SP-mut2pmu3",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

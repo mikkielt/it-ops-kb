@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "The leak scan passes a url password that holds an angle bracket, because URL_USERINFO's password class excludes < and > and _value reads any < or > as a placeholder",
   "status": "draft",
+  "sprint": "SP-mut2pmu3",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

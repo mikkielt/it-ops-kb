@@ -4,6 +4,7 @@
   "title": "kblane.path_lane classes any top-level file kb/<file> as content, not only a submodule root's gitlink",
   "status": "draft",
   "parent": "EP-eocmyqdx",
+  "sprint": "SP-mut2pmu3",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

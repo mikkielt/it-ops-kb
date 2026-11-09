@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kbroot.without_paths keeps an unquoted absolute path with a space when a newline follows it, since ABS_PATH_BARE has no re.M",
   "status": "draft",
+  "sprint": "SP-mut2pmu3",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

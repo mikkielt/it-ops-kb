@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kbgit.py sync routes code-lane paths to a code/<id> branch even when backlog.json sets lane_module to empty",
   "status": "draft",
+  "sprint": "SP-mut2pmu3",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

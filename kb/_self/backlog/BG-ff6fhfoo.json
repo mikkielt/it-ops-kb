@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kbgit.py contribute holds back only roots that say visibility: internal while publish refuses every root that does not say public",
   "status": "draft",
+  "sprint": "SP-mut2pmu3",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "Publish refuses the tracked fixture roots under _tools/fixtures for good while sync never checks tree causes, so three commits since the last publish block it",
   "status": "draft",
+  "sprint": "SP-mut2pmu3",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
