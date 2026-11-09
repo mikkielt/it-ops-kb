@@ -1,0 +1,23 @@
+{
+  "id": "BG-jw2cqoxa",
+  "kind": "bug",
+  "title": "The delete class matches removed or removal of a flag anywhere before the word content, kb or history in the same question, so a design question is made blocking",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "a gate asking whether the removed flag is content-addressed is classed by its other words, while the old rows are removed from kb history stays delete",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,\"_tools\"); import bl_authority as b; bad=[q for q in (\"Is the removed flag content-addressed?\",\"Is removal of the flag content-addressed?\") if b.class_reasons({\"touches\":[]},{\"id\":\"g1\",\"question\":q,\"options\":[\"one\",\"two\"]})[0]==\"delete\"]; print(\"delete:\",bad); sys.exit(1 if bad else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_authority.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
