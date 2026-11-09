@@ -516,6 +516,7 @@ def last_line(text):
 
 
 CRED_STEP = "credential"  # the step of a job refused because its identity has no usable credential
+JOB_NAMES = ("KB_JOB", "KB_JOB_OPERATOR")  # set for a job's process, never inherited from the executor's own environment
 POLICY_LESS = "default"  # the `decided_by` of the decision `kj_place` gives when no policy answered: the job runs as it did before placements
 
 
@@ -523,8 +524,15 @@ def job_env(record, environ=None):
     """The environment of the process of the job RECORD: ENVIRON (this process's by default) without the names an earlier job's
     credential set, plus what `kj_cred.resolve` gives for the identity the record's placement names (a job whose placement is
     absent, or is the decision of no policy (`decided_by` `default`), keeps the environment as it is). `kj_cred.Refused` when the
-    identity has no usable credential."""
+    identity has no usable credential. The environment always names the job and its submitter, `KB_JOB` and `KB_JOB_OPERATOR`
+    (`kg_trailers.job_trailers` reads them for the commit's `KB-Job` and `KB-Operator`), whatever identity the job runs as."""
     environ = kj_cred.clean(dict(os.environ if environ is None else environ))
+    for name in JOB_NAMES:
+        environ.pop(name, None)
+    if record.get("job"):
+        environ["KB_JOB"] = str(record["job"])
+        if record.get("operator"):
+            environ["KB_JOB_OPERATOR"] = str(record["operator"])
     placed = record.get("placement")
     if not isinstance(placed, dict) or placed.get("decided_by") == POLICY_LESS or "identity" not in placed:
         return environ

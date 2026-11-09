@@ -41,10 +41,55 @@
     ".githooks/**",
     "kb/_self/git.md",
     "kb/_self/design.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/kj_exec.py",
+    "_tools/kg_hooks.py",
+    "kb/_self/coordination.md"
   ],
   "depends_on": [
     "ST-pea36fje"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "What does check-trailers accept as a KB-Operator value, now that a job's submitter is an operator path such as corp/ops/jan.kowalski?",
+      "options": [
+        "a single id as before, or ids joined by / up to 200 characters",
+        "a single id only, the job's operator path cut to its last segment"
+      ],
+      "recommendation": "a single id as before, or ids joined by / up to 200 characters",
+      "do": {
+        "a single id as before, or ids joined by / up to 200 characters": "ST-p7oslxrl",
+        "a single id only, the job's operator path cut to its last segment": "ST-p7oslxrl"
+      },
+      "class": "push",
+      "answer": "a single id as before, or ids joined by / up to 200 characters",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How is the job audited by check-trailers, and is the wiring of the commit-msg hook and of the executor's environment part of this item?",
+      "options": [
+        "KB-Job is a trailer key checked once against JB- and 8 characters; the wiring in kg_hooks.py and kj_exec.py, outside the touches, goes to a bug",
+        "no check of KB-Job; wire kg_hooks.py and kj_exec.py here"
+      ],
+      "recommendation": "KB-Job is a trailer key checked once against JB- and 8 characters; the wiring in kg_hooks.py and kj_exec.py, outside the touches, goes to a bug",
+      "do": {
+        "KB-Job is a trailer key checked once against JB- and 8 characters; the wiring in kg_hooks.py and kj_exec.py, outside the touches, goes to a bug": "ST-p7oslxrl",
+        "no check of KB-Job; wire kg_hooks.py and kj_exec.py here": "ST-p7oslxrl"
+      },
+      "class": "push",
+      "answer": "KB-Job is a trailer key checked once against JB- and 8 characters; wire kj_exec.py (sets KB_JOB and KB_JOB_OPERATOR for the job's process) and kg_hooks.py (commit-msg calls job_trailers) here, touches widened to both, since the goal says the executor sets them",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
   ],
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-61c966d6",
