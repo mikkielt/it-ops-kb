@@ -81,7 +81,12 @@
         "to the spool its own process resolves (the plugin data home when set, else the clone's), none from a ci executor or a follower of a ci job": "ST-iz6u7rem",
         "to a spool kept under the server's data directory, a follower row also for a ci job": "ST-iz6u7rem"
       },
-      "class": "design"
+      "class": "design",
+      "answer": "to the spool its own process resolves (the plugin data home when set, else the clone's); a ci executor writes none, but the follower of a ci job does write its origin follower row, since that is then the job's only row and the goal counts each job once",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "notes": "Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: a CI job writes none",
