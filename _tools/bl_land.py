@@ -2405,7 +2405,8 @@ def take_claim(iid, by, mine=False):
             return False
         raise Refused(f"claim refuses {iid} for {by}: its run state is {held}, held by "
                       f"{owner or 'an owner the run state does not name'}; wait for that run to end, or, when it died, "
-                      f"run python3 _tools/backlog.py runs --reconcile (it moves the state to released); nothing was changed")
+                      f"run python3 _tools/backlog.py runs --reconcile until it reports no drift (a working state goes "
+                      f"to failed first, a second run releases it); nothing was changed")
     if held != "claimed":
         say(f"claim: run state of {iid} not moved to claimed: {why} (backlog.py runs --reconcile repairs it)")
     return False
