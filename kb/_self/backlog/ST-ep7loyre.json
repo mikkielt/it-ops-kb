@@ -22,5 +22,5 @@
   "links": [
     "parked: SP-s2svf5a6 close"
   ],
-  "notes": "Planner 2026-11-09 (SP-mc4dzsfe): left out, cause unknown and not reproducible on the base: land_git and land_git_fetch raise land_stop with git's text at step fetch, and the second pass's first read of the merged branch (BG-ot47avdg's cause) is the lead; 2 land.end rows of the night stopped after a fetch step (1 code lane, 1 with no lane). Reopen after BG-ot47avdg lands if a stop with no line appears again."
+  "notes": "Planner 2026-11-09 (SP-mc4dzsfe): left out, cause unknown and not reproducible on the base: land_git and land_git_fetch raise land_stop with git's text at step fetch, and the second pass's first read of the merged branch (BG-ot47avdg's cause) is the lead; 2 land.end rows of the night stopped after a fetch step (1 code lane, 1 with no lane). Reopen after BG-ot47avdg lands if a stop with no line appears again. Planner 2026-11-09 (SP-6aegt3bs): re-read on main after one-run landing: cause still unknown. The second pass's fetch goes through land_git, whose every failure raises land_stop with git's text, and the code branch's own fetch (land_git_network) only decides whether the branch is pending and never fails the step; no path found that ends at step fetch silently. Left out again."
 }
