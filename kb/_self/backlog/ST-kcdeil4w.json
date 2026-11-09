@@ -30,7 +30,8 @@
   "touches": [
     "_tools/kj_exec.py",
     "_tools/kbjob.py",
-    "kb/_self/coordination.md"
+    "kb/_self/coordination.md",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "ST-gf2rlzcc",
