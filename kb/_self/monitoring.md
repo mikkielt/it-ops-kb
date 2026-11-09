@@ -161,6 +161,7 @@ With no TARGET, or an item id as TARGET, `kbtail.py [--root DIR] [--item ID] [--
 
 The panel reads the clone the script is in; `--root` naming another clone makes it `unsupported`.
 
+- **View.** One row for each root (`public: N articles; DOC n CODE n ...`), `open:`, the refresh row (`refreshed`, `census`, `eval`, `index` joined by `; `) and `tools:`. In a narrow view each wraps at an item and continues at column 12, so no fact count, date, state or age is cut; the view cuts only an item that alone passes the width.
 - **Alert.** While `eval.state` is `failed`, the snapshot's `alerts` hold `{kind: "eval", id: "kb.eval", message, since}`: the message says the lookup eval failed at the last landing, `since` is that row's time (UTC, `YYYY-MM-DD HH:MM`). None while the state is `passed` or no eval is recorded; the alert goes when a later landing's eval passes. The alert line (Layout) and the exit code 1 follow as for the delivery alert.
 
 ## The coord panel

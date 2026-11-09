@@ -150,20 +150,46 @@ def collect(ctx):
             "eval": last_eval(ctx.root), "index_age_s": age, "tools": tool_counts(ctx.root)}
 
 
-def lines(data):
-    """The text lines of the panel: roots, facts by tag, open ledger entries, then the refresh line."""
+GUTTER = 2  # columns the view puts before each body row
+CONTINUE = 10  # a wrapped row continues at column 12 of the view, 10 of the panel's own row
+
+
+def wrapped(head, items, sep, width):
+    """`head` and ITEMS joined by SEP, wrapped at an item within WIDTH columns of the view (the gutter included) and continued
+    at column 12; an item is never split, and a row that one item keeps too long is left to the view's cut. No wrap without
+    WIDTH. An empty `head` starts the first row with the first item."""
+    room = (width or 10 ** 6) - GUTTER
+    rows, cur = [], head
+    for n, item in enumerate(items):
+        glue = " " if n == 0 and head else sep
+        if n == 0 and not head:
+            cur = item
+        elif len(cur) + len(glue) + len(item) <= room or n == 0:
+            cur += glue + item
+        else:
+            rows.append(cur + sep.rstrip())
+            cur = " " * CONTINUE + item
+    rows.append(cur)
+    return rows
+
+
+def lines(data, width=None):
+    """The text lines of the panel: roots, facts by tag, open ledger entries, then the refresh line and the tools line, each
+    wrapped at an item within WIDTH columns (counts, dates and states stay whole)."""
     out = []
     for r in data["roots"]:
-        facts = " ".join(f"{k} {n}" for k, n in r["facts"].items())
-        out.append(f"{r['root']}: {r['articles']} articles; {facts}")
+        facts = [f"{k} {n}" for k, n in r["facts"].items()]
+        out += wrapped(f"{r['root']}: {r['articles']} articles;", facts, " ", width)
     out.append(f"open: {data['gaps']} gaps, {data['conflicts']} conflicts")
     ev = data.get("eval")
     ev_text = f"{ev['state']} {ev['when']}" if ev else "none recorded"
     age = data.get("index_age_s")
-    out.append(f"refreshed {data.get('refreshed') or '-'}; census {data.get('census') or '-'} "
-               f"({data.get('census_tag') or 'no tag'}); eval {ev_text}; index {f'{age}s old' if age is not None else 'none'}")
+    parts = [f"refreshed {data.get('refreshed') or '-'}", f"census {data.get('census') or '-'} ({data.get('census_tag') or 'no tag'})",
+             f"eval {ev_text}", f"index {f'{age}s old' if age is not None else 'none'}"]
+    out += wrapped("", parts, "; ", width)
     tools = data.get("tools")
     if tools:
-        names = f": {', '.join(tools['missing'][:3])}{', ...' if len(tools['missing']) > 3 else ''}" if tools["missing"] else ""
-        out.append(f"tools: {tools['count']} cataloged, {len(tools['missing'])} missing their Answers:/Use: lines{names}")
+        missing = list(tools["missing"][:3]) + (["..."] if len(tools["missing"]) > 3 else [])
+        head = f"tools: {tools['count']} cataloged, {len(tools['missing'])} missing their Answers:/Use: lines"
+        out += wrapped(head + (":" if missing else ""), [x + "," for x in missing[:-1]] + missing[-1:], " ", width)
     return out
