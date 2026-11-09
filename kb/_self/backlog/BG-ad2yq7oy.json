@@ -2,7 +2,7 @@
   "id": "BG-ad2yq7oy",
   "kind": "bug",
   "title": "redact.py's comment says the EC armor line is the only BEGIN line not flagged alone, but the PGP key block line is one too",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-osevumx6",
   "priority": "P3",
   "rank": 0,
@@ -26,5 +26,7 @@
   "links": [
     "parked: SP-evq2flqc review"
   ],
-  "notes": "Planned 2026-11-09 in SP-osevumx6: items that share a file wait on each other (kbcommon.py, redact.py then kbask.py, ql_capture.py then ql_deliver.py); no open item of the other live sprints touches this item's code files."
+  "notes": "Planned 2026-11-09 in SP-osevumx6: items that share a file wait on each other (kbcommon.py, redact.py then kbask.py, ql_capture.py then ql_deliver.py); no open item of the other live sprints touches this item's code files.",
+  "claimed_by": "claude-cdcea91c",
+  "operator": "op-f618a13e"
 }
