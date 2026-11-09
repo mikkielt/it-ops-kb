@@ -35,7 +35,12 @@
         "end at the first space (current behaviour)": "BG-ngtix6e2",
         "end at a known path-like token pattern": "BG-ngtix6e2"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "end at the next ': ' or end of line",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "links": [
