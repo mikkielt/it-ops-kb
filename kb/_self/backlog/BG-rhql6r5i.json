@@ -20,6 +20,25 @@
     "kb/_self/web-sources.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which omitted end tags end a role=navigation element's reach, and how is an ancestor's end tag detected?",
+      "options": [
+        "p, li, dt, dd by implied-end start tags, ancestor end tag from a fixed container set",
+        "p and li only, ancestor end tag from any unmatched end tag"
+      ],
+      "recommendation": "p, li, dt, dd by implied-end start tags, ancestor end tag from a fixed container set",
+      "do": {
+        "p, li, dt, dd by implied-end start tags, ancestor end tag from a fixed container set": "BG-rhql6r5i",
+        "p and li only, ancestor end tag from any unmatched end tag": "BG-rhql6r5i"
+      },
+      "class": "design",
+      "answer": "p, li, dt, dd by implied-end start tags, ancestor end tag from a fixed container set",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-3g3egfll review"
   ],
