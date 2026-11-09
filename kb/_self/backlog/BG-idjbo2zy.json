@@ -28,10 +28,8 @@
   "touches": [
     "skills/sprint/SKILL.md"
   ],
-  "depends_on": [
-    "BG-adgc5qf2"
-  ],
   "links": [
     "parked: SP-m3azo2y7 review"
-  ]
+  ],
+  "notes": "Run order dependency dropped at 20:10 (landings take about 45 minutes each; the planned chain would not finish before the sprint's worker cutoff). Rebase merges separate hunks of the shared file."
 }

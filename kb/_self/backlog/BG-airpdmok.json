@@ -30,11 +30,9 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "depends_on": [
-    "BG-epvddq7p"
-  ],
   "links": [
     "parked: SP-42b2cjm3 review"
   ],
+  "notes": "Run order dependency dropped at 20:10 (landings take about 45 minutes each; the planned chain would not finish before the sprint's worker cutoff). Rebase merges separate hunks of the shared file.",
   "filed_in": "clone-0ea70e5c"
 }
