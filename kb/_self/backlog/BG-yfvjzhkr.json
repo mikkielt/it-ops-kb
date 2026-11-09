@@ -2,7 +2,7 @@
   "id": "BG-yfvjzhkr",
   "kind": "bug",
   "title": "A benchmarks.py run leaves its run-<pid>-<hex> scratch directory behind, a --dry-run too, and the directories are not tidy records so they accumulate",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-hyfyn22d",
   "priority": "P3",
   "rank": 0,
@@ -52,6 +52,37 @@
     "parked: SP-bpjqqauu review"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-ev4run01",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "fc32ae391f1004b85efb8c7a627a73d408984752",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, subprocess, sys, tempfile; t=tempfile.mkdtemp(); subprocess.run([sys.executable, \"_tools/benchmarks.py\", \"run\", \"pool\", \"--dry-run\", \"--sample\", \"1\"], capture_output=True, env=dict(os.environ, BENCH_SCRATCH=t)); sys.exit(1 if [n for n in os.listdir(t) if n.startswith(\"run-\")] else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys, tempfile, pathlib; sys.path.insert(0, \"_tools\"); import bench_core; d=pathlib.Path(tempfile.mkdtemp())/\"run-1-abcd1234\"; b=bench_core.Bench(d, 1); b.close(); sys.exit(1 if d.exists() else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport os, subprocess, sys, tempfile\nt = tempfile.mkdtemp()\nsubprocess.run([sys.executable, \"_tools/benchmarks.py\", \"run\", \"pool\", \"--dry-run\", \"--sample\", \"1\"], capture_output=True, env=dict(os.environ, BENCH_SCRATCH=t))\nleft = [n for n in os.listdir(t) if n.startswith(\"run-\")]\nprint(left); sys.exit(1 if left else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      }
+    ]
+  }
 }
