@@ -18,7 +18,6 @@
   "touches": [
     "_tools/bl_authority.py",
     "_tools/bl_items.py",
-    "_tools/bl_precheck.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
