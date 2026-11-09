@@ -2,7 +2,7 @@
   "id": "BG-o4rrijqe",
   "kind": "bug",
   "title": "session-load classes a detached headless claude session as interactive, because bench_load.LIVE_HEADLESS_ROLES lacks the role headless that kbmon's sessions panel now gives it",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-bpjqqauu",
   "priority": "P2",
   "rank": 0,
@@ -22,6 +22,19 @@
   ],
   "notes": "Premise: the bug's repro fails on the base (origin/main at the planning commit, 2026-11-09); precheck ran it through the landing's check runner. Sprint order: items that share one file are chained with depends_on.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-bdc0a493",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "e964ed01e1c3e60371d973d915cf8ca1003670cf",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,'_tools'); import bench_load, mon_sessions; sys.exit('headless' in mon_sessions.ROLES and 'headless' not in bench_load.LIVE_HEADLESS_ROLES)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
