@@ -7,7 +7,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "runs --reconcile leaves the run key of a done item at claimed until its done commit is on the integration main, and runs does not report such an item as drift",
+  "goal": "runs --reconcile leaves the run key of a done item at claimed until its done commit is on the integration main",
   "repro": {
     "run": [
       "python3",
@@ -26,6 +26,6 @@
   "links": [
     "parked: SP-42b2cjm3 review"
   ],
-  "notes": "Order: same file bl_runs.py as BG-gt4i6ec6.",
+  "notes": "Order: same file bl_runs.py as BG-gt4i6ec6. Premise reproduces on origin/main (precheck 2026-11-09). Also: runs reports no drift for such an item, which follows from the same state rule in bl_runs.py.",
   "filed_in": "clone-0ea70e5c"
 }
