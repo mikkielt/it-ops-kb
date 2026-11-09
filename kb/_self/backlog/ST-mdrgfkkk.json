@@ -2,7 +2,7 @@
   "id": "ST-mdrgfkkk",
   "kind": "story",
   "title": "Research sprint goal: Leak scan, redaction and query-log capture hold on the layouts reviews found",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-osevumx6",
   "goal_research": true,
   "priority": "P1",
@@ -23,6 +23,20 @@
   ],
   "notes": "No outside facts: every fix of the sprint changes this repository's own leak scan, redaction, coord and query-log code, whose behaviour the planted checks and the _self docs state; no vendor or standard fact is needed.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-cdcea91c",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "7f8e519cf1eef5754336862699d3c147237971bd",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-mdrgfkkk"
+        ],
+        "exit": 0,
+        "sha256": "b580e178b1bece76"
+      }
+    ]
+  }
 }
