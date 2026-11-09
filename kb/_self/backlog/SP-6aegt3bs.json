@@ -1,0 +1,22 @@
+{
+  "id": "SP-6aegt3bs",
+  "kind": "sprint",
+  "title": "Lock follow-ups: a dead or reused pid's landing ticket never blocks, an interrupted land or claim leaves nothing behind, and a first pass with nothing to wait for ends cleanly",
+  "status": "planned",
+  "goal": "a landing does not wait for a ticket asked before its process started or older than the lock's wait bound, so a ticket left by a killed landing whose pid was reused holds nobody up; landing_lock removes a ticket it created on any interrupt and restores the SIGTERM handler it replaced; claim puts the coord run state back to released on any failure after it took the state; land moves the run state of a first pass that ended not done yet with no pending merge request to refused naming the step merge request",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e",
+  "filed_in": "clone-0ea70e5c"
+}
