@@ -214,6 +214,52 @@ def finish_text(log, start):
         return f.read().decode("utf-8", errors="replace")
 
 
+RUN_BUCKETS = {"queued": "queued_ms", "lost": "queued_ms", "waiting-lock": "wait_ms", "waiting-merge": "wait_ms", "running": "run_ms"}
+RUN_ENDS = ("succeeded", "refused", "failed")  # the ends that write a job.run row (a cancelled job did not finish)
+
+
+def job_events(store, job):
+    """[(state, at)] of JOB's `job` events in sequence order, `at` in seconds."""
+    con = coord.connect(store)
+    try:
+        coord.ensure_schema(con)
+        rows = con.execute("SELECT fields, at FROM events WHERE kind = 'job' AND fields LIKE ? ORDER BY seq", (f"%{job}%",)).fetchall()
+    finally:
+        con.close()
+    found = []
+    for row in rows:
+        fields = json.loads(row["fields"])
+        if fields.get("job") == job:
+            found.append((fields.get("state"), row["at"]))
+    return found
+
+
+def run_times(events):
+    """{queued_ms, wait_ms, run_ms} of the last attempt in EVENTS ([(state, at)]): the time between each event and the next
+    counted to its state (queued and lost: queued_ms; waiting-lock and waiting-merge: wait_ms; running: run_ms), from the
+    last `lost` event on, so a job a dead executor lost counts the attempt that ended it."""
+    first = max((i for i, (state, _) in enumerate(events) if state == "lost"), default=0)
+    times = {"queued_ms": 0, "wait_ms": 0, "run_ms": 0}
+    for (state, at), (_, later) in zip(events[first:], events[first + 1:]):
+        if state in RUN_BUCKETS:
+            times[RUN_BUCKETS[state]] += max(0, round((later - at) * 1000))
+    return times
+
+
+def record_run(store, job, record, state):
+    """Write the ops row `job.run` of a job that ended in STATE (succeeded, refused or failed; none for another): its operation,
+    the end as `class`, its attempt and the milliseconds it queued, waited for a lock or a merge, and ran, read from the job's own
+    events (`ql_deliver.ops_row`: nothing in a test run). Never raises: a job never fails for its log."""
+    try:
+        if state not in RUN_ENDS:
+            return
+        import ql_deliver
+        now = kj_store.read_record(store, job) or record
+        ql_deliver.ops_row("job.run", op=record["op"], **{"class": state}, attempt=int(now.get("attempt", 1)), **run_times(job_events(store, job)))
+    except Exception:  # noqa: BLE001 - see the docstring
+        pass
+
+
 def start_job(store, job, record, clone, log, out):
     """Start the child of a job already in running: (the process, the size LOG had before it) and the pid recorded in the job's record.
     A process that cannot start moves the job to failed (exit 127), prints one line and returns (None, 0)."""
@@ -221,6 +267,7 @@ def start_job(store, job, record, clone, log, out):
         proc, start = start_child(record, clone, log)
     except OSError as error:
         move(store, job, "failed", exit=127)
+        record_run(store, job, record, "failed")
         print(f"{job} {record['op']} {record.get('subject') or '-'}: failed, exit 127: {str(error)[:200]}", file=out, flush=True)
         return None, 0
     with contextlib.suppress(sqlite3.Error):
@@ -240,6 +287,7 @@ def finish_job(store, job, record, code, text, out):
             raise
         print(f"{job} {record['op']} {record.get('subject') or '-'}: cancelled", file=out, flush=True)
         return "cancelled"
+    record_run(store, job, record, state)
     note = f"{job} {record['op']} {record.get('subject') or '-'}: {state}"
     if state == "refused":
         note += f" at step {step}"
@@ -354,6 +402,7 @@ def settle_lost(store, job, record):
     one = {"job": job, "op": record.get("op"), "subject": record.get("subject", "")}
     if lost_count(store, job) >= MAX_LOST:
         move(store, job, "failed", step="lost")
+        record_run(store, job, record, "failed")
         return {**one, "move": "failed", "attempt": int(record.get("attempt", 1))}
     attempt = int(record.get("attempt", 1)) + 1
     amend(store, job, attempt=attempt, pid=None)
@@ -589,7 +638,8 @@ class LandRun(threading.Thread):
             return
         with contextlib.suppress(sqlite3.Error):
             amend(self.store, self.job, pending=None)
-        if state in ("succeeded", "refused", "failed"):
+        if state in RUN_ENDS:
+            record_run(self.store, self.job, self.record, state)
             note = f"{self.label()}: {state}"
             if state == "refused":
                 note += f" at step {fields.get('step')}"
@@ -623,6 +673,7 @@ class LandRun(threading.Thread):
                 if self.at != "running":
                     move(self.store, self.job, "running")
                 move(self.store, self.job, "failed", exit=1)
+                record_run(self.store, self.job, self.record, "failed")
             print(f"{self.label()}: failed, exit 1: {type(error).__name__}: {str(error)[:200]}", file=self.out, flush=True)
 
 

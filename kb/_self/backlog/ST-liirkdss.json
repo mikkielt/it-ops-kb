@@ -59,12 +59,7 @@
         "class, a token: succeeded, refused or failed": "ST-liirkdss",
         "exit, the child's exit number like land.step": "ST-liirkdss"
       },
-      "class": "secrets",
-      "answer": "class, a token naming the job's terminal state: succeeded, refused, failed or cancelled (lost is no end: a lost job is queued again or fails, and only that end writes a row)",
-      "by": "operator",
-      "operator": "op-f618a13e",
-      "role": "interactive",
-      "agent_session": true
+      "class": "secrets"
     },
     {
       "id": "g2",
@@ -80,7 +75,27 @@
         "queued_ms=MEDIAN (p95 P), one pair per measure": "ST-liirkdss",
         "a separate p95 line per operation": "ST-liirkdss"
       },
-      "class": "design"
+      "class": "design",
+      "answer": "queued_ms=MEDIAN (p95 P), one pair per measure",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Where does the executor take a finished job's queue wait, lock wait and run time from?",
+      "options": [
+        "the job's own events in the store, summed per state of its last attempt",
+        "timers the executor keeps in memory per job"
+      ],
+      "recommendation": "the job's own events in the store, summed per state of its last attempt",
+      "reason": "because a job an executor lost and a restarted one finished keeps its times, and the same moves that follow shows already carry them",
+      "do": {
+        "the job's own events in the store, summed per state of its last attempt": "ST-liirkdss",
+        "timers the executor keeps in memory per job": "ST-liirkdss"
+      },
+      "class": "design",
+      "answer": "the job's own events in the store, summed per state of its last attempt",
+      "by": "agent"
     }
   ],
   "notes": "Why: the operator's first ask is to measure the waiting. Today the measure is reconstructed from land.step and land.end rows and the foreground tool-call rows (kb/_querylog/ops, schema in _tools/ql_capture.py; read by backlog.py landings, bl_ops.py:87 step_stats, kbmon mon_*); a job row gives queue wait, lock wait and run time directly, so the before and after of the service is a number: before (2026-11-08, real items 2026-10-02..11-08): land.end ok median 103 s content (p95 1150 s, n=1701) and 430 s code (p95 1784 s, n=133); kbgit.py sync --push step median 29.8 s (p95 176 s); rag eval 18.1 s; siblings median 0.2 s but p95 76 s, max 1081 s; wait-merge p90 240 s; done step p95 29 s; test.run full median 22.0 s (p95 34.6 s, n=3021). Row schema is closed (ql_capture) and the redactor reads it (_tools/test_redact.py names land.step), so the worker adds job.run beside land.step in the same closed-key way and keeps ids and paths out of the row (op, exit class and numbers only). Related: EP-ajw3oywi (the sprint runner measures its own work as redacted operational events) is the family this row belongs to; EP-wqgicmmj (a live console) may show the job queue as a panel later, not here. No test added unless test_redact.py must name the new event (then one line, no new id).",

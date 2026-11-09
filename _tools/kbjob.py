@@ -53,6 +53,11 @@
                                         print a macOS LaunchAgent plist (Label, ProgramArguments serve, RunAtLoad, KeepAlive,
                                         StandardErrorPath) and a systemd user unit that run serve at login; it writes nothing and
                                         touches no file under the home directory: the operator saves and loads what they choose
+  kbjob.py [--store PATH] stats         print for each operation one line from the `job.run` ops rows (one per finished job, written by the
+                                        executor; `kb/_self/querylog.md`) of this clone's query log: `OP n=N queued_ms=MEDIAN (p95 P)
+                                        wait_ms=MEDIAN (p95 P) run_ms=MEDIAN (p95 P)`, the median and the nearest-rank 95th percentile
+                                        in ms of the time a job queued, waited in waiting-lock or waiting-merge, and ran, as
+                                        `backlog.py landings` measures a landing; operations in name order; exit 0, a note when no row
   kbjob.py [--store PATH] cancel JOB    move a queued job to cancelled; move a running one to cancelled and end its process group
                                         with TERM, then KILL (a POSIX host, the job's own); for the submitting operator only,
                                         exit 1 for another's
@@ -117,6 +122,7 @@ def build_parser():
     g = sub.add_parser("log", help="print the end of a job's output log")
     g.add_argument("job")
     g.add_argument("--tail", type=int, default=kj_follow.TAIL_LINES, help="lines to print (default %(default)s)")
+    sub.add_parser("stats", help="print each operation's count and the median and p95 of its queue wait, lock wait and run time")
     c = sub.add_parser("cancel", help="cancel a job of the submitting operator, ending a running one's process group")
     c.add_argument("job")
     return parser
@@ -167,7 +173,39 @@ def with_holder(body, store):
     return {**body, "holder": held} if held else body
 
 
+def stat_lines(rows):
+    """One line per operation of the `job.run` ROWS, in name order: `OP n=N queued_ms=MEDIAN (p95 P) wait_ms=... run_ms=...`
+    (`bl_ops.median` and `nearest_rank`, as `backlog.py landings` computes them)."""
+    import bl_ops
+    groups = {}
+    for row in rows:
+        if row.get("event") == "job.run" and isinstance(row.get("op"), str):
+            groups.setdefault(row["op"], []).append(row)
+    lines = []
+    for op, found in sorted(groups.items()):
+        parts = [f"{op} n={len(found)}"]
+        for key in ("queued_ms", "wait_ms", "run_ms"):
+            values = sorted(r[key] for r in found if bl_ops.number(r.get(key)))
+            parts.append(f"{key}={bl_ops.median(values):.0f} (p95 {bl_ops.nearest_rank(values, 95):.0f})" if values else f"{key}=-")
+        lines.append(" ".join(parts))
+    return lines
+
+
+def stats_command():
+    """`kbjob.py stats`: 0 printing the lines of `stat_lines` over this clone's ops rows, or a note when it has no job.run row."""
+    import bl_stall
+    try:
+        lines = stat_lines(bl_stall.ops_rows(str(ROOT)))
+    except Exception as error:  # noqa: BLE001 - an unreadable log is said, never read as no row
+        print(f"kbjob.py: the ops rows could not be read: {str(error)[:200]}", file=sys.stderr)
+        return 1
+    print("\n".join(lines) if lines else "kbjob: no job.run row yet")
+    return 0
+
+
 def run(args, parser):
+    if args.command == "stats":
+        return stats_command()
     if args.command == "serve":
         return kj_exec.serve(str(ROOT), kj_store.resolve_store(ROOT, args.store), once=args.once, idle_exit=args.idle_exit,
                              slots=args.parallel)
