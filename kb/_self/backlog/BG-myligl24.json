@@ -4,6 +4,7 @@
   "title": "kbsettings.layered raises must be an object for the list and string keys group, gate_checks and extension_paths, which its goal and the docs name",
   "status": "draft",
   "parent": "EP-y7fe7qqx",
+  "sprint": "SP-ga3lbnlk",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -12,9 +13,41 @@
     "run": [
       "python3",
       "-c",
-      "import json,sys,tempfile,pathlib; sys.path.insert(0,'_tools'); import kbsettings; d=pathlib.Path(tempfile.mkdtemp()); (d/'settings.json').write_text(json.dumps({'gate_checks':[['true']]})); kbsettings.layered(d,'gate_checks')"
+      "\nimport json,sys,tempfile,pathlib\nsys.path.insert(0,\"_tools\")\nimport kbsettings\nd=pathlib.Path(tempfile.mkdtemp())\n(d/\"settings.json\").write_text(json.dumps({\"gate_checks\":[[\"true\"]],\"extension_paths\":[\"/x\"],\"group\":\"acme\"}))\nfor name,want in ((\"gate_checks\",\"true\"),(\"extension_paths\",\"/x\"),(\"group\",\"acme\")):\n    try:\n        merged,layers=kbsettings.layered(d,name)\n    except kbsettings.SettingsError as e:\n        sys.exit(\"not yet: \"+str(e))\n    assert want in str(merged), (name,merged)\n"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport inspect,sys\nsys.path.insert(0,\"_tools\")\nimport kg_sync,kbext\nfor f in (kg_sync.group_gate,kbext._named,kbext._add_paths):\n    if \"layer_files\" in inspect.getsource(f):\n        sys.exit(\"not yet: \"+f.__module__+\".\"+f.__name__+\" reads layer_files\")\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbsettings.layered(root, name) returns the merged value with its layer map for group (a string), gate_checks and extension_paths (lists of the layers in order), as kbext.SURFACE and kb/_self/extending.md describe them, instead of raising SettingsError 'must be an object'",
+      "check": 1
+    },
+    {
+      "clause": "kg_sync and kbext then read them through layered, not layer_files",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/kbsettings.py",
+    "_tools/kg_sync.py",
+    "_tools/kbext.py",
+    "kb/_self/extending.md",
+    "kb/_self/tools.md",
+    "kb/_self/coordination.md",
+    "kb/_self/extension-changelog.md",
+    "kb/_self/git.md"
+  ],
+  "depends_on": [
+    "BG-fuht4gyh"
+  ],
   "links": [
     "parked: SP-ep7ck2ab review"
   ],

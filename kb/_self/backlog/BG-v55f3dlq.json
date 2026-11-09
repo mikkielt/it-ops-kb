@@ -3,20 +3,46 @@
   "kind": "bug",
   "title": "The leak_scan extension point still declares file_hits without the root parameter that kbpublic now passes",
   "status": "draft",
+  "sprint": "SP-ga3lbnlk",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
-  "goal": "kbext's leak_scan point declares file_hits(path, text, allow, pinned=(), root=None) and its sample takes the root, matching kbpublic.file_hits",
+  "goal": "kbext's leak_scan point declares file_hits(path, text, allow, pinned=(), root=None); its sample passes the root, so verify calls a file_hits extender that takes it",
   "repro": {
     "run": [
       "python3",
       "-c",
-      "import sys,inspect;sys.path.insert(0,'_tools');import kbpublic;t=open('_tools/kbext.py').read();p=list(inspect.signature(kbpublic.file_hits).parameters);assert 'root' not in p or 'root' in t[t.find('leak_scan'):t.find('leak_scan')+800],'kbext leak_scan point declares no root while file_hits takes %s'%p"
+      "import sys; sys.path.insert(0,\"_tools\"); import kbext; p=[x for x in kbext.SURFACE[\"points\"] if x[\"name\"]==\"leak_scan\"][0]; sys.exit(0 if \"root=None\" in p[\"signature\"] else \"not yet: leak_scan declares \"+p[\"signature\"])"
     ]
   },
   "repro_reason": "nothing wires the extension point yet, so the declared signature can only be compared with the function's",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport json,subprocess,sys,tempfile,pathlib\nT=pathlib.Path(tempfile.mkdtemp())\ne=T/\"ext\"; e.mkdir()\n(e/\"gleak.py\").write_text(\"KBEXT_REQUIRES = \\\">=0.1\\\"\\ndef file_hits(path, text, allow, pinned=(), root=None):\\n    assert root is not None\\n    return []\\n\")\n(T/\"settings.json\").write_text(json.dumps({\"extensions\":{\"leak_scan\":\"gleak:file_hits\"},\"extension_paths\":[str(e)]}))\nr=subprocess.run([sys.executable,\"_tools/kbext.py\",\"verify\",\"--root\",str(T)],capture_output=True,text=True,timeout=300)\nsys.exit(0 if r.returncode==0 else \"not yet: \"+r.stdout[-600:])\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbext's leak_scan point declares file_hits(path, text, allow, pinned=(), root=None)",
+      "check": 1
+    },
+    {
+      "clause": "its sample passes the root, so verify calls a file_hits extender that takes it",
+      "check": 0
+    }
+  ],
   "touches": [
-    "_tools/kbext.py"
+    "_tools/kbext.py",
+    "kb/_self/extending.md",
+    "kb/_self/extension-changelog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-wmgnn4d5"
   ],
   "links": [
     "parked: SP-n7zxspch review"

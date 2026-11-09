@@ -4,6 +4,7 @@
   "title": "kbext.py verify fails a leak_scan extender whose function is not named file_hits, and that FAIL line names no point, module or layer",
   "status": "draft",
   "parent": "EP-y7fe7qqx",
+  "sprint": "SP-ga3lbnlk",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -15,6 +16,34 @@
       "import json,os,subprocess,sys,tempfile,pathlib\nsys.path.insert(0,\"_tools\")\nT=pathlib.Path(tempfile.mkdtemp())\ndef W(p,v):\n    p=pathlib.Path(p); p.parent.mkdir(parents=True,exist_ok=True); p.write_text(v if isinstance(v,str) else json.dumps(v),encoding=\"utf-8\"); return p\ndef need(c,m):\n    if not c: sys.exit(\"not yet: \"+str(m)[:800])\ndef R(*a,env=None):\n    return subprocess.run([sys.executable,*a],capture_output=True,text=True,env=dict(os.environ,**(env or {})),timeout=600)\nEXT='KBEXT_REQUIRES = \">=0.1\"\\n'\ne=T/\"ext\"; W(e/\"gleak.py\",EXT+\"def scan(path, text, allow, pinned=()):\\n    return []\\n\")\nW(T/\"settings.json\",{\"extensions\":{\"leak_scan\":\"gleak:scan\"},\"extension_paths\":[str(e)]})\nr=R(\"_tools/kbext.py\",\"verify\",\"--root\",str(T))\nneed(r.returncode==0, (r.returncode,r.stdout,r.stderr))\n"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport json,os,subprocess,sys,tempfile,pathlib\nT=pathlib.Path(tempfile.mkdtemp())\ne=T/\"ext\"; e.mkdir()\n(e/\"gleak.py\").write_text(\"KBEXT_REQUIRES = \\\">=0.1\\\"\\ndef scan(path, text, allow, pinned=()):\\n    return 5\\n\")\n(T/\"settings.json\").write_text(json.dumps({\"extensions\":{\"leak_scan\":\"gleak:scan\"},\"extension_paths\":[str(e)]}))\nr=subprocess.run([sys.executable,\"_tools/kbext.py\",\"verify\",\"--root\",str(T)],capture_output=True,text=True,timeout=300)\nfails=[l for l in r.stdout.splitlines() if l.startswith(\"FAIL\")]\nif r.returncode!=1 or not fails:\n    sys.exit(\"not yet: expected a FAIL for a scan that answers a non-list: \"+repr((r.returncode,r.stdout,r.stderr)))\nbad=[l for l in fails if not (\"leak_scan\" in l and \"gleak\" in l and \"clone\" in l)]\nsys.exit(\"not yet: a FAIL line misses the point, module or layer: \"+repr(bad) if bad else 0)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "every FAIL line it prints names the point, the module and the layer",
+      "check": 0
+    },
+    {
+      "clause": "kbext.py verify calls a leak_scan extender by the attribute its setting names, whatever its name, as kbpublic.file_hits does",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "_tools/kbext.py",
+    "kb/_self/extending.md",
+    "kb/_self/tools.md",
+    "kb/_self/extension-changelog.md"
+  ],
+  "depends_on": [
+    "BG-u6eh3xyq"
+  ],
   "links": [
     "parked: SP-ep7ck2ab review"
   ],
