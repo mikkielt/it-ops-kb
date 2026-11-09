@@ -1,0 +1,24 @@
+{
+  "id": "BG-bbt475x3",
+  "kind": "bug",
+  "title": "report warns that a gate was not recorded for a worker line that says no gates recorded",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "bl_dispatch.unrecorded_gate_lines returns no line for a result line that says no gates recorded or that no gate was needed",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import bl_dispatch as d;got=d.unrecorded_gate_lines(\"**Not done:** no staging-copy changes, no bug filed, no gates recorded.\");print(got);sys.exit(1 if got else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_dispatch.py"
+  ],
+  "links": [
+    "parked: SP-rzwljgxv close"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "BG-6f5lhcik",
+  "kind": "bug",
+  "title": "coord.py wait on an item's progress returns at each non-final move (working, landing), so a wait for a landing wakes the orchestrator once per intermediate state",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "coord.py wait takes a --state option that returns only on a move to one of the listed states, so one wait serves a landing or a worker's return",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys;o=subprocess.run([sys.executable,\"_tools/coord.py\",\"wait\",\"--help\"],capture_output=True,text=True).stdout;sys.exit(0 if \"--state\" in o else 1)"
+    ]
+  },
+  "repro_reason": "the missing option shows only in the help text; planting a store needs the coord internals",
+  "touches": [
+    "_tools/coord.py"
+  ],
+  "links": [
+    "parked: SP-rzwljgxv close"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
