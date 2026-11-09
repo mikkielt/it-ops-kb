@@ -30,12 +30,71 @@
   "touches": [
     "_tools/kj_exec.py",
     "_tools/kbjob.py",
-    "kb/_self/coordination.md"
+    "kb/_self/coordination.md",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "ST-gf2rlzcc",
     "ST-nmrcazp2",
     "ST-p7oslxrl"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which serve kinds does --job take, and does it need --once?",
+      "options": [
+        "any --kind with --url, the serve ends after the job (--once implied)",
+        "only --kind ci, --once required"
+      ],
+      "recommendation": "any --kind with --url, the serve ends after the job (--once implied)",
+      "do": {
+        "any --kind with --url, the serve ends after the job (--once implied)": "ST-kcdeil4w",
+        "only --kind ci, --once required": "ST-kcdeil4w"
+      },
+      "class": "design",
+      "answer": "any --kind with --url, the serve ends after the job (--once implied)",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How does the pinned serve treat a job whose placement is a workstation that is offline with a fallback to ci?",
+      "options": [
+        "refuse it: only a job placed on the kind is taken (exit 2)",
+        "take it as the whole-queue serve does after the fallback delay"
+      ],
+      "recommendation": "refuse it: only a job placed on the kind is taken (exit 2)",
+      "do": {
+        "refuse it: only a job placed on the kind is taken (exit 2)": "ST-kcdeil4w",
+        "take it as the whole-queue serve does after the fallback delay": "ST-kcdeil4w"
+      },
+      "class": "design",
+      "answer": "take it when the job's placement names this kind as its fallback and the fallback delay has passed, exactly as the whole-queue serve does (the operator chose policy-set fallback for offline workstations, and a pipeline started for a fallback job must be able to run it); refuse with exit 2 when the fallback names another kind or the delay has not passed",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "What exit does the pinned serve give when another executor took the job first, or a serve already runs on the mirror store?",
+      "options": [
+        "2, naming the cause, the job as the queue has it",
+        "1, as a failed job"
+      ],
+      "recommendation": "2, naming the cause, the job as the queue has it",
+      "do": {
+        "2, naming the cause, the job as the queue has it": "ST-kcdeil4w",
+        "1, as a failed job": "ST-kcdeil4w"
+      },
+      "class": "push",
+      "answer": "2, naming the cause, the job as the queue has it",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
   ],
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-61c966d6",
