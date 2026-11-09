@@ -32,6 +32,29 @@
   "depends_on": [
     "BG-x4lhztge"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which files does factdiff.py close re-point citations in?",
+      "options": [
+        "every .md of the root and _sources.csv notes, not the dated _census logs or _retrieval frozen sets",
+        "also the _census logs and _retrieval csv files"
+      ],
+      "recommendation": "every .md of the root and _sources.csv notes, not the dated _census logs or _retrieval frozen sets",
+      "reason": "a log records the lines it cited that day and a frozen set must not change",
+      "do": {
+        "every .md of the root and _sources.csv notes, not the dated _census logs or _retrieval frozen sets": "ST-kqy75wsv",
+        "also the _census logs and _retrieval csv files": "ST-kqy75wsv"
+      },
+      "class": "design",
+      "answer": "every .md of the root and _sources.csv notes, not the dated _census logs or _retrieval frozen sets",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "notes": "Found 2026-11-09 when a refresh run re-pointed 24 citations with a scratch diff-based script; any other tool that inserts a fact line is a later story. Premise: the planted-root check exits 1 on 55dde769f (close exits 0, no citation moves).",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-c41d77ea",
