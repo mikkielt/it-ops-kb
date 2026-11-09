@@ -52,34 +52,36 @@ def delivery_evidence(root, ids, globs):
     """[short hashes], newest first, of the automatic query-log deliveries on HEAD (`querylog.py apply --push`: the
     trailer KB-Auto: querylog and no KB-Work) that a story of the query-log store only (`store_only`) takes as its
     evidence in place of a work commit: one that changed a file GLOBS match, that is on the integration main when that
-    ref is fetched, and that was authored no earlier than the item's latest claim commit on HEAD (the author time, which
-    a rebase keeps; with no claim commit on HEAD, the commit that added the item's file, and none of either, no bound).
-    Its checks still run: they read what the delivery wrote."""
+    ref is fetched, and that comes after the item's bound by ancestry, never by time (commits of one second tie): the
+    bound is the item's claim commits on HEAD, else the commit that added the item's file, and each bound commit must be
+    a proper ancestor of the delivery (none of either, no bound). Its checks still run: they read what the delivery
+    wrote."""
     if not store_only(globs):
         return []
-    fmt = ("%H%x00%at%x00%s%x00%(trailers:key=KB-Work,valueonly,separator=%x2C)%x00"
+    fmt = ("%H%x00%s%x00%(trailers:key=KB-Work,valueonly,separator=%x2C)%x00"
            "%(trailers:key=KB-Auto,valueonly,separator=%x2C)%x1e")
-    claimed, auto = 0, []
+    claims, auto = [], []
     for rec in git(root, "log", "HEAD", "--no-merges", f"--format={fmt}").split("\x1e"):
         parts = rec.strip().split("\x00")
-        if len(parts) != 5 or not parts[1].isdigit():
+        if len(parts) != 4:
             continue
-        sha, at, subject, work, kinds = parts[0], int(parts[1]), parts[2], parts[3], parts[4]
+        sha, subject, work, kinds = parts
         if subject.startswith("chore(backlog): claim ") and set(id_re().findall(work)) & set(ids):
-            claimed = max(claimed, at)
+            claims.append(sha)
         if "querylog" in [k.strip() for k in kinds.split(",")]:
-            auto.append((sha, at))
-    if not claimed and ids:  # never claimed with --commit: the item did not exist before the commit that added its file
-        added = git(root, "log", "HEAD", "--no-merges", "--diff-filter=A", "--format=%at", "--",
+            auto.append(sha)
+    bound = claims
+    if not bound and ids:  # never claimed with --commit: the item did not exist before the commit that added its file
+        bound = git(root, "log", "HEAD", "--no-merges", "--diff-filter=A", "--format=%H", "--",
                     f"{bl_base.rel_dir()}/{ids[0]}.json").split()
-        claimed = max((int(t) for t in added if t.isdigit()), default=0)
     import kbpublic
     ref = f"refs/remotes/{kbpublic.integration_remote(root)}/main"
     fetched = subprocess.run(["git", "rev-parse", "--verify", "-q", ref], cwd=root, capture_output=True).returncode == 0
     out = []
-    for sha, at in auto:
-        if at < claimed:
-            continue
+    for sha in auto:
+        if any(b == sha or subprocess.run(["git", "merge-base", "--is-ancestor", b, sha], cwd=root,
+                                          capture_output=True).returncode for b in bound):
+            continue  # not after the claim or the added file: made before the item existed
         paths = [p for p in git(root, "show", "--no-renames", "--name-only", "--format=", sha).splitlines() if p]
         if not any(p.startswith(bl_intake.STORE_REL + "/") and in_scope(p, globs) for p in paths):
             continue
