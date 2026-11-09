@@ -31,5 +31,6 @@
   ],
   "links": [
     "parked: SP-5y4ut64g review"
-  ]
+  ],
+  "notes": "Premise run 2026-11-09: the repro fails on the base (lane_plan returns code, code/ST-aaaaaaaa with lane_module empty). Check 0 (default lane_module kblane still routes a code commit to its code/<id> branch) passes before the work on purpose: it pins the behaviour that must stay."
 }
