@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "session-load --live with a window shorter than one ps listing divides by zero and writes no live row",
   "status": "draft",
+  "sprint": "SP-bpjqqauu",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",

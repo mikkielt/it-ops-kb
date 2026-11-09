@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "benchmarks.py run --dry-run starts claude --version: Bench.__init__ probes the Claude Code version before any plan",
   "status": "draft",
+  "sprint": "SP-bpjqqauu",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",

@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "repro compare pairs two facts about different options of one page as one claim and prints a false conflict",
   "status": "draft",
+  "sprint": "SP-bpjqqauu",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

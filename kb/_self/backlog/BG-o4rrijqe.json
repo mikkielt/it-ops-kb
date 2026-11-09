@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "session-load classes a detached headless claude session as interactive, because bench_load.LIVE_HEADLESS_ROLES lacks the role headless that kbmon's sessions panel now gives it",
   "status": "draft",
+  "sprint": "SP-bpjqqauu",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",

@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "benchmarks.md says the paid record's cells are the mean of 3 reps, but the rows are medians",
   "status": "draft",
+  "sprint": "SP-bpjqqauu",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",
