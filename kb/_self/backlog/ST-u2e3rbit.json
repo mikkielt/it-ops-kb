@@ -2,7 +2,7 @@
   "id": "ST-u2e3rbit",
   "kind": "story",
   "title": "A gate answer the orchestrator commits on a worker branch survives the worker's later item writes",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-moxpl354",
   "priority": "P2",
   "rank": 0,
@@ -76,6 +76,37 @@
   ],
   "notes": "Parked draft from the SP-ep7ck2ab close retrospective (night manager c9419db9, operator-delegated, 2026-11-09). Its check reads the rule text only: the planner adds a check that runs the behaviour on a planted input before the start gate. Retrospective item R2. Premise (planner, 2026-11-09, base): reproduced. Check 0 plants an item file, loads it, writes an answer into the file as the orchestrator's commit does, then saves the loaded copy (done runs its checks, minutes, between its load and its bl.save at bl_land.py cmd_done end): the answer is gone. Write path found by reading, not by replaying the four wipes: Backlog.save writes the loaded copy whole. Check 1 passes on the base on purpose: it pins that an answer cleared by the command itself is not restored. A worktree probe of answer --root WORKTREE --commit followed by set --commit kept the answer, so only a load-to-save gap loses it. bl_base.py is in the touches of the locks sprint SP-mc4dzsfe's closed claim items only; an ask to its runner is open.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-a1b2c3d4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "85d88a928995c186911ecf3f1b19ff819004f39e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys, json, pathlib, tempfile\nsys.path.insert(0, '_tools')\nimport bl_base\nr = pathlib.Path(tempfile.mkdtemp()); d = r / bl_base.rel_dir(); d.mkdir(parents=True)\nf = d / 'BG-aaaaaaaa.json'\ngate = {\"id\": \"g1\", \"kind\": \"provisional\", \"question\": \"q\", \"options\": [\"a\", \"b\"], \"recommendation\": \"a\"}\nf.write_text(bl_base.canonical({\"id\": \"BG-aaaaaaaa\", \"kind\": \"bug\", \"title\": \"t\", \"status\": \"todo\", \"gates\": [gate]}), encoding='utf-8')\nbl = bl_base.Backlog(r); it = bl.items['BG-aaaaaaaa']\ndisk = json.loads(f.read_text(encoding='utf-8')); disk['gates'][0].update(answer='a', by='operator')\nf.write_text(bl_base.canonical(disk), encoding='utf-8')\nit['status'] = 'done'; bl.save(it)\ngot = json.loads(f.read_text(encoding='utf-8'))\nok = got['status'] == 'done' and got['gates'][0].get('answer') == 'a' and got['gates'][0].get('by') == 'operator'\nprint('answer kept' if ok else 'answer wiped', got['gates'][0])\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "df9cca45b41bcbc5"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys, json, pathlib, tempfile\nsys.path.insert(0, '_tools')\nimport bl_base\nr = pathlib.Path(tempfile.mkdtemp()); d = r / bl_base.rel_dir(); d.mkdir(parents=True)\nf = d / 'BG-aaaaaaaa.json'\ngate = {\"id\": \"g1\", \"kind\": \"provisional\", \"question\": \"q\", \"options\": [\"a\", \"b\"], \"recommendation\": \"a\", \"answer\": \"a\", \"by\": \"agent\"}\nf.write_text(bl_base.canonical({\"id\": \"BG-aaaaaaaa\", \"kind\": \"bug\", \"title\": \"t\", \"status\": \"todo\", \"gates\": [gate]}), encoding='utf-8')\nbl = bl_base.Backlog(r); it = bl.items['BG-aaaaaaaa']\nfor k in ('answer', 'by'):\n    it['gates'][0].pop(k)\nbl.save(it)\ngot = json.loads(f.read_text(encoding='utf-8'))\nok = 'answer' not in got['gates'][0]\nprint('cleared stays cleared' if ok else 'cleared answer came back', got['gates'][0])\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "f5eb990b9564b83c"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,pathlib\nt=pathlib.Path('kb/_self/backlog.md').read_text(encoding='utf-8').lower()\nmiss=[w for w in ['answer committed on a worker branch survives'] if w not in t]\nsys.exit('not yet: kb/_self/backlog.md lacks '+', '.join(miss) if miss else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
