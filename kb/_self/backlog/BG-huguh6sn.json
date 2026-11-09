@@ -2,7 +2,7 @@
   "id": "BG-huguh6sn",
   "kind": "bug",
   "title": "A gate option that names a token budget floor ('a 200-token floor per question') is classed secrets",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-pww4aqis",
   "priority": "P3",
   "rank": 0,
@@ -37,5 +37,7 @@
     "found during: SP-n7f53pgv"
   ],
   "notes": "Order: same file bl_authority.py as BG-6vy5sy74 (token-class words); land one after the other. Premise reproduces on origin/main (precheck 2026-11-09). The check reads both halves: the two budget counts stay design, the credential token keeps secrets.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-6b037793",
+  "operator": "op-f618a13e"
 }
