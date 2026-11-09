@@ -2,7 +2,7 @@
   "id": "BG-ot47avdg",
   "kind": "bug",
   "title": "A code item's land finishes in one run: when its merge request merged and removed code/ID right after the push, land finds the merge on the integration main and goes on to the second pass",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-mc4dzsfe",
   "priority": "P1",
@@ -40,6 +40,19 @@
   ],
   "notes": "Likely cause, not proven: kg_sync.push_options sends merge_request.auto_merge and merge_request.remove_source_branch, so a merge request that merges at once removes code/<id> before land's pushed_tip fetch, which then reports no tip. Also read: land without --wait-merge is two-pass by design (the first pass says so before the push); the repro covers the missing-branch fetch only. SP-ep7ck2ab (2026-11-08/09): about 9 code-lane items, BG-dq3lxnqm the last, ended land's first pass with 'could not fetch code/<id> from origin after the push' because the merge request had already merged and its branch was gone; each needed a second land run. Merged with ST-5l6ldosq (dropped), one fix: pushed_tip (bl_land.py) returns None when the fetch of code/ID finds no remote ref, so LAND_OPS pending stays empty and the first pass ends 'not done yet'. Night baseline (2026-11-08 18:00 to 2026-11-09 13:00 CET): 129 of the 146 land.end rows of lane code were followed by a second pass of the same item, a second run the orchestrator started by hand. Cause (sync sends merge_request.auto_merge and remove_source_branch, so the request merges and removes code/ID before land's fetch): the repro plants a bare remote whose main holds the Merge branch commit of code/ST-aaaaaaaa and no such branch, and asks pushed_tip for that branch (expects a list holding main's tip) and for a never-pushed branch (expects None); on the base both give None. Keep pushed_tip's signature: kj_land.py and kj_exec.py (SP-lwkdljxg's files) call pending_merge, not pushed_tip, and are not touched here. The fix may read the merge by its subject (Merge branch 'code/ID') on the fetched integration main.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-4bf1b2c2",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "607f68a9e54428ecf0ccd9b0824ff6e171a5d306",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, subprocess, sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport bl_land\nfrom pathlib import Path\nt = Path(tempfile.mkdtemp())\nenv = dict(os.environ, GIT_AUTHOR_NAME=\"a\", GIT_AUTHOR_EMAIL=\"a@example.com\", GIT_COMMITTER_NAME=\"a\",\n           GIT_COMMITTER_EMAIL=\"a@example.com\", GIT_CONFIG_GLOBAL=\"/dev/null\", GIT_CONFIG_SYSTEM=\"/dev/null\")\ndef g(*a, cwd=t):\n    return subprocess.run([\"git\", *a], cwd=cwd, env=env, check=True, capture_output=True, text=True).stdout.strip()\ng(\"init\", \"-q\", \"--bare\", \"remote.git\")\ng(\"clone\", \"-q\", \"remote.git\", \"work\")\nw = t / \"work\"\ng(\"checkout\", \"-q\", \"-b\", \"main\", cwd=w)\n(w / \"f\").write_text(\"x\")\ng(\"add\", \"f\", cwd=w)\ng(\"commit\", \"-q\", \"-m\", \"c\", cwd=w)\ng(\"push\", \"-q\", \"origin\", \"HEAD:refs/heads/main\", cwd=w)\n# a code/ST-aaaaaaaa merge request merged and removed its branch before land fetched it: main holds its merge commit\ng(\"checkout\", \"-q\", \"-b\", \"code/ST-aaaaaaaa\", cwd=w)\n(w / \"g\").write_text(\"y\")\ng(\"add\", \"g\", cwd=w)\ng(\"commit\", \"-q\", \"-m\", \"d\", cwd=w)\ng(\"checkout\", \"-q\", \"main\", cwd=w)\ng(\"merge\", \"-q\", \"--no-ff\", \"-m\", \"Merge branch \" + chr(39) + \"code/ST-aaaaaaaa\" + chr(39) + \" into \" + chr(39) + \"main\" + chr(39), \"code/ST-aaaaaaaa\", cwd=w)\ng(\"push\", \"-q\", \"origin\", \"HEAD:refs/heads/main\", cwd=w)\ng(\"branch\", \"-q\", \"-D\", \"code/ST-aaaaaaaa\", cwd=w)\nmerged = bl_land.pushed_tip(w, \"origin\", \"code/ST-aaaaaaaa\")\nnone = bl_land.pushed_tip(w, \"origin\", \"code/ST-bbbbbbbb\")\nprint(\"merged branch gone:\", merged, \"| never pushed:\", none)\nok = bool(merged) and g(\"rev-parse\", \"HEAD\", cwd=w) in merged and none is None\nsys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "1d630e5b947d01df"
+      }
+    ]
+  }
 }
