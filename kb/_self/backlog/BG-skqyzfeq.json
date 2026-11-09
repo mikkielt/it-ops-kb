@@ -2,7 +2,7 @@
   "id": "BG-skqyzfeq",
   "kind": "bug",
   "title": "match_facts pairs different rows of one CSV table that cite one source, since the content-word stem share reaches 0.5",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-bpjqqauu",
   "priority": "P2",
   "rank": 0,
@@ -24,5 +24,7 @@
     "parked: SP-jxf76aa2 review"
   ],
   "notes": "Premise: the bug's repro fails on the base (origin/main at the planning commit, 2026-11-09); precheck ran it through the landing's check runner. Sprint order: items that share one file are chained with depends_on.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-bdc0a493",
+  "operator": "op-f618a13e"
 }
