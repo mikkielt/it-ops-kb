@@ -1,0 +1,22 @@
+{
+  "id": "BG-eun3jdpb",
+  "kind": "bug",
+  "title": "fetch._PageText hides the rest of the page after a role=tooltip or visually hidden element whose end tag HTML lets the parser leave out",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "fetch._PageText ends the skip of a role=tooltip or visually hidden element where the element ends, an element with an omitted end tag (p, li, dt, dd) included, so the text after <p class=VisuallyHidden>hid<p>keep one stays in the hash and in provider.doc_text. Found by the SP-c6tr77jl review (S3, fetch.py skip depth, BG-hfakjbdf).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import fetch;p=fetch._PageText();p.feed(\"<main><p class=VisuallyHidden>hid<p>keep one<p>keep two</main><div>after</div>\");t=p.text();print(repr(t));sys.exit(0 if \"keep one\" in t and \"after\" in t else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/fetch.py",
+    "kb/_self/web-sources.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
