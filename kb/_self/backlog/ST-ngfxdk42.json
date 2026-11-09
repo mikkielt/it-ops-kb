@@ -1,0 +1,24 @@
+{
+  "id": "ST-ngfxdk42",
+  "kind": "story",
+  "title": "land's landing lock is taken by whichever waiter polls first, so a waiter can starve until its 30 min bound refuses it and the orchestrator reruns it by hand",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "waiters of the clone's landing lock take it in the order they asked (a ticket or queue file beside the lock), so a land that has waited longest is next and a sprint's landings do not end refused at step landing-lock while younger waiters pass them",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; src = open(\"_tools/bl_close.py\", encoding=\"utf-8\").read(); sys.exit(0 if \"ticket\" in src or \"queue\" in src.lower() else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_close.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
