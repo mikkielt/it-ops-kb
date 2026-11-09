@@ -57,6 +57,26 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does a landing decide a ticket's pid was reused, and what does it do with a ticket older than the wait bound?",
+      "options": [
+        "ps etime with 1 s slack; reused-pid ticket removed, over-bound ticket passed over unremoved",
+        "ps etime with no slack; both kinds of stale ticket removed"
+      ],
+      "recommendation": "ps etime with 1 s slack; reused-pid ticket removed, over-bound ticket passed over unremoved",
+      "do": {
+        "ps etime with 1 s slack; reused-pid ticket removed, over-bound ticket passed over unremoved": "BG-5b35ssgk",
+        "ps etime with no slack; both kinds of stale ticket removed": "BG-5b35ssgk"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "ps etime with 1 s slack; reused-pid ticket removed, over-bound ticket passed over unremoved",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-mc4dzsfe review"
   ],
