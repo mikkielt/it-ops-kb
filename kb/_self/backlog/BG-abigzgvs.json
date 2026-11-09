@@ -1,0 +1,19 @@
+{
+  "id": "BG-abigzgvs",
+  "kind": "bug",
+  "title": "kj_follow.cancel checks the submitter against the executor's operator, so kj_exec.Sync.cancel names the executor's operator in a mirrored job's record around the call",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kj_follow.cancel takes the operator allowed to cancel (a mirrored job's run_by for the executor's own end of a central cancel, the submitter for kbjob.py cancel), and kj_exec.Sync.cancel no longer rewrites a mirrored record's operator around the call",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "s=open('_tools/kj_exec.py').read(); assert 'def cancel(self, job, local)' not in s"
+    ]
+  },
+  "repro_reason": "the wrong behaviour needs a mirrored job and a central cancel; the repro reads the workaround the fix removes",
+  "filed_in": "clone-0ea70e5c"
+}

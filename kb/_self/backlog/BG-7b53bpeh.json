@@ -27,6 +27,28 @@
   "depends_on": [
     "BG-eaf6nttv"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the mirror of a central queue keep both the submitter and the executor's operator, since pending and recover matched the mirror record's operator against the executor's?",
+      "options": [
+        "Keep operator the submitter's and add a run_by member with the executor's operator, matched by kj_exec.served_by",
+        "Keep operator the submitter's and drop the operator match in pending and recover"
+      ],
+      "recommendation": "Keep operator the submitter's and add a run_by member with the executor's operator, matched by kj_exec.served_by",
+      "do": {
+        "Keep operator the submitter's and add a run_by member with the executor's operator, matched by kj_exec.served_by": "BG-7b53bpeh",
+        "Keep operator the submitter's and drop the operator match in pending and recover": "BG-7b53bpeh"
+      },
+      "class": "push",
+      "answer": "Keep operator the submitter's and add a run_by member with the executor's operator, matched by kj_exec.served_by",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-432be86e",
   "operator": "op-f618a13e"
