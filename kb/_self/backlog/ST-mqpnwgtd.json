@@ -1,0 +1,23 @@
+{
+  "id": "ST-mqpnwgtd",
+  "kind": "story",
+  "title": "landing_tickets_ahead tells a missing own ticket apart from an empty queue, so landing_lock takes its place again in the same step as the check",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "landing_tickets_ahead returns None when the asking landing's ticket is not in the queue and landing_lock asks again at once on it, so a landing whose ticket another landing removed between the exists check and the listing never takes the lock ahead of an earlier live asker",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, subprocess, sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport bl_close\nt = tempfile.mkdtemp()\nsubprocess.run([\"git\", \"init\", \"-q\", t], check=True)\nqdir = bl_close.landing_queue_dir(bl_close.landing_lock_path(t))\nqdir.mkdir()\nout = bl_close.landing_tickets_ahead(qdir, \"%020d-%d\" % (1, os.getpid()))\nprint(\"landing_tickets_ahead on a queue without the asking ticket:\", repr(out))\nsys.exit(0 if out is None else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_close.py",
+    "kb/_self/backlog.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
