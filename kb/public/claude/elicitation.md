@@ -32,7 +32,8 @@ a stdio server that supports it delivers elicitation as MRTR; others, or `MCP_PR
 - 2.1.117 fixed `elicitation/create` requests auto-cancelling in print/SDK mode when the server finishes connecting mid-turn. [DOC S746]
 - On 2026-07-28 connections Claude Code declares `elicitation: {form: {}, url: {}}` in its client capabilities, so a server can request either mode through the protocol's standard elicitation request. [DOC S740]
 - Since the 2026-07-28 revision's standard request is `InputRequiredResult` (MRTR), form mode on those connections goes through MRTR. [DER S740, S710: declared capability plus the revision's only elicitation mechanism]
-- No page documents what happens to an elicitation in non-interactive `-p` mode without an `Elicitation` hook beyond the 2.1.117 fix; the MCP page names the hook as the way to answer without a dialog. [DER S740, S746: searched mcp, hooks, headless and CLI pages]
+- No page documents what happens to an elicitation in non-interactive `-p` mode without an `Elicitation` hook beyond the 2.1.117 fix; the MCP page names the hook as the way to answer without a dialog. (valid 2026-10-21..2026-11-09) [DER S740, S746: searched mcp, hooks, headless and CLI pages]
+- The MCP page now documents the non-interactive case for MCP tasks: in a non-interactive session Claude Code asks the server to cancel a task that requests input, without running `Elicitation` hooks or calling the Agent SDK `onElicitation` callback, and `elicitation/create` in a task's `inputRequests` is served only in interactive terminal sessions; it still documents nothing for an ordinary mid-call elicitation in `-p` mode beyond the 2.1.117 fix, and names the `Elicitation` hook as the way to answer without a dialog. (valid 2026-11-09..) [DER S740, S746: searched mcp, hooks, headless and CLI pages]
 
 ## Reference
 | Server transport | Default protocol in Claude Code (v2 runtime) | Elicitation delivery |

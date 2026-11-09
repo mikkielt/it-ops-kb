@@ -15,7 +15,7 @@ inference on Claude for Enterprise with ZDR and API keys from a Commercial organ
 chat, Cowork, analytics metadata, or data processed by MCP servers. Local transcripts stay 30 days by default.
 
 ## Facts
-- Consumer (Free/Pro/Max): 5-year retention if data use for model improvement is allowed, 30 days otherwise. [DOC S747]
+- Consumer (Free, Pro, Max and Ultra): 5-year retention if data use for model improvement is allowed, 30 days otherwise. [DOC S747]
 - Commercial (Team, Enterprise, API): standard 30-day retention. [DOC S747]
 - Claude Code stores transcripts locally in plaintext under `~/.claude/projects/` for 30 days by default (`cleanupPeriodDays`). [DOC S747]
 - `/feedback`, `/bug`, `/share` transcripts are retained for 5 years. [DOC S747]

@@ -134,9 +134,9 @@ _Agent: dsc_
 _Agent: mcp_
 
 ## Q15. Presidio: any release after 2.2.364, and does it include the UUID recognizer?
-- No. The newest GitHub release is 2.2.364 (2026-07-22), and PyPI `presidio-analyzer` / `presidio-anonymizer` latest is 2.2.364 as of 2026-09-23. [DOC S801, S802, S803]
+- As of 2026-09-23 no: the newest GitHub release was 2.2.364 (2026-07-22) and PyPI latest was 2.2.364. Corrected 2026-11-09: GitHub and PyPI now list 2.2.365 (2026-10-25) and 2.2.366 (2026-10-27). [DOC S801, S802, S803]
 - 2.2.364 does not include `UuidRecognizer`. The tag's `generic/` directory has no `uuid_recognizer.py`, and its `default_recognizers.yaml` has no UUID entry. [DOC S805, S806]
-- `UuidRecognizer` (entity `UUID`) was merged to `main` on 2026-07-27 (commit e069216, PR #2175). It is listed under `[unreleased]` in the CHANGELOG, so the first release to contain it will be the one after 2.2.364. [DOC S807, S800]
+- `UuidRecognizer` (entity `UUID`) was merged to `main` on 2026-07-27 (commit e069216, PR #2175). It is listed under `[unreleased]` in the CHANGELOG, so the first release to contain it is the one after 2.2.364, 2.2.365, whose tag has `uuid_recognizer.py` (read 2026-11-09, as the 2.2.366 tag does). [DOC S807, S800] [CODE S-2dptp32y, S-sdmmwjxl: generic/uuid_recognizer.py exists at the tags]
 - On `main` it is enabled by default. It matches only the hyphenated 8-4-4-4-12 form, requires version nibble 1-8 and variant 8/9/a/b, and excludes the nil UUID. [DOC S808, S809]
 - Consequence: the fixture tenant `00000000-0000-0000-0000-000000000000` is never tagged `UUID`, and unhyphenated GUIDs are not matched. [DER S808: nil UUID invalidated; single hyphenated pattern]
 - The release date of the next version is not announced. [UNK]
@@ -1978,7 +1978,7 @@ _Agent: kb-research_
 - Price per MTok: $2 input, $2.50 5-minute cache write, $4 1-hour cache write, $0.10 cache read (0.05x the base input price), $10 output; batch $1 / $5. [DOC S2131, S2130]
 - Minimum cacheable prefix 512 tokens, the same as Opus 5.5 and Fable 5.1. [DOC S2130]
 - Supports the `output-300k-2026-03-24` batch beta (300,000 `max_tokens`). [DOC S-3pftmimx]
-- Rate limits per tier equal Sonnet 5's (Start 1,000 RPM / 2M ITPM / 400K OTPM) and are a separate limit from Sonnet 5 and Sonnet 4.x. [DOC S-5uxkh3j5]
+- Rate limits per tier have Sonnet 5's token limits (Start 2M ITPM / 400K OTPM) but a higher request limit (Start 4,000 RPM against Sonnet 5's 1,000; Build 10,000 against 5,000; Scale 13,000 against 10,000), and are a separate limit from Sonnet 5 and Sonnet 4.x. [DOC S-5uxkh3j5]
 - Claude Code added it as `claude-sonnet-5-5`, the default Sonnet model on the Anthropic API. [DOC S746]
 - Conclusion: Sonnet 5.5 costs the same per input and output token as Sonnet 5 and caches from a shorter prefix, but reads its cache at half Sonnet 5's price ($0.10 against $0.20 per MTok), so the kb's Sonnet cost estimates (list price $2 / $10) carry over unchanged except for cache reads; the knowledge cutoff and the cache minimum differ too. [DER S-eu3n3hyf, S2131, S2130]
 - See claude/models.csv, claude/messages-api.md, claude/api-limits.csv, agents/agent-caching.md.

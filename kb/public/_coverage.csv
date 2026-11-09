@@ -32,7 +32,7 @@ agents/doc-lookup-sources,P2,complete,agents/doc-lookup-sources.md;agents/doc-lo
 agents/docs-maintenance-agents,P2,complete,agents/docs-maintenance-agents.md,30
 agents/genai-telemetry,P2,complete,agents/genai-telemetry.md,5
 agents/github-copilot-admin,P2,complete,agents/github-copilot-admin.md,12
-agents/headless-agent-runtimes,P2,partial,agents/headless-agent-runtimes.md,36
+agents/headless-agent-runtimes,P2,partial,agents/headless-agent-runtimes.md,37
 agents/hybrid-retrieval,P2,complete,agents/hybrid-retrieval.md,62
 agents/mcp-server-lifecycle,P2,complete,agents/mcp-server-lifecycle.md,5
 agents/microsoft-agent-framework,P2,complete,agents/microsoft-agent-framework.md,21
@@ -314,7 +314,7 @@ prior-art/fact-validity-windows,P3,partial,prior-art/fact-validity-windows.md,8
 privacy/gdpr-pseudonymisation,P0,complete,privacy/gdpr-pseudonymisation.md,9
 privacy/gliner-models,P0,complete,privacy/gliner-models.md;privacy/gliner-models.csv,8
 privacy/nist-sp800-38g,P0,complete,privacy/nist-sp800-38g.md,5
-privacy/presidio,P0,complete,privacy/presidio.md,12
+privacy/presidio,P0,complete,privacy/presidio.md,14
 privacy/presidio-entities,P0,complete,privacy/presidio-entities.md;privacy/presidio-entities.csv,14
 privacy/presidio-evaluator,P0,complete,privacy/presidio-evaluator.md,4
 privacy/presidio-operators-deanonymize,P0,complete,privacy/presidio-operators-deanonymize.md,13

@@ -1,27 +1,31 @@
 ---
 topic: privacy/presidio
 priority: P0
-applies_to: "Presidio 2.2.364 (latest release) and main @ e9895a5 (2026-09-23)"
-retrieved_utc: 2026-10-21
-sources: [S800, S801, S802, S803, S804, S805, S806, S807, S808, S809, S834, S842]
+applies_to: "Presidio 2.2.364 (tag facts), the releases 2.2.365 and 2.2.366 (release lists read 2026-11-09) and main @ e9895a5 (2026-09-23)"
+retrieved_utc: 2026-11-09
+sources: [S800, S801, S802, S803, S804, S805, S806, S807, S808, S809, S834, S842, S-2dptp32y, S-sdmmwjxl]
 status: complete
 ---
 # Presidio: releases, UUID recognizer, packaging
 
 ## Summary
-- Latest Presidio release is **2.2.364** (GitHub release 2026-07-22; PyPI upload 2026-07-22). No release after it exists as of 2026-09-23.
-- `UuidRecognizer` (entity `UUID`) is **not** in 2.2.364. It was merged to `main` on 2026-07-27 and sits in the `[unreleased]` changelog section.
+- Latest Presidio release is **2.2.366** (GitHub release and PyPI upload 2026-10-27, a security release); 2.2.365 came 2026-10-25. The tag-level facts below describe 2.2.364.
+- `UuidRecognizer` (entity `UUID`) is **not** in 2.2.364. It was merged to `main` on 2026-07-27; `uuid_recognizer.py` exists at tags 2.2.365 and 2.2.366, so 2.2.365 is the first release that carries it.
 - On `main` it is listed in `default_recognizers.yaml` with no `enabled: false`, so it is on by default there; it filters out the nil UUID.
-- Packages are MIT-licensed and declare `requires_python <3.15,>=3.10`.
+- In 2.2.366 the packages are MIT-licensed and declare `requires_python <3.15,>=3.11`.
 
 ## Facts
-- GitHub releases list: newest tag `2.2.364` published 2026-07-22T08:30:12Z; previous `2.2.363` 2026-06-28. [DOC S801]
-- PyPI `presidio-analyzer` and `presidio-anonymizer` latest version is 2.2.364, uploaded 2026-07-22T07:54:34. [DOC S802, S803]
-- `presidio-anonymizer` PyPI latest is also 2.2.364. [DOC S803]
+- GitHub releases list: newest tag `2.2.364` published 2026-07-22T08:30:12Z; previous `2.2.363` 2026-06-28. (valid 2026-10-21..2026-10-27) [DOC S801]
+- GitHub releases list (read 2026-11-09): newest tag `2.2.366` published 2026-10-27T09:26:55Z, a security release; previous `2.2.365` 2026-10-25T19:31:46Z, then `2.2.364` 2026-07-22T08:30:12Z. (valid 2026-10-27..) [DOC S801]
+- PyPI `presidio-analyzer` and `presidio-anonymizer` latest version is 2.2.364, uploaded 2026-07-22T07:54:34. (valid 2026-10-21..2026-10-27) [DOC S802, S803]
+- PyPI `presidio-analyzer` and `presidio-anonymizer` latest version is 2.2.366, uploaded 2026-10-27T09:06:32; 2.2.365 and 2.2.366 are newer than 2.2.364. (valid 2026-10-27..) [DOC S802, S803]
+- `presidio-anonymizer` PyPI latest is also 2.2.364. (valid 2026-10-21..2026-10-27) [DOC S803]
+- `presidio-anonymizer` PyPI latest is also 2.2.366, uploaded 2026-10-27T09:06:32. (valid 2026-10-27..) [DOC S803]
 - Tag `2.2.364` points at commit `779dbd286d5ef4d1fbe2514275fb1bce358f2417`. [DOC S804]
 - At tag 2.2.364, `predefined_recognizers/generic/` has no `uuid_recognizer.py` (files: credit_card, crypto, date, email, iban, ip, mac, phone, url). [DOC S805]
 - `default_recognizers.yaml` at tag 2.2.364 contains no `Uuid` entry (0 matches). [CODE S806: presidio_analyzer/conf/default_recognizers.yaml#L1-L20]
 - The only commit touching `uuid_recognizer.py` is `e069216` "feat: Add UuidRecognizer for detecting UUIDs (v1-v8) (#2175)", dated 2026-07-27, after the 2.2.364 release. [DOC S807]
+- `presidio-analyzer/presidio_analyzer/predefined_recognizers/generic/uuid_recognizer.py` exists at tag 2.2.365 and at tag 2.2.366, so the release after 2.2.364 carries `UuidRecognizer`; whether `default_recognizers.yaml` enables it at those tags was not read. [CODE S-2dptp32y, S-sdmmwjxl: presidio_analyzer/predefined_recognizers/generic/uuid_recognizer.py#UuidRecognizer]
 - Therefore no released Presidio version contains `UuidRecognizer`. [DER S801,S807: newest release 2026-07-22 < merge 2026-07-27, and absent from the tag tree S805]
 - `UuidRecognizer` matches `\b[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}\b` with score 0.5, context words `uuid`, `guid`, `unique identifier`, language `en`. [CODE S808: presidio_analyzer/predefined_recognizers/generic/uuid_recognizer.py#UuidRecognizer]
 - It invalidates matches whose version nibble is not 1-8, whose variant nibble is not 8/9/a/b, and the nil UUID `00000000-0000-0000-0000-000000000000`. [CODE S808: presidio_analyzer/predefined_recognizers/generic/uuid_recognizer.py#invalidate_result]
@@ -31,7 +35,8 @@ status: complete
 - The CHANGELOG's `[unreleased]` section lists `UuidRecognizer`, South African recognizers, `NoOpNlpEngine`, per-recognizer score thresholds, and `BatchDeanonymizeEngine`; there is no `[2.2.364]` heading even though some of those items shipped in 2.2.364. [DOC S800] (see conflicts)
 - `batch_deanonymize_engine.py` is present in `presidio_anonymizer/` at tag 2.2.364. [DOC S834]
 - Licence: MIT, copyright "Presidio Contributors" (changed from "Microsoft Corporation"). [DOC S842, S800]
-- PyPI metadata: licence MIT, `requires_python <3.15,>=3.10`, classifiers include Python 3.10-3.14. [DOC S802]
+- PyPI metadata: licence MIT, `requires_python <3.15,>=3.10`, classifiers include Python 3.10-3.14. (valid 2026-10-21..2026-10-27) [DOC S802]
+- PyPI metadata of 2.2.366 (read 2026-11-09): licence MIT (`license_expression`), `requires_python <3.15,>=3.11` for both `presidio-analyzer` and `presidio-anonymizer`, classifiers list Python 3.11-3.14; the 2.2.366 release notes say it drops Python 3.10. (valid 2026-10-27..) [DOC S802, S803, S801]
 
 ## Reference
 | Release | GitHub published | PyPI upload |
