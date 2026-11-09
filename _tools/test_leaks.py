@@ -1,5 +1,5 @@
 """The leak scan: tracked files hold no secret, authored files hold placeholders only, and the scan the push guards
-run (kbpublic.file_hits) reports each kind of planted leak. The planted values are assembled at run time, so this
+run (kbpublic.shipped_file_hits) reports each kind of planted leak. The planted values are assembled at run time, so this
 file holds none of them whole. The patterns are the production ones (kbcommon); none is kept here."""
 import csv, fnmatch, functools, itertools, json, os, re, subprocess, sys
 
@@ -84,7 +84,7 @@ def screens():
     wherever a production shape (kbcommon.SECRETS, the structured secrets and the placeholders-only shapes) matches, and
     is cheaper. A `\\b` makes the regex engine try every character, so a screen drops it, and the shapes written `(?i)`
     are searched together in the casefolded text. A screen only chooses the files the production patterns
-    (kbcommon.leak_hits, kbpublic.file_hits) judge."""
+    (kbcommon.leak_hits, kbpublic.shipped_file_hits) judge."""
     drop = lambda rx: re.compile(rx.replace("\\b", ""))  # noqa: E731
     folded = [f"(?:{p[4:]})" for p in kbcommon.SECRETS if p.startswith("(?i)")]
     return ([drop(p) for p in kbcommon.SECRETS if not p.startswith("(?i)")], drop("|".join(folded)) if folded else None,
@@ -113,10 +113,10 @@ def candidate(t, vendored):
 
 @functools.lru_cache(maxsize=None)
 def scan():
-    """[(file, kind, value)] the tracked files hold, as the push guards read them (kbpublic.file_hits) with the
+    """[(file, kind, value)] the tracked files hold, as the push guards read them (kbpublic.shipped_file_hits) with the
     reviewed allowlist. Vendor exports, snapshots, pinned artifacts and the query log store are read for secrets only
     and files of internal roots are left out of the placeholders rule. One pass over the text finds the files that
-    may hold a hit (candidate: the screens, then the leak scan's own verdict on what they pass); file_hits then gives
+    may hold a hit (candidate: the screens, then the leak scan's own verdict on what they pass); shipped_file_hits then gives
     the verdict, so the test and the guards agree."""
     allow, pins = allowlist(), pinned()
     internal = tuple(kbcommon.repo_rel(".", r.path) + "/" for r in kbcommon.roots() if r.visibility != "public")
@@ -138,7 +138,7 @@ def scan():
                 continue
         elif not kbcommon.leak_hits(probe, allow, kbpublic.structured_kinds(f, False), root=root):
             continue
-        out += [(f, k, v) for k, v in kbpublic.file_hits(f, t, allow, pins, root=root) if k == "secret" or not f.startswith(internal)]
+        out += [(f, k, v) for k, v in kbpublic.shipped_file_hits(f, t, allow, pins, root=root) if k == "secret" or not f.startswith(internal)]
     return out
 
 
@@ -154,17 +154,17 @@ def test_scan_reports_each_planted_leak_and_honours_the_allowlist_and_webfetch_h
         tmp_path, monkeypatch):
     values = planted()
     for kind, value in values.items():
-        assert kind in [k for k, _ in kbpublic.file_hits("notes.md", f"see {value} here", {})], kind
+        assert kind in [k for k, _ in kbpublic.shipped_file_hits("notes.md", f"see {value} here", {})], kind
     # each production secret shape has a plant its own pattern matches, and the scan's pre-screen (candidate) keeps
-    # the whole text for an authored and a vendored file while file_hits reports a secret
+    # the whole text for an authored and a vendored file while shipped_file_hits reports a secret
     plants = secret_plants()
     assert len(plants) == len(kbcommon.SECRETS), (len(plants), len(kbcommon.SECRETS))
     for pattern, plant in zip(kbcommon.SECRETS, plants):
         assert re.search(pattern, plant), pattern
         body = f"see {plant} here"
         assert candidate(body, False) == body and candidate(body, True) == body, pattern
-        assert "secret" in [k for k, _ in kbpublic.file_hits("notes.md", body, {})], pattern
-        assert "secret" in [k for k, _ in kbpublic.file_hits("kb/x/artifacts/a.txt", body, {})], pattern
+        assert "secret" in [k for k, _ in kbpublic.shipped_file_hits("notes.md", body, {})], pattern
+        assert "secret" in [k for k, _ in kbpublic.shipped_file_hits("kb/x/artifacts/a.txt", body, {})], pattern
     # every armor line but the EC and the OpenPGP block ones is a secret on its own; those two are one only with key
     # material after them (no allowlist entry passes them by value), and their label quoted alone in prose, or ahead of
     # its own tail line, is not
@@ -201,28 +201,28 @@ def test_scan_reports_each_planted_leak_and_honours_the_allowlist_and_webfetch_h
     value, assign = "Zx9Qm4" + "Lp7Rt2Vb8Nc5Kd3Wf6Hj", "password=" + "Fake" + "Pass12345x"
     shapes = {"header": f"Authorization: Bearer {value}", "url": f"https://admin:{value}@db.corp.example.com/x", "assignment": assign}
     for path, kinds in (("notes.md", 3), ("item.json", 3), ("a.txt", 3), ("a.json", 2), ("kb/x/_snapshots/a.txt", 0)):
-        got = [k for k, v in shapes.items() if [h for h in kbpublic.file_hits(path, f"see {v} here", {}) if h[0] == "secret"]]
+        got = [k for k, v in shapes.items() if [h for h in kbpublic.shipped_file_hits(path, f"see {v} here", {}) if h[0] == "secret"]]
         assert len(got) == kinds, (path, got)
     for path in ("notes.md", "a.json"):
         body = f"curl -H 'Authorization: Bearer {value}' https://admin:{value}@db.corp.example.com/x"
-        assert len([h for h in kbpublic.file_hits(path, body, {}) if h[0] == "secret"]) == 2, path  # in the url-stripped text no
+        assert len([h for h in kbpublic.shipped_file_hits(path, body, {}) if h[0] == "secret"]) == 2, path  # in the url-stripped text no
     secrets, utility, gap = corpus()
     every = [i for i, _, _ in secrets]
-    missed = {i for i, text, _ in secrets if not [h for h in kbpublic.file_hits("notes.md", text, {}) if h[0] == "secret"]}
+    missed = {i for i, text, _ in secrets if not [h for h in kbpublic.shipped_file_hits("notes.md", text, {}) if h[0] == "secret"]}
     assert not gap_problems("scan", missed, every, gap), gap_problems("scan", missed, every, gap)
-    odd = {i for i, text in utility if kbpublic.file_hits("notes.md", text, {})}
+    odd = {i for i, text in utility if kbpublic.shipped_file_hits("notes.md", text, {})}
     assert not gap_problems("utility_scan", odd, [i for i, _ in utility], gap), odd
     assert gap_problems("scan", missed | {"planted"}, every, gap) and gap_problems("scan", set(), every, gap)  # both drifts are seen
     # the placeholders pass, an allowlisted value passes
     ok = "jan.kowalski t@example.com 00000000-0000-0000-0000-000000000000 192.0.2.7"
-    assert kbpublic.file_hits("notes.md", ok, {}) == []
+    assert kbpublic.shipped_file_hits("notes.md", ok, {}) == []
     allow = kbpublic.parse_allowlist("\n".join(f"{k} {v}  # reviewed" for k, v in values.items() if k != "home"))
-    assert [k for k, _ in kbpublic.file_hits("notes.md", " ".join(values.values()), allow)] == ["home"]
+    assert [k for k, _ in kbpublic.shipped_file_hits("notes.md", " ".join(values.values()), allow)] == ["home"]
     # a home path passes only when the allowlist names the whole match (lowercased); a sibling path is still flagged
     match = re.match(kbcommon.LEAK_HOME, values["home"]).group(0)
     allow = kbpublic.parse_allowlist(f"home {match.upper()}  # reviewed")
-    assert kbpublic.file_hits("notes.md", f"see {values['home']} here", allow) == []
-    assert [k for k, _ in kbpublic.file_hits("notes.md", values["home"].replace("realperson", "other"), allow)] == ["home"]
+    assert kbpublic.shipped_file_hits("notes.md", f"see {values['home']} here", allow) == []
+    assert [k for k, _ in kbpublic.shipped_file_hits("notes.md", values["home"].replace("realperson", "other"), allow)] == ["home"]
     # the private names of an internal root and its pointer (a registry planted in a temporary directory): a source id with
     # its prefix, a qualified path and the pointer's url host and path are refused, a bare root name is not
     team = tmp_path / "team"
@@ -239,7 +239,7 @@ def test_scan_reports_each_planted_leak_and_honours_the_allowlist_and_webfetch_h
     assert all(any(w in v for v in got) for w in private.split()), got
     assert kbcommon.leak_hits("S-k3f7q2zd on corp.example.com, public/mdm/x.md; team-z owns it") == []
     # vendor exports are read for secrets only
-    assert [k for k, _ in kbpublic.file_hits("kb/x/artifacts/a.txt", " ".join(values.values()), {})] == ["secret"]
+    assert [k for k, _ in kbpublic.shipped_file_hits("kb/x/artifacts/a.txt", " ".join(values.values()), {})] == ["secret"]
     # the PreToolUse guard on WebFetch (kb_hook.webfetch_deny): a host the routes table routes away from WebFetch is
     # denied with the row's find and read routes as the reason; another host, a url with no host and an unreadable
     # table pass. Both hook files wire it synchronously (an async hook cannot deny).
@@ -277,3 +277,34 @@ def test_backlog_check_refuses_leak_in_item_text(tmp_path):
     path.write_text(json.dumps(item, indent=2) + "\n", encoding="utf-8", newline="\n")
     code, out = backlog("check")
     assert code == 1 and "field goal has a leak-scan hit (ip" in out and value not in out, out
+
+
+def test_group_leak_shape_is_refused_a_bad_one_names_its_layer_and_a_replaced_scan_never_runs_for_contribute(tmp_path, monkeypatch):
+    import kbext
+    plant = "TKT-" + "123456"
+    group = tmp_path / "group.json"
+    group.write_text(json.dumps({"leak": {"shapes": [{"kind": "ticket", "pattern": "TKT-[0-9]{6}"}]}}), encoding="utf-8")
+    monkeypatch.setenv("KB_GROUP_SETTINGS", str(group))
+    assert ("ticket", plant) in kbcommon.leak_hits(f"see {plant} for the change")
+    assert ("ticket", plant) in kbpublic.shipped_file_hits("notes.md", f"see {plant} here", {})
+    for pattern in ("(", "a*"):  # a pattern that does not compile, one that matches the empty string
+        group.write_text(json.dumps({"leak": {"shapes": [{"kind": "ticket", "pattern": pattern}]}}), encoding="utf-8")
+        try:
+            kbcommon.leak_hits("text")
+        except kbext.ExtensionError as e:
+            assert "leak.shapes" in str(e) and "group layer" in str(e), str(e)
+        else:
+            raise AssertionError(f"pattern {pattern!r} was not refused")
+    # a group's replacement answers no hit, yet the shipped scan the publish and contribute paths run still flags a secret
+    (tmp_path / "grp_scan.py").write_text('KBEXT_REQUIRES = ">=0.1"\ndef file_hits(path, text, allow, pinned=()):\n    return []\n',
+                                          encoding="utf-8")
+    group.write_text(json.dumps({"extensions": {"leak_scan": "grp_scan:file_hits"}, "extension_paths": [str(tmp_path)]}),
+                     encoding="utf-8")
+    secret = "gh" + "p_" + "a" * 36
+    try:
+        assert kbpublic.file_hits("notes.md", f"see {secret} here", {}) == []
+        assert "secret" in [k for k, _ in kbpublic.file_hits("notes.md", f"see {secret} here", {}, shipped=True)]
+    finally:
+        sys.modules.pop("grp_scan", None)
+        if str(tmp_path) in sys.path:
+            sys.path.remove(str(tmp_path))

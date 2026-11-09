@@ -79,7 +79,8 @@ def hit_reasons(path, hits):
 
 
 def added_hits(commits, head):
-    """{sha: [reason]} of the leak scan (file_hits, so the private names the registry knows too) over the lines each of
+    """{sha: [reason]} of the shipped leak scan (shipped_file_hits, so the private names the registry knows too, and whatever
+    extension point `leak_scan` a group set in this clone: contributing runs the shipped scan, never the group's) over the lines each of
     COMMITS adds to a shared file; COMMITS is [(sha, [(status, old blob, new blob, path, new mode)])]. The values are never named."""
     allow = kbpublic.parse_allowlist(kbpublic.blobs(head, [kbpublic.ALLOWLIST_PATH], KB).get(kbpublic.ALLOWLIST_PATH, ""))
     files = kbpublic.tree_files(head, KB) or []
@@ -92,7 +93,7 @@ def added_hits(commits, head):
                 continue
             seen = set(got.get(old, "").splitlines())
             added = "\n".join(ln for ln in got[new].splitlines() if ln not in seen)
-            hits = kbpublic.file_hits(x, added, allow, pinned)
+            hits = kbpublic.shipped_file_hits(x, added, allow, pinned)
             if hits:
                 res.setdefault(sha, []).append(hit_reasons(x, hits))
     return res
@@ -177,9 +178,10 @@ def cmd_contribute(a):
     for sha, ch in changes:
         subject = out("log", "-1", "--format=%s", sha) or ""
         label = f"{short(sha)} {subject}"
-        # an email, home path, ip or guid in a message is no leak (an attribution trailer carries an email); a secret or a private name is
+        # an email, home path, ip or guid in a message is no leak (an attribution trailer carries an email); a secret, a private
+        # name or a shape a group added is
         names = [h for h in kbcommon.leak_hits(out("log", "-1", "--format=%B", sha) or "")
-                 if h[0] == "secret" or h[0].startswith("private-")]
+                 if h[0] not in ("home", "ip", "email", "guid")]
         if names:
             label = short(sha)  # the subject may be the private name itself
         if len(parents.get(sha, [])) != 1:

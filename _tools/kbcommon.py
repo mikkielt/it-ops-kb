@@ -52,6 +52,7 @@ and a topic by `<root>/<topic>`.
                               directory of a profile (the root's own before the shared one), None for en
   private_hits(text)          [(kind, value)] of the private names of the internal roots and pointers (the leak scan's
                               `private-id`, `private-host`, `private-path` kinds; leak_hits adds them)
+  group_shapes()              [(kind, pattern, layer)] of the `leak.shapes` of this clone's settings layers, which leak_hits adds
 
 A remote root, one kept in another repository, is named by a pointer file kb/_roots/<name>.md (front matter `root`,
 `id_prefix`, `visibility`, `team`, `group`, `url`, `ref`, `pin`, `access`, `description`). Its root is served when it is on
@@ -328,8 +329,8 @@ def _shape_hits(text, allow, kinds, own=()):
 
 
 def leak_hits(text, allow=None, kinds=STRUCTURED, root=None):
-    """[(kind, value)] of the leak scan's shapes in `text`: secret, home, ip, email, guid, and the private names the
-    registry knows (`private_hits`); `allow` maps a kind to lowercased values that pass (the scan of tracked files
+    """[(kind, value)] of the leak scan's shapes in `text`: secret, home, ip, email, guid, the private names the
+    registry knows (`private_hits`) and the shapes a group's settings add (`group_shapes`, each with its own kind); `allow` maps a kind to lowercased values that pass (the scan of tracked files
     reads them from _tools/tests_allowlist.txt). `kinds`: the structured secret shapes read (`structured_secrets`):
     PROSE_STRUCTURED for a prose file or item text, `()` for a vendor export. `root`: a Root whose `placeholders` pass
     as the user of a home path, for that root's files only."""
@@ -337,7 +338,18 @@ def leak_hits(text, allow=None, kinds=STRUCTURED, root=None):
     own = frozenset(p.lower() for p in getattr(root, "placeholders", ()) or ())
     out = _shape_hits(text, allow, kinds, own)
     out += [h for h in private_hits(text) if h[1].lower() not in allow.get(h[0], ())]
+    out += [(kind, m.group(0)) for kind, rx, _ in group_shapes() for m in rx.finditer(text)
+            if m.group(0) and m.group(0).lower() not in allow.get(kind, ())]
     return out
+
+
+def group_shapes():
+    """[(kind, compiled pattern, layer)] of the `leak.shapes` a group's settings layers add to the shapes above (this
+    clone's group, clone and user layers; `kbext.leak_shapes` reads and checks them and raises kbext.ExtensionError, one
+    line naming the layer, for a shape that does not compile or matches the empty string: a scan never runs on a
+    shape it cannot trust). A hit's kind is the shape's own, never one of the shipped kinds."""
+    import kbext
+    return kbext.leak_shapes(HOME)
 
 
 csv.field_size_limit(2**31 - 1)  # a very wide cell must not abort a whole read
