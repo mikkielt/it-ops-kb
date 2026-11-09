@@ -30,6 +30,7 @@ stages: [test]
 # The tools' floor (pyproject.toml requires-python >=3.11): the suite on the image's Python 3.11 instead of the 3.14
 # pinned in .python-version (UV_PYTHON takes precedence over it). The full image has git; a full clone (GIT_DEPTH 0)
 # keeps the commits the KB-* trailers check (kbgit.py check-trailers) reads.
+
 kb-tests:
   stage: test
   tags: [docker-linux]
@@ -50,6 +51,7 @@ kb-tests:
 # (Hyper-V isolation, Windows PowerShell 5.1), one job at a time; a job waits as pending while the runner is offline.
 # The image's `python` installs uv, and uv the pinned CPython; MinGit (SHA-256 checked) puts git on PATH and its own
 # sh last, as Git Bash would have it, so the launcher tests run too.
+
 kb-tests-windows:
   stage: test
   tags: [docker-windows]
