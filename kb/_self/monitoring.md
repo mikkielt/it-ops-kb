@@ -152,7 +152,7 @@ With no TARGET, or an item id as TARGET, `kbtail.py [--root DIR] [--item ID] [--
 | key | holds |
 |---|---|
 | `roots` | per root: `root`, `articles`, `facts` by tag (`DOC`, `CODE`, `DER`, `COMMUNITY`, `UNK`, `DECISION`): the counts of `rag.py audit`, read again only when a file of a root changed |
-| `gaps`, `conflicts` | the entries of every root's `_gaps.md` and `_conflicts.md` that no continuation line has settled (`kbfacts.OPEN_GAP`) |
+| `gaps`, `conflicts` | the entries of every root's `_gaps.md` and `_conflicts.md` that no continuation line has settled (`kbfacts.OPEN_GAP`), the gaps only those tagged `[UNK` (the rule `bench_pool.open_gaps` reads) |
 | `refreshed` | the newest `retrieved_utc` of the articles, or null |
 | `census`, `census_tag` | the newest date of a `_census/YYYY-MM-DD.csv` file and the newest `census-*` tag of the clone, or null |
 | `eval` | `{state, when}` of the newest recorded lookup eval at a landing (the `land.step` ops row of `rag.py-eval`: `passed` for exit 0, else `failed`), or null; the panel never runs the eval, and the row holds no count of passed rows |
