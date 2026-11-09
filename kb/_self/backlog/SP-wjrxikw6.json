@@ -1,0 +1,22 @@
+{
+  "id": "SP-wjrxikw6",
+  "kind": "sprint",
+  "title": "Publish, sync, hooks and extensions follow-ups: gitlinks and merge commits classed right, newline paths and contribute scans checked, the scan form bumped, uninstall reads its result, team-clone promises kept or reworded, settings and extension loading robust",
+  "status": "planned",
+  "goal": "kbpublic answers a path with a newline as unreadable and bumps SCAN_FORM; kblane.commit_paths and kg_hooks.new_lanes class a kb gitlink and a gitlink-for-file swap right; contribute scans pass each file's root; install-hooks --uninstall reads whether git config --unset succeeded; the team-clone promises of git upstream, upstream-report and kb_mcp --register-local are kept or reworded; the coord hook, the path setting type, group_gate and the backlog_commands entry point load robustly from bad settings and extension paths; extending.md, the commit-msg hook comment and the item skill say what the code does",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e",
+  "filed_in": "clone-0ea70e5c"
+}

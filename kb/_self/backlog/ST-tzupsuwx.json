@@ -1,0 +1,42 @@
+{
+  "id": "ST-tzupsuwx",
+  "kind": "story",
+  "title": "Review sprint: Publish, sync, hooks and extensions follow-ups: gitlinks and merge commits classed right, newline paths and contribute scans checked, the scan form bumped, uninstall reads its result, team-clone promises kept or reworded, settings and extension loading robust",
+  "status": "draft",
+  "sprint": "SP-wjrxikw6",
+  "review": true,
+  "priority": "P1",
+  "rank": 999999,
+  "goal": "Every committed item is done or dropped, provisional answers are confirmed by the operator, and a fresh-context review of the sprint's diff found no unfiled defect.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval",
+        "--file",
+        "kb/public/_retrieval/lookup_heldout.csv",
+        "--root",
+        "public",
+        "--min",
+        "86",
+        "--max-false-good",
+        "8"
+      ]
+    }
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
