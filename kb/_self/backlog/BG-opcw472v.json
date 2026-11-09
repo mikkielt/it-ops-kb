@@ -1,0 +1,21 @@
+{
+  "id": "BG-opcw472v",
+  "kind": "bug",
+  "title": "kbroot.without_paths keeps an unquoted absolute path with a space when a newline follows it, since ABS_PATH_BARE has no re.M",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbroot.without_paths removes an unquoted absolute path that holds a space whole when text follows it on the next line, so a multi-line exception text keeps no fragment of the path. Found by the SP-c6tr77jl review (S3, kbroot.py ABS_PATH_BARE, BG-ngtix6e2).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import kbroot;o=kbroot.without_paths(\"cannot create /home/jan.kowalski/my cache\\nsecond line\");print(repr(o));sys.exit(1 if \"/home\" in o or \"my cache\" in o else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/kbroot.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
