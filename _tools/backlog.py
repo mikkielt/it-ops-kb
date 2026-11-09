@@ -266,10 +266,10 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           brief there (brief.md) and run `claude -p
                                           --model sonnet --effort high --output-format json --add-dir SCRATCH
                                           --max-turns N` in the worktree with the brief on stdin (never a prompt
-                                          argument), in the foreground until the session exits: N by kind, 60 task
-                                          or subtask, 100 bug or story with no tasks (and epic or sprint), 200
-                                          research story or investigation bug (a bug whose title or goal says
-                                          investigat...). The pid is recorded in the claims ledger of the git dir
+                                          argument), in the foreground until the session exits: N by kind, 100 task,
+                                          subtask or bug, 150 story with no tasks, epic or sprint, 200 research
+                                          story, task or subtask or investigation bug (a bug whose title or goal
+                                          says investigat...). The pid is recorded in the claims ledger of the git dir
                                           (worker_pid) when the session starts and its session_id (worker_session)
                                           when it exits; output goes to SCRATCH/result.json and SCRATCH/stderr.log.
                                           Refuses an item that is not doing (exit 1), a missing `claude` (exit 2);
