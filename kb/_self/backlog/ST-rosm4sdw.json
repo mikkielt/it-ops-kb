@@ -38,6 +38,29 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which touches count as naming tool code, and where does the rule sit in the brief?",
+      "options": [
+        "any touch glob starting with _tools/, rule in the fixed rules after the _self eval rule",
+        "only touches ending .py under _tools/, rule in the rules-of-docs section"
+      ],
+      "recommendation": "any touch glob starting with _tools/, rule in the fixed rules after the _self eval rule",
+      "reason": "matches the goal's wording (touches name _tools/ files) and sits with the other touch-conditional rule",
+      "do": {
+        "any touch glob starting with _tools/, rule in the fixed rules after the _self eval rule": "ST-rosm4sdw",
+        "only touches ending .py under _tools/, rule in the rules-of-docs section": "ST-rosm4sdw"
+      },
+      "class": "agents-rule",
+      "answer": "any touch glob starting with _tools/, rule in the fixed rules after the _self eval rule",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "links": [
     "parked: SP-ep7ck2ab close"
   ],

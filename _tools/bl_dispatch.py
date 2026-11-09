@@ -22,7 +22,7 @@ the run state is `staging` or `landing`, naming the tool that holds it.
 
 The brief is the item's JSON and goal text, its external tracker ids with their urls, the worker's role file, its
 worktree and scratch directory, the in-flight sibling items with the files their touches change, the known failing
-tests and whole-suite failures that are no test the orchestrator names, the fixed worker rules and the rules of the project's own docs (`rules_section`, the
+tests and whole-suite failures that are no test the orchestrator names, the fixed worker rules (two only for the touches: `self_eval_rules`, `tool_code_rules`) and the rules of the project's own docs (`rules_section`, the
 one function that builds that part: backlog.json's `kb_root` gives the cited fact lines of a kb root, its `docs_map`
 the docs and `##` headings the item's touches map to). Standard library only; imports `bl_base`, `bl_cli`,
 `bl_items` (for the `goal` text and `claim`), `bl_land` (the worker's branch and worktree names), `bl_plan` and `bl_view` (the overlap rule and the held claims `begin` reads) and `bl_clean` (the `own/` records), never `backlog`."""
@@ -88,6 +88,7 @@ PACK_BUDGET = "600"
 CONDUCT_HEADING = "Conduct for changes"  # the section of kb/_self/maintaining.md that the brief carries as text
 RULES_DOCS_MAX = 12  # a mapped project's rules section names this many docs, then counts the rest
 RULES_HEADINGS_MAX = 30  # ... and this many `##` headings of one doc
+TOOLS_DIR = "_tools/"  # a touch under it names tool code: the brief adds the rule on underscore names (`tool_code_rules`)
 
 # A rule that names a tool only the kb has is (file under `_tools/`, the rule as the kb's own brief has it, the rule a
 # project without that file gets); `worker_rules` picks by the project's root. A plain string is the same everywhere.
@@ -232,6 +233,17 @@ def self_eval_rules(bl, iid):
             "excerpt, as a longer line does for every line under it: shorten or move the text, commit, run it again. "
             "`land` runs this eval and stops on it, so fix it here. If your harness refuses the command for the word "
             "`eval`, say so in the report."]
+
+
+def tool_code_rules(bl, iid):
+    """The brief's rule for an item whose touches name a file under `_tools/` (kb/_self/code.md, Imports), as a list of 0
+    or 1 lines: another module never calls a name that starts with an underscore, and a helper it needs is added as a
+    public name in the module that owns it. [] where no touch names tool code."""
+    if not any(g.startswith(TOOLS_DIR) for g in dict.fromkeys(scope(bl, iid))):
+        return []
+    return ["Your touches name tool code: another module never calls a name that starts with an underscore (`_name`, "
+            "`kb/_self/code.md`, Imports); a helper you need from it is added as a public name in the module that owns "
+            "it, in the same item, and its callers use that name."]
 
 
 def report_line(root):
@@ -576,7 +588,7 @@ def compose_brief(bl, iid, known=(), probe=None, turns=None, known_suite=(), bud
     kf = known_failures(bl, known, known_suite)
     out += (kf + ["A failure listed here gets no new bug; a failure not named here is yours to file as a bug."]) if kf else \
         ["None known to the orchestrator. A failure you meet is yours to file as a bug."]
-    out += ["", "## Fixed rules", *[f"- {r}" for r in (*worker_rules(bl.root, iid, branch, turns, budget), *self_eval_rules(bl, iid))], "",
+    out += ["", "## Fixed rules", *[f"- {r}" for r in (*worker_rules(bl.root, iid, branch, turns, budget), *self_eval_rules(bl, iid), *tool_code_rules(bl, iid))], "",
             "## Rules of the docs your touches map to", *rules_section(bl, iid), "",
             "## Report", report_line(bl.root)]
     return "\n".join(out) + "\n"
