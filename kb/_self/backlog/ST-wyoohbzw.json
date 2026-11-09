@@ -2,7 +2,7 @@
   "id": "ST-wyoohbzw",
   "kind": "story",
   "title": "Research sprint goal: kbmon and the benchmarks report true numbers",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-hyfyn22d",
   "goal_research": true,
   "priority": "P1",
@@ -23,6 +23,20 @@
   ],
   "notes": "No outside facts: the sprint's open questions are all about this clone's own tools (kbmon, bench) and were answered from the code and the _self docs; no kb/public article is changed.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-ev4run01",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "d5f2a88c61bda4cfdf4f9d5c5f672ffcc23e6857",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-wyoohbzw"
+        ],
+        "exit": 0,
+        "sha256": "5c7d2069e7b789e7"
+      }
+    ]
+  }
 }
