@@ -131,15 +131,21 @@ def item_at_ref(root, iid, ref):
     return item
 
 
+def check_fields(fields, item):
+    """Exit 2 (Rejected) naming the allowed fields for a `show --field` name that is neither an item field nor a key
+    of ITEM; a live item, one at a ref and a deleted item's last version all go through it."""
+    unknown = [f for f in fields if f not in FIELDS and f not in item]
+    if unknown:
+        raise Rejected(f"show: unknown field {', '.join(unknown)}; the fields are {', '.join(ORDER)}")
+
+
 def cmd_show(bl, a):
     fields = a.field or []
     ref = a.ref
     if fields or a.json or ref:  # plain JSON only: the whole object, or the chosen fields of it
         iid = a.id
         item = item_at_ref(bl.root, iid, ref) if ref else bl.items[need(bl, iid)]
-        unknown = [f for f in fields if f not in FIELDS and f not in item]
-        if unknown:
-            raise Rejected(f"show: unknown field {', '.join(unknown)}; the fields are {', '.join(ORDER)}")
+        check_fields(fields, item)
         say(canonical({k: item[k] for k in item if k in fields} if fields else item).rstrip())
         return 0
     iid = need(bl, a.id)

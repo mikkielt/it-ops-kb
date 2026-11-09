@@ -475,7 +475,7 @@ from bl_ci import (  # noqa: F401 - the CI readers and red-pipeline: bl_ci holds
     cmd_red_pipeline, failure_fingerprint, first_failure, hook_intake, names_pipeline, normalise_error_line, red_bug,
 )
 from bl_view import (  # noqa: F401 - the read-only views: bl_view holds them; main uses cmd_horizon, tests ready
-    cmd_horizon, is_near, ready, similar,
+    check_fields, cmd_horizon, is_near, ready, similar,
 )
 from bl_plan import has_scope, stale_touches  # noqa: F401 - tests read them as backlog.NAME
 from bl_plan import start_approved  # noqa: F401 - test_layout reads it as backlog.start_approved
@@ -566,6 +566,11 @@ def main(argv=None):
         old = bl_cost.history_items(bl.root, [iid]).get(iid) if isinstance(iid, str) else None
         if old is not None and a.cmd == "show" and getattr(a, "id", None) == iid:
             plain = a.json or a.field  # JSON only: the header line would break a pipe into a JSON reader
+            try:
+                check_fields(a.field or [], old)
+            except Rejected as r:  # raised inside this handler, so the clause below does not see it
+                print(withhold(str(r)), file=sys.stderr)
+                return 2
             if not plain:
                 print(withhold(f"{iid}: no item file (deleted, as a closed sprint's items are); its last version in "
                                "git history:"))
