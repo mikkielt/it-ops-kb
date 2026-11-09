@@ -1,0 +1,22 @@
+{
+  "id": "SP-pww4aqis",
+  "kind": "sprint",
+  "title": "Backlog tool: gate classes, operator authority and item records are right",
+  "status": "planned",
+  "goal": "gate classes follow the gate's meaning: token-count fields and budget floors, a credential word glued to an identifier, a local mirror store, removed or run words and the detail-only lint are classed right; the agent_session flag is stored on every operator answer an agent session records that must be re-confirmed, and gate remove refuses a ceiling gate there; drop, move and reopen can commit what they write and reopen resets a landed run state, runs --reconcile does not write landed before the done commit is on main; start's host warning covers every gate of an agents-rule item",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e",
+  "filed_in": "clone-0ea70e5c"
+}
