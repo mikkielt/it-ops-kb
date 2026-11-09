@@ -60,7 +60,9 @@
       },
       "class": "design",
       "answer": "A piece that is a word of four letters or more followed only by capitalised words is a path piece whatever its humps",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
