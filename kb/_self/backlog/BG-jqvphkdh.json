@@ -14,5 +14,6 @@
       "import sys,os;sys.path.insert(0,os.path.abspath(\"_tools\"));import kg_hooks,inspect;sys.exit(0 if \"job_trailers\" in inspect.getsource(kg_hooks) else 1)"
     ]
   },
+  "notes": "ST-p7oslxrl wires kg_hooks.hook_commit_msg and kj_exec.job_env itself (operator's answer to its gate g2), so this bug's repro passes once that lands",
   "filed_in": "clone-0ea70e5c"
 }
