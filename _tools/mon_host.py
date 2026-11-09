@@ -8,11 +8,11 @@ holder's clone is `this` (the clone the panel reads) or `other`, never a path. T
 suite's files the `test_*.py` of the clone, and its ids and the seconds of the last full run the newest passing `test.run`
 row of mode `full` that ran pytest, from the ops rows. `land_lock` is the clone's landing lock (`bl_close.landing_lock_path`,
 read through the same readers): when a live process holds it, {item, title, step (the newest `land.step` of the item's
-landing in the ops rows, null before its first), since, pid, clone, queue}, `queue` being the other items whose coord run
-state is `landing` as {id, title} in id order, each title that of the clone's item file; null while no live process holds
-it. The CPU groups come from one `ps -A -o pid=,pcpu=,args=` listing: each
+landing in the ops rows, null before its first), since, pid, clone, queue}, `queue` being the items on the live tickets of the
+queue directory beside the lock (`bl_close.landing_queue_dir`) as {id, title}, in the order the lock takes them, each title
+that of the clone's item file; a ticket whose process is gone is no waiter; null while no live process holds it. The CPU groups come from one `ps -A -o pid=,pcpu=,args=` listing: each
 command line is matched against fixed patterns in memory and only its kind, clone, CPU and count are kept (`unsupported`
-where there is no `ps`). Imports `mon_base`; `tests`, `kg_lock`, `bl_stall`, `bl_close` and `mon_sessions` (the clone's backlog, the run states and the landing steps) where it reads them.
+where there is no `ps`). Imports `mon_base`; `tests`, `kg_lock`, `bl_stall`, `bl_close` and `mon_sessions` (the clone's backlog and the landing steps) where it reads them.
 """
 import os
 import re
@@ -110,6 +110,31 @@ def holder(path, root):
     return out
 
 
+def waiting_items(path, holder_pid, holder_item):
+    """The item ids of the live tickets in the queue directory beside the landing lock file PATH, in the order the lock
+    takes them (the ticket names sort by ask time, then pid), without the holder's own ticket. Read only: a ticket whose
+    process is gone is skipped, not removed, and a name that is no ticket is ignored."""
+    import bl_close
+    qdir = bl_close.landing_queue_dir(path)
+    try:
+        names = sorted(os.listdir(qdir))
+    except OSError:
+        return []
+    out = []
+    for name in names:
+        try:
+            int(name.split("-", 1)[0])
+            pid = int(name.rsplit("-", 1)[1])
+            text = (qdir / name).read_text(encoding="utf-8")
+        except (ValueError, IndexError, OSError):
+            continue
+        ident = bl_close.landing_holder_item(text)
+        if pid == holder_pid or ident == holder_item or not bl_close.ticket_alive(pid):
+            continue
+        out.append(ident)
+    return out
+
+
 def land_lock(ctx):
     """The landing lock's holder as `collect` describes `land_lock`, or None when no live process holds it (or the clone
     has no landing lock path)."""
@@ -130,8 +155,7 @@ def land_lock(ctx):
     def title(ident):
         return None if bl is None or ident in bl.withheld else (bl.items.get(ident) or {}).get("title")
 
-    states = mon_sessions.run_states(ctx) or {}
-    queue = [{"id": i, "title": title(i)} for i in sorted(states) if states[i] == "landing" and i != item]
+    queue = [{"id": i, "title": title(i)} for i in waiting_items(path, rec["pid"], item)]
     same = os.path.realpath(rec["clone"]) == os.path.realpath(ctx.root)
     return {"item": item, "title": title(item), "step": mon_sessions.landing_steps(ctx.root).get(item), "since": rec["started"],
             "pid": rec["pid"], "clone": "this" if same else "other", "queue": queue}

@@ -29,6 +29,26 @@
   "depends_on": [
     "ST-ngfxdk42"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does kbmon's landing queue decide an item waits: from the live tickets of the lock's queue directory, or from the live coord process records of items in run state landing?",
+      "options": [
+        "live tickets of the queue directory",
+        "live coord process records"
+      ],
+      "recommendation": "live tickets of the queue directory",
+      "reason": "they are the order the lock takes waiters and need no coord read",
+      "do": {
+        "live tickets of the queue directory": "BG-2qivfnic",
+        "live coord process records": "BG-2qivfnic"
+      },
+      "class": "design",
+      "answer": "live tickets of the queue directory",
+      "by": "agent"
+    }
+  ],
   "notes": "Premise run 2026-11-09 on the base: the repro plants a landing lock held by a live pid for ST-aaaaaaaa, run states landing for it and for ST-bbbbbbbb, and no live coord process record for ST-bbbbbbbb (its land.py pid died); mon_host.land_lock prints queue [ST-bbbbbbbb]. Seen on the 2026-11-08/09 night: a dead land pid of another session left the item's run state at landing and peers had to read it as free (runs --reconcile moves it to refused; enter_run takes it over when the same item is landed again). The fix reads the live process records the way bl_land.run_holder does (coord owners of class process, a pid in the host table), or the lock's tickets once ST-ngfxdk42 has landed them. mon_status.py and mon_host.py render the queue; only mon_host.py builds it.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-4bf1b2c2",
