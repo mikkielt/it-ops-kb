@@ -2,7 +2,7 @@
   "id": "BG-l3acexb4",
   "kind": "bug",
   "title": "benchmarks.md still says the real intake hook's cost is not measured and shows none of the 2026-10-28 intake-real rows",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-bpjqqauu",
   "priority": "P2",
   "rank": 0,
@@ -29,5 +29,7 @@
     "parked: SP-m5m67goe review"
   ],
   "notes": "Review G3: benchmarks.md:1410 Setup and :1543 bullet; the 2026-10-28 record is in the records table with no figures. Premise: the bug's repro fails on the base (origin/main at the planning commit, 2026-11-09); precheck ran it through the landing's check runner. Sprint order: items that share one file are chained with depends_on.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-bdc0a493",
+  "operator": "op-f618a13e"
 }
