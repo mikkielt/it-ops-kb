@@ -2,7 +2,7 @@
   "id": "BG-vqszwskv",
   "kind": "bug",
   "title": "The path exemption of the closed-value rule passes any slash-bearing secret value that prose closes with a comma or bracket",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-osevumx6",
   "priority": "P1",
   "rank": 0,
@@ -32,5 +32,7 @@
     "kb/_self/tools.md"
   ],
   "notes": "The review also found kb/_self/git.md:119 still defines a placeholder value as 'a code character' and nothing in kb/_self says the closed-value reading (closing , ) ] } and a code span's backticks stripped first; a snake_case name or path so closed is a reference) or the EC armor-label exemptions (camel-case path piece, lower-camel or digit identifier cell). Whoever lands the last of the two items edits git.md and names plugin.md and tools.md only if they change.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-cdcea91c",
+  "operator": "op-f618a13e"
 }
