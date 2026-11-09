@@ -2,7 +2,7 @@
   "id": "BG-k6tyqqbn",
   "kind": "bug",
   "title": "A group's daily cap counts no spend of a finished bench job, so it bounds only the budgets of jobs alive together",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",
   "rank": 0,
@@ -87,6 +87,19 @@
     }
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-432be86e",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "0099bdebc01372d9ea9d11ab066bdf5de7f8bf94",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,time; sys.path.insert(0,'_tools'); import kj_store; t=time.time(); r=[{'subject':'s1','state':'succeeded','submitted_ts':t,'placement':{'decided_by':'corp'},'spent_usd':4.5}]; v=kj_store.finished_spend('.', r, 'corp', t); assert v==4.5, v"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
