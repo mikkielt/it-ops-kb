@@ -2,7 +2,7 @@
   "id": "BG-ayamhfdy",
   "kind": "bug",
   "title": "selfcheck's leftovers counts know only the verdicts remove and keep, so a tidy row with the verdict ask is missing from their total",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-zobzdhwi",
   "priority": "P2",
   "rank": 0,
@@ -66,6 +66,28 @@
     "parked: SP-ep7cyuob review"
   ],
   "notes": "SP-ep7cyuob review (S3) widens this: bl_selfcheck.leftovers never applies bl_clean.answer_of, so an answered row still shows as ask in kbmon's cleanup panel and check_leftovers (which the cleanup session's prompt has Haiku read), and tidy --report (class_counts) counts ask rows as kept. ST-m5u7gmdo research evidence (2026-10-20, origin/main): a planted candidate whose safe_to_remove gives ask, with a recorded tidy-answer of remove, comes out of bl_clean.plan (_tools/bl_clean.py:713-715, answer_of) as remove and out of bl_selfcheck.leftovers (_tools/bl_selfcheck.py:400-417, which never calls answer_of) as ask with counts worktree {remove: 0, keep: 0} for the one listed row. kb/_self/monitoring.md:244 says the panel's verdict is remove or keep and :249 says it is tidy's verdict; kb/_self/tools.md:91 lists ask as a verdict of tidy.",
-  "claimed_by": "claude-0f9262ec",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "dab4b738803e66050b04d2b9d5349552e9094050",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0, \"_tools\"); import mon_clean as m; d = {\"counts\": {\"worktree\": {\"remove\": 0, \"keep\": 0, \"ask\": 2}}, \"rows\": [{\"class\": \"worktree\", \"verdict\": \"ask\", \"reason\": \"planted\", \"path\": \"/planted\"}], \"removable\": 0, \"bytes\": 0, \"free_gib\": 50.0, \"limit_gib\": 10.0, \"pressure\": False}; head = m.lines(d)[:2]; print(head); sys.exit(0 if any(\"ask\" in h for h in head) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "9eacfc3868bffeaa"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0, \"_tools\"); import bl_selfcheck as s, bl_clean as c; cls = c.TIDY_CLASSES[0]; c.take_snapshot = lambda bl: {\"planned\": set(), \"free_gb\": 1}; c.coord_state = lambda: {}; c.candidates = lambda sn, st: {k: ([{\"path\": \"/planted\"}] if k == cls else []) for k in c.TIDY_CLASSES}; c.safe_to_remove = lambda cand, sn, st: (c.ASK, \"planted\"); c.row_of = lambda cand, v, r: {\"class\": cls, \"verdict\": v, \"reason\": r, \"path\": \"/planted\"}; c.free_gib = lambda sn, root: 100.0; c.public = lambda r: r; f = s.leftovers(type(\"B\", (), {\"root\": \".\"})()); n = sum(sum(v.values()) for v in f[\"counts\"].values()); print(\"leftovers total\", n, \"for one ask row\"); sys.exit(0 if n == 1 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "3b167b98024aebcf"
+      }
+    ]
+  }
 }
