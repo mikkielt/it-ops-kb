@@ -3,7 +3,7 @@ topic: prior-art/drift-detection
 priority: P2
 applies_to: "detecting configuration drift without applying fixes (DSC test mode, no remediation)"
 retrieved_utc: 2026-10-21
-sources: [S1008, S1009, S1010, S-2ckkpa2t, S-7boud67e, S-e4iemhin, S-2fvvbt5t, S-fylt7wwn, S-qlnd73w2, S-c6kla37l, S-wbcdphyr, S-im2mzbgr, S-cttzm2qq, S-wwls72e7]
+sources: [S1008, S1009, S1010, S-2ckkpa2t, S-7boud67e, S-2fvvbt5t, S-fylt7wwn, S-qlnd73w2, S-c6kla37l, S-im2mzbgr, S-cttzm2qq, S-wwls72e7, S-ke6rszyw, S-k57sioml]
 status: partial
 ---
 
@@ -35,7 +35,7 @@ osquery/Fleet policies are covered elsewhere (`windows/azure-arc-servers.md`, `g
   modules that support check mode report the changes they would make, and modules that do not support it
   report nothing and do nothing; not every module supports it, and tasks conditioned on registered
   variables from earlier tasks produce no output in check mode. `--diff` adds before/after detail for
-  modules that support diff mode. [DOC S-e4iemhin]
+  modules that support diff mode. [DOC S-k57sioml]
 - Microsoft365DSC manages, configures, extracts and monitors Microsoft 365 tenant configurations through
   PowerShell DSC resources (resource families include Azure AD, Exchange, Intune, SharePoint, OneDrive,
   Planner and Power Platform). Repository licence MIT, language PowerShell. [DOC S1010]
@@ -46,13 +46,13 @@ osquery/Fleet policies are covered elsewhere (`windows/azure-arc-servers.md`, `g
 - Microsoft365DSC's own January 2026 post says drift monitoring runs from the compiled MOF by calling `Test-DSCConfiguration` (orchestrated by the caller) or `Start-DSCConfiguration` (on a schedule). [DOC S-qlnd73w2]
 - `Test-DscConfiguration` tests whether the actual configuration matches the desired one and returns `True` or `False`; `-Detailed` adds the resources in and not in the desired state. It applies nothing, so it is the drift-only call. [DOC S-fylt7wwn]
 - `New-M365DSCDeltaReport` compares two configuration files (`-Source`, `-Destination`) and writes an HTML delta report to `-OutputPath`; comparing a snapshot of one tenant with another's current state starts from `Export-M365DSCConfiguration`. [DOC S-c6kla37l]
-- `ansible-pull` inverts Ansible's push model: it checks a playbook repository out on the target (`-U` url, `-C` branch, tag or commit, `-d` directory) and runs a playbook from it, meant to be scheduled by cron; the docs say to use an external scheduler or locking so runs do not clash. [DOC S-wbcdphyr]
-- `ansible-pull -o` runs the playbook only if the repository changed, `-s N` sleeps a random 0 to N seconds first to spread git requests, `--verify-commit` aborts when the checked-out commit's GPG signature fails, and `--check` and `--diff` give the dry-run and difference views of the normal playbook run. [DOC S-wbcdphyr]
-- Without a playbook argument `ansible-pull` looks for a playbook named after the host's fully qualified domain name, then its hostname, then `local.yml`. [DOC S-wbcdphyr]
+- `ansible-pull` inverts Ansible's push model: it checks a playbook repository out on the target (`-U` url, `-C` branch, tag or commit, `-d` directory) and runs a playbook from it, meant to be scheduled by cron; the docs say to use an external scheduler or locking so runs do not clash. [DOC S-ke6rszyw]
+- `ansible-pull -o` runs the playbook only if the repository changed, `-s N` sleeps a random 0 to N seconds first to spread git requests, `--verify-commit` aborts when the checked-out commit's GPG signature fails, and `--check` and `--diff` give the dry-run and difference views of the normal playbook run. [DOC S-ke6rszyw]
+- Without a playbook argument `ansible-pull` looks for a playbook named after the host's fully qualified domain name, then its hostname, then `local.yml`. [DOC S-ke6rszyw]
 - The TUF specification's version rule is the usual form of "refuse a backwards version": a client must not replace metadata with a version number lower than the one it already trusts, and a rollback attack is an attacker getting a client to install software older than it knew to be available. [DOC S-im2mzbgr]
 - In TUF's update workflow a new timestamp whose version is lower than the trusted one is discarded and reported as a possible rollback attack, while an equal version is discarded and the cycle ends without error, which the spec calls normal; clients also must not trust expired metadata. [DOC S-im2mzbgr]
-- A pull agent that fetches a git branch tip can apply the same three outcomes to the commit it is offered: newer than the last applied one runs the steps, equal does nothing and is no error, older is refused and reported. [DER S-im2mzbgr, S-wbcdphyr: lower refused and equal ends quietly in TUF; ansible-pull checks out a repository on the target]
-- Each step of such an agent has a `check` that reads state and returns in-sync or drifted, an `apply` that runs only when `check` says drifted, and a dry-run mode that runs `check` for every step and applies none; this is the Puppet `--noop`, Ansible `--check` and DSC what-if split (`dsc/what-if.md`), and a second run of `apply` then changes nothing. [DER S-cttzm2qq, S-e4iemhin, S-wbcdphyr: noop and check modes report what would change without changing it]
+- A pull agent that fetches a git branch tip can apply the same three outcomes to the commit it is offered: newer than the last applied one runs the steps, equal does nothing and is no error, older is refused and reported. [DER S-im2mzbgr, S-ke6rszyw: lower refused and equal ends quietly in TUF; ansible-pull checks out a repository on the target]
+- Each step of such an agent has a `check` that reads state and returns in-sync or drifted, an `apply` that runs only when `check` says drifted, and a dry-run mode that runs `check` for every step and applies none; this is the Puppet `--noop`, Ansible `--check` and DSC what-if split (`dsc/what-if.md`), and a second run of `apply` then changes nothing. [DER S-cttzm2qq, S-k57sioml, S-ke6rszyw: noop and check modes report what would change without changing it]
 - No official source read describes a static agent binary that compares the ancestry of two git commits before applying; the git primitives for it (`merge-base --is-ancestor`, `pull --ff-only`) are documented below, but no source read ties either to a rollback guard. [UNK: logged in `_gaps.md`]
 - `git merge-base --is-ancestor <commit> <commit>` checks whether the first commit is an ancestor of the second and exits 0 if it is and 1 if not; an error exits non-zero with a status other than 1. [DOC S-2ckkpa2t]
 - `git pull --ff-only` updates only when there is no divergent local history, and that is the default when no way of reconciling divergent histories is given. [DOC S-7boud67e]

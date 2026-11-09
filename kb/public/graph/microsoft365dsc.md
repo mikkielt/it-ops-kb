@@ -1,9 +1,9 @@
 ---
 topic: graph/microsoft365dsc
 priority: P3
-applies_to: "Microsoft365DSC PowerShell module 2.26.1015.1 (2026-10-14); resource-shape facts for 1.26.909.1 (2026-09-11)"
-retrieved_utc: 2026-10-21
-sources: [S1010, S-jya6izpo, S-l6j5dpwj, S-44mrima5, S-ahgkqifj, S-2fvvbt5t, S-zmngjhe5, S-prjyny3b, S-3aphi7n2, S-f7j4lqgl, S-5htwkeoz, S-fbhq2yc2, S-n6v6mw4o, S-qkxsdf32, S-c6kla37l, S-fylt7wwn, S-acz6ela7, S-q7dr7aea]
+applies_to: "Microsoft365DSC PowerShell module 2.26.1104.1 (2026-11-05); resource-shape facts for 1.26.909.1 (2026-09-11) and 2.26.1015.1 (2026-10-14)"
+retrieved_utc: 2026-11-09
+sources: [S1010, S-jya6izpo, S-tys27tu5, S-l6j5dpwj, S-44mrima5, S-ahgkqifj, S-2fvvbt5t, S-zmngjhe5, S-prjyny3b, S-3aphi7n2, S-f7j4lqgl, S-5htwkeoz, S-fbhq2yc2, S-n6v6mw4o, S-qkxsdf32, S-c6kla37l, S-fylt7wwn, S-acz6ela7, S-q7dr7aea]
 status: complete
 ---
 
@@ -15,9 +15,9 @@ export, deployment, reporting and drift monitoring of Microsoft 365 tenant confi
 SharePoint/OneDrive, Teams, Intune, Power Platform, Defender for Office 365, Security & Compliance Center). It works at
 the tenant-configuration level, the same layer as Microsoft Graph's Tenant Configuration Management (TCM) APIs
 (`graph/tcm-apis.md`), but ships its own PowerShell cmdlets and classic DSC (`Get`/`Test`/`Set`) resources instead of
-calling the TCM Graph endpoints. Latest release/package version confirmed 2026-10-21 on both the GitHub releases page
-and the PowerShell Gallery package page: **2.26.1015.1**, released 2026-10-14 (the previously recorded 1.26.909.1, 2026-09-11, is
-now superseded; `prior-art/drift-detection.md` and `prior-art/projects.csv`, source `S1010`, still need the new version). Docs below (microsoft365dsc.com) are the project's own site, not Microsoft Learn.
+calling the TCM Graph endpoints. Latest release/package version confirmed 2026-11-09 on both the GitHub releases page
+and the PowerShell Gallery package page: **2.26.1104.1**, released 2026-11-05 (the 2.26.1015.1 of 2026-10-14 and the
+1.26.909.1 of 2026-09-11 are superseded; `prior-art/projects.csv`, source `S1010`, carries the new version). Docs below (microsoft365dsc.com) are the project's own site, not Microsoft Learn.
 
 ## Facts
 - The GitHub repository `microsoft/Microsoft365DSC` (now redirecting to `Microsoft365DSC/Microsoft365DSC`) is MIT-licensed,
@@ -30,7 +30,8 @@ now superseded; `prior-art/drift-detection.md` and `prior-art/projects.csv`, sou
   authentication for the workloads, plus further PowerShell Gallery modules) listed in the module's `Dependencies/Manifest.psd1`. [COMMUNITY S-zmngjhe5]
 - `Update-M365DSCModule` upgrades both the main module and its dependencies and uninstalls outdated versions; `Get-Module Microsoft365DSC -ListAvailable | select ModuleBase, Version` verifies the installed version. [COMMUNITY S-zmngjhe5]
 - Latest stable release/package version as of 2026-10-21: **2.26.1015.1**, released 2026-10-14 (GitHub marks it Latest; the PowerShell Gallery
-  page shows the same version, last published 2026-10-14; the previous stable listing was 2.26.1007.1, before it 1.26.909.1). [DOC S-l6j5dpwj, S-jya6izpo]
+  page shows the same version, last published 2026-10-14; the previous stable listing was 2.26.1007.1, before it 1.26.909.1). (valid 2026-10-21..2026-11-05) [DOC S-l6j5dpwj, S-jya6izpo]
+- Latest stable release/package version as of 2026-11-09: **2.26.1104.1**, released 2026-11-05 (GitHub marks it Latest; the PowerShell Gallery page shows the same version, last updated 2026-11-05; the previous stable listings were 2.26.1028.1 (2026-10-29), 2.26.1021.1 (2026-10-21), 2.26.1015.1 (2026-10-14) and 2.26.1007.1, before it 1.26.909.1). (valid 2026-11-05..) [DOC S-l6j5dpwj, S-tys27tu5]
 - The 2.26.1015.1 release notes list resource fixes (for example `AADDomainFederation` gained `SystemBrowserEnabledOn`, `SCDLPCompliancePolicy`
   and `SCDLPComplianceRule` gained `DisplayName`) and dependency bumps (`DSCParser` 3.1.0.7, `M365DSC.PSDSC` 3.1.10). [DOC S-l6j5dpwj]
 - The GitHub repository (now under `Microsoft365DSC/Microsoft365DSC`) describes the project as automating "deployment, configuration, reporting and

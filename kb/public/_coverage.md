@@ -239,7 +239,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `graph/permissions` | P1 | complete | `graph/permissions.md`, `graph/permissions.csv`, `graph/permission-ids.csv` | 15 |
 | `graph/powershell-sdk` | P1 | complete | `graph/powershell-sdk.md` | 8 |
 | `graph/throttling` | P1 | complete | `graph/throttling.md` | 6 |
-| `graph/microsoft365dsc` | P3 | complete | `graph/microsoft365dsc.md` | 18 |
+| `graph/microsoft365dsc` | P3 | complete | `graph/microsoft365dsc.md` | 19 |
 | `graph/tcm-apis` | P3 | complete | `graph/tcm-apis.md`, `graph/tcm-csdl-v1.0.xml`, `graph/tcm-csdl-beta.xml` | 32 |
 | `intune/assignment-filters-and-rbac` | P1 | complete | `intune/assignment-filters-and-rbac.md` | 9 |
 | `intune/co-management` | P1 | complete | `intune/co-management.md` | 6 |
@@ -267,7 +267,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `logs/ecs-log-fields` | P1 | complete | `logs/ecs-log-fields.md`, `logs/ecs-log.yml` | 7 |
 | `logs/otel-log-data-model` | P1 | complete | `logs/otel-log-data-model.md` | 1 |
 | `logs/otel-log-semconv` | P1 | complete | `logs/otel-log-semconv.md`, `logs/otel-semconv-log-registry.yaml`, `logs/otel-semconv-code-registry.yaml` | 5 |
-| `logs/sources` | P1 | complete | `logs/sources.md`, `logs/sources.csv` | 19 |
+| `logs/sources` | P1 | complete | `logs/sources.md`, `logs/sources.csv` | 18 |
 | `logs/azure-monitor-agent` | P2 | complete | `logs/azure-monitor-agent.md` | 16 |
 | `logs/microsoft-sentinel` | P2 | complete | `logs/microsoft-sentinel.md` | 27 |
 | `logs/loki-tempo-grafana-retention` | P3 | partial | `logs/loki-tempo-grafana-retention.md` | 37 |
@@ -317,7 +317,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `prior-art/secret-vault-encryption` | P2 | complete | `prior-art/secret-vault-encryption.md` | 12 |
 | `prior-art/tiered-approval-ops` | P2 | complete | `prior-art/tiered-approval-ops.md` | 10 |
 | `prior-art/fact-validity-windows` | P3 | partial | `prior-art/fact-validity-windows.md` | 8 |
-| `privacy/gdpr-pseudonymisation` | P0 | complete | `privacy/gdpr-pseudonymisation.md` | 9 |
+| `privacy/gdpr-pseudonymisation` | P0 | complete | `privacy/gdpr-pseudonymisation.md` | 10 |
 | `privacy/gliner-models` | P0 | complete | `privacy/gliner-models.md`, `privacy/gliner-models.csv` | 8 |
 | `privacy/nist-sp800-38g` | P0 | complete | `privacy/nist-sp800-38g.md` | 5 |
 | `privacy/presidio` | P0 | complete | `privacy/presidio.md` | 14 |
@@ -372,7 +372,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `reuse/tiered-approval-ops` | P2 | complete | `reuse/tiered-approval-ops.md` | 5 |
 | `security/baselines-catalog` | P0 | complete | `security/baselines-catalog.md`, `security/baselines-catalog.csv` | 27 |
 | `security/dsc-coverage` | P0 | complete | `security/dsc-coverage.md` | 21 |
-| `security/first-baseline-candidates` | P0 | complete | `security/first-baseline-candidates.md` | 17 |
+| `security/first-baseline-candidates` | P0 | complete | `security/first-baseline-candidates.md` | 18 |
 | `security/policy-precedence` | P0 | complete | `security/policy-precedence.md` | 13 |
 | `security/settings-crosswalk` | P0 | complete | `security/settings-crosswalk.md`, `security/settings-crosswalk.csv`, `security/artifacts/disa/`, `security/artifacts/microsoft/`, `security/artifacts/osconfig/` | 24 |
 | `security/logging-monitoring` | P1 | complete | `security/logging-monitoring.md` | 15 |

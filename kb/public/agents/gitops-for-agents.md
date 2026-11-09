@@ -3,7 +3,7 @@ topic: agents/gitops-for-agents
 priority: P3
 applies_to: "OpenGitOps Principles and Glossary (open-gitops/documents at commit 747050b5); GitOps with Flux v2 (microsoft.flux cluster extension; kustomize-controller v1.9.6) and Argo CD (microsoft.argocd cluster extension; Argo CD v3.5.5) on AKS and Azure Arc-enabled Kubernetes; applied to Claude Code agent configuration (settings, CLAUDE.md, .mcp.json, skills, managed settings) and Windows endpoints"
 retrieved_utc: 2026-10-21
-sources: [S-43ycwzdw, S-5pzuphp4, S2057, S-rfpmkpck, S2158, S2042, S1802, S-fzkqxhmg, S-7na2vvh5, S-htplz4gp, S-6eib7udh, S-kfmk5l6f, S-4jndm2w6, S-2k3bcw7n, S-2mzbvpov, S-ures7t57, S-4xar7ise, S-zfc5iphl, S1592, S-v5cttaej, S-wbcdphyr, S-hu4wtonu]
+sources: [S-43ycwzdw, S-5pzuphp4, S2057, S-rfpmkpck, S2158, S2042, S1802, S-fzkqxhmg, S-7na2vvh5, S-htplz4gp, S-6eib7udh, S-kfmk5l6f, S-4jndm2w6, S-2k3bcw7n, S-2mzbvpov, S-ures7t57, S-4xar7ise, S-zfc5iphl, S1592, S-v5cttaej, S-hu4wtonu, S-ke6rszyw]
 status: partial
 ---
 
@@ -65,7 +65,7 @@ OpenGitOps (a CNCF working group) defines GitOps as four principles for a system
 - Microsoft's Flux and Argo CD extensions target Kubernetes clusters only (`managedClusters`, `connectedClusters`, `provisionedClusters`) and reconcile Kubernetes objects, so neither manages the operating system of a Windows endpoint. [DER S-7na2vvh5, S-htplz4gp, S-kfmk5l6f: the extensions are cluster resources and their controllers apply Kubernetes manifests]
 - Official pull loops that reapply Windows OS settings include Azure Machine Configuration, whose agent polls the Machine Configuration service for guest assignments every 5 minutes, rechecks them every 15, and corrects drift under `ApplyAndAutoCorrect`; Group Policy's background refresh, every 90 minutes plus up to 30 random minutes, where by default an extension reapplies only when its GPOs changed; and Intune's client-initiated maintenance check-in, about every 8 hours. Each takes its desired state from its own service (Azure Policy assignments, GPOs in Active Directory, Intune policies), not from a git repository, so git can only sit upstream of them as the reviewed state store. [DER S-4xar7ise, S-zfc5iphl, S1592, S-v5cttaej, S-43ycwzdw: intervals and assignment types from `windows/azure-arc-servers.md`, `security/policy-precedence.md` and `intune/configuration-policies.md`; principles 3 and 4]
 - Ansible's control node, the machine that runs Ansible, can be nearly any UNIX-like machine with Python, including Windows under WSL; Windows without WSL is not natively supported as a control node. [DOC S-hu4wtonu]
-- `ansible-pull` (`prior-art/drift-detection.md`) is the one agent in the kb that pulls desired state from git onto a host: it checks a playbook repository out on the target and runs it there. That makes the target a control node, so it serves Linux hosts but not a Windows endpoint outside WSL. [DER S-wbcdphyr, S-hu4wtonu: ansible-pull runs the playbook on the target; Windows is no native control node]
+- `ansible-pull` (`prior-art/drift-detection.md`) is the one agent in the kb that pulls desired state from git onto a host: it checks a playbook repository out on the target and runs it there. That makes the target a control node, so it serves Linux hosts but not a Windows endpoint outside WSL. [DER S-ke6rszyw, S-hu4wtonu: ansible-pull runs the playbook on the target; Windows is no native control node]
 
 
 ## Reference

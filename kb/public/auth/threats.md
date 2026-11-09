@@ -3,7 +3,7 @@ topic: auth/threats
 priority: P2
 applies_to: "Windows 11 24H2, Server 2025, Entra ID"
 retrieved_utc: 2026-10-21
-sources: [S1352, S1353, S1347, S-7o47ht7q, S-mifutdb3, S-ffangyfp, S-7bjorbzz, S-6ca4b7bg, S-ft7nubbn, S-p6zdxvtp]
+sources: [S1353, S1347, S-7o47ht7q, S-mifutdb3, S-ffangyfp, S-7bjorbzz, S-6ca4b7bg, S-ft7nubbn, S-p6zdxvtp, S-toonic64]
 status: complete
 ---
 
@@ -21,7 +21,7 @@ coercion); every row cites its Microsoft sources.
 - Windows 11 24H2 and Windows Server 2025 add enhanced NTLM auditing in `Microsoft-Windows-NTLM/Operational`
   (who, why, where; client events 4020/4021, server 4022/4023, DC 4030-4033) that flags NTLMv1, unsupported EPA
   or a missing MIC at Warning level, in preparation for NTLM deprecation; the events are on by default, and
-  they reached Windows Server 2022 and 2019 with the updates released on and after 2026-10-13. [DOC S1352]
+  they reached Windows Server 2022 and 2019 with the updates released on and after 2026-10-13. [DOC S-toonic64]
 - Microsoft has rolled out Extended Protection for Authentication (channel binding for TLS-backed
   protocols, SPN-based service binding otherwise) as a default mitigation against NTLM relay across
   Exchange, AD CS and LDAP, with a stated direction of enabling EPA by default more broadly. [DOC S1353]

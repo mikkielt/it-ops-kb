@@ -3,7 +3,7 @@ topic: security/settings-crosswalk
 priority: P0
 applies_to: "Windows 11 Enterprise 24H2/25H2 (Microsoft baseline packages 24H2 and 25H2), Windows Server 2025 (Microsoft baseline 2602), DISA STIG Windows 11 V2R9 and Windows Server 2025 V1R3 (2026-08-10), Intune Windows baseline 24H2 pivot, DSC 3.3.0"
 retrieved_utc: 2026-10-21
-sources: [S1470, S1471, S1472, S1598, S1473, S-oeh7ui3h, S1477, S1478, S1479, S1590, S1591, S1413, S1414, S1415, S1416, S1594, S1595, S1596, S114, S-lzzhbeao, S-bzyxqg37, S-p6phzp72, S1402, S-4krq7dui]
+sources: [S1470, S1471, S1472, S1598, S1473, S-oeh7ui3h, S1477, S1478, S1590, S1591, S1413, S1414, S1415, S1416, S1594, S1595, S1596, S114, S-lzzhbeao, S-bzyxqg37, S-p6phzp72, S1402, S-4krq7dui, S-apsm37ov]
 status: complete
 files: [security/artifacts/disa/, security/artifacts/microsoft/, security/artifacts/osconfig/]
 ---
@@ -38,7 +38,7 @@ files: [security/artifacts/disa/, security/artifacts/microsoft/, security/artifa
 - Those `adapter:` rows run through `Microsoft.Adapter/WindowsPowerShell`: the 3.3.0 manifests deprecate `Microsoft.Windows/WindowsPowerShell` in its favour, and the Windows PowerShell adapter runs PSDSC resources, including script-based ones such as `SecurityPolicyDsc`'s four `MSFT_*` MOF resources. [DOC S114, S1473, S1596]
 - `known_compat_risk` for the Credential Guard rows: Credential Guard is turned on with *Turn On Virtualization Based Security* (registry `EnableVirtualizationBasedSecurity=1` with `LsaCfgFlags` 1 for UEFI lock or 2 without lock), a restart applies it, and only *Enabled without lock* can be turned off remotely; applications that need Kerberos DES, unconstrained delegation, TGT extraction or NTLMv1 break. [DOC S-lzzhbeao, S1478]
 - `known_compat_risk` for the LSA protection row: LSA plug-ins and drivers must carry a Microsoft signature or they fail to load; audit mode logs CodeIntegrity events 3065 and 3066 (Operational log) for those that would fail; enabling needs a restart. [DOC S1477]
-- `known_compat_risk` for candidates C1, C3 and C5: long paths only help apps that declare `longPathAware`; SMB1 is not installed by default on Windows 11 and changing the feature restarts the computer; PowerShell 2.0 is removed from patched Windows 11 24H2 and Server 2025, and `-Version 2` calls start PowerShell 5.1. [DOC S1591, S1590, S1479]
+- `known_compat_risk` for candidates C1, C3 and C5: long paths only help apps that declare `longPathAware`; SMB1 is not installed by default on Windows 11 and changing the feature restarts the computer; PowerShell 2.0 is removed from patched Windows 11 24H2 and Server 2025, and `-Version 2` calls start PowerShell 5.1. [DOC S1591, S1590, S-apsm37ov]
 
 ## Reference
 Columns in `settings-crosswalk.csv`:

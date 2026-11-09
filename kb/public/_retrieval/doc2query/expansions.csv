@@ -162,9 +162,9 @@ e98c0797b1b3,does Intune enrollment count towards co-management policy deploymen
 0b84dcb98488,co-managed device token type windows 10 1803
 0b84dcb98488,What token does a new co-managed device use for enrollment?
 0b84dcb98488,does a co-managed computer register with Azure AD using device or user token
-859daf1f34a0,MDM event log channels
-859daf1f34a0,How do I enable MDM debug logging in Event Viewer?
-859daf1f34a0,where are mobile device management diagnostic logs stored
+4e2d56c50e76,MDM event log channels
+4e2d56c50e76,How do I enable MDM debug logging in Event Viewer?
+4e2d56c50e76,where are mobile device management diagnostic logs stored
 9933a7af88c8,windows autopilot event viewer location
 9933a7af88c8,Where can I find Autopilot diagnostic logs?
 9933a7af88c8,how to check autopilot deployment logs
@@ -694,15 +694,15 @@ a5b22476f107,How do you check if a Power BI refresh succeeded?
 b72ecdc7a4bd,Pro workspace refresh frequency
 b72ecdc7a4bd,How often can refreshes run in a Pro workspace?
 b72ecdc7a4bd,What is the average refresh interval on shared capacity?
-8c836402df45,EDPB pseudonymisation guidelines adoption
-8c836402df45,When was EDPB guidance on pseudonymisation adopted?
-8c836402df45,Are there official European privacy guidelines on pseudonymisation?
-4b6b3d87be45,EDPB pseudonymised data ruling
-4b6b3d87be45,Can pseudonymised data still be personal data according to EDPB?
-4b6b3d87be45,What is the EDPB position on identifiable pseudonymised information?
-a752ffc9b9d0,EDPB consultation deadline
-a752ffc9b9d0,When was the consultation period for EDPB guidelines?
-a752ffc9b9d0,What was the comment deadline for pseudonymisation guidance?
+98542c03b67a,EDPB pseudonymisation guidelines adoption
+98542c03b67a,When was EDPB guidance on pseudonymisation adopted?
+98542c03b67a,Are there official European privacy guidelines on pseudonymisation?
+14af7d486ec5,EDPB pseudonymised data ruling
+14af7d486ec5,Can pseudonymised data still be personal data according to EDPB?
+14af7d486ec5,What is the EDPB position on identifiable pseudonymised information?
+6508577f0799,EDPB consultation deadline
+6508577f0799,When was the consultation period for EDPB guidelines?
+6508577f0799,What was the comment deadline for pseudonymisation guidance?
 aef480da3af0,controller identifiability obligation
 aef480da3af0,When must a controller consider data identifiable?
 aef480da3af0,How does the controller's perspective affect pseudonymisation?
@@ -776,9 +776,9 @@ a35482a89500,How do you trust Microsoft tools under AllSigned?
 bfa480789707,enhanced NTLM auditing Windows Server 2025 24H2
 bfa480789707,Which Windows versions support enhanced NTLM auditing?
 bfa480789707,How can I find where NTLM is still used on Windows 11?
-6ee7fc7f4be1,KB5066470 NTLMv1 audit event 4024 4025
-6ee7fc7f4be1,Which event IDs log NTLMv1 SSO use in audit and enforce mode?
-6ee7fc7f4be1,Where are NTLMv1 single sign-on audit events written?
+d8547fbc7605,KB5066470 NTLMv1 audit event 4024 4025
+d8547fbc7605,Which event IDs log NTLMv1 SSO use in audit and enforce mode?
+d8547fbc7605,Where are NTLMv1 single sign-on audit events written?
 c77b3fed05ef,IAKerb local KDC NTLM phase two
 c77b3fed05ef,What does phase two of the NTLM deprecation bring?
 c77b3fed05ef,How does Windows avoid NTLM fallback without a line of sight to a domain controller?

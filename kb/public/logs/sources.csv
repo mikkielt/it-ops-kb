@@ -1,10 +1,10 @@
 path_or_channel,kind,product,component,scenario,source_id
-Microsoft-Windows-DeviceManagement-Enterprise-Diagnostics-Provider/Admin,event_channel,Intune,Windows MDM client,MDM enrollment and policy processing; main MDM event channel; enabled by default,S617
-Microsoft-Windows-DeviceManagement-Enterprise-Diagnostics-Provider/Debug,event_channel,Intune,Windows MDM client,"Detailed MDM logging; disabled by default (Show Analytic and Debug logs, then Enable Log)",S617
+Microsoft-Windows-DeviceManagement-Enterprise-Diagnostics-Provider/Admin,event_channel,Intune,Windows MDM client,MDM enrollment and policy processing; main MDM event channel; enabled by default,S-3ykamo74
+Microsoft-Windows-DeviceManagement-Enterprise-Diagnostics-Provider/Debug,event_channel,Intune,Windows MDM client,"Detailed MDM logging; disabled by default (Show Analytic and Debug logs, then Enable Log)",S-3ykamo74
 %windir%\System32\winevt\Logs\Microsoft-Windows-DeviceManagement-Enterprise-Diagnostics-Provider%4Admin.evtx,file,Intune,Windows MDM client,On-disk file of the MDM Admin channel (ESP / runtime provisioning troubleshooting),S618
 Microsoft-Windows-DeviceManagement-Enterprise-Diagnostics-Provider/Operational,event_channel,Intune,Windows MDM client,Operational MDM events; declared configuration processing errors are logged here and in Admin,S-77gkdi7q
-"mdmdiagnosticstool.exe -area ""DeviceEnrollment;DeviceProvisioning;Autopilot"" -zip ""c:\users\public\documents\MDMDiagReport.zip""",command,Intune,MDM diagnostics tool,"Collect MDM diagnostic zip (enrollment, provisioning, Autopilot)",S617
-C:\Users\Public\Documents\MDMDiagnostics,file,Intune,MDM diagnostics report,Output folder of Settings > Access work or school > Create report,S617
+"mdmdiagnosticstool.exe -area ""DeviceEnrollment;DeviceProvisioning;Autopilot"" -zip ""c:\users\public\documents\MDMDiagReport.zip""",command,Intune,MDM diagnostics tool,"Collect MDM diagnostic zip (enrollment, provisioning, Autopilot)",S-3ykamo74
+C:\Users\Public\Documents\MDMDiagnostics,file,Intune,MDM diagnostics report,Output folder of Settings > Access work or school > Create report,S-3ykamo74
 C:\ProgramData\Microsoft\IntuneManagementExtension\Logs,file,Intune,Intune Management Extension,"IME logs: IntuneManagementExtension.log, AgentExecutor.log, HealthScripts.log, AppWorkload.log and others (see intune/ime-logs.md)",S-ta4g5get
 C:\ProgramData\Microsoft\IntuneManagementExtension\Logs\HealthScripts.log,file,Intune,Intune Management Extension,Remediations run on a schedule,S-ta4g5get
 C:\ProgramData\Microsoft\IntuneManagementExtension\Logs\AgentExecutor.log,file,Intune,Intune Management Extension,PowerShell script executions deployed by Intune,S-ta4g5get

@@ -3,7 +3,7 @@ topic: logs/sources
 priority: P1
 applies_to: "Windows 10/11, ConfigMgr current branch, Intune, Autopilot, Entra ID (docs 2021-2026)"
 retrieved_utc: 2026-10-21
-sources: [S-ygo5rdrm, S-6q3ioupn, S-ta4g5get, S-6epv7qzl, S617, S618, S-fzoar2ya, S632, S633, S634, S635, S636, S637, S638, S648, S-d3ml3kug, S-77gkdi7q, S-3ykamo74, S-6lmczs32]
+sources: [S-ygo5rdrm, S-6q3ioupn, S-ta4g5get, S-6epv7qzl, S618, S-fzoar2ya, S632, S633, S634, S635, S636, S637, S638, S648, S-d3ml3kug, S-77gkdi7q, S-3ykamo74, S-6lmczs32]
 status: complete
 ---
 # Device log sources (files, event channels, commands)
@@ -15,7 +15,7 @@ kind `file` and say "Registry value (not a file)" in `scenario`. ConfigMgr write
 channels; the full ConfigMgr log table is `mecm/log-files.csv` (another agent).
 
 ## Facts
-- MDM channels: `Microsoft-Windows-DeviceManagement-Enterprise-Diagnostics-Provider/Admin` (on by default) and `/Debug` (enable via Show Analytic and Debug logs). [DOC S617]
+- MDM channels: `Microsoft-Windows-DeviceManagement-Enterprise-Diagnostics-Provider/Admin` (on by default) and `/Debug` (enable via Show Analytic and Debug logs). [DOC S-3ykamo74]
 - Autopilot logs to Event Viewer > Application and Services Logs > Microsoft > Windows > ModernDeployment-Diagnostics-Provider > Autopilot. [DOC S-fzoar2ya]
 - Channel name `Microsoft-Windows-ModernDeployment-Diagnostics-Provider/Autopilot`: derived from that Event Viewer path using the naming shown for other channels (e.g. file `Microsoft-Windows-AAD%4Operational.evtx` in S618 ↔ Event Viewer path Microsoft > Windows > AAD in S632). [DER S-fzoar2ya,S632,S618]
 - Hybrid join failures: `User Device Registration` log under Microsoft > Windows (event IDs 201, 204, 304, 305). [DOC S632]
