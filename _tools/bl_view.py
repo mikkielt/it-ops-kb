@@ -461,8 +461,8 @@ def blocked_seconds(events, items, now):
 def gates_line(bl, sid, upstream=False, events=None, now=None):
     """`gates SP: block N, held N, agent N, recommendation taken K of M, blocked H h over I items` for sprint SID: the
     disposition (`bl_authority.disposition`) of each gate of the sprint's items but a dropped one, the start gate left
-    out; M the answered gates that carry a recommendation and K those answered with it (an answer equal to it or
-    beginning with it); H the hours EVENTS (`progress_events`) show gates holding I items (`blocked_seconds`), `?` where
+    out; M the answered gates that carry a recommendation and K those whose answer equals it (a recommendation is
+    an option's exact text, so an option it only begins is a departure); H the hours EVENTS (`progress_events`) show gates holding I items (`blocked_seconds`), `?` where
     EVENTS is None."""
     from bl_authority import disposition
     items = [i for i in bl.sprint_items(sid) if bl.items[i].get("status") != "dropped" and (upstream or not bl.is_upstream(i))]
@@ -475,7 +475,7 @@ def gates_line(bl, sid, upstream=False, events=None, now=None):
             rec, ans = g.get("recommendation"), g.get("answer")
             if rec and isinstance(ans, str):
                 asked += 1
-                taken += ans == rec or ans.startswith(rec)
+                taken += ans == rec
     if events is None:
         held = "blocked ? h"
     else:
