@@ -360,11 +360,13 @@ def _token(m, k):
     return PLACEHOLDERS["secret"]
 
 
-def redact(text, k=None, root=None):
+def redact(text, k=None, root=None, keep=()):
     """The rules pass: every identifier shape in `text` becomes its kb placeholder; what the public root contains, the
     well-known and documentation values and the placeholders stay. `root`: a Root whose `placeholders` also stay as the
-    user of a logon or a profile path. Idempotent."""
+    user of a logon or a profile path. `keep`: GUIDs (dashed, any case) that stay as they are, the ids of live sessions
+    the caller found in its coord store. Idempotent."""
     k = k or known()
+    keep = {g.lower() for g in keep}
     own = _own(root)
     text = KEY_BLOCK.sub(PLACEHOLDERS["secret"], text)
     for rx in SECRETS:
@@ -383,7 +385,7 @@ def redact(text, k=None, root=None):
                      or EXAMPLE_HOST.search(m.group(0).split("@", 1)[1]) else PLACEHOLDERS["email"], text)
     text = LOGON.sub(lambda m: _logon(m, k, own), text)
     text = SID.sub(lambda m: m.group(0) if m.group(1, 2, 3) == ("0", "0", "0") else PLACEHOLDERS["sid"] + m.group(4), text)
-    text = GUID.sub(lambda m: m.group(0) if m.group(0).lower().replace("-", "") in k.guids
+    text = GUID.sub(lambda m: m.group(0) if m.group(0).lower().replace("-", "") in k.guids or m.group(0).lower() in keep
                     or kbcommon.GUID_OK.fullmatch(m.group(0).lower()) else PLACEHOLDERS["guid"], text)
     text = GUID_BARE.sub(lambda m: m.group(0) if m.group(0).lower() in k.guids
                          or not re.search(r"[1-9a-f]", m.group(0).lower()) else PLACEHOLDERS["guid_bare"], text)
