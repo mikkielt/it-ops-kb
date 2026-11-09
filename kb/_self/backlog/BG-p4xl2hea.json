@@ -2,7 +2,7 @@
   "id": "BG-p4xl2hea",
   "kind": "bug",
   "title": "kbmon.py --status all cuts the sprints topic to four lines, so with five or more active sprints the run states of the later sprints are not shown",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-hyfyn22d",
   "priority": "P3",
   "rank": 0,
@@ -27,5 +27,7 @@
     "parked: SP-ymnz7b4n review"
   ],
   "notes": "Found by the review of SP-ymnz7b4n (2026-10-24, S3): compact_lines gives one line per sprint but the all answer trims each topic to four lines, so with five or more sprints the later ones lose their run-state rows; ST-wdjdbxl4's check plants four sprints.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev4run01",
+  "operator": "op-f618a13e"
 }
