@@ -2,7 +2,7 @@
   "id": "BG-qdswfli3",
   "kind": "bug",
   "title": "start's host-setup warning goes silent on every gate of an item whose touches derive agents-rule, not only on a rule-wording gate",
-  "status": "draft",
+  "status": "doing",
   "sprint": "SP-pww4aqis",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,7 @@
   "links": [
     "parked: SP-hlt2tdel review"
   ],
-  "notes": "Premise reproduces on origin/main (precheck 2026-11-09). SP-hlt2tdel review gap 5, on ST-dbyng654."
+  "notes": "Premise reproduces on origin/main (precheck 2026-11-09). SP-hlt2tdel review gap 5, on ST-dbyng654.",
+  "claimed_by": "claude-6b037793",
+  "operator": "op-f618a13e"
 }
