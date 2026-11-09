@@ -1,0 +1,22 @@
+{
+  "id": "BG-cbna6mjl",
+  "kind": "bug",
+  "title": "The kbmon-pane mod's refresh in flight when /clear fires sets lastAlerts after the reset, so the new session gets no receipt until the alert set changes",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "A refresh that started before a session reset does not record its alert rows as seen after the reset, so the new session's next refresh appends the receipt",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open(\".claude/skills/kbmon-pane/hooks/register.tsx\",encoding=\"utf-8\").read();sys.exit(0 if (\"generation\" in t or \"epoch\" in t) else 1)"
+    ]
+  },
+  "repro_reason": "the mod runs only inside an interactive Claude Code session; no headless command races a refresh against /clear, so the repro reads that the refresh checks a generation or epoch counter before it records lastAlerts",
+  "touches": [
+    ".claude/skills/kbmon-pane/**"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
