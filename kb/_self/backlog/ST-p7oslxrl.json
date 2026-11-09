@@ -2,7 +2,7 @@
   "id": "ST-p7oslxrl",
   "kind": "story",
   "title": "A commit a job makes names the operator who submitted it and the job, whichever identity authors it",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-p4guu2ip",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",
@@ -92,6 +92,19 @@
     }
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-61c966d6",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "82d7b4ad7c4a04ab476daa1884646dab74e630b3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,tempfile,subprocess\nsys.path.insert(0,os.path.abspath(\"_tools\")); import kg_trailers\nd=tempfile.mkdtemp(); subprocess.run([\"git\",\"init\",\"-q\",d],check=True); os.chdir(d)\nop,job=kg_trailers.job_trailers({\"KB_JOB\":\"JB-abcdefgh\",\"KB_JOB_OPERATOR\":\"corp/ops/jan.kowalski\"})\nm=kg_trailers.apply_trailers(\"subject\\n\\nbody\\n\",{},operator=op,job=job)\nbad=kg_trailers.job_trailers({\"KB_JOB\":\"nojob\",\"KB_JOB_OPERATOR\":\"jan.kowalski@corp.example.com\"})\nnone=kg_trailers.job_trailers({})\nassert \"KB-Operator: corp/ops/jan.kowalski\" in m and \"KB-Job: JB-abcdefgh\" in m, m\nassert bad==(None,None) and none==(None,None), (bad,none)\n"
+        ],
+        "exit": 0,
+        "sha256": "f594149dc85f0b44"
+      }
+    ]
+  }
 }
