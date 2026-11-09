@@ -18,6 +18,9 @@
   "touches": [
     "_tools/kbpublic.py"
   ],
+  "depends_on": [
+    "BG-v6h6rhfk"
+  ],
   "links": [
     "parked: SP-ga3lbnlk review"
   ],
