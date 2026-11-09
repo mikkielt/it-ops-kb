@@ -2,7 +2,7 @@
   "id": "BG-gnychh55",
   "kind": "bug",
   "title": "A server or CI executor runs the identity a job's own record names, so a coord key holder can run a job as another group's bot",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-lwkdljxg",
   "priority": "P1",
   "rank": 0,
@@ -104,6 +104,19 @@
     }
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-432be86e",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "d301ca0f7802176f64638ea01e405ccf4bdab927",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,'_tools'); import kj_exec; assert hasattr(kj_exec,'verify_placement')"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
