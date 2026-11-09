@@ -21,6 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: every fix of the sprint changes this repository's own leak scan, redaction, coord and query-log code, whose behaviour the planted checks and the _self docs state; no vendor or standard fact is needed.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-cdcea91c",
   "operator": "op-f618a13e"
