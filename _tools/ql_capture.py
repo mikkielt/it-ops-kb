@@ -133,6 +133,7 @@ _FILE_MS = {"file": "test_file", "ms": "ms"}
 OPS_EVENTS = {  # the closed set of events, each with its closed keys
     "land.step": _spec({"item": "item", "step": "token", "exit": "exit", "ms": "ms"}),
     "land.end": _spec({"item": "item", "exit": "exit", "ms": "ms"}, {"lane": "token"}),
+    "job.run": _spec({"op": "token", "class": "token", "attempt": "count", "queued_ms": "ms", "wait_ms": "ms", "run_ms": "ms"}),
     "sync.gate": _spec({"ms": "ms"}, {"checks": _CHECK_ROW, "scope": "token", "files": "count", "push": "token",
                                        "exit": "exit"}),
     "done.refused": _spec({"item": "item", "reasons": ("list", len(OPS_REFUSED), "reason"), "ms": "ms"},
