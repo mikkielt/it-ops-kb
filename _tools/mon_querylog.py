@@ -72,12 +72,13 @@ HELD_LINE = re.compile(r"apply --push: (\d+) file\(s\) held back")
 def held_back(qdir):
     """How many store files the last delivery run held back in the local store (the `N file(s) held back` line of
     the distill.log, which `ql_deliver.Pusher.bring` writes before the run's outcome line); 0 when that run held none or
-    the log has no run."""
+    the log has no run. The outcome lines of runs that tried no delivery (`ql_report.NO_DELIVERY`) end no run."""
     lines, _ = ql_report.log_tail(qdir)
     start = None
     for i in range(len(lines) - 1, -1, -1):
-        outcome = lines[i].startswith("apply --push: ") and any(lines[i][len("apply --push: "):].startswith(o)
-                                                                for o, _ in ql_report.APPLY_OUTCOMES)
+        body = lines[i][len("apply --push: "):] if lines[i].startswith("apply --push: ") else None
+        kind = next((o for s, o in ql_report.APPLY_OUTCOMES if body.startswith(s)), None) if body is not None else None
+        outcome = kind is not None and kind not in ql_report.NO_DELIVERY
         if outcome and start is None:
             start = i
         elif outcome:
