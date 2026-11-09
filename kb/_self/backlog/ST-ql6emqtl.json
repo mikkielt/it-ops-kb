@@ -2,7 +2,7 @@
   "id": "ST-ql6emqtl",
   "kind": "story",
   "title": "Research sprint goal: Refresh and census tooling does by command what the freshness and gap runs did by hand",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-2cq2hse4",
   "goal_research": true,
   "priority": "P1",
@@ -23,6 +23,20 @@
   ],
   "notes": "No outside facts: the sprint goal changes this repository's own refresh, census, pack and query log tools, so it asks the kb no question about Windows endpoint management and needs no live-docs lookup.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-c41d77ea",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "0f138390b89a1bec675ad470f90b71eca4d8b3aa",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-ql6emqtl"
+        ],
+        "exit": 0,
+        "sha256": "5dd659982e1ff088"
+      }
+    ]
+  }
 }
