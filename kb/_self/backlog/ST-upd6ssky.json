@@ -28,6 +28,27 @@
   "depends_on": [
     "ST-tbtyolzp"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does the plan text hold the rule for an item whose title or text names a gate-class word: a sentence in plan step 6 beside the detail-only rule, or a new plan step?",
+      "options": [
+        "a sentence in plan step 6 beside the detail-only rule",
+        "a new plan step"
+      ],
+      "recommendation": "a sentence in plan step 6 beside the detail-only rule",
+      "reason": "the same pre-start settling the step already asks for",
+      "do": {
+        "a sentence in plan step 6 beside the detail-only rule": "ST-upd6ssky",
+        "a new plan step": "ST-upd6ssky"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "a sentence in plan step 6 beside the detail-only rule",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-pww4aqis close"
   ],
