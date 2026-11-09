@@ -389,10 +389,41 @@ def ticket_alive(pid):
     return out.returncode == 0 and not out.stdout.strip().startswith("Z")
 
 
+def _etime_seconds(text):
+    """Seconds of a `ps` elapsed time `[[dd-]hh:]mm:ss`, None when TEXT is none."""
+    try:
+        days, _, rest = text.strip().rpartition("-")
+        parts = [int(p) for p in rest.split(":")]
+        if not 2 <= len(parts) <= 3:
+            return None
+        secs = 0
+        for p in parts:
+            secs = secs * 60 + p
+        return secs + (int(days) * 86400 if days else 0)
+    except ValueError:
+        return None
+
+
+def ticket_started_ns(pid):
+    """When process PID started, in nanoseconds since the epoch (to the second, never earlier than it began), or None
+    where `ps` cannot say (not POSIX, no `ps`, no such process): a ticket is then trusted."""
+    if os.name == "nt":
+        return None
+    try:
+        out = subprocess.run(["ps", "-p", str(pid), "-o", "etime="], capture_output=True, text=True, timeout=30)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    secs = _etime_seconds(out.stdout) if out.returncode == 0 else None
+    return None if secs is None else time.time_ns() - secs * 10 ** 9
+
+
 def landing_tickets_ahead(qdir, mine):
     """The tickets of live processes that asked for the landing lock before the ticket named MINE, oldest first, as
-    (name, pid, item). A ticket whose process is gone is removed; one of this process is never waited for."""
-    ahead = []
+    (name, pid, item). A ticket whose process is gone, or whose time of asking is before its pid's process started (the
+    pid was reused), is removed; one older than `kg_lock.max_wait()` seconds is passed over, for the landing that asked
+    has stopped at that bound; one of this process is never waited for."""
+    import kg_lock
+    bound, ahead = kg_lock.max_wait(), []
     try:
         names = sorted(os.listdir(qdir))
     except OSError:
@@ -402,14 +433,20 @@ def landing_tickets_ahead(qdir, mine):
             break
         try:
             pid = int(name.rsplit("-", 1)[1])
-            int(name.split("-", 1)[0])
+            asked = int(name.split("-", 1)[0])
         except (ValueError, IndexError):
             continue  # not a ticket (a temporary name)
         if pid == os.getpid():
             continue
-        if not ticket_alive(pid):
+        alive = ticket_alive(pid)
+        if alive:
+            started = ticket_started_ns(pid)
+            alive = started is None or asked >= started - 10 ** 9  # `ps` rounds the age down to the second
+        if not alive:
             with contextlib.suppress(OSError):
                 os.unlink(qdir / name)
+            continue
+        if time.time_ns() - asked > bound * 10 ** 9:
             continue
         item = "?"
         with contextlib.suppress(OSError, ValueError):
