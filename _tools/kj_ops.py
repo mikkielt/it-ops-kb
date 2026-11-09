@@ -11,6 +11,11 @@ takes, each with the kind of value it holds:
                                                                           backlog.py stage-back ID
   sync-push   no subject, no option                                       kbgit.py sync --push
   check       no subject, name (one of CHECKS, required)                  backlog.py check, tests.py, tests.py --changed
+  bench       SUBJECT a scenario (a slug), budget (USD, required)         benchmarks.py run SCENARIO --max-usd USD
+
+An operation that spends model calls (`PAID`: bench, dispatch, begin) takes the option `budget`, the most it may spend in USD
+(`kbjob.py submit --budget USD`), and `check_job` refuses one without it; `OverCap`, a `Refusal` of its own, is a budget that
+would take its group past the cap of its placement decision, which `kbjob.py` prints with exit 1.
 
 `check_job` validates an operation, its subject's shape, its options and `by` and returns the options as the job record
 keeps them (a number as an int, a flag as true, a repeatable one as a list); a refusal is a `Refusal`, which names what is
@@ -18,10 +23,14 @@ allowed and which `kbjob.py` prints with exit 2. `argv` is the argument list of 
 """
 import re
 
+import kj_place
+
 BY = re.compile(r"claude-[0-9a-f]{8}")
 ITEM = re.compile(r"[A-Z]{2}-[a-z2-7]{8}")
 TRAILER = re.compile(r"[A-Za-z][A-Za-z0-9-]*: [^\r\n]{1,200}")
 DOC = re.compile(r"[A-Za-z0-9_][A-Za-z0-9_./-]{0,119}")
+SCENARIO = re.compile(r"[a-z][a-z0-9-]{0,39}")
+USD = re.compile(r"[0-9]{1,6}(\.[0-9]{1,2})?")
 WAIT_MAX = 86400
 FLAGS = ("true", "false", "1", "0")
 CHECKS = {"backlog-check": ["_tools/backlog.py", "check"],
@@ -34,7 +43,9 @@ OPS = {
     "stage-back": {"subject": True, "options": {"check": "flag", "self_reviewed": "doc", "trailer": "trailer"}},
     "sync-push": {"subject": False, "options": {}},
     "check": {"subject": False, "options": {"name": "check"}},
+    "bench": {"subject": True, "scenario": True, "options": {"budget": "usd"}},
 }
+PAID = kj_place.PAID_OPS  # the operations that spend model calls: each needs a budget
 REPEATABLE = ("trailer", "self_reviewed")  # an option that may be given more than once: the record holds a list
 
 
@@ -42,10 +53,21 @@ class Refusal(ValueError):
     """A submit's input the table does not allow: the message names what is allowed (exit 2)."""
 
 
+class OverCap(Refusal):
+    """A paid job whose budget would take its group's day past the cap of the placement decision: nothing is queued (exit 1)."""
+
+
+def item_subject(op):
+    """True when the subject of OP is the id of an item of the clone's backlog (not a scenario, not none)."""
+    row = OPS[op]
+    return bool(row["subject"]) and not row.get("scenario")
+
+
 def allowed(op):
     row = OPS[op]
     names = ", ".join(row["options"]) or "none"
-    return f"{op} takes {'a backlog id as its subject' if row['subject'] else 'no subject'} and the options {names}"
+    subject = "a scenario as its subject" if row.get("scenario") else "a backlog id as its subject" if row["subject"] else "no subject"
+    return f"{op} takes {subject} and the options {names}"
 
 
 def value_of(op, name, kind, raw):
@@ -54,6 +76,10 @@ def value_of(op, name, kind, raw):
         if not re.fullmatch(r"[0-9]{1,6}", str(raw)) or int(raw) > WAIT_MAX:
             raise Refusal(f"option {name} of {op} is a number of seconds, 0 to {WAIT_MAX}, not {str(raw)[:40]!r}")
         return int(raw)
+    if kind == "usd":
+        if not re.fullmatch(USD, str(raw)) or float(raw) <= 0:
+            raise Refusal(f"option {name} of {op} is a number of US dollars above 0 (at most 2 decimals), not {str(raw)[:40]!r}")
+        return float(raw) if "." in str(raw) else int(raw)
     if kind == "flag":
         if str(raw).lower() not in FLAGS:
             raise Refusal(f"option {name} of {op} is a flag, one of {', '.join(FLAGS)}, not {str(raw)[:40]!r}")
@@ -74,12 +100,17 @@ def value_of(op, name, kind, raw):
 def check_job(op, subject, by, options):
     """The options of the job as its record keeps them. A Refusal names what is allowed: the operations of OPS, the
     subject a row takes, the options of its row and the shape of `by`."""
+    if op in PAID and "budget" not in (options or {}):
+        raise Refusal(f"{op} spends model calls: pass --budget USD, the most it may spend")
     if op not in OPS:
         raise Refusal(f"{str(op)[:40]!r} is no operation of the job queue: one of {', '.join(OPS)}")
     row = OPS[op]
     if by and not BY.fullmatch(by):
         raise Refusal(f"--by is claude- and 8 lowercase hex digits (never a full session id), not {str(by)[:40]!r}")
-    if row["subject"]:
+    if row.get("scenario"):
+        if not subject or not SCENARIO.fullmatch(subject):
+            raise Refusal(f"{op} takes a scenario name as its subject (lowercase letters, digits and -, at most 40), not {str(subject)[:40]!r}")
+    elif row["subject"]:
         if not subject or not ITEM.fullmatch(subject):
             raise Refusal(f"{allowed(op)}, not {str(subject)[:40]!r}")
     elif subject:
@@ -117,6 +148,8 @@ def argv(op, subject, options):
         return ["_tools/kbgit.py", "sync", "--push"]
     elif op == "check":
         return list(CHECKS[options["name"]])
+    elif op == "bench":
+        return ["_tools/benchmarks.py", "run", subject, "--max-usd", str(options["budget"])]
     else:
         raise Refusal(f"{str(op)[:40]!r} is no operation of the job queue: one of {', '.join(OPS)}")
     for trailer in options.get("trailer", []):
