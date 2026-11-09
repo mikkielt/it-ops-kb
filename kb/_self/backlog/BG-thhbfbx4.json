@@ -76,7 +76,12 @@
         "Read a _root.md under _tools/fixtures as a test input, not a root; the fixture files are then scanned as ordinary files": "BG-thhbfbx4",
         "Keep reading them as internal roots and keep _tools/fixtures out of the projection": "BG-thhbfbx4"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "Read a _root.md under _tools/fixtures as a test input, not a root; the fixture files are then scanned as ordinary files",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "links": [
