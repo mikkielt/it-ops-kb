@@ -2,7 +2,7 @@
   "id": "BG-minhhv7i",
   "kind": "bug",
   "title": "kbgit.py contribute still leaves every commit out on git 2.38 and 2.39, since merge-tree --merge-base needs git 2.40 and the up-front check refuses only below 2.38",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-mut2pmu3",
   "priority": "P2",
   "rank": 0,
@@ -39,5 +39,7 @@
     "kb/_self/git.md"
   ],
   "notes": "Found by the SP-mut2pmu3 review of BG-nn3wzysr's provisional answer g1: reading git --version is right, the threshold is wrong (merge-tree --merge-base is new in git 2.40, RelNotes 2.40.0). Reading git --version and refusing below 2.40 is the recommended fix; a probe of merge-tree on an empty tree is the alternative.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev3run01",
+  "operator": "op-f618a13e"
 }
