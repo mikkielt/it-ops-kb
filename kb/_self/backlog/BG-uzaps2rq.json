@@ -1,0 +1,23 @@
+{
+  "id": "BG-uzaps2rq",
+  "kind": "bug",
+  "title": "kbmon --events drops a coord progress event's own gates list: id_list splits only item, topic and touch, so the coord.progress record loses gates_n and gates_1",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "the coord.progress event record of kbmon --events keeps the event's own gates field as a list of ids (gates_n, gates_1...), as the run span does, or kb/_self/monitoring.md says the list form is for the span only",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys, json; sys.path.insert(0, \"_tools\"); import mon_events as m, mon_log; mon_log.coord_args = lambda ctx: [\"x\"]; mon_log.coord_wait = lambda a: json.dumps({\"events\": [{\"seq\": 1, \"at\": 1794000000.0, \"kind\": \"progress\", \"fields\": {\"item\": \"ST-aaaaaaaa\", \"state\": \"blocked\", \"gates\": \"g1,g2\"}}]}); ev, last, spans = m.coord_records(None, 0); a = ev[0][\"attributes\"]; print(a); sys.exit(0 if \"gates_n\" in a else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/mon_events.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
