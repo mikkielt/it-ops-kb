@@ -498,6 +498,15 @@ def says_visibility(path, text):
     return f"{path} says visibility: {value}" if value is not None else f"{path} has no visibility line"
 
 
+TEST_INPUT_DIR = "_tools/fixtures/"
+
+
+def is_test_input(path):
+    """Whether PATH is a test input (under `_tools/fixtures/`), never a root: a `_root.md` there is a fixture the tests
+    read, so the tree check does not read it as a root and its files count as ordinary files for the leak scan."""
+    return path.startswith(TEST_INPUT_DIR)
+
+
 def tree_refusals(proj, files, cwd):
     """Causes: an internal root (a `_root.md` whose `visibility` is anything but `public`: `internal`, another value or
     no line, which counts as internal as kbcommon reads it), the pointer file `kb/_roots/<name>.md` of
@@ -508,7 +517,7 @@ def tree_refusals(proj, files, cwd):
     for x in files:
         if FORBIDDEN_RE.search(x):
             res.append(f"the projection's tree holds {x}, a path under _private or _cache")
-    for x, text in sorted(blobs(proj, [f for f in files if f.rsplit("/", 1)[-1] == kbcommon.ROOT_FILE], cwd).items()):
+    for x, text in sorted(blobs(proj, [f for f in files if f.rsplit("/", 1)[-1] == kbcommon.ROOT_FILE and not is_test_input(f)], cwd).items()):
         if not_public(text):
             res.append(f"the projection's tree holds the internal root {x.rsplit('/', 1)[0] or '.'} ({says_visibility(x, text)})")
     pdir = f"kb/{kbcommon.POINTERS_DIR}/"
@@ -647,7 +656,7 @@ def internal_prefixes(rev, files, cwd):
     import kbcommon
     pdir = f"kb/{kbcommon.POINTERS_DIR}/"
     out = []
-    for x, text in sorted(blobs(rev, [f for f in files if f.rsplit("/", 1)[-1] == kbcommon.ROOT_FILE
+    for x, text in sorted(blobs(rev, [f for f in files if (f.rsplit("/", 1)[-1] == kbcommon.ROOT_FILE and not is_test_input(f))
                                       or (f.startswith(pdir) and f.endswith(".md") and "/" not in f[len(pdir):])], cwd).items()):
         if kbcommon._meta(text).get("visibility", "internal") != "public":
             out.append(f"kb/{x[len(pdir):-len('.md')]}/" if x.startswith(pdir) else root_dir(x) + "/")
@@ -889,7 +898,7 @@ def history_refusals(proj, tip, files, cwd, sources=None, bound=None, projected=
         raise LongRange(len(todo))
     written = [(c, old, new, x) for c, ch in changes for st, old, new, x, mode in ch if st != "D"]
     links = [(c, x) for c, ch in changes for st, old, new, x, mode in ch if st != "D" and mode == GITLINK]
-    is_root = lambda x: x.rsplit("/", 1)[-1] == kbcommon.ROOT_FILE  # noqa: E731
+    is_root = lambda x: x.rsplit("/", 1)[-1] == kbcommon.ROOT_FILE and not is_test_input(x)  # noqa: E731
     roots = {}  # object name -> the _root.md paths it is (one blob can be several roots' file)
     for c, old, new, x in written:
         if is_root(x):
@@ -962,6 +971,17 @@ def range_leaks(up, cwd, rev="HEAD"):
     if files is None:
         raise RuntimeError(f"git ls-tree {rev} failed")
     return history_refusals(rev, up, files, cwd, projected=False)[1]
+
+
+def range_tree_causes(up, cwd, rev="HEAD"):
+    """[cause] of the commits UP..REV that publish's tree check refuses (history_refusals' tree causes: a path under
+    `_private` or `_cache`, a path under an internal root, an internal pointer or its gitlink), for the sync gate beside
+    range_leaks: a path a later commit of the range removes still counts, as publish refuses the commit that wrote it for
+    good. A path under `_tools/fixtures` is a test input, never a root (is_test_input). Raises RuntimeError on a git error."""
+    files = tree_files(rev, cwd)
+    if files is None:
+        raise RuntimeError(f"git ls-tree {rev} failed")
+    return history_refusals(rev, up, files, cwd, projected=False)[0]
 
 
 TRAILER_RX = re.compile(r"[A-Za-z][\w-]*:[ \t]\S")

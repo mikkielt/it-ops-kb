@@ -851,13 +851,15 @@ def gate(r, up, host, fix_check=False, since=None):
         t0 = time.monotonic()
         try:
             leaks = kbpublic.range_leaks(up, KB)
+            tree = kbpublic.range_tree_causes(up, KB)  # the tree causes publish refuses the range for, beside the leak ones
         except RuntimeError as exc:
-            leaks = [f"leak scan of {rng} failed: {exc}"]
-        gate_mark(r, f"leak-scan {rng}", code=int(bool(leaks)), since=t0)
-        for cause in leaks:
+            leaks, tree = [f"leak scan of {rng} failed: {exc}"], []
+        gate_mark(r, f"leak-scan {rng}", code=int(bool(leaks or tree)), since=t0)
+        for cause in tree + leaks:
             print(f"refused: {cause}")
-        results.append((f"leak-scan {rng}", f"{'FAILED' if leaks else 'ok'}: commits with a hit={len({c.split(':')[0] for c in leaks})}",
-                        not leaks))
+        results.append((f"leak-scan {rng}",
+                        f"{'FAILED' if leaks or tree else 'ok'}: commits with a hit={len({c.split(':')[0] for c in leaks})} "
+                        f"tree causes={len(tree)}", not (leaks or tree)))
     t0 = time.monotonic()
     group = group_gate(KB)  # the group's own checks, after every shipped one
     if group:
