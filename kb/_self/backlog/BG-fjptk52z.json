@@ -2,7 +2,7 @@
   "id": "BG-fjptk52z",
   "kind": "bug",
   "title": "The closed-value rule misses a bracket closed by a full stop and a code span whose opening backtick sits before the key",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-osevumx6",
   "priority": "P1",
   "rank": 0,
@@ -36,6 +36,28 @@
   ],
   "notes": "The review also found kb/_self/git.md:119 still defines a placeholder value as 'a code character' and nothing in kb/_self says the closed-value reading (closing , ) ] } and a code span's backticks stripped first; a snake_case name or path so closed is a reference) or the EC armor-label exemptions (camel-case path piece, lower-camel or digit identifier cell). Whoever lands the last of the two items edits git.md and names plugin.md and tools.md only if they change.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-cdcea91c",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "ffaee9b2a504b4349b338d896f89b1cfcc72192d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import kbpublic as p;a='api_'+'key=';ts=[a+'token_provider.','(path='+'kb/public/x.md).'];r=[bool([h for h in p.file_hits('kb/public/x.md',t,{}) if h[0]=='secret']) for t in ts];print(r);sys.exit(0 if not any(r) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "8bdbc30a2059cbc2"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import kbpublic as p;u='Pass'+'12345x';k='pass'+'word=';b='`';ts=['('+k+u+').','['+k+u+'].','Set '+b+k+u+b+' in the file.','run '+b+'export DB_'+'PASS'+'WORD='+u+b,b+'pass'+'word: '+u+b+'.'];r=[bool([h for h in p.file_hits('kb/public/x.md',t,{}) if h[0]=='secret']) for t in ts];print(r);sys.exit(0 if all(r) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "7c2db25ffb3f094f"
+      }
+    ]
+  }
 }
