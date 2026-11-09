@@ -2,7 +2,7 @@
   "id": "BG-23wnhrgc",
   "kind": "bug",
   "title": "kbcommon.url_holds_credential reads a Windows path with an @ in a folder name as a credential url",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-osevumx6",
   "priority": "P3",
@@ -37,5 +37,7 @@
     "parked: SP-c6w5hjmc review"
   ],
   "notes": "Planning 2026-11-09: the original third goal clause (a token in a url's query or fragment is considered, SP-c6w5hjmc review gap 7) was left out as too vague to check; url_holds_credential returns False today for a private_token query value, which a later bug can take up. Premise reproduces on the base (repro prints True). Planned 2026-11-09 in SP-osevumx6: items that share a file wait on each other (kbcommon.py, redact.py then kbask.py, ql_capture.py then ql_deliver.py); no open item of the other live sprints touches this item's code files.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-cdcea91c",
+  "operator": "op-f618a13e"
 }
