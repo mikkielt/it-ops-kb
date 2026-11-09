@@ -20,7 +20,8 @@
     "_tools/querylog.py",
     "kb/_self/querylog.md",
     "kb/_self/plugin.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/usage.md"
   ],
   "links": [
     "parked: SP-osevumx6 review"
