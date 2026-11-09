@@ -40,5 +40,6 @@
   "links": [
     "parked: SP-ga3lbnlk review"
   ],
+  "notes": "Premise run 2026-11-09: the repro fails on the base (kbpublic.py:634 calls scan(path, text, allow, pinned)). Outbound paths of file_hits (referrers, read 2026-11-09): kbpublic.tree_hits and bl_check.py:507, census.py:2939 and the extension point leak_scan (kbext.py:80, SURFACE signature file_hits(path, text, allow, pinned=(), root=None)) call the replaceable scan; publish and contribute pass shipped=True and never reach the extender, so the change is only the one call at kbpublic.py:634; an extender declared without root keeps working (the planted check runs both a root-taking and a four-argument extender).",
   "filed_in": "clone-0ea70e5c"
 }
