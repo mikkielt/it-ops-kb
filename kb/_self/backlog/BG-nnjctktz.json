@@ -14,5 +14,8 @@
       "import sys;sys.path.insert(0,'_tools');import mon_needs as m;last={'outcome':'refused','why':'sync exit 2'};r=m.delivery_entries({'last_delivery':last,'undelivered':0});print(len(r));sys.exit(1 if r else 0)"
     ]
   },
+  "links": [
+    "parked: SP-osevumx6 review"
+  ],
   "filed_in": "clone-0ea70e5c"
 }

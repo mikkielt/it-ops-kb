@@ -14,6 +14,9 @@
       "import sys; sys.path.insert(0,\"_tools\"); import kbcommon; r=kbcommon.structured_secrets(\"https://jan:a<b>cccccc@srv01.corp.contoso.com/x\"); print(r); sys.exit(0 if r else 1)"
     ]
   },
+  "links": [
+    "parked: SP-osevumx6 review"
+  ],
   "notes": "Found while fixing BG-5dcfyrks (redact side, a redact-only URL_USERINFO_ANGLE shape in _tools/redact.py). The fix is in kbcommon.py, which the in-flight BG-fwqcimiv also changes: order it after that item.",
   "filed_in": "clone-0ea70e5c"
 }
