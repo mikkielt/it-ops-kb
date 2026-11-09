@@ -29,6 +29,29 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the classifier recognise a model's usage field: a closed list of usage parts before the plural tokens, or the two field names alone?",
+      "options": [
+        "closed usage-part list, plural tokens only",
+        "the two named fields only"
+      ],
+      "recommendation": "closed usage-part list, plural tokens only",
+      "reason": "also covers count_tokens, output_tokens and max_tokens, the singular and every other part keep the class",
+      "do": {
+        "closed usage-part list, plural tokens only": "BG-6vy5sy74",
+        "the two named fields only": "BG-6vy5sy74"
+      },
+      "class": "secrets",
+      "answer": "closed usage-part list, plural tokens only",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "links": [
     "parked: SP-w57bnhhx review"
   ],
