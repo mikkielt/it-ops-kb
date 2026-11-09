@@ -2,7 +2,7 @@
   "id": "BG-tj3k7mk6",
   "kind": "bug",
   "title": "kbmon --events splits free text with a comma in any coord field into id pieces",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-zobzdhwi",
   "priority": "P3",
   "rank": 0,
@@ -43,6 +43,19 @@
   "links": [
     "parked: SP-qh2j24z2 review"
   ],
-  "claimed_by": "claude-0f9262ec",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "78d0a837790a1669cfec275bda45eaa4f9966d1d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import mon_events as m;r=m.attributes(m.id_list({'note':'Hello, world','item':'ST-aaaaaaaa,ST-bbbbbbbb'}));print(r);sys.exit(1 if any(k.startswith('note') for k in r) or 'item_n' not in r else 0)"
+        ],
+        "exit": 0,
+        "sha256": "f9561336937b02b3"
+      }
+    ]
+  }
 }
