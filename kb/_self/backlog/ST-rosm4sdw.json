@@ -3,17 +3,29 @@
   "kind": "story",
   "title": "A worker's brief states code.md's rule against calling another module's underscore names when its touches name tool code",
   "status": "draft",
+  "sprint": "SP-moxpl354",
   "priority": "P3",
   "rank": 0,
-  "goal": "the brief of an item whose touches name _tools/ files states that another module never calls a name starting with an underscore and that a needed helper is added as a public name in the module that owns it",
+  "goal": "the brief of an item whose touches name _tools/ files states that another module never calls a name that starts with an underscore and that a needed helper is added as a public name in the module that owns it; the brief of an item whose touches name no _tools/ file does not state it",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import sys,pathlib\nt=pathlib.Path('kb/_self/backlog.md').read_text(encoding='utf-8').lower()\nmiss=[w for w in ['underscore', 'brief'] if w not in t]\nsys.exit('not yet: kb/_self/backlog.md lacks '+', '.join(miss) if miss else 0)\n"
+        "import subprocess,sys\nout=subprocess.run([sys.executable,'_tools/backlog.py','brief','ST-525ypepb'],capture_output=True,text=True).stdout\nph='never calls a name that ' + 'starts with an underscore'\nok=(ph in out)==True\nprint('brief of ST-525ypepb has: '+ph if ok else 'brief of ST-525ypepb: want phrase present: '+ph)\nsys.exit(0 if ok else 1)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys\nout=subprocess.run([sys.executable,'_tools/backlog.py','brief','ST-uh7kxean'],capture_output=True,text=True).stdout\nph='never calls a name that ' + 'starts with an underscore'\nok=(ph in out)==False\nprint('brief of ST-uh7kxean lacks: '+ph if ok else 'brief of ST-uh7kxean: want phrase absent: '+ph)\nsys.exit(0 if ok else 1)\n"
       ]
     }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "kb/_self/backlog.md"
   ],
   "links": [
     "parked: SP-ep7ck2ab close"
