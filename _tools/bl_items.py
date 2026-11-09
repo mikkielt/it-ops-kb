@@ -1103,6 +1103,11 @@ def gate_remove(bl, a):
                        f"{g.get('by')}), and a gate's answer is not taken back")
     cls = bl_authority.gate_class(it, g)
     disp, why = bl_authority.disposition(it, g)
+    if cls in bl_authority.TERMINAL_CLASSES and bl_authority.in_agent_session():
+        raise Rejected(f"gate remove refuses gate {a.gate} of {bl.label(iid)}: it is class {cls}, which no agent "
+                       f"session answers, so --by {a.by or 'operator'} from this one is not the operator's; the "
+                       "operator removes it in a terminal of their own: python3 _tools/backlog.py gate remove "
+                       f"{iid} {a.gate} --by operator; {bl_authority.IDE_ROUTE}")
     if disp == "block" and a.by != "operator":
         raise Rejected(f"gate remove refuses gate {a.gate} of {bl.label(iid)}: it is blocking (class {cls}; "
                        f"{'; '.join(why)}), which only the operator answers, so only the operator removes it "
