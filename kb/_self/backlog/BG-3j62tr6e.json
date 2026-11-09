@@ -20,6 +20,23 @@
     "_tools/kg_hooks.py",
     "kb/_self/git.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does --uninstall's closing line name what it unset when push.recurseSubmodules was left alone?",
+      "options": [
+        "List only the keys it unset, so a left value is not named",
+        "Keep one fixed line and add a second line saying the value was left alone"
+      ],
+      "recommendation": "List only the keys it unset, so a left value is not named",
+      "do": {
+        "List only the keys it unset, so a left value is not named": "BG-3j62tr6e",
+        "Keep one fixed line and add a second line saying the value was left alone": "BG-3j62tr6e"
+      },
+      "class": "push"
+    }
+  ],
   "links": [
     "parked: SP-mguax5m3 review"
   ],
