@@ -48,7 +48,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "scratch_dir() is a per-process run-<pid>-<hex> directory under scratch_base(), and Bench.close() removes the run's clones and bare origins",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Premise: the bug's repro fails on the base (origin/main at the planning commit, 2026-11-09); precheck ran it through the landing's check runner. Sprint order: items that share one file are chained with depends_on.",
