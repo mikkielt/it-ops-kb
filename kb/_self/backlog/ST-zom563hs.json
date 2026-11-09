@@ -2,7 +2,7 @@
   "id": "ST-zom563hs",
   "kind": "story",
   "title": "kbjob.py place asks the OPA placement policy where and as whom a job runs, and any failure to answer means the workstation",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-p4guu2ip",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",
@@ -115,6 +115,28 @@
   ],
   "notes": "Order agreed 2026-11-08 with SP-ep7ck2ab's manager (ask A1e21b0d155): shared kb/_self/map.csv rows land by first claim, the later item rebases; no hard dependency.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-61c966d6",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "d0b9655679b01eb2b515d4d925473ef7b004304f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,json,time,tempfile,subprocess,threading,http.server\nclass H(http.server.BaseHTTPRequestHandler):\n    seen=[]; out={}\n    def do_POST(s):\n        n=int(s.headers.get(\"Content-Length\") or 0); H.seen.append((s.path,json.loads(s.rfile.read(n) or b\"{}\")))\n        b=json.dumps(H.out).encode(); s.send_response(200); s.send_header(\"Content-Length\",str(len(b))); s.end_headers(); s.wfile.write(b)\n    def log_message(s,*a): pass\nsrv=http.server.HTTPServer((\"127.0.0.1\",0),H); threading.Thread(target=srv.serve_forever,daemon=True).start()\nOPA=f\"http://127.0.0.1:{srv.server_port}\"\ndec=lambda **k: {\"result\":dict({\"executor\":\"workstation\",\"identity\":\"none\",\"fallback\":None,\"fallback_after_s\":0,\"budget_cap_usd\":None,\"decided_by\":\"default\"},**k)}\nd=tempfile.mkdtemp(); env=dict(os.environ,KB_COORD_STORE=os.path.join(d,\"c.sqlite\"))\nkj=lambda *x,e=None: subprocess.run([sys.executable,\"_tools/kbjob.py\",*x],capture_output=True,text=True,timeout=300,env=e or env)\np=lambda u: json.loads(kj(\"place\",\"check\",\"backlog-check\",\"--opa\",u).stdout)\nH.out=dec(executor=\"server\",identity=\"group-bot\",decided_by=\"group:corp/ops\"); d1=p(OPA)\nH.out={}; d2=p(OPA)\nH.out=dec(executor=\"moon\"); d3=p(OPA)\nd4=p(\"http://127.0.0.1:9\")\nassert d1[\"executor\"]==\"server\" and d1[\"identity\"]==\"group-bot\" and d1[\"decided_by\"]==\"group:corp/ops\", d1\nfor x in (d2,d3,d4): assert x[\"executor\"]==\"workstation\" and x[\"identity\"]==\"none\" and x[\"reason\"], x\npath,body=H.seen[0]; assert path==\"/v1/data/kbjobs/placement\" and {\"op\",\"subject\",\"operator\",\"groups\",\"host\",\"capabilities\"}<=set(body[\"input\"]), H.seen[0]\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,json,time,tempfile,subprocess,threading,http.server\nclass H(http.server.BaseHTTPRequestHandler):\n    out={}\n    def do_POST(s):\n        n=int(s.headers.get(\"Content-Length\") or 0); s.rfile.read(n)\n        b=json.dumps(H.out).encode(); s.send_response(200); s.send_header(\"Content-Length\",str(len(b))); s.end_headers(); s.wfile.write(b)\n    def log_message(s,*a): pass\nsrv=http.server.HTTPServer((\"127.0.0.1\",0),H); threading.Thread(target=srv.serve_forever,daemon=True).start()\nOPA=f\"http://127.0.0.1:{srv.server_port}\"\ndec=lambda **k: {\"result\":dict({\"executor\":\"workstation\",\"identity\":\"none\",\"fallback\":None,\"fallback_after_s\":0,\"budget_cap_usd\":None,\"decided_by\":\"default\"},**k)}\nd=tempfile.mkdtemp(); env=dict(os.environ,KB_COORD_STORE=os.path.join(d,\"c.sqlite\"))\nkj=lambda *x,e=None: subprocess.run([sys.executable,\"_tools/kbjob.py\",*x],capture_output=True,text=True,timeout=300,env=e or env)\nH.out=dec(executor=\"server\",decided_by=\"group:corp/ops\")\na=json.loads(kj(\"place\",\"check\",\"backlog-check\",e=dict(env,KB_OPA_URL=OPA)).stdout)\nn=json.loads(kj(\"place\",\"check\",\"backlog-check\",e={k:v for k,v in env.items() if k!=\"KB_OPA_URL\"}).stdout)\nassert a[\"executor\"]==\"server\", a\nassert n[\"executor\"]==\"workstation\" and \"no policy\" in n[\"reason\"], n\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
