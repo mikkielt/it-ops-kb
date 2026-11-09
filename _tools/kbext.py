@@ -96,7 +96,7 @@ Answers: how to start a group's overlay repository that pins it-ops-kb by an ext
 Answers: whether a group's overlay and fork take the next upstream ext tag with no conflict, no shipped file edited and every extender verified
 Use: python3 _tools/kbext.py resolve|call POINT --root WS | surface [--json] | lint [--root REPO] | verify --root WS | guards --root WS | init-team DIR --group NAME --upstream URL | rehearse --team DIR --plant|--upstream URL --from TAG --to TAG
 """
-import argparse, ast, collections, importlib, json, os, re, shutil, subprocess, sys, tempfile
+import argparse, ast, collections, importlib, inspect, json, os, re, shutil, subprocess, sys, tempfile
 from pathlib import Path
 
 import kbsettings
@@ -115,7 +115,8 @@ GROUP = "it_ops_kb"
 # has `answer` (its answer in words) and `samples`, which `verify` runs: each a dict with `shape` (a key of SHAPES, the
 # check of the answer) and either `call` (the attribute to call, "" for the extender itself) with `args` (a JSON list;
 # the strings $REPO, $SHA, $EMPTY, $TARGET, $RUN and $CWD stand for objects `verify` makes) or `value` (the attribute to
-# read, "" for the extender itself).
+# read, "" for the extender itself). A sample with `optional` N passes its last N `args` only to an extender whose
+# signature takes them, so an extender written for the earlier, shorter shape still verifies.
 SURFACE = {
     "points": [
         {"name": "lane", "signature": "module with path_lane(path) -> str and commit_paths(repo, sha) -> list",
@@ -138,10 +139,10 @@ SURFACE = {
          "added": "0.1.0", "answer": "SUFFIXES lists suffixes, the mapper function answers a dict of optional lists",
          "samples": [{"value": "SUFFIXES", "shape": "suffixes"},
                      {"call": "", "args": ["$EMPTY", "HEAD", []], "shape": "mapping"}]},
-        {"name": "leak_scan", "signature": "file_hits(path, text, allow, pinned=()) -> list", "added": "0.1.0",
+        {"name": "leak_scan", "signature": "file_hits(path, text, allow, pinned=(), root=None) -> list", "added": "0.1.0",
          "answer": "a list of hits",
-         "samples": [{"call": "", "args": ["docs/example.md", "A note about corp.example.com.\n", [], []],
-                      "shape": "list"}]},
+         "samples": [{"call": "", "args": ["docs/example.md", "A note about corp.example.com.\n", [], [], "$CWD"],
+                      "optional": 1, "shape": "list"}]},
         {"name": "backlog_commands", "signature": "list of modules adding or replacing a command through bl_cli.register(name, "
                                               "handler, add_arguments=None, help=None) or bl_cli.extend(name, wrap, "
                                               "add_arguments)", "added": "0.1.0", "answer": "each extender is a module",
@@ -557,7 +558,7 @@ def leak_shapes(root, kb_root=None):
 
 
 def leak_scan(root, kb_root=None):
-    """The callable of extension point `leak_scan` for the clone ROOT (a group's `file_hits(path, text, allow, pinned=())`),
+    """The callable of extension point `leak_scan` for the clone ROOT (a group's `file_hits(path, text, allow, pinned=(), root=None)`),
     or None when none is named and the shipped scan runs. It is loaded as `resolve` loads it and kept for the process
     until a settings file changes; a named one that cannot be loaded or is no callable raises ExtensionError."""
     def make(_):
@@ -707,6 +708,20 @@ def _fill(value, objects):
     return value
 
 
+def _call_args(func, args, optional):
+    """ARGS, less the last OPTIONAL of them when FUNC's signature cannot take them all positionally (no parameter for each,
+    no var-positional): an extender written for the shorter shape is called with the arguments it declares."""
+    if not optional:
+        return args
+    try:
+        inspect.signature(func).bind(*args)
+        return args
+    except TypeError:
+        return args[:-optional]
+    except ValueError:  # a callable with no readable signature gets them all
+        return args
+
+
 def _run_sample(sample, extender, module, objects):
     """One sample's answer shape problem ("" when it fits); an ExtensionError for a call that cannot be made."""
     name = sample.get("call", sample.get("value", ""))
@@ -718,7 +733,7 @@ def _run_sample(sample, extender, module, objects):
         if not callable(target):
             raise ExtensionError(f"{name or 'the extender'} is not callable")
         try:
-            target = target(*_fill(sample["args"], objects))
+            target = target(*_call_args(target, _fill(sample["args"], objects), sample.get("optional", 0)))
         except ExtensionError:
             raise
         except Exception as e:

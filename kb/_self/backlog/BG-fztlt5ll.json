@@ -1,0 +1,18 @@
+{
+  "id": "BG-fztlt5ll",
+  "kind": "bug",
+  "title": "kbpublic.file_hits calls a replacing leak_scan extender without the root, so an extender declared with root=None never gets the file's root",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kbpublic.file_hits passes the file's root to a replacing leak_scan extender that takes it, so an extender declared file_hits(path, text, allow, pinned=(), root=None) gets the root the shipped scan gets",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,\"_tools\"); import kbpublic,inspect; sys.exit(0 if \"scan(path, text, allow, pinned, root)\" in inspect.getsource(kbpublic.file_hits) else \"not yet: the extender call has no root\")"
+    ]
+  },
+  "filed_in": "clone-0ea70e5c"
+}
