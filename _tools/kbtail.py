@@ -29,7 +29,7 @@ more than the query log does; a text that the leak scan (`kbcommon.leak_hits`) s
 after it prints as `[withheld: KIND]`. Control characters are dropped, a command is cut at 100 characters, a result at 80,
 and each line at the terminal's columns less one (COLUMNS, else the terminal's size, else 80), as kbmon's view does.
 
-An entry of an unknown type, or a line that is not a JSON object, is skipped and counted; the types Claude Code writes
+An entry of an unknown type, a line that is not a JSON object, or one nested too deep to decode, is skipped and counted; the types Claude Code writes
 that are no conversation (attachment, mode, system, summary and the like) are ignored uncounted. `--once` ends with
 `kbtail: skipped N` on stderr when N is not 0. While following, the process waits on the stat of coord's store file (a store that exists:
 KB_COORD_STORE, else the project's; it opens no connection, so a lock another process holds does not delay a read) and
@@ -167,7 +167,10 @@ def rows_of(entry):
 def parse(line):
     """([line to print], counted): what one transcript line shows, and whether it is skipped (not an object, or of a type
     that is neither shown nor known to be no conversation)."""
-    entry = kbusage.loads(line)
+    try:
+        entry = kbusage.loads(line)
+    except RecursionError:  # nesting too deep for the decoder: no conversation line, as one that is not JSON
+        entry = None
     if entry is None:
         return [], True
     kind = entry.get("type")
