@@ -2,7 +2,7 @@
   "id": "BG-i6vjrbng",
   "kind": "bug",
   "title": "A code item's land.end row says lane=content, and ops prints land.end before the last land.step it shares a timestamp with",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-mc4dzsfe",
   "priority": "P2",

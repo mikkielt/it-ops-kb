@@ -2,7 +2,7 @@
   "id": "BG-qggrwb5c",
   "kind": "bug",
   "title": "claim resolves the operator and asks coord inside the claims-ledger lock, so a slow claude or a slow served coord holds the lock that dispatch and other claims wait on past its stale age",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-mc4dzsfe",
   "priority": "P2",
   "rank": 0,

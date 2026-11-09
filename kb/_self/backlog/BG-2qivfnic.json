@@ -2,7 +2,7 @@
   "id": "BG-2qivfnic",
   "kind": "bug",
   "title": "A land whose process died leaves the item's run state at landing, and kbmon's landing queue lists it as waiting for a lock nobody holds",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-mc4dzsfe",
   "priority": "P2",
   "rank": 0,

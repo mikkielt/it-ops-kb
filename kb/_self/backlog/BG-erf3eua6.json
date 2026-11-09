@@ -2,7 +2,7 @@
   "id": "BG-erf3eua6",
   "kind": "bug",
   "title": "backlog.py claim is refused in a checkout whose git dir cannot be written, since ledger_lock refuses any OSError, where it claimed without a ledger record before",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-mc4dzsfe",
   "priority": "P2",
   "rank": 0,

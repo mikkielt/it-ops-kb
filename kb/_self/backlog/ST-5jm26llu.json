@@ -2,7 +2,7 @@
   "id": "ST-5jm26llu",
   "kind": "story",
   "title": "Research sprint goal: The landing lock is fair, a code item lands in one run, and claims and dead runs do not block",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-mc4dzsfe",
   "goal_research": true,
   "priority": "P1",

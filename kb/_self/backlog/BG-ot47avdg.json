@@ -2,7 +2,7 @@
   "id": "BG-ot47avdg",
   "kind": "bug",
   "title": "A code item's land finishes in one run: when its merge request merged and removed code/ID right after the push, land finds the merge on the integration main and goes on to the second pass",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-mc4dzsfe",
   "priority": "P1",
