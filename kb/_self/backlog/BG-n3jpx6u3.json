@@ -1,0 +1,22 @@
+{
+  "id": "BG-n3jpx6u3",
+  "kind": "bug",
+  "title": "kblane.commit_paths drops an entry when either mode is a gitlink, so a plain file that replaces a kb gitlink (or the reverse) is left out and the commit counts as content",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kblane.commit_paths leaves an entry out only when every non-zero mode of it is 160000",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.exit(1)"
+    ]
+  },
+  "repro_reason": "needs a repository where a commit turns the gitlink kb/team into a regular file; the planted input is in the notes",
+  "touches": [
+    "_tools/kblane.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
