@@ -7,7 +7,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S2",
-  "goal": "backlog.py answer --by operator from an agent session stores agent_session: true on every gate whose bl_authority.disposition is block, not only on the operator classes (_tools/bl_items.py, the flag set by class), so horizon and the review list such answers for re-confirmation from a terminal; review gap G2.",
+  "goal": "backlog.py answer --by operator from an agent session stores agent_session: true on every gate whose bl_authority.disposition is block, not only on the operator classes",
   "repro": {
     "run": [
       "python3",
@@ -23,5 +23,6 @@
   "links": [
     "parked: SP-lmpjclxz review"
   ],
+  "notes": "Premise reproduces on origin/main (precheck 2026-11-09). Review gap G2 of SP-lmpjclxz. horizon and the review list a flagged answer already (e3455be8d).",
   "filed_in": "clone-0ea70e5c"
 }
