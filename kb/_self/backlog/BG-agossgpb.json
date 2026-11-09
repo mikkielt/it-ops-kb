@@ -45,6 +45,27 @@
   "depends_on": [
     "BG-d3b2wx43"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which signal marks an agent.run exit 1, since SubagentStop documents no failure field?",
+      "options": [
+        "The closing text opens with the documented line 'Agent terminated early due to an API error'",
+        "Leave exit unset on every SubagentStop row",
+        "A StopFailure event that carries an agent_id"
+      ],
+      "recommendation": "The closing text opens with the documented line 'Agent terminated early due to an API error'",
+      "do": {
+        "The closing text opens with the documented line 'Agent terminated early due to an API error'": "BG-agossgpb",
+        "Leave exit unset on every SubagentStop row": "BG-agossgpb",
+        "A StopFailure event that carries an agent_id": "BG-agossgpb"
+      },
+      "class": "design",
+      "answer": "The closing text opens with the documented line 'Agent terminated early due to an API error'",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-c7oav2vn review"
   ],
