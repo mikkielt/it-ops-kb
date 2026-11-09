@@ -1,0 +1,23 @@
+{
+  "id": "BG-ot6jeskc",
+  "kind": "bug",
+  "title": "kg_hooks.new_lanes judges a merge commit by diff-tree names alone, so a changed kb gitlink counts as a code path and the pre-push hook refuses a merge that was content before the gitlink fix",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "the merge-commit branch of kg_hooks.new_lanes leaves a kb submodule root's gitlink out as kblane.commit_paths does",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.exit(1)"
+    ]
+  },
+  "repro_reason": "needs a merge commit that changes a gitlink under kb; the planted input is in the notes",
+  "touches": [
+    "_tools/kg_hooks.py",
+    "_tools/kblane.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
