@@ -17,7 +17,8 @@
   },
   "touches": [
     "_tools/bench_core.py",
-    "kb/_self/benchmarks.md"
+    "kb/_self/benchmarks.md",
+    "kb/_self/tools.md"
   ],
   "links": [
     "parked: SP-bpjqqauu review"
