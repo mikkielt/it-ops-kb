@@ -18,5 +18,9 @@
   "touches": [
     "_tools/kbcommon.py"
   ],
+  "links": [
+    "parked: SP-mut2pmu3 review"
+  ],
+  "notes": "SP-mut2pmu3 second review gap 3 (S3, for the operator: it touches the credential rule they chose for BG-ouhonprv g1). kbcommon.py:688 bans a backslash in the user part, so a domain-user scp url holding a password (domain, backslash, user, colon, password, at, host, colon, path, built at run time) is no credential for url_holds_credential: a pointer or census url with it is accepted. The reviewer's fix if wanted: ban only a leading double backslash in the user part and keep the drive-letter test.",
   "filed_in": "clone-0ea70e5c"
 }
