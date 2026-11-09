@@ -2,7 +2,7 @@
   "id": "BG-hoy65wor",
   "kind": "bug",
   "title": "census.py run takes no topic or directory selection, so a census of one domain runs its phases 0 and 1 as separate factdiff.py and census.py commands",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-2cq2hse4",
   "priority": "P2",
   "rank": 0,
@@ -40,5 +40,7 @@
   "links": [
     "parked: SP-yojt6y7v run"
   ],
-  "notes": "Planner: the selection reaches detect as the same flags and the check step as --source for each selected source id (census.py check has --source). Premise: the repro exits 1 on 55dde769f (argparse refuses --dir); its no-selection arm already holds."
+  "notes": "Planner: the selection reaches detect as the same flags and the check step as --source for each selected source id (census.py check has --source). Premise: the repro exits 1 on 55dde769f (argparse refuses --dir); its no-selection arm already holds.",
+  "claimed_by": "claude-c41d77ea",
+  "operator": "op-f618a13e"
 }
