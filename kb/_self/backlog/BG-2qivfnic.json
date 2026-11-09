@@ -1,0 +1,26 @@
+{
+  "id": "BG-2qivfnic",
+  "kind": "bug",
+  "title": "A land whose process died leaves the item's run state at landing, and kbmon's landing queue lists it as waiting for a lock nobody holds",
+  "status": "draft",
+  "sprint": "SP-mc4dzsfe",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbmon's landing queue lists only the items whose land process runs, in the order the lock will take them, so a land that died leaves no queue entry that peers read as a held lock or a waiter",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os\nimport subprocess\nimport sys\nimport tempfile\nimport types\nfrom pathlib import Path\n\nsys.path.insert(0, \"_tools\")\nimport bl_clean\nimport bl_close\nimport mon_host\nimport mon_sessions\n\nroot = Path(tempfile.mkdtemp())\nsubprocess.run([\"git\", \"init\", \"-q\", str(root)], check=True)\nlock = bl_close.landing_lock_path(root)\nlock.write_text(f\"pid={os.getpid()}\\nclone={root}\\nstarted=2026-11-09T00:00:00Z\\nitem=ST-aaaaaaaa\\n\", encoding=\"utf-8\")\n# the run state of ST-bbbbbbbb is landing, but no live process record of it exists: its land died\nmon_sessions.run_states = lambda ctx: {\"ST-aaaaaaaa\": \"landing\", \"ST-bbbbbbbb\": \"landing\"}\nmon_sessions.backlog = lambda r: None\nmon_sessions.landing_steps = lambda r: {}\nbl_clean.coord_state = lambda *a, **k: {\"owners\": []}\nout = mon_host.land_lock(types.SimpleNamespace(root=root))\nqueue = [q[\"id\"] for q in out[\"queue\"]]\nprint(\"landing queue shown to peers:\", queue)\nsys.exit(0 if \"ST-bbbbbbbb\" not in queue else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/mon_host.py",
+    "kb/_self/monitoring.md"
+  ],
+  "depends_on": [
+    "ST-ngfxdk42"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
