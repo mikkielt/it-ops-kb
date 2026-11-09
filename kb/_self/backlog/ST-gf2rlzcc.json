@@ -2,7 +2,7 @@
   "id": "ST-gf2rlzcc",
   "kind": "story",
   "title": "A central coord service holds the job queue of every clone, and each executor, workstation, server or CI, takes only the jobs placed on its own kind",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-tmw3tokk",
   "sprint": "SP-lwkdljxg",
   "priority": "P3",
@@ -155,6 +155,28 @@
   ],
   "notes": "Design: the central service is a coord serve (POST /v1/run with {argv}, bearer token per operator, one key file each, group scopes, plain-http refusal beyond loopback: kb/_self/coordination.md), so a thin client needs no new network surface: submit, follow and status are coord operations on job/ID keys. Scope set by the operator's answer to gate g1 (2026-11-08): central executors, a server kbjob.py serve and GitLab CI jobs, may run every operation, landings and worker sessions included, wherever the job's placement puts it. This story is the queue and the executor kinds only; the placement decision (OPA policy, overrides, CODEOWNERS), identities, worker branches on the integration remote, the server's clones, CI triggering, cost caps and records are the stories of EP-p4guu2ip, so a job record here carries a placement that defaults to the workstation. Authority: a workstation executor runs a job only when the job's operator equals the operator of its own key file and its host is its own; the operation table stays closed (ST-nwwcf3kk); no job answers a gate. Complement stance: no Agent Mail or Beads piece does this (kb public/agents/coordination-tools.md:54), so nothing is rebuilt; coord serve is what is extended. Related: EP-fxrzbuza only where it also extends coord serve. Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: each job runs in the clone whose integration remote url equals the one the job names (no such clone leaves the job queued with the reason) and every move is posted back to the central store, so a job placed on another kind, host or operator stays queued | the central store keeps states and events only, the output log stays with the executor and log JOB names the host that has it",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-61c966d6",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "3b2c21b193e5e6994c67cb5d996220c8a98b41d9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,tempfile,subprocess,json\nd=tempfile.mkdtemp(); kd=os.path.join(d,\"keys\"); os.makedirs(os.path.join(kd,\"corp\"))\nk1=os.path.join(kd,\"corp\",\"jan.kowalski\"); k2=os.path.join(kd,\"corp\",\"anna.nowak\")\nfor k,t in ((k1,\"k1key-placeholder\"),(k2,\"k2key-placeholder\")): open(k,\"w\").write(t); os.chmod(k,0o600)\nsv=subprocess.Popen([sys.executable,\"_tools/coord.py\",\"--store\",os.path.join(d,\"c.sqlite\"),\"serve\",\"--bind\",\"127.0.0.1:0\",\"--keys\",kd],stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,text=True); import atexit; atexit.register(sv.kill)\nurl=sv.stdout.readline().split(\"serving\")[1].strip()\nkb=lambda key,*x: subprocess.run([sys.executable,\"_tools/kbjob.py\",\"--url\",url,\"--key-file\",key,*x],capture_output=True,text=True,timeout=300)\nst=lambda j: json.loads(kb(k1,\"status\",j).stdout)\nr=kb(k1,\"submit\",\"check\",\"--name\",\"backlog-check\",\"--no-ensure\"); assert r.returncode==0, r; j=json.loads(r.stdout)[\"job\"]\nassert st(j)[\"placement\"][\"executor\"]==\"workstation\"\nkb(k2,\"serve\",\"--kind\",\"workstation\",\"--once\"); s1=st(j)[\"state\"]\nkb(k1,\"serve\",\"--kind\",\"server\",\"--data\",os.path.join(d,\"srv\"),\"--once\"); s2=st(j)[\"state\"]\nkb(k1,\"serve\",\"--kind\",\"workstation\",\"--once\"); s3=st(j)[\"state\"]\nsv.terminate(); assert s1==\"queued\" and s2==\"queued\" and s3 in (\"succeeded\",\"failed\"), (s1,s2,s3)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,tempfile,subprocess,json,platform\nd=tempfile.mkdtemp(); kd=os.path.join(d,\"keys\"); os.makedirs(os.path.join(kd,\"corp\"))\nk1=os.path.join(kd,\"corp\",\"jan.kowalski\"); open(k1,\"w\").write(\"k1key-placeholder\"); os.chmod(k1,0o600)\nsv=subprocess.Popen([sys.executable,\"_tools/coord.py\",\"--store\",os.path.join(d,\"c.sqlite\"),\"serve\",\"--bind\",\"127.0.0.1:0\",\"--keys\",kd],stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,text=True); import atexit; atexit.register(sv.kill)\nurl=sv.stdout.readline().split(\"serving\")[1].strip()\nkb=lambda *x: subprocess.run([sys.executable,\"_tools/kbjob.py\",\"--url\",url,\"--key-file\",k1,*x],capture_output=True,text=True,timeout=300)\nco=lambda *x: subprocess.run([sys.executable,\"_tools/coord.py\",\"--url\",url,\"--key-file\",k1,*x],capture_output=True,text=True)\nst=lambda j: json.loads(kb(\"status\",j).stdout)\ndef edit(j,**m):\n    g=json.loads(co(\"get\",\"job/\"+j).stdout); rec=json.loads(g[\"value\"]); rec.update(m)\n    assert co(\"put\",\"job/\"+j,\"--value\",json.dumps(rec),\"--revision\",str(g[\"revision\"])).returncode==0\nj=json.loads(kb(\"submit\",\"check\",\"--name\",\"backlog-check\",\"--no-ensure\").stdout)[\"job\"]\ngood=json.loads(json.loads(co(\"get\",\"job/\"+j).stdout)[\"value\"])[\"remote\"]\nedit(j,remote=\"https://example.invalid/other.git\")\nkb(\"serve\",\"--kind\",\"workstation\",\"--once\"); s1=st(j)\nassert s1[\"state\"]==\"queued\" and any(e[\"fields\"].get(\"step\")==\"no-clone\" for e in s1[\"events\"]), s1\nedit(j,remote=good)\nkb(\"serve\",\"--kind\",\"workstation\",\"--once\"); s2=st(j)\nassert s2[\"state\"] in (\"succeeded\",\"failed\") and s2[\"log\"] is None and s2[\"log_host\"]==platform.node(), s2\nassert kb(\"log\",j).returncode==0\nedit(j,log_host=\"build-host-1\"); r=kb(\"log\",j)\nsv.terminate(); assert r.returncode==1 and \"build-host-1\" in r.stderr, r\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
