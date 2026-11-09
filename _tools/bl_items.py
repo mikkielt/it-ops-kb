@@ -1392,6 +1392,7 @@ def cmd_drop(bl, a):
     if users:
         raise Refused(f"{bl.label(iid)} would delete items that " + ", ".join(bl.label(u) for u in users[:5]) + " depend on")
     # a dropped item that depended on this one keeps no link to it: check reports a dependency on a dropped item
+    cleaned = []  # the remaining items whose file this drop rewrote: the commit names them in KB-Work beside the dropped ones
     for i, x in bl.items.items():
         if i not in gone and x.get("status") == "dropped" and gone & set(x.get("depends_on", [])):
             left = [d for d in x["depends_on"] if d not in gone]
@@ -1400,6 +1401,7 @@ def cmd_drop(bl, a):
             else:
                 x.pop("depends_on")
             bl.save(x)
+            cleaned.append(i)
     if not bl.sprint_of(iid):
         label = bl.label(iid)
         for i, x in sorted(bl.items.items()):  # no remaining item keeps a link to a deleted one (BG-3aqoagow)
@@ -1412,8 +1414,10 @@ def cmd_drop(bl, a):
             else:
                 x.pop("relates_to")
             bl.save(x)
+            cleaned.append(i)
             say(f"dropped relates_to {', '.join(cut)} from {bl.label(i)}")
         for i, gate, opt, target in cleanup_gate_do(bl, gone):  # a gate's do names an item by id too
+            cleaned.append(i)
             say(f"dropped gate {gate} do {opt!r} (item {target}) from {bl.label(i)}")
         named = ", ".join(bl.label(c) for c in sorted(owned))
         for d in sorted(gone - {iid}):
@@ -1424,14 +1428,15 @@ def cmd_drop(bl, a):
         else:
             say(f"dropped and deleted {label} (not in a sprint; git keeps it): {a.why}")
         prune_reopened_refs(bl)
-        commit_written(bl, a, "drop", iid, ids=[iid] + sorted(gone - {iid}), title=title)
+        commit_written(bl, a, "drop", iid, ids=[iid] + sorted(gone - {iid}) + list(dict.fromkeys(i for i in cleaned if i not in gone)),
+                       title=title)
         return 0
     it.update(status="dropped", notes=(it.get("notes", "") + " Dropped: " + a.why).strip()[:TEXT_MAX])
     it.pop("claimed_by", None)
     it.pop("operator", None)
     bl.save(it)
     say(f"dropped {bl.label(iid)}: {a.why}")
-    commit_written(bl, a, "drop", iid, title=title)
+    commit_written(bl, a, "drop", iid, ids=[iid] + list(dict.fromkeys(cleaned)), title=title)
     return 0
 
 
