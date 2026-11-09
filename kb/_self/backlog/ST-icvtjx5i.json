@@ -21,5 +21,6 @@
     "_tools/rag.py",
     "kb/_self/tools.md"
   ],
+  "notes": "2026-11-09 gaps2 sweep: 60/60 open gaps packed good on the kb's own UNK not-stated lines and none was closable from the pack; the audit must skip UNK lines and lines inside the gap's own article that say not stated (see the false-good bug filed the same day).",
   "filed_in": "clone-0ea70e5c"
 }
