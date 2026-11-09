@@ -22,6 +22,20 @@
         "-c",
         "import os, subprocess, sys, tempfile, time\nsys.path.insert(0, \"_tools\")\nimport bl_close\nt = tempfile.mkdtemp()\nsubprocess.run([\"git\", \"init\", \"-q\", t], check=True)\nqdir = bl_close.landing_queue_dir(bl_close.landing_lock_path(t))\nqdir.mkdir()\nchild = subprocess.Popen([sys.executable, \"-c\", \"import time; time.sleep(60)\"])\ntry:\n    time.sleep(1)\n    now = time.time_ns()\n    ticket = \"%020d-%d\" % (now, child.pid)\n    (qdir / ticket).write_text(\"pid=%d\\nclone=%s\\nstarted=x\\nitem=ST-aaaaaaaa\\n\" % (child.pid, t))\n    mine = \"%020d-%d\" % (now + 10 ** 9, os.getpid())\n    ahead = [a[0] for a in bl_close.landing_tickets_ahead(qdir, mine)]\n    print(\"a live process asked just now, still waited for:\", ahead == [ticket])\n    sys.exit(0 if ahead == [ticket] else 1)\nfinally:\n    child.kill()\n"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, subprocess, sys, tempfile, time\nsys.path.insert(0, \"_tools\")\nimport bl_close\nt = tempfile.mkdtemp()\nsubprocess.run([\"git\", \"init\", \"-q\", t], check=True)\nqdir = bl_close.landing_queue_dir(bl_close.landing_lock_path(t))\nqdir.mkdir()\nchild = subprocess.Popen([sys.executable, \"-c\", \"import time; time.sleep(60)\"])\ntry:\n    time.sleep(2)\n    # asked 30 s ago, 28 s before the live process of this pid started, inside the 1800 s bound: the pid was reused\n    stamp = time.time_ns() - 30 * 10 ** 9\n    ticket = \"%020d-%d\" % (stamp, child.pid)\n    (qdir / ticket).write_text(\"pid=%d\\nclone=%s\\nstarted=x\\nitem=ST-aaaaaaaa\\n\" % (child.pid, t))\n    mine = \"%020d-%d\" % (time.time_ns(), os.getpid())\n    ahead = [a[0] for a in bl_close.landing_tickets_ahead(qdir, mine)]\n    print(\"tickets a landing waits for:\", ahead)\n    sys.exit(0 if not ahead else 1)\nfinally:\n    child.kill()\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, subprocess, sys, tempfile, time\nos.environ[\"KB_MAIN_LOCK_MAX_WAIT_S\"] = \"1\"\nsys.path.insert(0, \"_tools\")\nimport bl_close\nt = tempfile.mkdtemp()\nsubprocess.run([\"git\", \"init\", \"-q\", t], check=True)\nqdir = bl_close.landing_queue_dir(bl_close.landing_lock_path(t))\nqdir.mkdir()\nchild = subprocess.Popen([sys.executable, \"-c\", \"import time; time.sleep(60)\"])\ntry:\n    time.sleep(4)\n    # asked 2 s ago by a process started 4 s ago, so the pid is the asker, but the ticket is older than the 1 s wait bound\n    ticket = \"%020d-%d\" % (time.time_ns() - 2 * 10 ** 9, child.pid)\n    (qdir / ticket).write_text(\"pid=%d\\nclone=%s\\nstarted=x\\nitem=ST-aaaaaaaa\\n\" % (child.pid, t))\n    mine = \"%020d-%d\" % (time.time_ns(), os.getpid())\n    ahead = [a[0] for a in bl_close.landing_tickets_ahead(qdir, mine)]\n    print(\"tickets a landing waits for:\", ahead)\n    sys.exit(0 if not ahead else 1)\nfinally:\n    child.kill()\n"
+      ]
     }
   ],
   "touches": [
