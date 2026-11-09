@@ -37,6 +37,29 @@
     "ST-j3y2gugk",
     "BG-7zpe7p3w"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "When census.py run has no selection and factdiff-<date>.csv is the free detect log, does its detect step still name the log with --out?",
+      "options": [
+        "omit --out when the log is factdiff-<date>.csv, the name detect picks itself",
+        "always name the log with --out"
+      ],
+      "recommendation": "omit --out when the log is factdiff-<date>.csv, the name detect picks itself",
+      "reason": "the argv of a run with no selection is then as before BG-7zpe7p3w, as the item's repro requires, and a rerun with that name taken still names -N",
+      "do": {
+        "omit --out when the log is factdiff-<date>.csv, the name detect picks itself": "BG-hoy65wor",
+        "always name the log with --out": "BG-hoy65wor"
+      },
+      "class": "design",
+      "answer": "omit --out when the log is factdiff-<date>.csv, the name detect picks itself",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "links": [
     "parked: SP-yojt6y7v run"
   ],
