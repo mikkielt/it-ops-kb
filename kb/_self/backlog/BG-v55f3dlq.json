@@ -2,7 +2,7 @@
   "id": "BG-v55f3dlq",
   "kind": "bug",
   "title": "The leak_scan extension point still declares file_hits without the root parameter that kbpublic now passes",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ga3lbnlk",
   "priority": "P3",
   "rank": 0,
@@ -49,6 +49,28 @@
   ],
   "notes": "Review note (S4) of SP-n7zxspch. kbext.py:130 declares file_hits(path, text, allow, pinned=()); BG-r57wg5tg added root=None, and kbpublic passes it positionally at :644, :713 and :762. Nothing wires the point yet.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-0a3e91bc",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "461c2e9cf2331824fe6673cc1d5be9e355eb5f91",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport json,subprocess,sys,tempfile,pathlib\nT=pathlib.Path(tempfile.mkdtemp())\ne=T/\"ext\"; e.mkdir()\n(e/\"gleak.py\").write_text(\"KBEXT_REQUIRES = \\\">=0.1\\\"\\ndef file_hits(path, text, allow, pinned=(), root=None):\\n    assert root is not None\\n    return []\\n\")\n(T/\"settings.json\").write_text(json.dumps({\"extensions\":{\"leak_scan\":\"gleak:file_hits\"},\"extension_paths\":[str(e)]}))\nr=subprocess.run([sys.executable,\"_tools/kbext.py\",\"verify\",\"--root\",str(T)],capture_output=True,text=True,timeout=300)\nsys.exit(0 if r.returncode==0 else \"not yet: \"+r.stdout[-600:])\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,\"_tools\"); import kbext; p=[x for x in kbext.SURFACE[\"points\"] if x[\"name\"]==\"leak_scan\"][0]; sys.exit(0 if \"root=None\" in p[\"signature\"] else \"not yet: leak_scan declares \"+p[\"signature\"])"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
