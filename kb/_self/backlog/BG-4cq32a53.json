@@ -2,7 +2,7 @@
   "id": "BG-4cq32a53",
   "kind": "bug",
   "title": "session-load --live with a window shorter than one ps listing divides by zero and writes no live row",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-bpjqqauu",
   "priority": "P2",
   "rank": 0,
@@ -27,5 +27,7 @@
     "parked: SP-wv3ob5vy review"
   ],
   "notes": "Review gap 4 of SP-wv3ob5vy: bench_load.py:830 divides by elapsed/60; benchmarks.py accepts any --window above 0. Premise: the bug's repro fails on the base (origin/main at the planning commit, 2026-11-09); precheck ran it through the landing's check runner. Sprint order: items that share one file are chained with depends_on.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-bdc0a493",
+  "operator": "op-f618a13e"
 }
