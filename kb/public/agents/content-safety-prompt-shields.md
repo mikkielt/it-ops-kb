@@ -96,6 +96,7 @@ preview code), custom categories (preview, standard variant retiring 2026-09-01)
   optional `qna.query` (max 7,500 chars). [DOC S-3svp3sap]
 - Groundedness input limits: grounding sources max 55,000 characters per call; text and query max 7,500
   characters; query min 3 words. [DOC S-547mfaj7]
+- The overview page lists these public preview capabilities as retiring on April 30, 2027: Analyze Multimodal, Custom categories (rapid), Groundedness detection (in Azure AI Content Safety and Azure OpenAI), the connected and disconnected Content Safety containers and the embedded SDK. [DOC S-547mfaj7]
 - Optional **correction/mitigating** feature (`"mitigating": true`) returns a `correctionText` field with
   ungrounded spans rewritten to match the grounding sources; requires an Azure OpenAI GPT-4o (versions
   0513, 0806) resource reached via managed identity, and increases processing time and fees. [DOC
@@ -171,11 +172,11 @@ preview code), custom categories (preview, standard variant retiring 2026-09-01)
 | Spotlighting | preview | Chat Completions only; off by default | S-qhrwmfgo |
 | Analyze text/image | GA | 4 harm categories, 0-7 severity | S-b4vld673 |
 | Task Adherence | preview | agent tool-use misalignment | S-547mfaj7, S-b4vld673 |
-| Groundedness detection | preview | correction + reasoning need GPT-4o | S-unoiabov, S-3svp3sap |
+| Groundedness detection | preview, retiring 2027-04-30 | correction + reasoning need GPT-4o | S-unoiabov, S-3svp3sap, S-547mfaj7 |
 | Protected material (text) | GA (August 2024) | 4 sub-categories | S-lqvaqwxx, S-lmtdz3eq |
 | Protected material (code) | preview | GitHub index frozen 2023-04-06 | S-lqvaqwxx, S-lmtdz3eq |
 | Custom categories (standard) | preview, retiring 2026-09-01 | migrate to Custom text API | S-plv2ekwg |
-| Custom categories (rapid) | preview | no training step | S-plv2ekwg |
+| Custom categories (rapid) | preview, retiring 2027-04-30 | no training step | S-plv2ekwg, S-547mfaj7 |
 | Blocklists | not stated on the how-to page | exact text match only, 10K terms/resource | S-56tu3aqk, S-plv2ekwg |
 
 Full input-limit and rate-limit table: `agents/content-safety-limits.csv`.

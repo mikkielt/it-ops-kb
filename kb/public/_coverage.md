@@ -38,14 +38,14 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/docs-maintenance-agents` | P2 | complete | `agents/docs-maintenance-agents.md` | 30 |
 | `agents/genai-telemetry` | P2 | complete | `agents/genai-telemetry.md` | 5 |
 | `agents/github-copilot-admin` | P2 | complete | `agents/github-copilot-admin.md` | 12 |
-| `agents/headless-agent-runtimes` | P2 | partial | `agents/headless-agent-runtimes.md` | 37 |
+| `agents/headless-agent-runtimes` | P2 | partial | `agents/headless-agent-runtimes.md` | 38 |
 | `agents/hybrid-retrieval` | P2 | complete | `agents/hybrid-retrieval.md` | 62 |
 | `agents/mcp-server-lifecycle` | P2 | complete | `agents/mcp-server-lifecycle.md` | 5 |
 | `agents/microsoft-agent-framework` | P2 | complete | `agents/microsoft-agent-framework.md` | 21 |
 | `agents/prompt-injection-design-patterns` | P2 | complete | `agents/prompt-injection-design-patterns.md` | 6 |
 | `agents/security-copilot-endpoint` | P2 | complete | `agents/security-copilot-endpoint.md` | 24 |
 | `agents/windows-agentic-platform` | P2 | complete | `agents/windows-agentic-platform.md`, `agents/windows-ai-policies.csv` | 16 |
-| `agents/agent-memory-services` | P3 | complete | `agents/agent-memory-services.md` | 10 |
+| `agents/agent-memory-services` | P3 | complete | `agents/agent-memory-services.md` | 11 |
 | `agents/agent-planning-and-done` | P3 | complete | `agents/agent-planning-and-done.md` | 7 |
 | `agents/agent-sandboxes` | P3 | partial | `agents/agent-sandboxes.md` | 18 |
 | `agents/agent-troubleshooting-method` | P3 | complete | `agents/agent-troubleshooting-method.md` | 15 |

@@ -3,7 +3,7 @@ topic: intune/assignment-filters-and-rbac
 priority: P1
 applies_to: "Microsoft Intune admin center, current channel (docs current 2026-09-26)"
 retrieved_utc: 2026-10-21
-sources: [S-4ls6gbe6, S-hddmxunx, S-ljhugmcx, S-bh6rnbtj, S-kv5b4jlr, S-lsavpnha, S-guis2g6u, S-gjnpib5p, S-cunjuxe3]
+sources: [S-hx4eeri7, S-hddmxunx, S-ljhugmcx, S-bh6rnbtj, S-kv5b4jlr, S-lsavpnha, S-guis2g6u, S-gjnpib5p, S-cunjuxe3]
 status: complete
 ---
 
@@ -24,21 +24,21 @@ Administrator/"Intune Service Administrator") carry Intune permissions independe
 ### Assignment filters
 - Assignment filters apply to **managed devices** (enrolled in Intune) and **managed apps** (MAM,
   typically unenrolled personal devices); for managed apps they apply only to app protection and app
-  configuration policies, not compliance or device configuration profiles. [DOC S-4ls6gbe6]
+  configuration policies, not compliance or device configuration profiles. [DOC S-hx4eeri7]
 - Managed-device filter platforms: Android device administrator, Android Enterprise, Android (AOSP),
-  iOS/iPadOS, macOS, Windows. Managed-app filter platforms: Android, iOS/iPadOS, Windows. [DOC S-4ls6gbe6]
+  iOS/iPadOS, macOS, Windows. Managed-app filter platforms: Android, iOS/iPadOS, Windows. [DOC S-hx4eeri7]
 - Limits: up to **200 assignment filters per tenant**; each filter's rule is limited to **3,072
-  characters**. [DOC S-4ls6gbe6]
+  characters**. [DOC S-hx4eeri7]
 - A filter is evaluated at device enrollment, at check-in with the Intune service, or at any other time a
-  policy evaluates — not just once. [DOC S-4ls6gbe6]
+  policy evaluates — not just once. [DOC S-hx4eeri7]
 - Filters don't require group-membership processing, so policy targeting isn't affected by group size,
   rule complexity, or membership evaluation timing (unlike dynamic groups). Use filters for
   Intune-specific device targeting (OS, model, manufacturer, ownership, category); use dynamic groups for
   cross-workload targeting (Conditional Access, licensing, Autopilot profile assignment, user-based
-  grouping). [DOC S-4ls6gbe6]
+  grouping). [DOC S-hx4eeri7]
 - A filter is applied to an assignment in one of two modes: **Include filtered devices** (only matching
   devices/apps receive the app/policy) or **Exclude filtered devices** (matching devices/apps are
-  excluded); the third choice is **Do not apply a filter** (all targeted users/devices receive it). [DOC S-4ls6gbe6]
+  excluded); the third choice is **Do not apply a filter** (all targeted users/devices receive it). [DOC S-hx4eeri7]
 - Rule syntax form: `([entity].[property] [operator] [value])`, e.g.
   `(device.osVersion -eq "10.0.18362") and (device.manufacturer -eq "Microsoft")`; properties, operators
   and values are case-insensitive; parentheses and nested parentheses are supported, but some advanced
@@ -61,10 +61,10 @@ Administrator/"Intune Service Administrator") carry Intune permissions independe
   app on visionOS conditional-launch settings. [DOC S-hddmxunx]
 - Filter preview (device list) is unavailable for a rule using an experimental/preview property (admin
   center shows "You cannot use Filter preview with experimental properties"), but the property can still
-  be used in the filter itself. [DOC S-4ls6gbe6]
+  be used in the filter itself. [DOC S-hx4eeri7]
 - Deleting a filter requires first removing it from every policy assignment that references it, else
   Intune returns `Unable to delete assignment filter – An assignment filter is associated with existing
-  assignments. Delete all the assignments for the filter and try again.` [DOC S-4ls6gbe6]
+  assignments. Delete all the assignments for the filter and try again.` [DOC S-hx4eeri7]
 - Graph resource: `deviceAndAppManagementAssignmentFilter` (beta), created with
   `POST /deviceManagement/assignmentFilters`; key properties `displayName`, `description`, `platform`
   (`windows10AndLater`, `iOS`, `macOS`, `androidWorkProfile`, `androidAOSP`, `windowsMobileApplicationManagement`,
@@ -176,7 +176,7 @@ Administrator/"Intune Service Administrator") carry Intune permissions independe
 ## Reference
 | Scope object | Controls | Limit | Source |
 |---|---|---|---|
-| Assignment filter | which devices/apps an assignment reaches | 200/tenant, 3,072 chars/rule | S-4ls6gbe6 |
+| Assignment filter | which devices/apps an assignment reaches | 200/tenant, 3,072 chars/rule | S-hx4eeri7 |
 | Role assignment: Members | who gets the role's permissions | — | S-ljhugmcx |
 | Role assignment: Scope (Groups) | which users/devices can be managed | — | S-ljhugmcx |
 | Role assignment: Scope (Tags) | which tagged objects are visible | 100 tags/assignment | S-bh6rnbtj |

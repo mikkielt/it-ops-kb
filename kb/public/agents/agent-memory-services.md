@@ -3,7 +3,7 @@ topic: agents/agent-memory-services
 priority: P3
 applies_to: "Claude API memory tool (memory_20250818); Claude Managed Agents memory stores (Beta, header agent-memory-2026-07-22); Memory in Microsoft Foundry Agent Service and the Memory Store API (preview, Learn 2026-10); Cloudflare Agents SDK state and Durable Objects (docs 2026-06 to 2026-10)"
 retrieved_utc: 2026-10-21
-sources: [S-n5jx3ykg, S749, S-ovnqfusm, S-gybzd4tj, S-qwkcddyd, S-akyurl2s, S-4wv4j3r2, S-3bnq55fu, S-x5vpwiqv, S-2oqpgch6]
+sources: [S-n5jx3ykg, S749, S-ovnqfusm, S-gybzd4tj, S-qwkcddyd, S-akyurl2s, S-4wv4j3r2, S-vq6yvh5w, S-3bnq55fu, S-x5vpwiqv, S-2oqpgch6]
 status: complete
 ---
 
@@ -64,11 +64,14 @@ Four services keep what an agent learns beyond one context window, and they diff
 - Durable Objects are single-threaded and cooperatively multi-tasked; in-memory state is lost when an idle object hibernates, so data needed later must be written to storage. [DOC S-x5vpwiqv]
 - Input gates block new events (incoming requests, fetch responses) while the object's synchronous code runs, and its storage operations keep other requests from interleaving; output gates hold outgoing responses until pending storage writes complete, so a client never sees an unpersisted write confirmed. [DOC S-2oqpgch6]
 - Awaiting non-storage I/O such as `fetch()` or an R2 write opens the input gate, so other requests can interleave; `transaction()` is the documented choice for an atomic read-modify-write, and `blockConcurrencyWhile()` is reserved for initialization and migrations. [DOC S-2oqpgch6]
-- Agent state lives in an SQL database embedded in each agent instance; the page lists it as persistent across restarts and hibernation, read-your-own-writes consistent and safe for concurrent updates. [DOC S-4wv4j3r2]
-- `setState()` saves the new state to SQLite, broadcasts it to every connected WebSocket client and then calls `onStateChanged()` (best-effort); clients can push state too, through `useAgent` or `AgentClient`. [DOC S-4wv4j3r2]
-- `validateStateChange()` runs synchronously before persistence and broadcast, and throwing from it rejects the update, whether a client or the server proposed it. [DOC S-4wv4j3r2]
-- State is stored as JSON and broadcast whole on every change, so the page advises keeping it small and putting history and large collections in the agent's SQL database (`this.sql`). [DOC S-4wv4j3r2]
-- Workflow steps change an agent's state with `step.updateAgentState`, `step.mergeAgentState` and `step.resetAgentState`, durable operations that persist across workflow retries. [DOC S-4wv4j3r2]
+- Agent state lives in an SQL database embedded in each agent instance; the page lists it as persistent across restarts and hibernation, read-your-own-writes consistent and safe for concurrent updates. (valid 2026-06-03..2026-10-29) [DOC S-4wv4j3r2]
+- State is one value per Agent, stored in SQLite, surviving restarts and hibernation and synced to every connected client; the page no longer states that it is read-your-own-writes consistent or safe for concurrent updates, and defers how state is stored and synced to the State capability page. (valid 2026-10-29..) [DOC S-vq6yvh5w]
+- `setState()` saves the new state to SQLite, broadcasts it to every connected WebSocket client and then calls `onStateChanged()` (best-effort); clients can push state too, through `useAgent` or `AgentClient`. (valid 2026-06-03..2026-10-29) [DOC S-4wv4j3r2]
+- `setState()` stores the value and broadcasts it to clients, and `onStateChanged(state, source)` runs after a change, `source` being `"server"` or the client's `Connection`; a client pushes state through `useAgent` (the page no longer names `AgentClient` or calls `onStateChanged()` best-effort). (valid 2026-10-29..) [DOC S-vq6yvh5w]
+- `validateStateChange()` runs synchronously before persistence and broadcast, and throwing from it rejects the update, whether a client or the server proposed it. [DOC S-vq6yvh5w]
+- State is stored as JSON and broadcast whole on every change, so the page advises keeping it small and putting history and large collections in the agent's SQL database (`this.sql`). (valid 2026-06-03..2026-10-29) [DOC S-4wv4j3r2]
+- State must be JSON-serializable; `initialState` applies the first time an Agent reads its state, and the page now points to SQLite (`this.sql`) for data that does not need to reach clients; it no longer advises keeping state small or says state is broadcast whole on every change. (valid 2026-10-29..) [DOC S-vq6yvh5w]
+- Workflow steps change an agent's state with `step.updateAgentState`, `step.mergeAgentState` and `step.resetAgentState`, durable operations that persist across workflow retries. [DOC S-vq6yvh5w]
 
 ### Who holds the storage, and how it fits this kb
 - Who holds the memory: the Claude memory tool keeps it wherever the caller's handler writes (an on-premises file share or database is possible); Managed Agents memory stores and Foundry memory stores are held by the vendor; a Cloudflare agent's state sits in its Durable Object on Cloudflare's network. [DER S-n5jx3ykg, S-ovnqfusm, S-qwkcddyd, S-x5vpwiqv: client-side handler; Anthropic copy is source of truth; managed memory store; storage attached to the object]

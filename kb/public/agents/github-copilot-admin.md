@@ -3,7 +3,7 @@ topic: agents/github-copilot-admin
 priority: P2
 applies_to: "GitHub Copilot Business and Enterprise, organization/enterprise admin surfaces (2026-09)"
 retrieved_utc: 2026-10-21
-sources: [S-ovxxqqbw, S-tn4wwzyx, S-ftbeo3o7, S1805, S-unwwieso, S-udcaydkb, S-5mca3vxo, S-kvkn5bq2, S-7vu7gftp, S-z7qwhjoa, S-hjnsjtb6, S-5yxttqw4]
+sources: [S-ovxxqqbw, S-tn4wwzyx, S-ftbeo3o7, S1805, S-unwwieso, S-udcaydkb, S-fgitpax4, S-kvkn5bq2, S-7vu7gftp, S-z7qwhjoa, S-hjnsjtb6, S-5yxttqw4]
 status: complete
 ---
 
@@ -97,8 +97,8 @@ separate from content exclusion, configured per organization or repository.
 
 ### Billing, report fields, network and retention
 - Plans and billing: Copilot Business is $19 per user per month with 1,900 AI credits per user, Copilot
-  Enterprise $39 with 3,900; credits pool per enterprise, usage beyond the pool costs $0.01 per AI credit, and
-  code completions and next edit suggestions are not billed in credits. [DOC S-5mca3vxo]
+  Enterprise $39 with 3,900; credits pool per enterprise, usage beyond the pool is billed separately at $0.01 per AI credit, and
+  code completions and next edit suggestions are not billed in credits. [DOC S-fgitpax4, S-kvkn5bq2]
 - Included AI credits do not carry over: the pool resets to the full monthly amount at 00:00 UTC on the first
   day of each calendar month. [DOC S-kvkn5bq2]
 - Premium requests are now a legacy model that applies only to Copilot Pro and Pro+ subscribers on an existing
