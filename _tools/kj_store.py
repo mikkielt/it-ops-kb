@@ -7,7 +7,7 @@ queued is `coord.job_transition`'s). The clone's idempotence is a second key, `j
 and the subject, for a check its name>`, holding the id of the newest job of that triple.
 
   submit(root, op, subject, by, options=None, store=None, placement=None)  -> {job, state, deduped, seq, follow}
-  status(root, job, since=0, store=None)                    -> {job, state, exit, step, log, placement, events, last}
+  status(root, job, since=0, store=None)                    -> {job, state, exit, step, reason, log, placement, events, last}
 
 `submit` reads the triple's key and that job's record, writes the key and a new job's record in one `BEGIN IMMEDIATE`
 transaction (so racing submits meet one winner and the rest read its job), then moves the record from none to queued. A job
@@ -20,7 +20,8 @@ A central queue is a `coord.py serve` reached with --url and --key-file (`Remote
 refusal and key file mode rule are coord's). `submit_remote` and `status_remote` are `submit` and `status` on it; its job record
 adds `remote` (the url of the submitting clone's integration remote); a job's `placement` (the decision of `kj_place`, with `host`;
 a job with none is placed on the workstation, `placement_of`) is on the local queue too and, once an executor runs it, `log_host` and `executor`. The central store holds states and
-events only: the output log stays on the executor's host.
+events only: the output log stays on the executor's host. A queued job placed on a workstation whose executor is offline (`jobexec/<host>/<operator>`
+unheld) is the executor's of its fallback kind (`kj_exec.Sync.offline`): its `status` has the member `reason`, `executor offline since T`.
 
 A paid job (`kj_ops.PAID`) carries its `budget` (USD) in its options. When the placement decision has a `budget_cap_usd`, `submit`
 queues the job only if the spend of its group's finished jobs of the UTC day it is submitted on (`bl_cost.spend_usd` of each
@@ -33,6 +34,7 @@ import hashlib
 import json
 import os
 import platform
+import re
 import secrets
 import subprocess
 import sys
@@ -258,7 +260,7 @@ def log_path(root, job):
 
 
 def status(root, job, since=0, store=None):
-    """{job, state, exit, step, log, placement, events, last} of JOB: the record's state, exit and step (null when it has none), the path
+    """{job, state, exit, step, reason, log, placement, events, last} of JOB: the record's state, exit and step (null when it has none), the path
     of its output file (null before the job has run and written it), its placement (`placement_of`), its `job` events after sequence SINCE and the newest
     sequence the store holds (the next SINCE)."""
     store = resolve_store(root, store)
@@ -271,12 +273,15 @@ def status(root, job, since=0, store=None):
     try:
         coord.ensure_schema(con)
         rows = con.execute("SELECT * FROM events WHERE seq > ? ORDER BY seq", (int(since),)).fetchall()
+        every = con.execute("SELECT * FROM events WHERE seq <= ? AND kind = 'job' AND fields LIKE ? ORDER BY seq", (int(since), f'%"job": "{job}"%')).fetchall()
     finally:
         con.close()
-    events = [coord.event_json(r) for r in rows if r["kind"] == "job" and json.loads(r["fields"]).get("job") == job]
+    mine = lambda found: [coord.event_json(r) for r in found if r["kind"] == "job" and json.loads(r["fields"]).get("job") == job]
+    events = reasoned(mine(rows))
+    state = record.get("state", "none")
     path = log_path(root, job)
     log = str(path) if path is not None and path.is_file() else None
-    return {"job": job, "state": record.get("state", "none"), "exit": record.get("exit"), "step": record.get("step"),
+    return {"job": job, "state": state, "exit": record.get("exit"), "step": record.get("step"), "reason": reason_of(state, reasoned(mine(every)) + events),
             "log": log, "placement": placement_of(record), "events": events, "last": rows[-1]["seq"] if rows else int(since)}
 
 
@@ -327,9 +332,29 @@ class Remote:
         code, body = self.call(["get", key])
         return None if code else (body["revision"], body.get("value"))
 
-    def put(self, key, value, revision):
-        """Whether the write at REVISION (0: the key is new) was made."""
-        return self.call(["put", key, "--value", value, "--revision", str(revision)])[0] == 0
+    def put(self, key, value, revision, token=None):
+        """Whether the write at REVISION (0: the key is new) was made; TOKEN is the lease token of a key whose lease the writer holds."""
+        return self.call(["put", key, "--value", value, "--revision", str(revision)] + (["--token", token] if token else []))[0] == 0
+
+    def claim(self, key, ttl, holder):
+        """(code, body) of a lease on KEY for TTL seconds: 0 with the body's `token` and `revision`, 1 when another holds it."""
+        return self.call(["claim", key, "--ttl", str(ttl), "--holder", holder])
+
+    def renew(self, key, token, ttl):
+        """Whether the lease on KEY, held with TOKEN, was renewed for TTL seconds."""
+        return self.call(["renew", key, "--token", token, "--ttl", str(ttl)])[0] == 0
+
+    def release(self, key, token):
+        self.call(["release", key, "--token", token])
+
+    def lease(self, key):
+        """{holder, value, revision} of KEY: `holder` is None once its lease has ended; None when the store holds no such key."""
+        code, body = self.call(["get", key])
+        return None if code else {"holder": body.get("holder"), "value": body.get("value"), "revision": body.get("revision")}
+
+    def note(self, job, step, state="queued"):
+        """Post one `job` event of JOB that moves nothing (it stays in STATE), its step STEP."""
+        self.call(["post", "--kind", "job", "--field", f"job={job}", "--field", f"state={state}", "--field", f"step={step}"])
 
     def record(self, job):
         """The record of JOB, None when the central store has none."""
@@ -374,6 +399,84 @@ class Remote:
         return None
 
 
+def amend_record(store, job, **members):
+    """Set the members of JOB's record on STORE (a member given as None is dropped), keeping its state, exit and step as they are."""
+    with coord.Tx(store) as con:
+        row = con.execute("SELECT value FROM entries WHERE key = ? AND value IS NOT NULL", (JOB_KEYS + job,)).fetchone()
+        record = coord.job_record(row["value"]) if row is not None else None
+        if not record:
+            return
+        for name, value in members.items():
+            if value is None:
+                record.pop(name, None)
+            else:
+                record[name] = value
+        con.execute("UPDATE entries SET value = ?, revision = revision + 1 WHERE key = ?",
+                    (json.dumps(record, sort_keys=True, ensure_ascii=False), JOB_KEYS + job))
+
+
+class LocalRemote:
+    """A coord store of this host used as the queue an executor serves, with the calls of `Remote` that `kj_exec` makes: a
+    `serve --kind K` with no --url takes the queued jobs of the clone's store placed on K as a central queue's executor does,
+    and a workstation executor holds its lease on it. The operator is this host's (`operator_id`), and so is every job's owner."""
+
+    def __init__(self, store):
+        self.store, self.url = str(store), "local:" + os.path.realpath(str(store))
+
+    def operator(self):
+        return operator_id() or "anonymous"
+
+    def record(self, job):
+        return read_record(self.store, job)
+
+    def records(self):
+        return sorted(read_records(self.store), key=lambda r: (r.get("submitted_ts", 0), r["job"]))
+
+    def owner(self, job):
+        return (self.record(job) or {}).get("operator")
+
+    def move(self, job, state, fields=()):
+        """(code, body) of the job table's move of JOB to STATE with FIELDS: 0 done, 1 the table says no, a kj_ops.Refusal for a bad field."""
+        try:
+            return 0, coord.job_transition(Namespace(key=JOB_KEYS + job, to=state, field=list(fields), store=self.store), time.time)
+        except coord.Refused as refused:
+            if refused.code != 1:
+                raise kj_ops.Refusal(str(refused)) from None
+            return 1, refused.body
+
+    def amend(self, job, **members):
+        amend_record(self.store, job, **members)
+        return True
+
+    def note(self, job, step, state="queued"):
+        coord.post(Namespace(kind="job", field=[f"job={job}", f"state={state}", f"step={step}"], store=self.store, operator=None), time.time)
+
+    def lease_call(self, command, **given):
+        """(code, body) of coord's COMMAND (claim, renew, release, put) on the store: 1 when its condition fails."""
+        try:
+            return 0, getattr(coord, command)(Namespace(store=self.store, operator=None, budget=None, **given), time.time)
+        except coord.Refused as refused:
+            if refused.code != 1:
+                raise kj_ops.Refusal(str(refused)) from None
+            return 1, refused.body
+
+    def claim(self, key, ttl, holder):
+        return self.lease_call("claim", key=key, ttl=ttl, holder=holder)
+
+    def renew(self, key, token, ttl):
+        return self.lease_call("renew", key=key, token=token, ttl=ttl)[0] == 0
+
+    def release(self, key, token):
+        self.lease_call("release", key=key, token=token)
+
+    def put(self, key, value, revision, token=None):
+        return self.lease_call("put", key=key, value=value, revision=revision, token=token)[0] == 0
+
+    def lease(self, key):
+        code, body = self.lease_call("get", key=key)
+        return None if code else {"holder": body.get("holder"), "value": body.get("value"), "revision": body.get("revision")}
+
+
 class Mirror(str):
     """The path of the local store in which an executor of a central queue keeps the jobs it took; `remote` is the queue and
     `kind` the executor kind. Every move made on it is first made on the queue (`kj_exec.move`)."""
@@ -404,6 +507,42 @@ def placement_of(record):
     if isinstance(placed, dict) and placed.get("executor") in coord.PLACEMENT_EXECUTORS:
         return {**placed, "host": placed.get("host") or record.get("host")} if placed["executor"] == WORKSTATION else dict(placed)
     return {"executor": WORKSTATION, "host": record.get("host")}
+
+
+EXEC_KEYS = "jobexec/"  # the lease a workstation executor holds while it serves: jobexec/<host>/<operator>, its value {"seen": last renewal}
+OFFLINE = re.compile(r"offline-since-(\d{8}T\d{6}Z)(?:-fallback-(workstation|server|ci))?")  # the step of an event that says an executor is offline
+
+
+def exec_key(host, operator):
+    """The key of the lease of the workstation executor of HOST for OPERATOR: `jobexec/<host>/<operator>`, each name cut to the
+    characters of a coord key (the others become `-`)."""
+    clean = lambda text: re.sub(r"[^A-Za-z0-9_.:@/#-]", "-", str(text or "")).strip("/") or "-"
+    return f"{EXEC_KEYS}{clean(host)}/{clean(operator or 'anonymous')}"
+
+
+def offline_step(since, moved_to=None):
+    """The step of the `job` event that says the executor of a queued job's workstation is offline since SINCE (epoch seconds):
+    `offline-since-<UTC time>`, with `-fallback-<kind>` when the job moved to the executor kind MOVED_TO."""
+    return f"offline-since-{time.strftime('%Y%m%dT%H%M%SZ', time.gmtime(since))}" + (f"-fallback-{moved_to}" if moved_to else "")
+
+
+def reasoned(events):
+    """EVENTS (`coord.event_json` rows) with, on each whose step is an `offline_step`, the member `reason` (`executor offline since
+    <UTC time>`) and, when the job moved, `placement` (the executor kind it moved to)."""
+    out = []
+    for event in events:
+        found = OFFLINE.fullmatch(str((event.get("fields") or {}).get("step") or ""))
+        if found:
+            since = time.strptime(found.group(1), "%Y%m%dT%H%M%SZ")
+            event = {**event, "reason": f"executor offline since {time.strftime('%Y-%m-%dT%H:%M:%SZ', since)}",
+                     **({"placement": found.group(2)} if found.group(2) else {})}
+        out.append(event)
+    return out
+
+
+def reason_of(state, events):
+    """Why a job still queued stays queued: the `reason` of its newest event that has one, null for a job in another state."""
+    return next((e["reason"] for e in reversed(events) if "reason" in e), None) if state == "queued" else None
 
 
 def submit_remote(root, remote, op, subject, by, options=None, placement=None):
@@ -470,12 +609,15 @@ def remote_record(remote, job):
 
 
 def status_remote(remote, job, since=0):
-    """`status` on a central queue: {job, state, exit, step, log, log_host, placement, events, last}; `log` is null (the output
+    """`status` on a central queue: {job, state, exit, step, reason, log, log_host, placement, events, last}; `log` is null (the output
     log is on the executor's host, `log_host`, null before a job ran)."""
     record = remote_record(remote, job)
     body = remote.events(job, since)
-    return {"job": job, "state": record.get("state", "none"), "exit": record.get("exit"), "step": record.get("step"), "log": None,
-            "log_host": record.get("log_host"), "placement": placement_of(record), "events": body.get("events", []),
+    events = reasoned(body.get("events", []))
+    state = record.get("state", "none")
+    earlier = reasoned(remote.events(job, 0).get("events", [])) if int(since) and state == "queued" else events
+    return {"job": job, "state": state, "exit": record.get("exit"), "step": record.get("step"), "reason": reason_of(state, earlier),
+            "log": None, "log_host": record.get("log_host"), "placement": placement_of(record), "events": events,
             "last": body.get("last", int(since))}
 
 

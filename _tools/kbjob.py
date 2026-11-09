@@ -85,7 +85,11 @@ names the host that has it otherwise, and `cancel` moves the job to cancelled on
                                         the one the job names (else it stays queued, one `job` event with step `no-clone` says why);
                                         every move is posted to the central store, which holds states and events only (the output log
                                         stays here, in the clone's kb-jobs). --data DIR holds the executor's mirror store instead of the
-                                        clone's kb-jobs. Other flags as above. `ping`, `ensure`, `login-item` and `stats` take no --url
+                                        clone's kb-jobs. Other flags as above. `ping`, `ensure`, `login-item` and `stats` take no --url.
+                                        A workstation executor holds the lease jobexec/HOST/OPERATOR while it serves; a server or ci executor
+                                        takes a queued job placed on a workstation whose lease has been missing for the decision's
+                                        fallback_after_s when the decision's fallback is its kind, and `status` gives a queued job left there
+                                        the member `reason`, `executor offline since T`. --kind and --data without --url serve the clone's own queue
 
   kbjob.py place OP [SUBJECT] [--opa URL]
                                         ask an OPA placement policy where and as whom OP runs and print one JSON decision, {executor,
@@ -173,8 +177,8 @@ def build_parser():
     s = sub.add_parser("serve", help="run the queued jobs of this host, clone and operator, at most --parallel at once")
     s.add_argument("--once", action="store_true", help="drain the queue and exit (1 when a job failed)")
     s.add_argument("--parallel", type=int, default=kj_exec.SLOTS, metavar="N", help="run at most N jobs at once (default %(default)s)")
-    s.add_argument("--kind", choices=coord.PLACEMENT_EXECUTORS, default=None, help="the executor kind of a central queue's jobs to take (default workstation; needs --url)")
-    s.add_argument("--data", default=None, metavar="DIR", help="where the executor keeps its mirror of a central queue (default: kb-jobs of the clone)")
+    s.add_argument("--kind", choices=coord.PLACEMENT_EXECUTORS, default=None, help="the executor kind of the queue's jobs to take (default workstation); on the clone's own queue it keeps a mirror store")
+    s.add_argument("--data", default=None, metavar="DIR", help="where the executor keeps its mirror of the queue (default: kb-jobs of the clone)")
     s.add_argument("--idle-exit", type=float, default=None, metavar="S", help="exit 0 after S seconds with no live job (`ensure` sets it for a store of its own)")
     f = sub.add_parser("follow", help="print one line per move of a job and exit with its result (0, 1, 3; 4 past --timeout)")
     f.add_argument("job")
@@ -278,8 +282,6 @@ def central(args):
     if bool(args.url) != bool(args.key_file):
         raise kj_ops.Refusal("--url and --key-file go together")
     if not args.url:
-        if args.command == "serve" and (args.kind or args.data):
-            raise kj_ops.Refusal("serve --kind and --data are for a central queue: pass --url and --key-file")
         return None
     if args.store:
         raise kj_ops.Refusal("--url and --store name two queues: pass one")
@@ -362,6 +364,9 @@ def run(args, parser):
         return run_central(args, remote)
     if args.command == "stats":
         return stats_command()
+    if args.command == "serve" and (args.kind or args.data):  # an executor of one kind on the clone's own queue
+        return kj_exec.serve(str(ROOT), None, once=args.once, idle_exit=args.idle_exit, slots=args.parallel, kind=args.kind or kj_store.WORKSTATION,
+                             remote=kj_store.LocalRemote(kj_store.resolve_store(ROOT, args.store)), data=args.data)
     if args.command == "serve":
         return kj_exec.serve(str(ROOT), kj_store.resolve_store(ROOT, args.store), once=args.once, idle_exit=args.idle_exit,
                              slots=args.parallel)

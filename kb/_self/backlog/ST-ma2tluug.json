@@ -35,7 +35,8 @@
     "_tools/kj_exec.py",
     "_tools/kj_store.py",
     "kb/_self/coordination.md",
-    "_tools/kbjob.py"
+    "_tools/kbjob.py",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "ST-nmrcazp2",
