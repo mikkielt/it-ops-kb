@@ -2,7 +2,7 @@
   "id": "ST-525ypepb",
   "kind": "story",
   "title": "The worker brief and agents/worker.md say to run selfdoc.py stale --since origin/main again after the rebase onto origin/main",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-moxpl354",
   "priority": "P2",
   "rank": 0,
@@ -45,5 +45,7 @@
   "links": [
     "parked: SP-osevumx6 close"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-a1b2c3d4",
+  "operator": "op-f618a13e"
 }
