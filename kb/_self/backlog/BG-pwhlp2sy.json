@@ -12,7 +12,7 @@
     "run": [
       "python3",
       "-c",
-      "import sys; sys.path.insert(0,\"_tools\"); import kbcommon; r=kbcommon.structured_secrets(\"https://jan:a<b>cccccc@srv01.corp.contoso.com/x\"); print(r); sys.exit(0 if r else 1)"
+      "import sys; sys.path.insert(0,'_tools'); import kbcommon; u='https://jan:a'+chr(60)+'b'+chr(62)+'cccccc'+chr(64)+'srv01.corp.contoso.com/x'; r=kbcommon.structured_secrets(u); print(r); sys.exit(0 if r else 1)"
     ]
   },
   "checks": [
@@ -20,7 +20,7 @@
       "run": [
         "python3",
         "-c",
-        "\nimport sys;sys.path.insert(0,'_tools');import kbcommon as k\nph=k.structured_secrets('https://jan:<password>@srv01.corp.contoso.com/x')\nbad=k.structured_secrets('https://jan:a<b>cccccc@srv01.corp.contoso.com/x')\nprint(ph,bad);sys.exit(0 if bad and not ph else 1)\n"
+        "\nimport sys;sys.path.insert(0,'_tools');import kbcommon as k\nlt,gt,at=chr(60),chr(62),chr(64)\nph=k.structured_secrets('https://jan:'+lt+'password'+gt+at+'srv01.corp.contoso.com/x')\nbad=k.structured_secrets('https://jan:a'+lt+'b'+gt+'cccccc'+at+'srv01.corp.contoso.com/x')\nprint(ph,bad);sys.exit(0 if bad and not ph else 1)\n"
       ]
     }
   ],
