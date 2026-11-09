@@ -7,7 +7,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "delivery_evidence bounds the KB-Auto: querylog commit by the item's latest claim commit on HEAD, and with no claim commit there is no bound, so a story filed and never claimed with --commit is done by a delivery made before it existed; the bound falls back to the commit that added the item file. Found by the SP-sqgyoiaz review (S3).",
+  "goal": "delivery_evidence bounds the KB-Auto: querylog commit by the item's latest claim commit on HEAD and falls back to the commit that added the item file when there is no claim commit, so a story filed and never claimed with --commit is not done by a delivery made before it existed. Found by the SP-sqgyoiaz review (S3).",
   "repro": {
     "run": [
       "python3",
@@ -17,7 +17,11 @@
   },
   "touches": [
     "_tools/bl_land.py",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-vrjsu4oz"
   ],
   "links": [
     "parked: SP-sqgyoiaz review"

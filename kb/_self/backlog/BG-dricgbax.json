@@ -7,7 +7,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "bl_land.DELIVERY_READ matches the substring _querylog anywhere in a check or repro, so precheck's after-merge warning fires on a check that only builds a throwaway query-log store or runs bench_querylog.py or a test_querylog*.py selection, and on ST-pwosmcdj's own check; it matches a read of the committed store (kb/_querylog/) or of backlog.py cost figures only. Found by the SP-sqgyoiaz review (S3).",
+  "goal": "bl_precheck.DELIVERY_READ matches a read of the committed query-log store or of backlog.py cost figures only, not the substring _querylog anywhere, so precheck's after-merge warning stays quiet on a check that only builds a throwaway query-log store or runs bench_querylog.py or a test_querylog*.py selection. Found by the SP-sqgyoiaz review (S3), the warning also fired on ST-pwosmcdj's own check.",
   "repro": {
     "run": [
       "python3",

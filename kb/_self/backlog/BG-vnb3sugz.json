@@ -17,7 +17,8 @@
   },
   "touches": [
     "_tools/bl_close.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
   ],
   "links": [
     "parked: SP-ia6xayiy review"

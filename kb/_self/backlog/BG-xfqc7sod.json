@@ -7,7 +7,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "horizon --gates counts an answer as the recommendation only when it equals it (a recommendation is stored as an option's exact text), so an operator who picks the option 'yes, with a cap' over the recommendation 'yes' is counted as departing; review gap G6.",
+  "goal": "horizon --gates counts an answer as the recommendation only when it equals it (a recommendation is stored as an option's exact text), so an operator who picks the option 'yes, with a cap' over the recommendation 'yes' is counted as departing. Review gap G6.",
   "repro": {
     "run": [
       "python3",
@@ -17,7 +17,8 @@
   },
   "touches": [
     "_tools/bl_view.py",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ],
   "links": [
     "parked: SP-v6crf4rx review"

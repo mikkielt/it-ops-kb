@@ -17,7 +17,12 @@
   },
   "repro_reason": "the stop needs a code-lane landing with a branch whose commit changes a file outside its touches against a remote; SP-jplczvj2's ST-oo6uxbn6 landing printed 'land stopped at step scope' while backlog.py ops showed step=rebase exit=1",
   "touches": [
-    "_tools/bl_land.py"
+    "_tools/bl_land.py",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "BG-wcgmj4zu"
   ],
   "links": [
     "related: ST-vwe6kopi",

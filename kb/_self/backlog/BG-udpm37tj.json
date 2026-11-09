@@ -12,10 +12,18 @@
     "run": [
       "python3",
       "-c",
-      "t=open('_tools/bl_land.py',encoding='utf-8').read()\nassert 'moves the state to released' not in t, 'the refusal still says one reconcile releases the run'"
+      "import sys; t=open('_tools/bl_land.py',encoding='utf-8').read(); bad='moves the state to released' in t; print('refusal still says one reconcile releases the run' if bad else 'ok'); sys.exit(1 if bad else 0)"
     ]
   },
   "repro_reason": "the defect is the wording of a refusal message; the two-run behaviour itself is correct, so the message text is what is wrong",
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-kcfbcll2"
+  ],
   "links": [
     "parked: SP-jwvaq2hu review"
   ],

@@ -17,7 +17,12 @@
   },
   "touches": [
     "_tools/backlog.py",
-    "_tools/bl_view.py"
+    "_tools/bl_view.py",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "BG-xfqc7sod"
   ],
   "links": [
     "parked: SP-vxdacfpl review"

@@ -16,7 +16,12 @@
     ]
   },
   "touches": [
-    "_tools/bl_land.py"
+    "_tools/bl_land.py",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "BG-2naamm5z"
   ],
   "links": [
     "parked: SP-swavez3g review"

@@ -7,7 +7,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "conflict_owners names a later commit with no KB-Work trailer as the file's last change on main instead of skipping to an older item's commit; a rebase that fails with no unmerged file prints no conflict remedy; a path holding a space or non-ASCII letters is named whole. Found by the SP-basca7ae review (two S3 gaps on ST-2pberuyb).",
+  "goal": "conflict_owners names the file's last change on origin/main by its newest commit and, when that commit carries no KB-Work trailer, says no KB-Work commit changed it, instead of skipping to an older item's commit that a later untrailed change superseded. Found by the SP-basca7ae review (S3 gap on ST-2pberuyb).",
   "repro": {
     "run": [
       "python3",
@@ -20,8 +20,12 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "depends_on": [
+    "BG-dlp3mui2"
+  ],
   "links": [
     "parked: SP-basca7ae review"
   ],
+  "notes": "2026-11-09 plan: narrowed to the clause the repro reads. The earlier goal also held two further review gaps, left out here and open for a later draft: a rebase that fails with no unmerged file prints no conflict remedy, and a path holding a space or non-ASCII letters is named whole (the unmerged list is read with .split()).",
   "filed_in": "clone-0ea70e5c"
 }

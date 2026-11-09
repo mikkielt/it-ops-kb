@@ -7,7 +7,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "bl_land.is_whole_suite counts a tests.py run as whole wherever tests.run_scope gives it mode full (no -k, no named file, no --changed, no -m), so a review check such as tests.py -n 2 or --durations=5 is refused at a loaded host before it starts, as the plain run is; it reuses one helper (bl_intake.heavy_check or run_scope) instead of a second copy",
+  "goal": "bl_land.is_whole_suite counts a tests.py run as whole wherever tests.run_scope gives it mode full (no -k, no named file, no --changed, no -m), reusing one helper (bl_intake.heavy_check or run_scope) instead of a second copy, so a review check such as tests.py -n 2 or --durations=5 is refused at a loaded host before it starts, as the plain run is",
   "repro": {
     "run": [
       "python3",
@@ -16,7 +16,12 @@
     ]
   },
   "touches": [
-    "_tools/bl_land.py"
+    "_tools/bl_land.py",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "BG-nglu4rg4"
   ],
   "links": [
     "parked: SP-qlpfcgs2 review"
