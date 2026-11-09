@@ -2,7 +2,7 @@
   "id": "BG-jc53l3qa",
   "kind": "bug",
   "title": "querylog.py check prints no redact note when the only redact-gate problem is 'fetch host is not a public host'",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-osevumx6",
   "priority": "P3",
   "rank": 0,
@@ -24,5 +24,7 @@
   "links": [
     "parked: SP-vx6eufpj review"
   ],
-  "notes": "Planned 2026-11-09 in SP-osevumx6: items that share a file wait on each other (kbcommon.py, redact.py then kbask.py, ql_capture.py then ql_deliver.py); no open item of the other live sprints touches this item's code files."
+  "notes": "Planned 2026-11-09 in SP-osevumx6: items that share a file wait on each other (kbcommon.py, redact.py then kbask.py, ql_capture.py then ql_deliver.py); no open item of the other live sprints touches this item's code files.",
+  "claimed_by": "claude-cdcea91c",
+  "operator": "op-f618a13e"
 }
