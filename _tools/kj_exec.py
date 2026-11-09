@@ -57,6 +57,12 @@ decision's `fallback` is its kind: the job's placement becomes its kind (`fallba
 stays queued and one event with step `offline-since-<UTC time>` says why. `serve --kind K` with no --url serves the clone's own queue so
 (`kj_store.LocalRemote` in place of the central queue's `Remote`).
 
+`serve --kind K --url URL --key-file PATH --job JB-ID` (`serve(job=)`) serves one job of the central queue and no other, for a CI
+pipeline started for it: `Sync.refusal` leaves a job that is not queued, not placed on K (or on an offline workstation whose fallback is K
+once its delay has passed, as `Sync.offline` takes it) or naming another clone's url untouched, posting nothing, and exits 2 naming its
+placement and state; otherwise `Sync` and `drain` take only that job, no recovery pass runs, and the exit is `job_exit`: 0 succeeded,
+1 failed, refused, lost or cancelled on the queue, 2 when this executor never ran it.
+
 A server executor (`serve --kind server [--data DIR]`) serves every integration remote url its queue's jobs name, not the clone it was started in:
 `Home` keeps one clone per url under DIR (cloned at the first job, fetched before each, the tree detached on `origin/main`), runs the job's
 argument list there as the CLI does on a workstation, and gives a land job the worktree `.claude/worktrees/agent-<id>` of the remote's `work/<id>`,
@@ -210,8 +216,8 @@ class Sync:
     """What an executor of a central queue does between two looks of `drain` at its jobs: `__call__` takes the queue's jobs for
     its kind into the mirror store and brings the two stores' states together (the central store's cancel, a move not posted)."""
 
-    def __init__(self, root, store, clone, out):
-        self.root, self.store, self.clone, self.out = root, store, clone, out
+    def __init__(self, root, store, clone, out, only=None):
+        self.root, self.store, self.clone, self.out, self.only = root, store, clone, out, only
         self.remote, self.kind = store.remote, store.kind
         self.host, self.operator = platform.node(), kj_store.operator_id()
         self.last, self.noted, self.leases, self.owners = None, {}, {}, {}
@@ -227,7 +233,8 @@ class Sync:
             print(f"kbjob.py: central queue: {error}", file=self.out, flush=True)
 
     def mirrored(self):
-        return pending(self.store, self.clone, self.host, self.operator, coord.JOB_STATES)
+        return [(job, record) for job, record in pending(self.store, self.clone, self.host, self.operator, coord.JOB_STATES)
+                if self.only in (None, job)]
 
     def reconcile(self):
         """The central store's cancel applied to the mirror (the job's process group ended), a job another executor took dropped
@@ -264,7 +271,26 @@ class Sync:
         url = kj_store.remote_url(self.clone)
         return bool(url) and record.get("remote") == url
 
-    def offline(self, job, record, placed):
+    def refusal(self, job, record):
+        """Why this executor does not take JOB (RECORD, its record on the queue) when it was started for that job alone, else None:
+        the job must be queued and placed on this kind (a workstation executor: on this host, submitted by the operator of its own
+        key file) or, as `offline` says for the whole queue, on a workstation that is offline whose decision's fallback is this kind
+        and whose delay has passed, and it must fit this clone. Nothing is posted: the job is left as it was."""
+        placed, state = kj_store.placement_of(record), record.get("state")
+        where = placed["executor"] + (f" ({placed.get('host') or '-'})" if placed["executor"] == kj_store.WORKSTATION else "")
+        say = f"{job} has placement {where} and state {state}: "
+        if state != "queued":
+            return say + f"an executor of kind {self.kind} runs only a queued job"
+        if placed["executor"] != self.kind:
+            if self.offline(job, record, placed, note=False) is None:
+                return say + f"an executor of kind {self.kind} runs only a job placed on {self.kind}, or on a workstation whose offline fallback is {self.kind} once its delay has passed"
+        elif self.kind == kj_store.WORKSTATION and (placed.get("host") != self.host or self.remote.owner(job) != self.remote.operator()):
+            return say + "that workstation or its operator is not this one"
+        if not self.fits(record):
+            return say + ("the job names no integration remote url" if self.kind == SERVER else "no clone here has the job's integration remote url")
+        return None
+
+    def offline(self, job, record, placed, note=True):
         """The placement this executor's kind gives the queued JOB placed on a workstation whose executor is offline, else None.
         The workstation is offline when its lease `jobexec/<host>/<operator>` (host the placement's, operator the submitter's) is not
         held, and since the later of the lease's last renewal (`seen`) and the job's submit; the job moves when that was FALLBACK_AFTER_S
@@ -290,7 +316,8 @@ class Sync:
         if time.time() - since < float(placed.get("fallback_after_s") or 0):
             return None
         if fallback is None:
-            self.reason(job, kj_store.offline_step(since), f"executor offline since {kj_store.offline_step(since)[len('offline-since-'):]}, its decision has no fallback")
+            if note:
+                self.reason(job, kj_store.offline_step(since), f"executor offline since {kj_store.offline_step(since)[len('offline-since-'):]}, its decision has no fallback")
             return None
         return {**{name: value for name, value in placed.items() if name not in ("fallback", "fallback_after_s")}, "executor": self.kind,
                 "fallback_from": kj_store.WORKSTATION, "offline_since": round(since, 3)}
@@ -300,9 +327,9 @@ class Sync:
         a workstation whose executor is offline when its decision's fallback is this kind (`offline`)."""
         have = {job for job, _ in self.mirrored()}
         self.leases, self.owners = {}, {}
-        for record in self.remote.records():
-            job = record["job"]
-            if record.get("state") != "queued" or job in have:
+        for record in self.remote.records() if self.only is None else [self.remote.record(self.only) or {}]:
+            job = record.get("job")
+            if job is None or record.get("state") != "queued" or job in have:
                 continue
             placed = kj_store.placement_of(record)
             moved = None
@@ -1189,12 +1216,12 @@ def wait_step(lock):
     return LOCK_STEPS[lock]
 
 
-def drain(store, clone, host, operator, out, slots=SLOTS, tick=None, home=None):
+def drain(store, clone, host, operator, out, slots=SLOTS, tick=None, home=None, only=None):
     """Run the queued jobs of this host, clone and operator to the end, at most SLOTS at a time and as `next_runnable` places them
     (submit order inside a class); the ids of the jobs that failed or were lost. A job whose lock a process outside the executor
     holds is moved to waiting-lock (event step: the lock; record member `holder`: its pid, clone and step) and started once the lock is free. A job another
     executor leased, or that left queued before this one moved it, is passed over. TICK, when given, is called at the start of each pass
-    (an executor of a central queue syncs its mirror there, `Sync`). HOME, a `Home` (a server executor), makes each job's clone ready
+    (an executor of a central queue syncs its mirror there, `Sync`). ONLY, a job id, leaves every other job of the store alone. HOME, a `Home` (a server executor), makes each job's clone ready
     before it starts and is where it runs, as the CLI would on a workstation; a job whose clone cannot be made ready ends failed."""
     failed, passed, active, waiting = [], set(), {}, {}  # active: job -> child state; waiting: job -> {record, token, renewed}
     slots = max(1, int(slots))
@@ -1296,7 +1323,7 @@ def drain(store, clone, host, operator, out, slots=SLOTS, tick=None, home=None):
                     release(job, one["token"])
                 else:
                     renew(job, one["token"], one)
-            seen = [(j, r) for j, r in pending(store, clone, host, operator, ("queued", "waiting-merge")) if j not in passed]
+            seen = [(j, r) for j, r in pending(store, clone, host, operator, ("queued", "waiting-merge")) if j not in passed and only in (None, j)]
             for job, record in seen:  # a land job a dead executor left in its wait: polled again from its recorded pending
                 if record["state"] == "waiting-merge" and job not in active and record.get("op") == "land" and kj_land.recorded_pending(record):
                     token = take_job(store, job)
@@ -1495,12 +1522,14 @@ def login_item(root, store=None, out=None):
     return 0
 
 
-def serve(root, store, once=False, out=None, idle_exit=None, slots=SLOTS, kind=None, remote=None, data=None):
+def serve(root, store, once=False, out=None, idle_exit=None, slots=SLOTS, kind=None, remote=None, data=None, job=None):
     """`kbjob.py serve`: 0 when the queue was drained (--once), when IDLE_EXIT seconds passed with no live job of this host,
     clone and operator, or when this process ended by a signal; 1 when --once ran a job that failed, 2 where the clone has no
     git directory; a second serve for the same store on the host prints the running one's pid and returns 0. With REMOTE (a
     `kj_store.Remote`) and KIND (one of coord's placement executors) it serves the central queue: its jobs are kept in a mirror
-    store (in DATA, else in the clone's `kb-jobs`) and `Sync` takes and posts them."""
+    store (in DATA, else in the clone's `kb-jobs`) and `Sync` takes and posts them. With JOB (a job id; REMOTE and KIND needed) it
+    runs that one job and ends (`job_exit`): its exit is 0 when the job succeeded, 1 when it failed or was refused, 2 when it was not
+    taken."""
     out = out or sys.stdout
     clone = kj_store.clone_path(root)
     sync = home = None
@@ -1511,10 +1540,15 @@ def serve(root, store, once=False, out=None, idle_exit=None, slots=SLOTS, kind=N
             digest = hashlib.sha256("\0".join((remote.url, remote.operator())).encode("utf-8")).hexdigest()[:8]
             where = base / f"server-{digest}"
             home = Home(where / "clones")
+        store = kj_store.Mirror(kj_store.mirror_path(root, remote, kind, where), remote, kind)
+        sync = Sync(root, store, clone, out, job)
+        if job is not None:  # a job this executor does not take is left as it was: no directory made, no move or event posted
+            why = sync.refusal(job, kj_store.remote_record(remote, job))
+            if why:
+                print(f"kbjob.py: {why}; it stays as it was", file=sys.stderr)
+                return 2
         if where is not None:
             Path(where).mkdir(parents=True, exist_ok=True)
-        store = kj_store.Mirror(kj_store.mirror_path(root, remote, kind, where), remote, kind)
-        sync = Sync(root, store, clone, out)
     if kj_store.log_path(clone, "JB-00000000") is None:
         print("kbjob.py: serve needs a git clone for its job logs", file=sys.stderr)
         return 2
@@ -1522,7 +1556,7 @@ def serve(root, store, once=False, out=None, idle_exit=None, slots=SLOTS, kind=N
     if path is None:
         print(f"kbjob.py: serve already runs on this host: pid {holder['pid']} (clone {holder['clone']}, started {holder['started']})",
               file=out, flush=True)
-        return 0
+        return 0 if job is None else 2
     presence = None  # a workstation executor holds its lease on the queue it serves: the clone's own, else the central one
     if remote is None or kind == kj_store.WORKSTATION:
         presence = Presence(remote if remote is not None else kj_store.LocalRemote(store))
@@ -1538,11 +1572,11 @@ def serve(root, store, once=False, out=None, idle_exit=None, slots=SLOTS, kind=N
     host, operator, failed, recovered, idle = platform.node(), kj_store.operator_id(), [], None, None
     try:
         while True:
-            if recovered is None or time.monotonic() - recovered >= RECOVER_S:
+            if job is None and (recovered is None or time.monotonic() - recovered >= RECOVER_S):
                 failed += recovery_pass(root, store, out)
                 recovered = time.monotonic()
-            failed += drain(store, clone, host, operator, out, slots, tick, home)
-            if once:
+            failed += drain(store, clone, host, operator, out, slots, tick, home, job)
+            if once or job is not None:
                 break
             if idle_exit is not None:
                 idle = None if pending(store, clone, host, operator, LIVE_STATES) else (idle if idle is not None else time.monotonic())
@@ -1556,4 +1590,18 @@ def serve(root, store, once=False, out=None, idle_exit=None, slots=SLOTS, kind=N
         if presence is not None:
             presence.drop()
         drop_lock(path)
+    if job is not None:
+        return job_exit(store, job, out)
     return 1 if failed else 0
+
+
+def job_exit(store, job, out):
+    """The exit of a serve started for the one JOB, from its record in the mirror STORE once the drain ended: 0 succeeded; 1 failed,
+    refused, lost, or cancelled on the queue; 2 when it never ran here (another executor took it first, or no record), a line saying so."""
+    state = (kj_store.read_record(store, job) or {}).get("state")
+    if state == "succeeded":
+        return 0
+    if state in ("failed", "refused", "lost") or (state == "cancelled" and (store.remote.record(job) or {}).get("state") == "cancelled"):
+        return 1
+    print(f"kbjob.py: {job} was not run here: state {state or 'none'} in this executor's mirror; it stays as the queue has it", file=sys.stderr)
+    return 2
