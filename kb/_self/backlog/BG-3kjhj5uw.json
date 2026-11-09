@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "the dispatch usage text in backlog.py gives the turn caps 60, 100 and 200 where the code and the sprint skill have 100, 150 and 200",
   "status": "draft",
+  "sprint": "SP-ejeki6bv",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",

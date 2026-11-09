@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "dispatch starts a worker's claude -p with no --settings, so its plugins' MCP servers run unless the orchestrator's PATH wrapper turns them off",
   "status": "draft",
+  "sprint": "SP-ejeki6bv",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
