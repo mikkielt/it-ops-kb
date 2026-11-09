@@ -35,7 +35,8 @@
   ],
   "touches": [
     "_tools/bl_view.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
   ],
   "links": [
     "parked: SP-ep7ck2ab close"
