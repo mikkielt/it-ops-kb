@@ -82,7 +82,12 @@
         "KB-Job is a trailer key checked once against JB- and 8 characters; the wiring in kg_hooks.py and kj_exec.py, outside the touches, goes to a bug": "ST-p7oslxrl",
         "no check of KB-Job; wire kg_hooks.py and kj_exec.py here": "ST-p7oslxrl"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "KB-Job is a trailer key checked once against JB- and 8 characters; wire kj_exec.py (sets KB_JOB and KB_JOB_OPERATOR for the job's process) and kg_hooks.py (commit-msg calls job_trailers) here, touches widened to both, since the goal says the executor sets them",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "filed_in": "clone-0ea70e5c",
