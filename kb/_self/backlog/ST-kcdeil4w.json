@@ -87,7 +87,12 @@
         "2, naming the cause, the job as the queue has it": "ST-kcdeil4w",
         "1, as a failed job": "ST-kcdeil4w"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "2, naming the cause, the job as the queue has it",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "filed_in": "clone-0ea70e5c",
