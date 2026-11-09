@@ -2,7 +2,7 @@
   "id": "ST-hst3fk3y",
   "kind": "story",
   "title": "Review sprint: Monitoring reports live work correctly",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-zobzdhwi",
   "review": true,
   "priority": "P1",
@@ -39,6 +39,44 @@
     }
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-0f9262ec",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "c6086ca302d3b3affe91eaf045181eeb343c5c0d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "0e51f1c067bc5e45"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "662bcfda341b603b"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval",
+          "--file",
+          "kb/public/_retrieval/lookup_heldout.csv",
+          "--root",
+          "public",
+          "--min",
+          "86",
+          "--max-false-good",
+          "8"
+        ],
+        "exit": 0,
+        "sha256": "89f467d6161f8cbb"
+      }
+    ]
+  }
 }
