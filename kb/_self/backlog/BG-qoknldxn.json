@@ -1,0 +1,22 @@
+{
+  "id": "BG-qoknldxn",
+  "kind": "bug",
+  "title": "Planning left two credential-handling items (url password shapes) with open worker choices, so each worker's gate was made blocking (class secrets) and both items could not land overnight",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb-sprint plan step 6 names an item whose text holds credential or password words as one whose worker choices (which filter, which marker) are settled in its goal before the start gate",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.exit(1)"
+    ]
+  },
+  "repro_reason": "a planning-rule gap seen in SP-mut2pmu3: BG-ouhonprv g1 and BG-pwhlp2sy g1 were both class secrets; the planted input is the two gates in their branches",
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
