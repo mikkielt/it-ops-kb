@@ -7,7 +7,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "backlog.json takes a setting worker_plugins_off (a list of plugin keys, default none) and claude_argv adds --settings with enabledPlugins false for each, so dispatch, begin and dispatch --resume start a worker with those plugins off and no wrapper is needed; this clone's backlog.json lists gitkraken@synced, whose gk mcp children orphan in the worker's worktree and block land at step branch",
+  "goal": "backlog.json takes a setting worker_plugins_off (a list of plugin keys, default none) and claude_argv adds --settings with enabledPlugins false for each, so dispatch, begin and dispatch --resume start a worker with those plugins off and no wrapper is needed; this clone's backlog.json lists gitkraken@synced in worker_plugins_off",
   "repro": {
     "run": [
       "python3",
@@ -21,6 +21,9 @@
     "backlog.json",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-gsaipwnz"
   ],
   "relates_to": [
     "ST-y5volitm"
