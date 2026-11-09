@@ -2,7 +2,7 @@
   "id": "BG-gcecxy67",
   "kind": "bug",
   "title": "kb_mcp leaves out every mcp_tools tool of a group whose name has a hyphen, a name kbext.py init-team accepts",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-y7fe7qqx",
   "sprint": "SP-ga3lbnlk",
   "priority": "P3",
@@ -53,5 +53,7 @@
   "links": [
     "parked: SP-ep7ck2ab review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-0a3e91bc",
+  "operator": "op-f618a13e"
 }
