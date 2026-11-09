@@ -6,7 +6,10 @@
                                         event naming TARGET (a session, item or agent id, or `any`) and that key; prints
                                         the new ID and the key as JSON. A TARGET that is a session id whose process has
                                         ended (`bl_peers.reach`) is refused, exit 1, naming the live session that works on
-                                        the same item when there is one
+                                        the same item when there is one. A TARGET that is a session label (`s-` and six hex, as
+                                        peers, horizon and kbmon print it) is resolved to the one live session/<id> lease it
+                                        names (or whose id starts with those six hex) and the ask goes to that id (printed with the label); a label that names no live
+                                        session, or more than one, is refused, exit 1, nothing sent
   kbask.py answer ID TEXT [--state S]   the same for an answer: the value answer/ID and an `answer` event with the state
                                         (working, input-required, completed, failed or rejected; default completed)
   kbask.py coordinate ITEM OTHER STRATEGY [--session ID]
@@ -136,6 +139,7 @@ MAX_TEXT = 8000  # characters of a question or an answer
 MAX_LIVE_IDS = 8  # GUIDs of one text looked up as session leases, a coord call each; the rest are replaced
 ASK_ID = re.compile(r"[A-Za-z0-9_.:#@-]{1,100}")  # one coord id, with no `/` (the key is ask/ID)
 ALERT_ID = re.compile(r"[A-Za-z0-9_.:/#@-]{1,100}")
+SESSION_LABEL = re.compile(r"s-[0-9a-f]{6}")  # a session label as peers, horizon and kbmon print it (`mon_view.session_label`)
 WEBHOOK_HOST = "127.0.0.1"  # loopback only, not an option
 WEBHOOK_PORT = 9095  # the port of the url in otel/alertmanager.yml
 WEBHOOK_PATH = "/alert"
@@ -341,14 +345,38 @@ def refuse_ended(conn, target):
     raise Stop(f"kbask: session {mon_view.session_label(target)} has ended (no process runs it), so the ask was not sent{where}", 1)
 
 
+def resolve_label(conn, label):
+    """The id of the one live presence lease `session/<id>` of the store whose session label (`mon_view.session_label`: the digest
+    of the id) or whose id's first six hex characters make LABEL (`s-` and those); a Stop (exit 1, nothing sent) when none or more
+    than one lease has it: the coord hook shows an ask only to a full session id, an announced item or `any`, so a label as the
+    target would never be seen."""
+    import mon_view
+    code, body, err = run_coord(conn, "list", "--prefix", coord.SESSION_LEASE)
+    if code != 0 or not isinstance(body, list):
+        raise Stop(f"kbask: cannot list the live sessions: {err or 'coord.py exited ' + str(code)}", 1 if code == 1 else 2)
+    ids = {row["key"][len(coord.SESSION_LEASE):].lower() for row in body if isinstance(row, dict) and isinstance(row.get("key"), str)}
+    ids = {i for i in ids if mon_view.SESSION_ID.fullmatch(i)}
+    found = sorted(i for i in ids if label in (mon_view.session_label(i), "s-" + i[:mon_view.LABEL_HEX]))
+    if len(found) != 1:
+        raise Stop(f"kbask: {'no live session has' if not found else str(len(found)) + ' live sessions have'} the label {label}, "
+                   "so the ask was not sent: address a session id, an item id or `any`", 1)
+    return found[0]
+
+
 def cmd_ask(args):
     conn = connection(args)
     target = check_id(args.target, "TARGET", ALERT_ID)
     check_text(args.question)
+    label = target if SESSION_LABEL.fullmatch(target) else None
+    if label:
+        target = resolve_label(conn, label)
     refuse_ended(conn, target)
     ask_id = "A" + secrets.token_hex(5)
     event = send_ask(conn, ask_id, target, args.question)
-    return {"ok": True, "id": ask_id, "to": target, "ref": f"ask/{ask_id}", "seq": event.get("seq")}
+    body = {"ok": True, "id": ask_id, "to": target, "ref": f"ask/{ask_id}", "seq": event.get("seq")}
+    if label:
+        body["label"] = label
+    return body
 
 
 def cmd_answer(args):
