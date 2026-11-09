@@ -2,7 +2,7 @@
   "id": "BG-z3cotvxq",
   "kind": "bug",
   "title": "An interrupt between the creation of the landing lock file and the write of its record leaves an empty lock file that every landing of the clone waits out the grace period for",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-luspfajx",
   "priority": "P3",
   "rank": 0,
@@ -42,5 +42,7 @@
   "links": [
     "parked: SP-6aegt3bs review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-luspfajx",
+  "operator": "op-f618a13e"
 }
