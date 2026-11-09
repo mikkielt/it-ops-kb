@@ -153,7 +153,9 @@ class _PageText(html.parser.HTMLParser):
     h1-h6 line with Markdown `#` marks (provider.py's document text; the hash text of --diff has none). An <aside>
     inside <main> or <article> is kept only when it has data-type="sidebar" (a book's content box) and neither it nor
     an ancestor has role=navigation (an element's reach ends where it ends, an omitted end tag of p or li
-    included); any other aside is site navigation or an on-this-page list and is skipped."""
+    included); any other aside is site navigation or an on-this-page list and is skipped. An element with role=tooltip
+    or a class token that holds `VisuallyHidden` (Primer's screen-reader heading and duplicated counts, as on a GitHub
+    repository page) is skipped with all it holds, nested elements of its own name included."""
     SKIP = {"script", "style", "noscript", "svg", "template", "head", "nav", "footer", "button", "form", "aside"}
     VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"}
     ENCLOSING = {"html", "body", "main", "article", "section", "div", "header", "footer", "aside", "nav", "ul", "ol",
@@ -173,6 +175,7 @@ class _PageText(html.parser.HTMLParser):
         super().__init__(convert_charrefs=True)
         self.skip = self.main = self.article = 0
         self.asides = []  # per open <aside>: True when it was skipped
+        self.hidden = None  # [tag, depth] of the open role=tooltip or visually hidden element being skipped
         self.navstack = []  # open elements from the outermost one with role=navigation (first) down; empty outside it
         self.headings = headings
         self.all, self.in_main, self.saw_main = [], [], False
@@ -180,6 +183,11 @@ class _PageText(html.parser.HTMLParser):
     def handle_starttag(self, tag, attrs):
         a = dict(attrs)
         navrole = "navigation" in (a.get("role") or "").lower().split()
+        if self.hidden:
+            self.hidden[1] += tag == self.hidden[0]
+        elif tag not in self.VOID and self._is_hidden(a):
+            self.hidden = [tag, 1]
+            self.skip += 1
         if self.navstack:
             self._nav_implied_end(tag)
         if self.navstack:
@@ -205,7 +213,17 @@ class _PageText(html.parser.HTMLParser):
         if self.headings and not self.skip and re.fullmatch(r"h[1-6]", tag):
             self._emit("#" * int(tag[1]) + " ")
 
+    def _is_hidden(self, a):
+        """True for an element that is a tooltip (role=tooltip) or carries a visually hidden class."""
+        return ("tooltip" in (a.get("role") or "").lower().split()
+                or "visuallyhidden" in (a.get("class") or "").lower())
+
     def handle_endtag(self, tag):
+        if self.hidden and tag == self.hidden[0]:
+            self.hidden[1] -= 1
+            if not self.hidden[1]:
+                self.hidden = None
+                self.skip -= 1
         if self.navstack:
             if tag in self.navstack:
                 del self.navstack[len(self.navstack) - 1 - self.navstack[::-1].index(tag):]
