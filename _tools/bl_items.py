@@ -5,7 +5,7 @@ changed_items and the shared refusals, so they live together; importing this mod
 bl_cli. backlog.py, the facade, keeps the usage text, the usage order and main's dispatch.
 
 Standard library only; imports the bl_ modules and never backlog."""
-import argparse, contextlib, copy, json, re, shlex, subprocess, sys
+import argparse, contextlib, copy, json, re, shlex, signal, subprocess, sys
 from pathlib import Path
 
 import bl_authority
@@ -346,10 +346,16 @@ def cmd_claim(bl, a):
     # the operator (`claude auth status`, `git config`) and the coord run state (`take_claim`) are asked before the
     # ledger lock is taken: each can take longer than the lock's stale age, and a waiter clears a lock older than that.
     # The coord transition is what lets one of two concurrent claims win; a refusal under the lock that follows it
-    # (the item claimed meanwhile, another session's claim in this checkout) puts the run state back
+    # (the item claimed meanwhile, another session's claim in this checkout), an item file that cannot be saved, an
+    # interrupt and a SIGTERM while the lock is waited for each put the run state back, so no claim leaves `claimed`
     who = operator_who()[0]
     moved = take_claim(iid, a.by, mine=it.get("status") == "doing" and it.get("claimed_by") == a.by)
     recorded = True
+    prev = None
+    try:
+        prev = signal.signal(signal.SIGTERM, lambda *_: sys.exit(143))  # a SIGTERM while waiting for the lock ends the claim
+    except (ValueError, OSError):  # not the main thread
+        pass
     try:
         # the ledger is read and written under the lock `dispatch` takes to add a worker's pid and session, and through
         # a temp file of this process's own, so a claim made beside a dispatch waits and neither side drops the other's
@@ -396,10 +402,13 @@ def cmd_claim(bl, a):
                     write_ledger(ledger, here)
             except OSError:
                 recorded = False  # the record guards the next claim; a checkout it cannot be written in is not refused
-    except Refused:
+    except BaseException:  # a refusal, an item file that cannot be saved, an interrupt or a SIGTERM
         if moved:
             move_run(iid, "released", "claim")
         raise
+    finally:
+        if prev is not None:
+            signal.signal(signal.SIGTERM, prev)
     say(f"claimed {bl.label(iid)} for {a.by}")
     if not recorded:
         say(f"warning: the claims ledger {ledger} was not recorded (its git dir cannot be written), so another session's "
