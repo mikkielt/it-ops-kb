@@ -3,7 +3,6 @@
   "kind": "bug",
   "title": "A stale feedback.ids takeover guard is removed by path, so a live guard can be deleted and two takers hold the lock",
   "status": "draft",
-  "sprint": "SP-wjrxikw6",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -23,6 +22,6 @@
   "links": [
     "parked: SP-osevumx6 review"
   ],
-  "notes": "Found by the SP-osevumx6 review. The repro is a stub that always fails: the race is probabilistic. Reproduce with a dead lock file and a dead takeover guard file, both aged 100 s, then 8 threads calling ql_capture._take_ids_lock on the lock with FEEDBACK_IDS_LOCK_WAIT_S=0.3, 100 rounds: about 3 rounds give two holders. Replace the stub by a planted loop check when this is taken up.",
+  "notes": "Found by the SP-osevumx6 review. The repro is a stub that always fails: the race is probabilistic. Reproduce with a dead lock file and a dead takeover guard file, both aged 100 s, then 8 threads calling ql_capture._take_ids_lock on the lock with FEEDBACK_IDS_LOCK_WAIT_S=0.3, 100 rounds: about 3 rounds give two holders. Replace the stub by a planted loop check when this is taken up. Left out of SP-wjrxikw6 2026-11-10: the race has no single-run failing repro yet; a planted case needs the fix's design (token compare or rename), so plan it with that choice made.",
   "filed_in": "clone-0ea70e5c"
 }
