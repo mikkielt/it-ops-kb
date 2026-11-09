@@ -27,6 +27,28 @@
     "BG-4runl4ai",
     "BG-myligl24"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does group_gate read the gate_checks of the kb roots, given that kbsettings.layered takes one kb root?",
+      "options": [
+        "Every kb/NAME/settings.json by name, between the clone and user layers, each entry's layer shown as root NAME",
+        "Only the kb root a caller names"
+      ],
+      "recommendation": "Every kb/NAME/settings.json by name, between the clone and user layers, each entry's layer shown as root NAME",
+      "do": {
+        "Every kb/NAME/settings.json by name, between the clone and user layers, each entry's layer shown as root NAME": "BG-j2pfr5bb",
+        "Only the kb root a caller names": "BG-j2pfr5bb"
+      },
+      "class": "push",
+      "answer": "Every kb/NAME/settings.json by name, between the clone and user layers, each entry's layer shown as root NAME",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "links": [
     "parked: SP-ep7ck2ab review"
   ],
