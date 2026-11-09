@@ -20,6 +20,9 @@
     "kb/_self/benchmarks.md",
     "kb/_self/tools.md"
   ],
+  "depends_on": [
+    "BG-yfvjzhkr"
+  ],
   "links": [
     "parked: SP-bpjqqauu review"
   ],
