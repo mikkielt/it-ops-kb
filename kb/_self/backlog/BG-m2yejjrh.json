@@ -2,7 +2,7 @@
   "id": "BG-m2yejjrh",
   "kind": "bug",
   "title": "drop --commit names only the dropped ids in KB-Work, though it also commits the neighbour item files it cleaned (relates_to, depends_on, gate do)",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-yriisdti",
   "priority": "P3",
   "rank": 0,
@@ -27,5 +27,7 @@
     "parked: SP-pww4aqis review"
   ],
   "notes": "Review gap 3 of SP-pww4aqis (probed 2026-11-09 on origin/main): bl_items.py ids=[iid]+gone only; the neighbour files are in bl.written and committed. tools.md says KB-Work naming each deleted item, which matches the code but not the goal of BG-mwqxiqqx (each id whose file changed). move and reopen are right. Whether the neighbour should be named or the goal and docs say deleted ids only is a small choice for the worker; check-trailers refuses a named id whose file the commit does not change, so naming the changed neighbour is allowed.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev2run01",
+  "operator": "op-f618a13e"
 }
