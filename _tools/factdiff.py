@@ -1619,8 +1619,20 @@ def resolve_source(sid, src, res, state, facts, anchors, rows, lookup=False, cit
     return verdict, ev, rows_f, counts
 
 
+def free_log_path(date):
+    """The default detect log of `date`: _census/factdiff-<date>.csv, and when that file exists (a committed log of an
+    earlier run that day) the first of factdiff-<date>-2.csv, -3.csv ... that does not, so a run never replaces one."""
+    base = root_path(os.path.join(kbcommon.CENSUS_DIR, f"factdiff-{date}.csv"))
+    path, n = base, 1
+    while os.path.exists(path):
+        n += 1
+        path = base[:-len(".csv")] + f"-{n}.csv"
+    return path
+
+
 def cmd_detect(a, tally):
-    """Detection for the selected sources, then resolution per fact; the log goes to _census/factdiff-<date>.csv."""
+    """Detection for the selected sources, then resolution per fact; the log goes to _census/factdiff-<date>.csv, or
+    factdiff-<date>-<N>.csv when that exists (a second run of the day)."""
     srcs, facts, anchors, state = sources(), cited_facts(), read_anchors(), read_state()
     rows = provider.providers(ROOT)
     ids = [i for i in select_ids(a, srcs) if i in facts and not (srcs[i].get("superseded_by") or "").strip()]
@@ -1667,7 +1679,7 @@ def cmd_detect(a, tally):
             state[sid] = {**new, "changed_utc": new["detected_utc"]} if verdict in CHANGE_VERDICTS else new
         if doc is not None and wants_snapshot(srcs[sid], doc) and not a.no_save:
             write_snapshot(srcs[sid], doc["text"], date)
-    out = a.out or root_path(os.path.join(kbcommon.CENSUS_DIR, f"factdiff-{date}.csv"))
+    out = a.out or free_log_path(date)
     if not a.no_save:
         os.makedirs(os.path.dirname(out), exist_ok=True)
         kbcommon.write_csv(out, LOG_COLS, log, atomic=True)
@@ -2791,7 +2803,7 @@ def main():
         p.add_argument("--file", action="append", default=[])
         p.add_argument("--source", action="append", default=[])
     de.add_argument("--date", help="log date (default today)")
-    de.add_argument("--out", help="log path (default _census/factdiff-<date>.csv)")
+    de.add_argument("--out", help="log path (default _census/factdiff-<date>.csv, or -2, -3 ... when it exists)")
     de.add_argument("--no-save", action="store_true", help="write no log, state or snapshot")
     de.add_argument("--sitemaps", action="store_true", help="also diff each involved provider's sitemap (added urls)")
     rv = sub.add_parser("review", help="the facts a model must read: old and new passage each, never whole pages")

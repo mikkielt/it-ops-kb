@@ -28,6 +28,29 @@
     "kb/_self/tools.md",
     "kb/_self/content-rules.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does detect avoid replacing the day's existing log?",
+      "options": [
+        "new numbered name factdiff-DATE-N.csv",
+        "append rows to the existing log"
+      ],
+      "recommendation": "new numbered name factdiff-DATE-N.csv",
+      "reason": "appended rows would double-process a source in apply and review",
+      "do": {
+        "new numbered name factdiff-DATE-N.csv": "BG-gt4egejo",
+        "append rows to the existing log": "BG-gt4egejo"
+      },
+      "class": "design",
+      "answer": "new numbered name factdiff-DATE-N.csv",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "notes": "Found 2026-11-09 when a refresh run had to restore the tracked log after a second detect overwrote it. Premise: the repro (cmd_detect in process on a planted root holding a committed same-day log) exits 1 on 55dde769f: the log is rewritten.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-c41d77ea",
