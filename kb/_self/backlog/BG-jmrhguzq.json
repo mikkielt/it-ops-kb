@@ -2,7 +2,7 @@
   "id": "BG-jmrhguzq",
   "kind": "bug",
   "title": "kbmon's kb panel cuts its refreshed, eval and index row at 80 columns, losing counts and dates",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-zobzdhwi",
   "priority": "P3",
   "rank": 0,
@@ -22,5 +22,7 @@
   ],
   "links": [
     "parked: SP-5gph7fh6 review"
-  ]
+  ],
+  "claimed_by": "claude-0f9262ec",
+  "operator": "op-f618a13e"
 }
