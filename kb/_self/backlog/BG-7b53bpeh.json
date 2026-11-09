@@ -2,7 +2,7 @@
   "id": "BG-7b53bpeh",
   "kind": "bug",
   "title": "A job run by a server or CI executor names the executor's operator, not the submitter, in its KB-Operator trailer and operator credential",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-lwkdljxg",
   "priority": "P1",
   "rank": 0,
@@ -27,5 +27,7 @@
   "depends_on": [
     "BG-eaf6nttv"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-432be86e",
+  "operator": "op-f618a13e"
 }
