@@ -7,7 +7,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "kg_contrib.internal_dirs holds back every root and pointer that does not say visibility: public (a restricted value or a missing line too), as publish's tree refusal does, and its docstring and the git.md contribute paragraph state that a root or pointer not saying visibility: public is private",
+  "goal": "kg_contrib.internal_dirs holds back every root and pointer that does not say visibility: public (a restricted value or a missing line too) and reads a _root.md under _tools/fixtures as no root, as publish's tree refusal does, and its docstring and the git.md contribute paragraph state that a root or pointer not saying visibility: public is private",
   "repro": {
     "run": [
       "python3",
@@ -21,7 +21,7 @@
       "run": [
         "python3",
         "-c",
-        "import sys;sys.path.insert(0,\"_tools\");import kbpublic as p,kg_contrib as c;p.tree_files=lambda rev,cwd:[\"kb/t1/_root.md\",\"kb/_roots/t2.md\",\"kb/t3/_root.md\"];p.texts=lambda specs,cwd:{s:(\"---\\nroot: x\\nvisibility: public\\n---\\n\" if \"t3\" in s else \"---\\nroot: x\\nvisibility: restricted\\n---\\n\") for s in specs};r,q=c.internal_dirs(\"H\",\"U\",[]);print(sorted(r),sorted(q));sys.exit(0 if r>={\"kb/t1\"} and \"kb/t3\" not in r and \"kb/t2\" in q else 1)"
+        "import sys;sys.path.insert(0,\"_tools\");import kbpublic as p,kg_contrib as c;p.tree_files=lambda rev,cwd:[\"kb/t1/_root.md\",\"kb/_roots/t2.md\",\"kb/t3/_root.md\",\"_tools/fixtures/lang/de/_root.md\"];p.texts=lambda specs,cwd:{s:(\"---\\nroot: x\\nvisibility: public\\n---\\n\" if \"t3\" in s else \"---\\nroot: x\\nvisibility: restricted\\n---\\n\") for s in specs};r,q=c.internal_dirs(\"H\",\"U\",[]);print(sorted(r),sorted(q));sys.exit(0 if r>={\"kb/t1\"} and \"kb/t3\" not in r and \"kb/t2\" in q and not any(\"fixtures\" in x for x in r) else 1)"
       ]
     },
     {
@@ -32,19 +32,12 @@
       ]
     }
   ],
-  "clauses": [
-    {
-      "clause": "kg_contrib.internal_dirs holds back every root and pointer that does not say visibility: public (a restricted value or a missing line too), as publish's tree refusal does",
-      "check": 0
-    },
-    {
-      "clause": "its docstring and the git.md contribute paragraph state that a root or pointer not saying visibility: public is private",
-      "check": 1
-    }
-  ],
   "touches": [
     "_tools/kg_contrib.py",
     "kb/_self/git.md"
+  ],
+  "depends_on": [
+    "BG-thhbfbx4"
   ],
   "links": [
     "parked: SP-n7zxspch review"
