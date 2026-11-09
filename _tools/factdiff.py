@@ -2226,9 +2226,9 @@ def judge_verdicts(batch, verdicts):
 def judge_items(items, model=JUDGE_MODEL, size=JUDGE_BATCH, jobs=4, cap_usd=None, call=None):
     """(verdicts, calls) of the judgeable `items` (those with a new passage), in batches of one call each: `verdicts`
     is {index in `items`: {verdict, sentence, note}} for the items a reply judged, `calls` one record per batch
-    ({items, cost_usd, usage, error}). `cap_usd` is each call's --max-budget-usd (else from its estimate); `call`
-    replaces judge_call. A call that answered with no error and no entry matching an item is made once more, and its
-    record holds both calls' spend and tokens and the second one's error."""
+    ({items, model_calls, cost_usd, usage, error}). `cap_usd` is each call's --max-budget-usd (else from its
+    estimate); `call` replaces judge_call. A call that answered with no error and no entry matching an item is made
+    once more, and its record holds both calls' spend and tokens, `model_calls` 2 and the second one's error."""
     call = call or judge_call
     idx, batches, at = judge_candidates(items), [], 0
     for b in judge_batches([items[i] for i in idx], size):
@@ -2245,7 +2245,7 @@ def judge_items(items, model=JUDGE_MODEL, size=JUDGE_BATCH, jobs=4, cap_usd=None
         again = call(judge_prompt(batch), model, cap)  # a reply that matched no item is asked once more; both calls are billed
         usage = collections.Counter(reply["usage"])
         usage.update(again["usage"])
-        return {**again, "cost_usd": reply["cost_usd"] + again["cost_usd"], "usage": dict(usage)}
+        return {**again, "model_calls": 2, "cost_usd": reply["cost_usd"] + again["cost_usd"], "usage": dict(usage)}
 
     with cf.ThreadPoolExecutor(max(1, min(jobs, len(batches) or 1))) as ex:
         replies = list(ex.map(one, zip(batches, caps)))
@@ -2253,16 +2253,16 @@ def judge_items(items, model=JUDGE_MODEL, size=JUDGE_BATCH, jobs=4, cap_usd=None
     for b, reply in zip(batches, replies):
         got = judge_verdicts([items[i] for i in b], reply["verdicts"] or [])
         verdicts.update({b[k]: v for k, v in got.items()})
-        calls.append({"items": len(b), "cost_usd": reply["cost_usd"], "usage": reply["usage"],
-                      "error": reply["error"] or ("" if got or not b else "no entry matched an item")})
+        calls.append({"items": len(b), "model_calls": reply.get("model_calls", 1), "cost_usd": reply["cost_usd"],
+                      "usage": reply["usage"], "error": reply["error"] or ("" if got or not b else "no entry matched an item")})
     return verdicts, calls
 
 
 def judge_tally(tally, verdicts, calls):
-    """Add a judge run's counts to `tally` (the census.phase row): the verdicts, the calls and failed calls, the
-    tokens of each kind and the spend in millionths of a dollar (a row's count is an integer)."""
+    """Add a judge run's counts to `tally` (the census.phase row): the verdicts, the model calls made (a batch's retry
+    included, as billed) and the batches that failed, the tokens of each kind and the spend in millionths of a dollar (a row's count is an integer)."""
     tally.update(v["verdict"] for v in verdicts.values())
-    tally["calls"] += len(calls)
+    tally["calls"] += sum(c.get("model_calls", 1) for c in calls)
     tally["failed"] += sum(1 for c in calls if c["error"])
     for c in calls:
         tally.update(c["usage"])
@@ -2270,12 +2270,12 @@ def judge_tally(tally, verdicts, calls):
 
 
 def judge_lines(calls):
-    """The summary lines of a judge run: calls, failures, tokens and the spend its results report."""
+    """The summary lines of a judge run: model calls (a retry included), failures, tokens and the spend its results report."""
     toks = collections.Counter()
     for c in calls:
         toks.update(c["usage"])
     spent = sum(c["cost_usd"] for c in calls)
-    out = [f"judge calls={len(calls)} failed={sum(1 for c in calls if c['error'])} " + " ".join(
+    out = [f"judge calls={sum(c.get('model_calls', 1) for c in calls)} failed={sum(1 for c in calls if c['error'])} " + " ".join(
         f"{name}={toks[name]}" for _, name in JUDGE_USAGE) + f" total_cost_usd={spent:.4f}"]
     out += [f"  call {n} failed: {c['error']}" for n, c in enumerate(calls, 1) if c["error"]]
     return out
