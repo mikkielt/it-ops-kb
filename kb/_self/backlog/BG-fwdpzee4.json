@@ -2,7 +2,7 @@
   "id": "BG-fwdpzee4",
   "kind": "bug",
   "title": "The leak scan flags a table row whose identifier cell is lower-camel or holds digits (deviceManagementConfigurationPolicy, Win32LobAppAssignmentSettings), because the exemption covers only three capitalised words",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-osevumx6",
   "priority": "P3",
   "rank": 0,
@@ -66,6 +66,28 @@
   ],
   "notes": "Planned 2026-11-09 in SP-osevumx6: items that share a file wait on each other (kbcommon.py, redact.py then kbask.py, ql_capture.py then ql_deliver.py); no open item of the other live sprints touches this item's code files.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-cdcea91c",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "4d2d19d3a882ba05bfd4e7e781c2b981502139ba",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import kbcommon as k;L='-'*5+'BEGIN EC PRIVATE KEY'+'-'*5;E='-'*5+'END EC PRIVATE KEY'+'-'*5;t=[L+chr(10)+'MHcCAQEEIA7r/Gk3lq9x2Zp0aB1cD2eF3gH4iJ5kL6mN7oP8qR9sT0uV1wX2yZ3a'+chr(10)+E,'| '+L+' | Note: PEM label | MHcCAQEEIA7r/Gk3lq9x2Zp0aB1c |'];r=[bool([h for h in k.leak_hits(x) if h[0]=='secret']) for x in t];print(r);sys.exit(0 if all(r) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "d72c373df05f3aae"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import kbcommon;L=\"-\"*5+\"BEGIN EC PRIVATE KEY\"+\"-\"*5;bad=[i for i in (\"deviceManagementConfigurationPolicy\",\"windowsAutopilotDeploymentProfile\",\"Win32LobAppAssignmentSettings\") if any(k==\"secret\" for k,_ in kbcommon.leak_hits(\"| \"+L+\" | Note: PEM label | \"+i+\" |\"))];print(\"rows flagged:\",bad);sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "8c7f3a0555903316"
+      }
+    ]
+  }
 }
