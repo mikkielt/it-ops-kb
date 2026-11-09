@@ -1,0 +1,22 @@
+{
+  "id": "BG-bqjhjgyn",
+  "kind": "bug",
+  "title": "gate add reads a bare doc file name in an option (tools.md) as a path outside the touches although a touch holds kb/_self/tools.md, and so makes the gate blocking",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "bl_authority.block_reasons gives no 'outside the touches' reason for an option that names a doc by its bare file name (tools.md, web-sources.md) when a touch of the item ends in that file name, so a provisional gate whose options name the docs its own touches hold stays provisional. Found by the SP-c6tr77jl close retrospective (BG-7po2pir4 g1 was made blocking this way and needed an operator-class answer).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import bl_authority as a;i={\"title\":\"x\",\"touches\":[\"kb/_self/tools.md\"]};g={\"id\":\"g1\",\"kind\":\"provisional\",\"question\":\"which way?\",\"options\":[\"Drop it\",\"Keep it and reword tools.md\"],\"recommendation\":\"Drop it\"};r=a.block_reasons(i,g,False);print(r);sys.exit(1 if r else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_authority.py",
+    "kb/_self/backlog.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
