@@ -52,6 +52,44 @@
   "relates_to": [
     "ST-sw2xihoe"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which jobs count as a group's spend for the daily cap, and which UTC day does a finished job belong to?",
+      "options": [
+        "Jobs placed by the same decided_by, counted on the UTC day of their submit",
+        "Jobs of the same operator group path, counted on the UTC day of their last event"
+      ],
+      "recommendation": "Jobs placed by the same decided_by, counted on the UTC day of their submit",
+      "reason": "the record already holds both, no event scan, and the same rule serves the central queue",
+      "do": {
+        "Jobs placed by the same decided_by, counted on the UTC day of their submit": "ST-iueyyz5f",
+        "Jobs of the same operator group path, counted on the UTC day of their last event": "ST-iueyyz5f"
+      },
+      "class": "design",
+      "answer": "Jobs placed by the same decided_by, counted on the UTC day of their submit",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "What does the bench operation take as its subject and run?",
+      "options": [
+        "Any lowercase slug as the scenario, run as benchmarks.py run SCENARIO --max-usd USD",
+        "Only the names benchmarks.py lists, refused otherwise"
+      ],
+      "recommendation": "Any lowercase slug as the scenario, run as benchmarks.py run SCENARIO --max-usd USD",
+      "reason": "the goal's own check names scenarios the tool does not list, and benchmarks.py refuses an unknown one itself",
+      "do": {
+        "Any lowercase slug as the scenario, run as benchmarks.py run SCENARIO --max-usd USD": "ST-iueyyz5f",
+        "Only the names benchmarks.py lists, refused otherwise": "ST-iueyyz5f"
+      },
+      "class": "design"
+    }
+  ],
   "notes": "Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: queues nothing",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-61c966d6",
