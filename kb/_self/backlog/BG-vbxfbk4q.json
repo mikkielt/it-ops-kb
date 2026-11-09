@@ -2,7 +2,7 @@
   "id": "BG-vbxfbk4q",
   "kind": "bug",
   "title": "kbmon --events still exports a sprint's kb.sprint span twice while the sprint holds an item that is todo and not yet claimed: once when the claimed items have landed and again with a later end",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-zobzdhwi",
   "priority": "P3",
   "rank": 0,
@@ -27,5 +27,7 @@
     "parked: SP-ymnz7b4n review"
   ],
   "notes": "Found by the review of SP-ymnz7b4n (2026-10-24, S3): BG-4g4ml4jd's open_of counts only items that are doing, or todo with a claim; the reviewer did not reproduce it, the repro here plants an unclaimed todo item. The operator may judge the goal of BG-4g4ml4jd already met (only claimed or doing items count).",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-0f9262ec",
+  "operator": "op-f618a13e"
 }
