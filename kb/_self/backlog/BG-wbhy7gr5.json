@@ -2,7 +2,7 @@
   "id": "BG-wbhy7gr5",
   "kind": "bug",
   "title": "kbgit.py sync routes code-lane paths to a code/<id> branch even when backlog.json sets lane_module to empty",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-mut2pmu3",
   "priority": "P3",
   "rank": 0,
@@ -32,5 +32,7 @@
   "links": [
     "parked: SP-5y4ut64g review"
   ],
-  "notes": "Premise run 2026-11-09: the repro fails on the base (lane_plan returns code, code/ST-aaaaaaaa with lane_module empty). Check 0 (default lane_module kblane still routes a code commit to its code/<id> branch) passes before the work on purpose: it pins the behaviour that must stay."
+  "notes": "Premise run 2026-11-09: the repro fails on the base (lane_plan returns code, code/ST-aaaaaaaa with lane_module empty). Check 0 (default lane_module kblane still routes a code commit to its code/<id> branch) passes before the work on purpose: it pins the behaviour that must stay.",
+  "claimed_by": "claude-ev3run01",
+  "operator": "op-f618a13e"
 }
