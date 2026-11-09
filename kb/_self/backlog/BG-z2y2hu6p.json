@@ -20,6 +20,9 @@
   "touches": [
     ".claude/skills/kbmon-pane/**"
   ],
+  "depends_on": [
+    "BG-tje2kpiv"
+  ],
   "links": [
     "parked: SP-3hgirkur review"
   ]
