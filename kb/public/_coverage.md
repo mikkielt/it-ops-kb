@@ -180,6 +180,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `defender/response-actions-api` | P1 | complete | `defender/response-actions-api.md`, `defender/machine-actions.csv` | 18 |
 | `defender/advanced-hunting` | P2 | complete | `defender/advanced-hunting.md`, `defender/advanced-hunting-tables.csv` | 25 |
 | `defender/asr-and-antivirus` | P2 | complete | `defender/asr-and-antivirus.md`, `defender/asr-rules.csv` | 26 |
+| `defender/safe-links` | P3 | complete | `defender/safe-links.md` | 6 |
 | `dsc/cli-reference` | P0 | complete | `dsc/cli-reference.md`, `dsc/cli/` | 14 |
 | `dsc/directives` | P0 | complete | `dsc/directives.md` | 12 |
 | `dsc/functions` | P0 | complete | `dsc/functions.md`, `dsc/functions-3.3.0.csv` | 7 |

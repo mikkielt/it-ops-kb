@@ -956,3 +956,8 @@ HERDR_BIN_PATH,agents/herdr-agent-state
 pane.report_agent,agents/herdr-agent-state
 pane.agent_status_changed,agents/herdr-agent-state
 herdr agent wait,agents/herdr-agent-state
+New-SafeLinksPolicy,defender/safe-links
+New-SafeLinksRule,defender/safe-links
+Set-SafeLinksPolicy,defender/safe-links
+safelinks.protection.outlook.com,defender/safe-links
+UrlClickEvents,defender/safe-links
