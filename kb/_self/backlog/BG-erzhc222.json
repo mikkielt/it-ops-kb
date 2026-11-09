@@ -1,0 +1,22 @@
+{
+  "id": "BG-erzhc222",
+  "kind": "bug",
+  "title": "release leaves the item file modified and uncommitted, so begin of an item whose touches overlap the released claim still refuses until a hand set --commit and sync push",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "release commits the item file it changed or names the commit and push the next begin needs",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.exit(1)"
+    ]
+  },
+  "repro_reason": "seen in SP-mut2pmu3 with BG-ouhonprv then BG-pwhlp2sy (same kbcommon.py); needs a claimed item and a pushed claim",
+  "touches": [
+    "_tools/bl_items.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
