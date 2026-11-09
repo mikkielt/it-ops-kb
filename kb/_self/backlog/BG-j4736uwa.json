@@ -42,6 +42,27 @@
   "depends_on": [
     "BG-b24gsrj7"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does a landing whose ticket another landing removed take its place again?",
+      "options": [
+        "at the back of the queue, with a new ticket named by the time it asks again",
+        "at its old place, by remaking the ticket under its first name"
+      ],
+      "recommendation": "at the back of the queue, with a new ticket named by the time it asks again",
+      "reason": "a remade old name could sit before a ticket that took the lock meanwhile and would break the order the others saw",
+      "do": {
+        "at the back of the queue, with a new ticket named by the time it asks again": "BG-j4736uwa",
+        "at its old place, by remaking the ticket under its first name": "BG-j4736uwa"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "at the back of the queue, with a new ticket named by the time it asks again",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-6aegt3bs review"
   ],
