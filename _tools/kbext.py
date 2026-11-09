@@ -138,9 +138,9 @@ SURFACE = {
          "added": "0.1.0", "answer": "SUFFIXES lists suffixes, the mapper function answers a dict of optional lists",
          "samples": [{"value": "SUFFIXES", "shape": "suffixes"},
                      {"call": "", "args": ["$EMPTY", "HEAD", []], "shape": "mapping"}]},
-        {"name": "leak_scan", "signature": "file_hits(path, text, allow, pinned=()) -> list", "added": "0.1.0",
+        {"name": "leak_scan", "signature": "file_hits(path, text, allow, pinned=(), root=None) -> list", "added": "0.1.0",
          "answer": "a list of hits",
-         "samples": [{"call": "", "args": ["docs/example.md", "A note about corp.example.com.\n", [], []],
+         "samples": [{"call": "", "args": ["docs/example.md", "A note about corp.example.com.\n", [], [], "$CWD"],
                       "shape": "list"}]},
         {"name": "backlog_commands", "signature": "list of modules adding or replacing a command through bl_cli.register(name, "
                                               "handler, add_arguments=None, help=None) or bl_cli.extend(name, wrap, "
@@ -557,7 +557,7 @@ def leak_shapes(root, kb_root=None):
 
 
 def leak_scan(root, kb_root=None):
-    """The callable of extension point `leak_scan` for the clone ROOT (a group's `file_hits(path, text, allow, pinned=())`),
+    """The callable of extension point `leak_scan` for the clone ROOT (a group's `file_hits(path, text, allow, pinned=(), root=None)`),
     or None when none is named and the shipped scan runs. It is loaded as `resolve` loads it and kept for the process
     until a settings file changes; a named one that cannot be loaded or is no callable raises ExtensionError."""
     def make(_):
