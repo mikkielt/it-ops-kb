@@ -2,7 +2,7 @@
   "id": "BG-dc3xorsu",
   "kind": "bug",
   "title": "extensions.backlog_commands is the one extension point whose it_ops_kb entry point is never read",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-y7fe7qqx",
   "sprint": "SP-ga3lbnlk",
   "priority": "P3",

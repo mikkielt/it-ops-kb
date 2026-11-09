@@ -2,7 +2,7 @@
   "id": "ST-anu4s6n2",
   "kind": "story",
   "title": "Review sprint: Extension API follow-ups: group locks hold for every key, verify accepts valid extenders, ext tags are sent",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ga3lbnlk",
   "review": true,
   "priority": "P1",

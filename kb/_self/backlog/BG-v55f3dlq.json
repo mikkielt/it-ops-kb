@@ -2,7 +2,7 @@
   "id": "BG-v55f3dlq",
   "kind": "bug",
   "title": "The leak_scan extension point still declares file_hits without the root parameter that kbpublic now passes",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ga3lbnlk",
   "priority": "P3",
   "rank": 0,

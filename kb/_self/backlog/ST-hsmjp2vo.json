@@ -2,7 +2,7 @@
   "id": "ST-hsmjp2vo",
   "kind": "story",
   "title": "Research sprint goal: Extension API follow-ups: group locks hold for every key, verify accepts valid extenders, ext tags are sent",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ga3lbnlk",
   "goal_research": true,
   "priority": "P1",

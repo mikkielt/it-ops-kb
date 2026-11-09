@@ -2,7 +2,7 @@
   "id": "BG-u6eh3xyq",
   "kind": "bug",
   "title": "kbext.py verify fails a valid backlog_commands module that wraps a shipped command with bl_cli.extend",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-y7fe7qqx",
   "sprint": "SP-ga3lbnlk",
   "priority": "P2",
