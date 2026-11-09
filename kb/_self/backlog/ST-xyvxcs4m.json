@@ -2,7 +2,7 @@
   "id": "ST-xyvxcs4m",
   "kind": "story",
   "title": "Research sprint goal: Benchmark, session-load and repro bench records tell the truth",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-bpjqqauu",
   "goal_research": true,
   "priority": "P1",
@@ -23,6 +23,20 @@
   ],
   "notes": "No outside facts: the sprint's goal concerns this repository's own benchmark tools and report; no question needs a kb fact from an official source, and the pack for the bench tools answers from the _self docs.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-bdc0a493",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "e20641495805d71af31aa8d43b0c6aefa2ea304c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-xyvxcs4m"
+        ],
+        "exit": 0,
+        "sha256": "ea0d110a1ca4ad64"
+      }
+    ]
+  }
 }
