@@ -2,7 +2,7 @@
   "id": "BG-sind5ikv",
   "kind": "bug",
   "title": "Backlog.save loses a gate field that changed on disk since load, so a confirmation written while done ran its checks leaves by agent beside the operator and role keys",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-moxpl354",
   "priority": "P2",
   "rank": 0,
@@ -19,5 +19,7 @@
     "_tools/bl_base.py",
     "kb/_self/backlog.md"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-a1b2c3d4",
+  "operator": "op-f618a13e"
 }
