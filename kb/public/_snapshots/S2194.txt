@@ -3,15 +3,14 @@ url: https://github.com/upstash/context7
 title: upstash/context7
 publisher: Upstash (community-contributed library index)
 licence: MIT
-retrieved: 2026-10-21
+retrieved: 2026-11-09
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-## Repository navigation
 context7
 Public
-NotificationsYou must be signed in to change notification settings
-Fork3.1k (3.1k)
-Star63.4k (63.4k)You must be signed in to star a repository
+Notifications
+Fork3.2k
+Star64.4k
 ## About
 Context7 Platform -- Up-to-date docs for AI agents
 context7.com
@@ -25,18 +24,17 @@ Security policy
 Activity
 Custom properties
 ### Stars
-63.4k stars
+64.4k stars
 ### Watchers
-164 watching
+162 watching
 ### Forks
-3.1k forks
+3.2k forks
 Report repository
 BranchesTags
 Open more actions menu
 ## Latest commit
 ## History
-1,068 Commits
-1,068 Commits
+1,175 Commits
 ## Folders and files
 NameName
 Last commit message
@@ -53,6 +51,8 @@ Last commit date
 .github
 docs
 docs
+examples/eve-docs-agent
+examples/eve-docs-agent
 i18n
 i18n
 packages
@@ -97,7 +97,6 @@ tsconfig.bundler.json
 tsconfig.bundler.json
 tsconfig.json
 tsconfig.json
-## Repository files navigation
 # Context7 - Up-to-date Docs for AI Agents
 ## ❌ Without Context7
 LLMs rely on outdated or generic information about the libraries you use. You get:
@@ -197,11 +196,11 @@ Security policy
 Activity
 Custom properties
 ### Stars
-63.4k stars
+64.4k stars
 ### Watchers
-164 watching
+162 watching
 ### Forks
-3.1k forks
+3.2k forks
 Report repository
 ## Releases
 ## Used by
