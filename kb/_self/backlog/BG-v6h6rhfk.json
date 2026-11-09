@@ -12,7 +12,7 @@
     "run": [
       "python3",
       "-c",
-      "import sys,os,subprocess as s,tempfile;sys.path.insert(0,'_tools');import kbpublic as k;d=tempfile.mkdtemp();g=lambda *a:s.run(['git','-C',d,*a],check=True,capture_output=True);g('init','-q');os.makedirs(d+'/kb/team');open(d+'/kb/team/_root.md','wb').write(b'---\\nroot: team\\nid_prefix: T\\nvisibility: internal\\ndescription: x\\xb3\\n---\\n');open(d+'/kb/team/a.md','w').write('x\\n');g('add','-A');g('-c','user.name=t','-c','user.email=t'+chr(64)+'example.com','commit','-qm','t');assert k.tree_refusals('HEAD',k.tree_files('HEAD',d),d),'a _root.md that is not UTF-8 passes publish tree refusal'"
+      "import sys,os,subprocess as s,tempfile;sys.path.insert(0,'_tools');import kbpublic as k;d=tempfile.mkdtemp();g=lambda *a:s.run(['git','-C',d,*a],check=True,capture_output=True);g('init','-q');os.makedirs(d+'/kb/team');open(d+'/kb/team/_root.md','wb').write(b'---\\nroot: team\\nid_prefix: T\\nvisibility: internal\\ndescription: x\\xb3\\n---\\n');open(d+'/kb/team/a.md','w').write('x\\n');g('add','-A');g('-c','user.name=t','-c','user.email=t'+chr(64)+'example.com','commit','-qm','t');r=k.tree_refusals('HEAD',k.tree_files('HEAD',d),d);print('a _root.md that is not UTF-8 gives tree causes:',len(r));sys.exit(0 if r else 1)"
     ]
   },
   "checks": [
