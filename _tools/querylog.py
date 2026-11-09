@@ -119,7 +119,8 @@ the ql_*.py modules beside it.
                         the operator's remedy for a redact change that stalls delivery (querylog.md, Delivery): in the
                         run files of DIR (default: the local store) each value the current redact rules flag (the leak
                         scan; and for `question` and a feedback `lead` also a change by redact.redact) is replaced by
-                        its redacted form, and a fetch whose path the leak scan still flags is dropped; a value the
+                        its redacted form, and a fetch whose path the leak scan still flags or whose host the
+                        public-host gate refuses is dropped (`fetches[N].path|host: dropped`); a value the
                         rules still flag elsewhere stays and is reported. First the run files that change are copied
                         to `<DIR name>-reredact-<UTC time>` beside DIR (printed as `backup: PATH`), never inside it.
                         One line per change, `FILE:LINE: FIELD: replaced|dropped|left`, never the value. Entries,
