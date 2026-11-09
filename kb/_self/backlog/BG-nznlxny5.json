@@ -38,6 +38,27 @@
     "_tools/kg_lane.py",
     "kb/_self/git.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does has_code_lane tell that backlog.json leaves lane_module unknown?",
+      "options": [
+        "has_code_lane re-reads the settings file itself and keeps the lane on an unreadable, non-JSON, non-object file or a non-string lane_module",
+        "has_code_lane keeps the lane on any bl_base.read_settings problem"
+      ],
+      "recommendation": "has_code_lane re-reads the settings file itself and keeps the lane on an unreadable, non-JSON, non-object file or a non-string lane_module",
+      "reason": "an unrelated problem (unknown key, layer error) must not keep a lane the file says is empty",
+      "do": {
+        "has_code_lane re-reads the settings file itself and keeps the lane on an unreadable, non-JSON, non-object file or a non-string lane_module": "BG-nznlxny5",
+        "has_code_lane keeps the lane on any bl_base.read_settings problem": "BG-nznlxny5"
+      },
+      "class": "push",
+      "hold": true,
+      "answer": "has_code_lane re-reads the settings file itself and keeps the lane on an unreadable, non-JSON, non-object file or a non-string lane_module",
+      "by": "agent"
+    }
+  ],
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-ev3run01",
   "operator": "op-f618a13e"
