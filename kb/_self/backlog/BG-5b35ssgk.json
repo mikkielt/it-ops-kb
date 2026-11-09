@@ -7,7 +7,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "a landing does not wait for a ticket asked before its process started or older than the lock's wait bound, so a ticket left by a killed landing whose pid was reused holds nobody up",
+  "goal": "a landing does not wait for a ticket asked before its process started; a landing does not wait for a ticket older than the lock's wait bound; a landing still waits, in the order asked, for the ticket of a live process that asked within the bound after it started",
   "repro": {
     "run": [
       "python3",
@@ -36,6 +36,20 @@
         "-c",
         "import os, subprocess, sys, tempfile, time\nos.environ[\"KB_MAIN_LOCK_MAX_WAIT_S\"] = \"1\"\nsys.path.insert(0, \"_tools\")\nimport bl_close\nt = tempfile.mkdtemp()\nsubprocess.run([\"git\", \"init\", \"-q\", t], check=True)\nqdir = bl_close.landing_queue_dir(bl_close.landing_lock_path(t))\nqdir.mkdir()\nchild = subprocess.Popen([sys.executable, \"-c\", \"import time; time.sleep(60)\"])\ntry:\n    time.sleep(4)\n    # asked 2 s ago by a process started 4 s ago, so the pid is the asker, but the ticket is older than the 1 s wait bound\n    ticket = \"%020d-%d\" % (time.time_ns() - 2 * 10 ** 9, child.pid)\n    (qdir / ticket).write_text(\"pid=%d\\nclone=%s\\nstarted=x\\nitem=ST-aaaaaaaa\\n\" % (child.pid, t))\n    mine = \"%020d-%d\" % (time.time_ns(), os.getpid())\n    ahead = [a[0] for a in bl_close.landing_tickets_ahead(qdir, mine)]\n    print(\"tickets a landing waits for:\", ahead)\n    sys.exit(0 if not ahead else 1)\nfinally:\n    child.kill()\n"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "a landing does not wait for a ticket asked before its process started",
+      "check": 1
+    },
+    {
+      "clause": "a landing does not wait for a ticket older than the lock's wait bound",
+      "check": 2
+    },
+    {
+      "clause": "a landing still waits, in the order asked, for the ticket of a live process that asked within the bound after it started",
+      "check": 0
     }
   ],
   "touches": [
