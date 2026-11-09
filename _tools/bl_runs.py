@@ -12,15 +12,17 @@
                             item; neither: the items of the active sprints and every item that holds a run key
   runs [SP|ID] --reconcile  write the state git shows to each drifted run key and exit 0 once none is left
 
-A run state contradicts git in four ways, checked in this order and each item named once, with the state `--reconcile` writes:
-the item file is `done` and the run state is not `landed`, `none` included (writes `landed`); the run state is `working` and the worker pid is
+A run state contradicts git in five ways, checked in this order and each item named once, with the state `--reconcile` writes:
+the item file is `done` and the run state is not `landed`, `none` included (writes `landed`); the run state is `landed` and the
+item file is not done (a reopened item: writes `none`, which moves to `claimed`, where `landed` moves nowhere; `reopen` writes it
+too, `reset_landed`); the run state is `working` and the worker pid is
 gone or was never recorded anywhere (`failed`); the run state is `staging` or `landing` and no process record of the item
 (coord `own/`, which a stage-back and a land write for their run) names a pid that runs (`returned`, `refused`: a stage-back or land
 killed before its last move); the run state is none of `landed`, `released` or `none` and no claim holds the
 item, that is neither a record in its claims ledger nor the status `doing` of its item file, which a claim sets, nor the same in
 another working tree of the repository, nor an `own/` record of coord that names the item (`released`). `--reconcile` writes the key with `put` at the
 revision it read, outside the state table (the table has no move from `working` to `landed`: the point is to follow a
-crash), and posts a `progress` event with `step=reconcile` beside it, so `coord.py wait` and the digest show the correction.
+crash), and posts a `progress` event with `step=reconcile` beside it (none for `none`, which no event carries), so `coord.py wait` and the digest show the correction.
 A key that moved on between the read and the write is read again, three tries. Exit codes: 0 no drift (or all reconciled),
 1 drift listed (or a reconcile write failed), 2 coord cannot be read or the argument names no item.
 
@@ -118,6 +120,8 @@ def drift_of(state, status, alive, claimed):
     """(the state git shows, why) for a run key that contradicts git, else None."""
     if status == "done" and state != "landed":
         return "landed", f"the item file is done and the run state is {state}"
+    if state == "landed" and status not in (None, "done"):
+        return NONE, f"the run state is landed and the item file is {status}, not done"
     if state == NONE:
         return None
     if state == "working" and not alive:
@@ -193,9 +197,23 @@ def reconcile_one(iid, to):
             return f"cannot write {key}: {err or 'coord.py exited ' + str(code)}"
     else:
         return f"{key} keeps moving on"
+    if to == NONE:  # a progress event carries no state `none`: the key's value is the whole record
+        return None
     code, _body, err = bl_clean.run_coord("post", "--kind", "progress", "--field", f"item={iid}", "--field", f"state={to}",
                                           "--field", "step=reconcile")
     return None if code == 0 else f"{key} is {to}, but its progress event was not posted: {err or 'coord.py exited ' + str(code)}"
+
+
+def reset_landed(iid):
+    """Write the run key of a reopened item `none` when it holds `landed` (the state of its earlier landing, which moves
+    nowhere), so the next `land` takes it to `landing`. Returns a text for the operator when the key could not be read or
+    written, None when it was reset or held no `landed`."""
+    code, body, err = bl_clean.run_coord("get", RUN_KEYS + iid)
+    if code not in (0, 1):
+        return f"cannot read {RUN_KEYS}{iid}: {err or 'coord.py exited ' + str(code)}"
+    if not isinstance(body, dict) or body.get("value") != "landed":
+        return None
+    return reconcile_one(iid, NONE)
 
 
 def args_runs(p):

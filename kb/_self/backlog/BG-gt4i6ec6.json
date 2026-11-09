@@ -30,6 +30,27 @@
     "BG-udpm37tj",
     "BG-mwqxiqqx"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which item file statuses make a landed run state drift to none, and does reconcile post a progress event for none?",
+      "options": [
+        "any status but done (an item file that exists), and no event for none",
+        "only draft and todo, and an event for none"
+      ],
+      "recommendation": "any status but done (an item file that exists), and no event for none",
+      "reason": "the goal names item files that are not done, and a progress event carries no state none",
+      "do": {
+        "any status but done (an item file that exists), and no event for none": "BG-gt4i6ec6",
+        "only draft and todo, and an event for none": "BG-gt4i6ec6"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "any status but done (an item file that exists), and no event for none",
+      "by": "agent"
+    }
+  ],
   "links": [
     "retro: drain 2026-10-27..11-08"
   ],
