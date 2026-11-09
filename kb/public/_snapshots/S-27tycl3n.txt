@@ -3,7 +3,7 @@ url: https://docs.python.org/3/library/unittest.mock.html
 title: unittest.mock: Where to patch
 publisher: Python Software Foundation
 licence: PSF License 2
-retrieved: 2026-10-21
+retrieved: 2026-11-09
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 ### Navigation
@@ -12,7 +12,7 @@ modules |
 next |
 previous |
 Python »
-3.15.0 Documentation »
+3.15.2 documentation »
 The Python standard library »
 Development Tools »
 unittest.mock — mock object library
@@ -2256,7 +2256,7 @@ modules |
 next |
 previous |
 Python »
-3.15.0 Documentation »
+3.15.2 documentation »
 The Python standard library »
 Development Tools »
 unittest.mock — mock object library
@@ -2272,6 +2272,6 @@ Examples, recipes, and other code in the documentation are additionally licensed
 See History and License for more information.
 The Python Software Foundation is a non-profit corporation.
 Please donate.
-Last updated on Oct 21, 2026 (07:27 UTC).
+Last updated on Nov 09, 2026 (00:37 UTC).
 Found a bug?
-Created using Sphinx 8.2.3.
+Created using Sphinx 9.1.1.

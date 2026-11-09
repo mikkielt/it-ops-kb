@@ -3,11 +3,11 @@ url: https://developers.cloudflare.com/durable-objects/best-practices/rules-of-d
 title: Cloudflare Durable Objects docs: Rules of Durable Objects
 publisher: Cloudflare
 licence: CC-BY-4.0 (cloudflare/cloudflare-docs)
-retrieved: 2026-10-21
+retrieved: 2026-11-09
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Rules of Durable Objects
-Last updated Oct 18, 2026||View as Markdown|Agent setup
+Last updated Nov 5, 2026||View as Markdown|Agent setup
 Durable Objects provide a powerful primitive for building stateful, coordinated applications. Each Durable Object is a single-threaded, globally-unique instance with its own persistent storage. Understanding how to design around these properties is essential for building effective applications.
 This is a guidebook on how to build more effective and correct Durable Object applications.
 ## When to use Durable Objects
@@ -1386,7 +1386,8 @@ private async notifySubscribers(content: string) {
 // External notification logic
 }
 }
-When calling Durable Objects from a Worker, errors may include .retryable and .overloaded properties indicating whether the operation can be retried. For transient failures, implement exponential backoff to avoid overwhelming the system.
+When calling Durable Objects from a Worker, the runtime retries some failed calls automatically. Refer to Automatic retries for which calls it retries.
+Errors that reach your code may include .retryable and .overloaded properties indicating whether the operation can be retried. For transient failures, implement exponential backoff to avoid overwhelming the system.
 Refer to Error handling for details on error properties, retry strategies, and exponential backoff patterns.
 ## WebSockets and real-time
 ### Use the Hibernatable WebSockets API for cost efficiency
@@ -1775,7 +1776,7 @@ await this.ctx.storage.deleteAll();
 }
 }
 ### Design for unexpected shutdowns
-Durable Objects may shut down at any time due to deployments, inactivity, or runtime decisions. Rather than relying on shutdown hooks (which are not provided), design your application to write state incrementally.
+A Durable Object shuts down when it becomes inactive, when a code update strategy applies new code, or when Cloudflare deploys a new version of the Workers runtime. An immediate strategy applies the update right away. A deferred strategy gives the object time to hibernate, up to max_delay, but is best effort: the object can reset earlier. This is similar to other compute environments, where compute instances do not live forever and applications must persist state back to a database or storage system. Rather than relying on shutdown hooks (which are not provided), design your application to write state incrementally.
 Shutdown hooks or lifecycle callbacks that run before shutdown are not provided because Cloudflare cannot guarantee these hooks would execute in all cases, and external software may rely too heavily on these (unreliable) hooks.
 Instead of relying on shutdown hooks, you can regularly write to storage to recover gracefully from shutdowns.
 For example, if you are processing a stream of data and need to save your progress, write your position to storage as you go rather than waiting to persist it at the end:

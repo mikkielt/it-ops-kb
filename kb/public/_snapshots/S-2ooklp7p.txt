@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/entra/id-governance/entitlement-management-acce
 title: Create an access review of an access package in entitlement management
 publisher: Microsoft Learn
 licence: MIT (public mirror MicrosoftDocs/entra-docs)
-retrieved: 2026-09-28
+retrieved: 2026-11-09
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Create an access review of an access package in entitlement management - Microsoft Entra ID Governance | Microsoft Learn
@@ -13,6 +13,10 @@ To reduce the risk of stale access, you should enable periodic reviews of users 
 ## Prerequisites
 
 Using this feature requires Microsoft Entra ID Governance or Microsoft Entra Suite licenses. To find the right license for your requirements, see Microsoft Entra ID Governance licensing fundamentals.
+
+Note
+
+Catalog access reviews now support access packages (preview). For more information, see Include access packages in catalog access reviews.
 
 ## Create an access review of an access package
 

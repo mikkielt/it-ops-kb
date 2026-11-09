@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/entra/identity/hybrid/cloud-sync/what-is-cloud-
 title: What is Microsoft Entra Cloud sync?
 publisher: Microsoft Learn
 licence: MIT (public mirror MicrosoftDocs/entra-docs)
-retrieved: 2026-10-21
+retrieved: 2026-11-09
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # What is Microsoft Entra Cloud Sync? - Microsoft Entra ID | Microsoft Learn
@@ -15,6 +15,16 @@ Cloud Sync uses the Microsoft Entra provisioning agent. The following sections d
 Note
 
 Cloud Sync can be used for tenants in the Microsoft Commercial, US Government, and 21Vianet (China) clouds. SSPR for on-premises identities isn't available with Cloud Sync in the 21Vianet (China) cloud.
+
+## Migrating from Microsoft Entra Connect Sync?
+
+If you currently use Microsoft Entra Connect Sync, choose your migration path in this order:
+
+1. Review the migration decision guide to determine whether Cloud Sync supports your organization's requirements.
+2. If your organization and active Connect Sync installation meet the guided migration-tool requirements, use the guided tool.
+3. If the guided tool doesn't support your scenario, use a documented manual migration procedure only when one is available. Otherwise, continue using Connect Sync. Review the migration overview and manual migration tutorial to identify the applicable guidance.
+
+For common questions, see the migration FAQ. If you require device synchronization, review Device Sync separately from guided-tool eligibility.
 
 ## Core architecture and components
 
