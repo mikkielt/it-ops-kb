@@ -42,6 +42,26 @@
   "depends_on": [
     "BG-5b35ssgk"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does landing_lock make sure an interrupt after os.open leaves no ticket, and what does it do with a ticket whose file cannot be written?",
+      "options": [
+        "Hold the ticket name before the file is made, one try/finally covers the ticket and the SIGTERM handler, a ticket whose write fails is removed",
+        "Keep the name assigned after os.open and only widen the except to BaseException"
+      ],
+      "recommendation": "Hold the ticket name before the file is made, one try/finally covers the ticket and the SIGTERM handler, a ticket whose write fails is removed",
+      "do": {
+        "Hold the ticket name before the file is made, one try/finally covers the ticket and the SIGTERM handler, a ticket whose write fails is removed": "BG-vwwjwawd",
+        "Keep the name assigned after os.open and only widen the except to BaseException": "BG-vwwjwawd"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "Hold the ticket name before the file is made, one try/finally covers the ticket and the SIGTERM handler, a ticket whose write fails is removed",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-mc4dzsfe review"
   ],
