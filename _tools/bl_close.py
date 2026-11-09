@@ -421,12 +421,15 @@ def landing_tickets_ahead(qdir, mine):
     """The tickets of live processes that asked for the landing lock before the ticket named MINE, oldest first, as
     (name, pid, item). A ticket whose process is gone, or whose time of asking is before its pid's process started (the
     pid was reused), is removed; one older than `kg_lock.max_wait()` seconds is passed over, for the landing that asked
-    has stopped at that bound; one of this process is never waited for."""
+    has stopped at that bound; one of this process is never waited for. With the ticket MINE missing from the queue
+    (another landing removed it) no ticket is ahead of it, for none of them asked before a place it does not hold."""
     import kg_lock
     bound, ahead = kg_lock.max_wait(), []
     try:
         names = sorted(os.listdir(qdir))
     except OSError:
+        return ahead
+    if mine not in names:
         return ahead
     for name in names:
         if name == mine:
@@ -461,7 +464,7 @@ def landing_lock(root, iid, poll=None):
     clone, start, item). A landing that asks for it takes a ticket in the queue directory beside the lock (`kb-landing.
     queue`, a file named by the time it asked and its pid, naming the item) and takes the lock only when no ticket
     of a live process is older, so waiters take it in the order they asked; a ticket of a process that is gone is
-    removed, never waited for. A second landing of the clone says which item holds the lock or asked first and waits, a
+    removed, never waited for, and a landing whose own ticket another landing removed takes a new one. A second landing of the clone says which item holds the lock or asked first and waits, a
     holder whose pid no longer runs is cleared, and `kg_lock.max_wait()` seconds of waiting stop the landing at step
     `landing lock`. The ticket is removed once the lock is taken and on any exit, and the lock is released on exit, on an
     error and on SIGTERM. A holder or a waiter of an older copy of this code uses the lock file alone and ignores the
@@ -483,26 +486,31 @@ def landing_lock(root, iid, poll=None):
             signal.signal(signal.SIGTERM, lambda *_: sys.exit(143))
         except (ValueError, OSError):  # not the main thread
             prev = None
-        # the ticket's name is held before the file is made, so an interrupt at any point after os.open leaves the
-        # finally below the name to remove
-        name = f"{time.time_ns():020d}-{os.getpid()}"
-        ticket = name
-        try:
-            qdir.mkdir(exist_ok=True)
-            fd = os.open(qdir / name, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+        def take():
+            """Make this landing's ticket in the queue (None where no queue is to be had). The name is held before
+            the file is made, so an interrupt at any point after os.open leaves the finally below the name to remove."""
+            nonlocal ticket
+            name = f"{time.time_ns():020d}-{os.getpid()}"
+            ticket = name
             try:
-                f = os.fdopen(fd, "w", encoding="utf-8", newline="\n")
-            except BaseException:
-                os.close(fd)
-                raise
-            with f:
-                f.write(me)
-        except OSError:  # no queue to be had: the lock file alone orders the landing
-            with contextlib.suppress(OSError):
-                os.unlink(qdir / name)
-            ticket = None
+                qdir.mkdir(exist_ok=True)
+                fd = os.open(qdir / name, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+                try:
+                    f = os.fdopen(fd, "w", encoding="utf-8", newline="\n")
+                except BaseException:
+                    os.close(fd)
+                    raise
+                with f:
+                    f.write(me)
+            except OSError:  # no queue to be had: the lock file alone orders the landing
+                with contextlib.suppress(OSError):
+                    os.unlink(qdir / name)
+                ticket = None
+        take()
         told, waited, bound = None, 0.0, kg_lock.max_wait()
         while True:
+            if ticket and not (qdir / ticket).exists():  # another landing removed it: ask again, at the back
+                take()
             ahead = landing_tickets_ahead(qdir, ticket) if ticket else []
             if ahead:
                 _, apid, aitem = ahead[0]
