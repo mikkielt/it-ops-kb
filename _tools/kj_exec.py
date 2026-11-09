@@ -69,6 +69,13 @@ argument list there as the CLI does on a workstation, and gives a land job the w
 where `backlog.py land` finds the pushed worker branch; the jobs of one url run one at a time (`serial_key`). A job that tests.py refused over the
 seconds of its test ceiling ends failed with the reason `host condition` (`host_condition`, `note_condition`) and is not run again.
 
+A job of a central queue is taken only when its recorded placement is what the placement policy decides now (`verify_placement`, run by
+`Sync.pull`): the executor asks the policy at its own KB_OPA_URL as `kbjob.py place` does, for the record's operation, subject and host and
+the operator the queue's `queued` event names (the server's word, not the record's), and compares the decision's executor, identity,
+decided_by and budget_cap_usd with the recorded ones. A job that differs, or whose policy cannot be asked (no policy decides the
+workstation, identity none), stays queued with one `job` event, step `placement-mismatch`, and a line saying what differs, and is asked
+about again after VERIFY_S; the mirror keeps the decision's placement, not the record's. A clone's own queue is not verified.
+
 A job runs as the identity its placement names (`job_env`, `kj_cred.resolve`): `none` disables every push, `group-bot` and `operator` give git a
 credential file or CI variable through a GIT_ASKPASS helper, never an argument or an environment value. A job whose identity has no usable
 credential starts no process and ends refused at the step `credential` (`refuse_credential`), the `kj_cred.Refused` message its record's `reason`.
@@ -101,6 +108,7 @@ import kj_cred
 import kj_follow
 import kj_land
 import kj_ops
+import kj_place
 import kj_store
 
 LOCK_NAME = "kb-jobs-serve.lock"
@@ -210,6 +218,46 @@ def post_move(store, job, state, given):
 SYNC_S = 2.0  # the wait between two syncs of a mirror with its central queue
 SERVER = "server"  # the executor kind that keeps one clone per integration remote url (`Home`)
 NO_CLONE = "no-clone"  # the step of the event that says a queued job names an integration remote url this executor's clone lacks
+MISMATCH = "placement-mismatch"  # the step of the event that says a queued job's recorded placement is not what the policy decides now
+PLACED_MEMBERS = ("executor", "identity", "decided_by", "budget_cap_usd")  # the members of a recorded placement `verify_placement` compares
+VERIFY_S = 60.0  # how long a job whose placement did not hold is left alone before the policy is asked about it again
+
+
+def verify_placement(record, operator=None, environ=None):
+    """(decision, why) for the queued job RECORD of a central queue: DECISION is what the placement policy (the url of KB_OPA_URL in ENVIRON,
+    this process's by default; no url is the decision of no policy) decides now for the record's operation, subject, host and OPERATOR
+    (default the record's own), asked as `kbjob.py place` asks it (`kj_place.build_input`: this clone's roots and their groups, the
+    operator's groups, the capabilities of the closed table `kj_ops.OPS`); WHY is None when the record's placement holds, else the
+    words of what differs: the members of PLACED_MEMBERS (executor, identity, decided_by, budget_cap_usd) the decision does not give
+    as the record names them. A job taken from an offline workstation (`fallback_from`) holds when the decision is the workstation
+    and names the record's executor as its fallback. A record with no placement has nothing to verify: (None, None)."""
+    recorded = record.get("placement")
+    if not isinstance(recorded, dict):
+        return None, None
+    op = record.get("op")
+    if op not in kj_ops.OPS:
+        return None, f"{str(op)[:40]!r} is no operation of the job queue"
+    environ = os.environ if environ is None else environ
+    url = environ.get(kj_place.ENV_URL, "")
+    operator = operator or record.get("operator") or ""
+    if not url:
+        decision = kj_place.refused("no policy: no KB_OPA_URL")
+    else:
+        subject = record.get("subject") or str((record.get("options") or {}).get("name", ""))
+        body = {**kj_place.build_input(op, subject, operator, kj_place.group_paths(operator)), "host": record.get("host") or platform.node()}
+        decision = kj_place.ask(url, body)
+    differ = [name for name in PLACED_MEMBERS if recorded.get(name) != decision[name]]
+    if recorded.get("fallback_from"):
+        since = recorded.get("offline_since")
+        differ = [name for name in differ if name != "executor"]
+        if recorded["fallback_from"] != decision["executor"] or recorded.get("executor") != decision["fallback"]:
+            differ.insert(0, "executor")
+        if isinstance(since, bool) or not isinstance(since, (int, float)) or not 0 <= since < 4e9:
+            differ.append("offline_since")
+    if not differ:
+        return decision, None
+    shown = ", ".join(f"{name} {str(recorded.get(name))[:40]!r} (decided {str(decision.get(name))[:40]!r})" for name in differ)
+    return decision, f"the recorded placement differs from the policy's decision: {shown}; the decision: {decision['reason']}"
 
 
 class Sync:
@@ -220,7 +268,7 @@ class Sync:
         self.root, self.store, self.clone, self.out, self.only = root, store, clone, out, only
         self.remote, self.kind = store.remote, store.kind
         self.host, self.operator = platform.node(), kj_store.operator_id()
-        self.last, self.noted, self.leases, self.owners = None, {}, {}, {}
+        self.last, self.noted, self.leases, self.owners, self.denied = None, {}, {}, {}, {}
 
     def __call__(self):
         if self.last is not None and time.monotonic() - self.last < SYNC_S:
@@ -322,9 +370,37 @@ class Sync:
         return {**{name: value for name, value in placed.items() if name not in ("fallback", "fallback_after_s")}, "executor": self.kind,
                 "fallback_from": kj_store.WORKSTATION, "offline_since": round(since, 3)}
 
+    def confirm(self, job, record):
+        """(go, placement) for the queued JOB (RECORD, its record on the central queue): whether the recorded placement holds against
+        the policy's decision now (`verify_placement`, asked for the operator the queue's `queued` event names, the server's word, not
+        the record's own) and, when it does, the placement the mirror keeps: the decision's members and the submitting host, never a
+        member the record added; None when the record keeps its own (a record with no placement, a clone's own queue, where the
+        submitter is the one who runs it). A job that does not hold stays queued: one `job` event, step MISMATCH, says why, and the
+        policy is asked again for it after VERIFY_S."""
+        recorded = record.get("placement")
+        if not isinstance(recorded, dict) or isinstance(self.remote, kj_store.LocalRemote):
+            return True, None
+        key = json.dumps(recorded, sort_keys=True, default=str)
+        seen = self.denied.get(job)
+        if seen and seen[1] == key and time.monotonic() - seen[0] < VERIFY_S:
+            return False, None
+        server = self.owners.get(job) or self.remote.owner(job)
+        decision, why = (None, "no `queued` event names the job's submitter") if not server else verify_placement(record, server)
+        if why:
+            self.denied[job] = (time.monotonic(), key)
+            self.reason(job, MISMATCH, why)
+            return False, None
+        self.owners[job] = server
+        placement = {**decision, "host": recorded.get("host") or record.get("host")}
+        if recorded.get("fallback_from"):  # a job lost and queued again after an executor took it from an offline workstation
+            placement = {**{k: v for k, v in placement.items() if k not in ("fallback", "fallback_after_s")}, "executor": recorded["executor"],
+                         "fallback_from": recorded["fallback_from"], "offline_since": recorded["offline_since"]}
+        return True, placement
+
     def pull(self):
         """Take each queued job of the central store placed on this kind into the mirror, in submit order, and each job placed on
-        a workstation whose executor is offline when its decision's fallback is this kind (`offline`)."""
+        a workstation whose executor is offline when its decision's fallback is this kind (`offline`). A job whose recorded
+        placement is not the policy's decision now is left queued (`confirm`), and the placement the mirror keeps is the decision's."""
         have = {job for job, _ in self.mirrored()}
         self.leases, self.owners = {}, {}
         for record in self.remote.records() if self.only is None else [self.remote.record(self.only) or {}]:
@@ -332,9 +408,14 @@ class Sync:
             if job is None or record.get("state") != "queued" or job in have:
                 continue
             placed = kj_store.placement_of(record)
-            moved = None
+            moved = trusted = None
             if placed["executor"] != self.kind:
-                moved = self.offline(job, record, placed)
+                if self.kind == kj_store.WORKSTATION or placed["executor"] != kj_store.WORKSTATION or placed.get("fallback") not in (None, self.kind):
+                    continue  # no offline fallback of this kind
+                go, trusted = self.confirm(job, record)
+                if not go:
+                    continue
+                moved = self.offline(job, record, placed if trusted is None else trusted)
                 if moved is None:
                     continue
             elif self.kind == kj_store.WORKSTATION and (placed.get("host") != self.host or self.remote.owner(job) != self.remote.operator()):
@@ -343,10 +424,14 @@ class Sync:
                 self.reason(job, NO_CLONE, "the job names no integration remote url" if self.kind == SERVER
                             else "no clone here with the job's integration remote url")
                 continue
+            if trusted is None:
+                go, trusted = self.confirm(job, record)
+                if not go:
+                    continue
             mirrored = {k: v for k, v in record.items() if k not in ("state", "exit", "step")}
             mirrored.update(host=self.host, clone=self.clone, operator=self.operator)
-            if moved:
-                mirrored["placement"] = moved
+            if moved or trusted is not None:
+                mirrored["placement"] = moved or trusted
             with coord.Tx(self.store) as con:
                 if con.execute("SELECT 1 FROM entries WHERE key = ?", (coord.JOB_KEYS + job,)).fetchone() is None:
                     con.execute("INSERT INTO entries (key, value, revision) VALUES (?, ?, 1)",
@@ -550,7 +635,10 @@ POLICY_LESS = "default"  # the `decided_by` of the decision `kj_place` gives whe
 def job_env(record, environ=None):
     """The environment of the process of the job RECORD: ENVIRON (this process's by default) without the names an earlier job's
     credential set, plus what `kj_cred.resolve` gives for the identity the record's placement names (a job whose placement is
-    absent, or is the decision of no policy (`decided_by` `default`), keeps the environment as it is). `kj_cred.Refused` when the
+    absent, or is the decision of no policy (`decided_by` `default`), keeps the environment as it is). The placement of a job of a
+    central queue is the one `Sync.confirm` wrote into the mirror from the policy's decision (`verify_placement`), so the identity
+    and the group path (`decided_by`) are the decision's, never a member the job's own record on the queue holds; only those two
+    members are read here. `kj_cred.Refused` when the
     identity has no usable credential. The environment always names the job and its submitter, `KB_JOB` and `KB_JOB_OPERATOR`
     (`kg_trailers.job_trailers` reads them for the commit's `KB-Job` and `KB-Operator`), whatever identity the job runs as."""
     environ = kj_cred.clean(dict(os.environ if environ is None else environ))
