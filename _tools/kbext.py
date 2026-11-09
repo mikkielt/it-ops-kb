@@ -593,8 +593,8 @@ def guard_lines(root, kb_root=None):
     lines = [f"replaced  {g['point']}  {g['spec']}  module {g['module']}, layer {g['layer']} ({g['file']}): runs in place of "
              f"{g['replaces']} in this clone" for g in replaced]
     if replaced:
-        lines.append("still shipped: kbgit.py contribute and kbgit.py publish run the shipped leak scan; the shared "
-                     "repository's own gate loads no group extender")
+        lines.append("still shipped: kbgit.py contribute, kbgit.py publish and backlog.py upstream-report run the shipped "
+                     "leak scan; the shared repository's own gate loads no group extender")
     else:
         lines.append("shipped guards run: no extension point replaces one in this clone")
     count = collections.Counter(layer for _, _, layer in leak_shapes(root, kb_root))
