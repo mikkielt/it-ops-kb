@@ -1241,6 +1241,35 @@ def delete_repo_branches(repos, iid, branch=None):
                                                                     who=f"land: repository {r.name}")]
 
 
+def delete_remote_work_branch(root, iid):
+    """Delete `work/<id>` from the integration remote once the item has landed (`push_work_branch` in bl_dispatch put it
+    there when its landing was placed off the workstation), and drop its remote-tracking ref. True once it is deleted;
+    False, with a line, when the remote has none, cannot be read or refuses: a landing never fails over it, and the
+    public remote is never touched."""
+    import kbpublic, kg_lock
+    remote, branch = kbpublic.integration_remote(root), WORK_PREFIX + iid
+    if kbpublic.is_public(remote, root):
+        say(f"land: kept {remote}/{branch}: {remote} is the public home, which holds no work branch")
+        return False
+    try:
+        p = kg_lock.run_git_bounded(("ls-remote", "--heads", remote, f"refs/heads/{branch}"), root, "delete work branch")
+        if p.returncode or not p.stdout.strip():
+            if p.returncode:
+                say(f"land: kept {remote}/{branch}: git ls-remote failed: {(p.stderr or p.stdout).strip()[-200:]}")
+            return False
+        p = kg_lock.run_git_bounded(("push", "--quiet", remote, "--delete", f"refs/heads/{branch}"), root, "delete work branch",
+                                    env={**os.environ, "KB_GATE_DONE": "1"})
+    except (kg_lock.GitNetworkTimeout, OSError) as e:
+        say(f"land: kept {remote}/{branch}: {e}")
+        return False
+    if p.returncode:
+        say(f"land: kept {remote}/{branch}: {(p.stderr or p.stdout).strip()[-200:]}")
+        return False
+    subprocess.run(["git", "update-ref", "-d", f"refs/remotes/{remote}/{branch}"], cwd=root, capture_output=True)
+    say(f"land: deleted {remote}/{branch}")
+    return True
+
+
 # head pipeline states after which GitLab's auto-merge ("merge when the pipeline succeeds") never fires
 STUCK_PIPELINES = ("skipped",)
 
@@ -2161,6 +2190,7 @@ def land_locked(bl, a):
                 for done_branch in (branch, agent_branch):
                     if done_branch and start_ref != f"refs/heads/{done_branch}":
                         delete_landed_branch(root, done_branch, upstream)
+                delete_remote_work_branch(root, iid)  # a branch stage-back pushed for an off-workstation landing
                 if repos:
                     delete_repo_branches(repos, iid, repo_branch(bl.items[iid], iid))
                 land_cleanup(Backlog(root), iid)

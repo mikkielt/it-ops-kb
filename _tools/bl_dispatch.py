@@ -926,6 +926,60 @@ def stage_back_item_checks(bl, iid, wt):
     return ok, lines
 
 
+def landing_executor(root, iid):
+    """The executor `kbjob.py place land ID` gives for the item, `workstation` when it cannot be had (a failed or
+    unreadable answer places nothing off the workstation)."""
+    try:
+        p = subprocess.run([sys.executable, str(PLUGIN_ROOT / "_tools" / "kbjob.py"), "place", "land", iid], cwd=root,
+                           capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=30)
+        executor = json.loads(p.stdout).get("executor") if p.returncode == 0 else None
+    except (OSError, ValueError, AttributeError, subprocess.TimeoutExpired):
+        return "workstation"
+    return executor if isinstance(executor, str) and executor else "workstation"
+
+
+def push_work_branch(root, iid):
+    """Push `work/<id>` to the integration remote with `--force-with-lease` against the remote tip this clone last saw
+    (`refs/remotes/<remote>/work/<id>`; none, so the branch must not exist there, for a first push). 0 once pushed; 1,
+    with a line naming the branch, when the lease no longer holds or the push fails. The public remote never gets it:
+    an integration remote that is the public home is refused."""
+    import kbpublic, kg_lock
+    remote, branch = kbpublic.integration_remote(root), worker_branch(iid)
+    ref, tracking = f"refs/heads/{branch}", f"refs/remotes/{remote}/{branch}"
+    if kbpublic.is_public(remote, root):
+        say(f"stage-back: {branch} not pushed: {remote} is the public home, which holds no work branch")
+        return 1
+    tip = git_in(root, "rev-parse", "--verify", "--quiet", ref + "^{commit}").stdout.strip()
+    if not tip:
+        say(f"stage-back: {branch} not pushed: the branch does not exist")
+        return 1
+    seen = git_in(root, "rev-parse", "--verify", "--quiet", tracking + "^{commit}").stdout.strip()
+    try:
+        p = kg_lock.run_git_bounded(("push", "--quiet", f"--force-with-lease={ref}:{seen}", remote, f"{ref}:{ref}"), root,
+                                    "push work branch", env={**os.environ, "KB_GATE_DONE": "1"})
+    except (kg_lock.GitNetworkTimeout, OSError) as e:
+        say(f"stage-back: {branch} not pushed: {e}")
+        return 1
+    if p.returncode:
+        why = (f"its lease no longer holds ({remote}/{branch} moved since this clone saw " + (seen[:10] if seen else "none") + ")"
+               if "stale info" in p.stderr else "git push failed")
+        say(f"stage-back: {branch} not pushed to {remote}: {why}: {(p.stderr or p.stdout).strip()[-300:]}")
+        return 1
+    git_in(root, "update-ref", tracking, tip)
+    say(f"stage-back: pushed {branch} to {remote} ({tip[:10]})")
+    return 0
+
+
+def push_after_stage_back(bl, iid):
+    """The end of a stage-back that changed nothing or committed: push the branch when the landing is placed off the
+    workstation. The exit status of the stage-back: 0 when nothing is placed off it or the push went through."""
+    executor = landing_executor(bl.root, iid)
+    if executor == "workstation":
+        return 0
+    say(f"stage-back {bl.label(iid)}: its landing is placed on a {executor} executor: {worker_branch(iid)} goes to the integration remote")
+    return push_work_branch(bl.root, iid)
+
+
 def cmd_stage_back(bl, a):
     """`stage-back ID`: copy the item's staging copies into its worker's worktree, check them there and commit them
     alone on `work/ID`, or with `--check` check them and put the worktree back as it was."""
@@ -952,7 +1006,7 @@ def cmd_stage_back(bl, a):
     if not copies and not half:
         say(f"stage-back {bl.label(iid)}: no staging copy under {scratch / STAGING} differs from the worktree's "
             "file; nothing copied, nothing committed")
-        return 0
+        return 0 if a.check else push_after_stage_back(bl, iid)
     mine = {(h[3], h[2].relative_to(h[3]).as_posix()) for h in half}
     for top in dict.fromkeys(c[3] for c in copies + half):
         dirty = "\n".join(line for line in git_in(top, "status", "--porcelain", "--untracked-files=no").stdout.splitlines()
@@ -1010,7 +1064,7 @@ def cmd_stage_back(bl, a):
             return 1
         undo = {}
         originals = {}
-        return 0
+        return push_after_stage_back(bl, iid)
     finally:
         for top, before in undo.items():  # a refusal or an error after the commit takes it off the branch again
             git_in(top, "reset", "-q", "--mixed", before)
