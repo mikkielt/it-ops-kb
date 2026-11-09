@@ -2,7 +2,7 @@
   "id": "BG-dc3xorsu",
   "kind": "bug",
   "title": "extensions.backlog_commands is the one extension point whose it_ops_kb entry point is never read",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-y7fe7qqx",
   "sprint": "SP-ga3lbnlk",
   "priority": "P3",
@@ -49,6 +49,28 @@
   ],
   "notes": "Planning 2026-11-09: check 1 (no kbext import when no setting and no entry point) passes on the base on purpose: it pins the cost bound the fix must keep; the repro is the failing premise.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-0a3e91bc",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "a8ddc15a669954cd900028cff95075a9ebccd17a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport json,sys,tempfile,pathlib\nsys.path.insert(0,\"_tools\")\nT=pathlib.Path(tempfile.mkdtemp())\n(T/\"settings.json\").write_text(json.dumps({}))\nimport bl_cli\nbl_cli.load_group_commands(T)\nsys.exit(\"not yet: kbext was imported with no extension setting and no entry point\" if \"kbext\" in sys.modules else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess,sys,tempfile,pathlib\nsys.path.insert(0,\"_tools\")\nT=pathlib.Path(tempfile.mkdtemp())\ndef W(p,v):\n    p=pathlib.Path(p); p.parent.mkdir(parents=True,exist_ok=True); p.write_text(v if isinstance(v,str) else json.dumps(v),encoding=\"utf-8\"); return p\ndef need(c,m):\n    if not c: sys.exit(\"not yet: \"+str(m)[:800])\ndef R(*a,env=None):\n    return subprocess.run([sys.executable,*a],capture_output=True,text=True,env=dict(os.environ,**(env or {})),timeout=600)\nEXT='KBEXT_REQUIRES = \">=0.1\"\\n'\ne=T/\"ext\"; W(e/\"gcmds.py\",EXT+\"import bl_cli\\nbl_cli.register('hello', lambda a: print('hi'))\\n\")\nd=T/\"site\"/\"gx-0.1.dist-info\"; W(d/\"METADATA\",\"Metadata-Version: 2.1\\nName: gx\\nVersion: 0.1\\n\")\nW(d/\"entry_points.txt\",\"[it_ops_kb.backlog_commands]\\ngx = gcmds\\n\")\nsys.path[:0]=[str(T/\"site\"),str(e)]\nW(T/\"ws\"/\"settings.json\",{})\nimport bl_cli\nbl_cli.load_group_commands(T/\"ws\")\nneed(\"hello\" in bl_cli.COMMANDS, \"an entry point of group it_ops_kb.backlog_commands loaded no command\")\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
