@@ -883,6 +883,66 @@ def audit(prefix=None, status=None, root=None):
     return rows
 
 
+ANSWER_KINDS = ("DOC", "CODE", "DER")  # the tag kinds whose line can close a gap: COMMUNITY and UNK are leads
+GAP_QUESTION_CHARS = 300  # characters of an entry's question the pack is asked
+ANSWER_SHARE = 0.7  # a line answers an entry when it holds this share of the question's key words
+NOT_FOUND = re.compile(r"(?i)\bno\b[^.;]{0,100}\b(?:documented|documents?|stated|states?|published|specified|names)\b")  # `No official source documents X`: a line that records the kb lacks the fact
+
+
+def gap_question(e):
+    """The question of an open `_gaps.md` entry: the bold lead of its bullet (its `### ` heading, else its first
+    sentence), without a `Still open:` lead-in, clipped to GAP_QUESTION_CHARS."""
+    m = re.match(r"\*\*(.+?)\*\*", e["text"])
+    q = m.group(1) if m else e["text"].split(". ")[0]
+    return re.sub(r"(?i)^still open:\s*", "", q).strip(" .:")[:GAP_QUESTION_CHARS]
+
+
+def stale_gaps(prefix=None, root=None):
+    """The open entries of `_gaps.md` (no `Resolved`, `Superseded`, `Closed`, `Partly resolved`, `Mostly resolved` or
+    `Narrowed` line, OPEN_GAP; a title that opens `Closed` or `Resolved` is no open entry) whose question the kb's own
+    pack already answers: [{file, line, section, question, topics, answers}], in ledger order. The pack (`pack`, one
+    question, no routing) is `good` with no `check:` or route line, and prints a DOC, CODE or DER line (ANSWER_KINDS) in
+    another article than the topics the entry names (`explicit`, `Tried ... (topic: x/y)`) that does not say the fact
+    is not stated (NOT_STATED, NOT_FOUND): an UNK line, or a line of the entry's own article that says the fact is not stated,
+    is the kb recording that it lacks the fact, so it never makes an entry stale; the line holds ANSWER_SHARE of the
+    question's key words. `answers` is each such line:
+    {path, line, kind, text}. `prefix` and `root` keep the entries an article under the prefix (or a section of its
+    domain) is linked to, in that root."""
+    tfiles = topic_files()
+    file_topic = {f: t for t, fs in tfiles.items() for f in fs}
+    want = scope(prefix, root)
+    units_of, out = {}, []
+    for e in link_entries(ledger_entries(kbcommon.GAPS), tfiles, source_rows()):
+        er = root_name(e["file"])
+        if (root and er != root) or OPEN_GAP.search(e["text"]) or re.match(r"(?i)\*\*(?:closed|resolved)\b", e["text"]):
+            continue
+        if prefix and not (any(in_prefix(t, want) for t in e["explicit"]) or e["section"].startswith(bare(prefix).split("/")[0])):
+            continue
+        question = gap_question(e)
+        if not question:
+            continue
+        res = pack(question, 1200, None, 4, "concise", False, er)
+        if res["verdict"] != "good" or res["route"] or "\ncheck:" in res["text"]:
+            continue
+        answers = []
+        for p in res["printed"]:
+            path = p["path"]
+            if file_topic.get(path, path) in e["explicit"]:
+                continue
+            if path not in units_of:
+                units_of[path] = {u["line"]: u for u in (md_units(path, read(path) or "") if path.endswith(".md")
+                                                         else csv_units(path, read(path) or ""))}
+            u = units_of[path].get(p["line"])
+            kinds = [k for k in kinds_of(u["tags"]) if k in ANSWER_KINDS] if u else []
+            held = set(key_terms(u["text"])) & set(res["known"]) if u else set()
+            if kinds and len(held) >= ANSWER_SHARE * len(res["known"]) and not (NOT_STATED.search(u["text"]) or NOT_FOUND.search(u["text"])):
+                answers.append({"path": path, "line": p["line"], "kind": kinds[0], "text": u["text"]})
+        if answers:
+            out.append({"file": e["file"], "line": e["line"], "section": e["section"], "question": question,
+                        "topics": e["explicit"], "answers": answers})
+    return out
+
+
 # ---------------------------------------------------------------- decisions (beside the facts of a pack and a show)
 
 DECISION_ANSWER_SHARE = 0.6  # an active decision whose text holds this share of a question's informative words answers it
@@ -2234,7 +2294,7 @@ from kf_fresh import (
 )  # noqa: E402, F401
 from kf_index import (
     AMOUNT, COMMON_SHARE, IDENT, INDEX_VERSION, KEEP_INDEXES, LANGUAGE_NAMES, LATEST, LIST_INTRO_CHARS, MemStore,
-    PASSING_MISSING, PASSING_UNITS, PRICE_ASK, PRUNE_GRACE, PRUNE_OTHER_ROOTS, Prefix, RARE_NAME, SCATTER_ARTICLES,
+    NOT_STATED, PASSING_MISSING, PASSING_UNITS, PRICE_ASK, PRUNE_GRACE, PRUNE_OTHER_ROOTS, Prefix, RARE_NAME, SCATTER_ARTICLES,
     SCATTER_DOMAINS, SCATTER_SCORE, SEARCH_PER_FILE, SqlStore, Store, Subset, TESTED_FURTHER, TESTED_PINS,
     TESTED_SHARE, TOPIC_SHARE, UNIT_CACHE, UNIT_CACHE_SLACK, USED_EVERY, VERSION, article_domain, drifted_words,
     freshness, index_path, informative_words, key_shares, list_intro, name_apart, opening_passage, own_words, pack,

@@ -31,10 +31,12 @@
                                            `kb has:` and `kb lacks:` lines, the parts sharing BUDGET tokens
   rag.py facts PREFIX [--tag UNK,COMMUNITY] [--format detailed]
                                            fact lines under a path prefix (a domain, topic or file), by tag kind
-  rag.py audit [PREFIX] [--status partial] [--entries] [--unlinked] [--format detailed]
+  rag.py audit [PREFIX] [--status partial] [--entries] [--unlinked] [--stale-gaps] [--format detailed]
                                            per article: status, retrieved_utc, fact counts by tag kind and the
                                            _gaps.md/_conflicts.md entries linked to it (named, or via its sources);
-                                           --unlinked lists the entries no topic marker, path or section links
+                                           --unlinked lists the entries no topic marker, path or section links;
+                                           --stale-gaps lists the open _gaps.md entries whose question the kb's own
+                                           pack answers with a DOC, CODE or DER line of another article
   rag.py src S1824 --cited                 also every file line that names the id
   rag.py eval [--file FILE] [--root NAME] [--free] [--min N] [--max-false-good N] [--all] | --write-shares  pack against the lookup eval sets (every
                                            root's lookup_eval.csv and kb/_self's, or FILE): expected article found,
@@ -630,6 +632,8 @@ def main():
     au.add_argument("--root", help="one root only")
     au.add_argument("--entries", action="store_true", help="list the linked _gaps.md/_conflicts.md entries")
     au.add_argument("--unlinked", action="store_true", help="list _gaps.md/_conflicts.md entries no marker, path or section links to a topic")
+    au.add_argument("--stale-gaps", action="store_true", help="list the open _gaps.md entries whose question the kb's own pack "
+                    "answers (good, with a DOC, CODE or DER line in another article than the entry's topic that does not say the fact is not stated)")
     au.add_argument("--format", choices=FORMATS, default="concise")
     tf = sub.add_parser("topics-for"); tf.add_argument("paths", nargs="*", help="files or directories of the code to map")
     tf.add_argument("--keywords", help="text to map instead of (or as well as) files")
@@ -760,6 +764,16 @@ def main():
         if a.json:
             return print(json.dumps([{k: u[k] for k in ("path", "line", "section", "text", "tags")} for u in res], indent=1))
         print(format_facts(res, a.format, limit=len(res)))
+    elif a.cmd == "audit" and a.stale_gaps:
+        res = kbfacts.stale_gaps(a.prefix, a.root)
+        if a.json:
+            return print(json.dumps(res, indent=1))
+        clip = 400 if a.format == "detailed" else 110
+        for e in res:
+            print(f"{e['file']}:{e['line']}  ({e['section']})  {e['question'][:clip]}")
+            for x in e["answers"][:3]:
+                print(f"    answered at {x['path']}:{x['line']} [{x['kind']}]  {x['text'][:clip]}")
+        print(f"stale_gaps={len(res)}: each entry's question is answered by the lines under it; check one, then add a `Resolved <date>:` line")
     elif a.cmd == "audit" and a.unlinked:
         tf, srcs, n = kbfacts.topic_files(), kbfacts.source_rows(), 0
         want = kbfacts.scope(a.prefix, a.root)
