@@ -50,7 +50,8 @@
     "_tools/kbjob.py",
     "_tools/kj_place.py",
     "kb/_self/coordination.md",
-    "kb/_self/map.csv"
+    "kb/_self/map.csv",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "ST-nwwcf3kk",
