@@ -7,7 +7,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
-  "goal": "kg_lane.has_code_lane keeps the code lane when backlog.json is unreadable, not valid JSON or gives lane_module a value that is no string, and answers False only for a readable file or a missing one whose lane_module is empty",
+  "goal": "kg_lane.has_code_lane keeps the code lane when backlog.json is unreadable or not valid JSON or gives lane_module a value that is no string; it answers False only for a readable file or a missing one whose lane_module is empty",
   "repro": {
     "run": [
       "python3",
@@ -15,6 +15,25 @@
       "import sys,os,tempfile,subprocess;sys.path.insert(0,'_tools');import kg_lane;d=tempfile.mkdtemp();subprocess.run(['git','-C',d,'init','-q']);open(d+'/backlog.json','w').write('{\"lane_module\": \"kblane\"');r=kg_lane.has_code_lane(d);print('truncated backlog.json keeps the code lane:',r);sys.exit(0 if r else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport sys,os,tempfile,subprocess;sys.path.insert(0,'_tools');import kg_lane\ndef mk(text):\n    d=tempfile.mkdtemp();subprocess.run(['git','-C',d,'init','-q'])\n    if text is not None:\n        open(d+'/backlog.json','w').write(text)\n    return d\ngot=[kg_lane.has_code_lane(mk(t)) for t in (None,'{\"lane_module\": \"\"}','{\"lane_module\": \"kblane\"}','{\"lane_module\": \"kblane\"','{\"lane_module\": 7}','not json')]\nprint(got)\nsys.exit(0 if got==[False,False,True,True,True,True] else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kg_lane.has_code_lane keeps the code lane when backlog.json is unreadable or not valid JSON or gives lane_module a value that is no string",
+      "check": 0
+    },
+    {
+      "clause": "it answers False only for a readable file or a missing one whose lane_module is empty",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kg_lane.py",
     "kb/_self/git.md"
