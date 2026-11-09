@@ -24,8 +24,9 @@ kb_root=None)` reads one of those keys (`extensions`, `extension_paths`, `backlo
 entries (`extension_paths`, `gate_checks`) in layer order with the layer of each entry, a string (`group`) with its
 layer; `layer_path(root, layer, kb_root=None)` is the file of a layer. A group file may hold `locked`, a list of keys
 written as the file holds them (`coordination.announce.needs_you_after_min`, `extensions.ranker`; a name that ends before the key
-locks everything below it): a later layer that sets a locked key raises `SettingsError` naming the key, the file that
-sets it and the group file. An unknown key, or a value outside its closed set, raises `SettingsError` (a ValueError
+locks everything below it; a name that goes deeper than a key's leaf, `extensions.ingest_mappers.python`, locks the
+whole key `extensions.ingest_mappers`, since a later layer's value replaces that key): a later layer that sets a locked
+key raises `SettingsError` naming the key, the file that sets it and the group file. An unknown key, or a value outside its closed set, raises `SettingsError` (a ValueError
 whose message names the file, the key and the allowed values); `show` and `explain` print it on stderr and exit 2.
 Exit 0 printed; 1 `check` found a mismatch; 2 a bad setting or argument. `explain` reads the settings files and the
 SETTINGS table and nothing else: no model, no subprocess, no network, and not the doc, whose bullet for each key
@@ -248,7 +249,7 @@ def layer_files(root, kb_root=None):
             continue
         for leaf in _leaves(data):
             for lock in locked:
-                if leaf == lock or leaf.startswith(lock + "."):
+                if leaf == lock or leaf.startswith(lock + ".") or lock.startswith(leaf + "."):
                     raise SettingsError(f"{shown_path(path, root)}: key {leaf} is locked by the group file "
                                         f"{shown_path(out[0][1], root)} and cannot be set in the {layer} file")
     return out
