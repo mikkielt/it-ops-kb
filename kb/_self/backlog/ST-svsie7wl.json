@@ -1,0 +1,42 @@
+{
+  "id": "ST-svsie7wl",
+  "kind": "story",
+  "title": "Review sprint: Backlog lifecycle bookkeeping is exact: done, drop, reconcile, land rows, show, horizon, close summary and leak refusals tell what happened",
+  "status": "draft",
+  "sprint": "SP-yriisdti",
+  "review": true,
+  "priority": "P1",
+  "rank": 999999,
+  "goal": "Every committed item is done or dropped, provisional answers are confirmed by the operator, and a fresh-context review of the sprint's diff found no unfiled defect.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval",
+        "--file",
+        "kb/public/_retrieval/lookup_heldout.csv",
+        "--root",
+        "public",
+        "--min",
+        "86",
+        "--max-false-good",
+        "8"
+      ]
+    }
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
