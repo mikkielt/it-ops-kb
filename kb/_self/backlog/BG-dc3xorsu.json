@@ -2,7 +2,7 @@
   "id": "BG-dc3xorsu",
   "kind": "bug",
   "title": "extensions.backlog_commands is the one extension point whose it_ops_kb entry point is never read",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-y7fe7qqx",
   "sprint": "SP-ga3lbnlk",
   "priority": "P3",
@@ -48,5 +48,7 @@
     "parked: SP-ep7ck2ab review"
   ],
   "notes": "Planning 2026-11-09: check 1 (no kbext import when no setting and no entry point) passes on the base on purpose: it pins the cost bound the fix must keep; the repro is the failing premise.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-0a3e91bc",
+  "operator": "op-f618a13e"
 }
