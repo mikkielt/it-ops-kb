@@ -44,6 +44,10 @@ SUMMARY = re.compile(r"^(\d+) (?:ids|topics|answers) \(see diff\)$")
 KEY_LINE = re.compile(r"^(" + "|".join(re.escape(k) for k in KEYS) + r")\s*:", re.I)
 DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 OPERATOR_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}")  # kbwho.ID_RX: no "@", so an email address is no id
+JOB = "KB-Job"  # the queue job a commit was made in (kj_exec sets KB_JOB for the job's process): one `JB-` and 8 characters
+JOB_ID = re.compile(r"JB-[a-z2-7]{8}")  # kj_store.new_id
+JOB_OPERATOR = re.compile(r"(?=.{1,200}$)[A-Za-z0-9][A-Za-z0-9._-]*(?:/[A-Za-z0-9][A-Za-z0-9._-]*)*")  # the submitter's operator path (`corp/ops/jan.kowalski`): ids joined by "/"
+SESSION_GUID = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", re.I)
 INDEX = None  # compute() target: the index (staged changes)
 
 
@@ -225,7 +229,35 @@ def first_parent(rev):
     return parents[0] if parents else ""
 
 
-def trailer_lines(computed, verified=None, operator=None):
+def operator_ok(value):
+    """Is a KB-Operator value one operator id (kbwho.py) or an operator path of a job's submitter, and no email address?"""
+    return OPERATOR_ID.fullmatch(value) is not None or (JOB_OPERATOR.fullmatch(value) is not None
+                                                        and SESSION_GUID.search(value) is None)
+
+
+def job_trailers(environ=None):
+    """(operator, job) of the job whose process ENVIRON (os.environ by default) is: KB_JOB_OPERATOR, the operator path of
+    the job's submitter, and KB_JOB, its id, as the executor sets them. A value that is no job id, an operator that is an
+    email address, a session GUID or no operator path, is dropped with a line on stderr (None for it); outside a job
+    (no KB_JOB, hence no operator either) both are None."""
+    environ = os.environ if environ is None else environ
+    job = (environ.get("KB_JOB") or "").strip()
+    operator = (environ.get("KB_JOB_OPERATOR") or "").strip()
+    if not job:
+        if operator:
+            print("kbgit.py: KB_JOB_OPERATOR is set without KB_JOB: not a job, no KB-Operator from it", file=sys.stderr)
+        return None, None
+    if not JOB_ID.fullmatch(job):
+        print("kbgit.py: KB_JOB is no job id (JB- and 8 characters): KB-Job not added", file=sys.stderr)
+        job = ""
+    if operator and (SESSION_GUID.search(operator) or JOB_OPERATOR.fullmatch(operator) is None):
+        print("kbgit.py: KB_JOB_OPERATOR is no operator path (ids joined by /, no email address or session id): "
+              "KB-Operator not set from it", file=sys.stderr)
+        operator = ""
+    return operator or None, job or None
+
+
+def trailer_lines(computed, verified=None, operator=None, job=None):
     out = []
     for k in KEYS:
         v = computed.get(k)
@@ -235,13 +267,15 @@ def trailer_lines(computed, verified=None, operator=None):
         out.append(f"{VERIFIED}: {verified}")
     if operator:
         out.append(f"{OPERATOR}: {operator}")
+    if job:
+        out.append(f"{JOB}: {job}")
     return out
 
 
 def parse_trailers(text):
     """{canonical key: [values]} of the KB-* trailers in `git log %(trailers:only,unfold)` output."""
     out = {}
-    canon = {k.lower(): k for k in KEYS + (VERIFIED, AUTO, WORK, REF, OPERATOR)}
+    canon = {k.lower(): k for k in KEYS + (VERIFIED, AUTO, WORK, REF, OPERATOR, JOB)}
     for ln in (text or "").splitlines():
         k, sep, v = ln.partition(":")
         if sep and k.strip().lower() in canon:
@@ -268,16 +302,19 @@ def comment_char():
     return c if len(c) == 1 else "#"
 
 
-def apply_trailers(message, computed, verified=None, operator=None):
+def apply_trailers(message, computed, verified=None, operator=None, job=None):
     """The message with its KB-* trailers replaced by the computed ones (appended with git interpret-trailers); with
-    `operator` (an agent session's operator id) its KB-Operator line is set too, else an existing one stays. An empty message (the user aborted in the editor) is returned unchanged, so the commit still aborts."""
+    `operator` (an agent session's operator id, or the operator path of the submitter of the job the commit is made in:
+    job_trailers) its KB-Operator line is set too, else an existing one stays; with `job` (a job id) its KB-Job line is
+    set, whatever git author the job's identity gives. An empty message (the user aborted in the editor) is returned unchanged, so the commit still aborts."""
     cc = comment_char()
     if not any(ln.strip() and not ln.startswith(cc) for ln in message.splitlines()):
         return message
     drop = lambda ln: (KEY_LINE.match(ln) or (verified and ln.lower().startswith(VERIFIED.lower() + ":"))  # noqa: E731
-                       or (operator and ln.lower().startswith(OPERATOR.lower() + ":")))
+                       or (operator and ln.lower().startswith(OPERATOR.lower() + ":"))
+                       or (job and ln.lower().startswith(JOB.lower() + ":")))
     kept = "".join(ln for ln in message.splitlines(keepends=True) if not drop(ln))
-    lines = trailer_lines(computed, verified, operator)
+    lines = trailer_lines(computed, verified, operator, job)
     if not lines:
         return kept
     args = ["interpret-trailers", "--if-exists", "replace"]
@@ -437,8 +474,10 @@ def trailer_audit(rng, quiet=False, work_state_on=True):
                 wrong.append(AUTO)
             if any(re.fullmatch(r"\S+", x) is None for x in have.get(REF, [])):
                 wrong.append(REF)
-            if any(OPERATOR_ID.fullmatch(x) is None for x in have.get(OPERATOR, [])) or len(have.get(OPERATOR, [])) > 1:
+            if not all(operator_ok(x) for x in have.get(OPERATOR, [])) or len(have.get(OPERATOR, [])) > 1:
                 wrong.append(OPERATOR)
+            if not all(JOB_ID.fullmatch(x) for x in have.get(JOB, [])) or len(have.get(JOB, [])) > 1:
+                wrong.append(JOB)
             work = have.get(WORK)
             state = []
             paths = changes[sha][1] if sha in changes else changed_paths(first_parent(sha), sha)
@@ -459,7 +498,8 @@ def trailer_audit(rng, quiet=False, work_state_on=True):
                 for k in wrong:
                     exp = next((ln for ln in trailer_lines(want) if ln.startswith(k + ":")), {VERIFIED: "YYYY-MM-DD, once", AUTO: "once, of " + "|".join(AUTO_VALUES),
                                                                                                      WORK: "once, backlog item ids that exist at the commit or its parent",
-                                                                                                     OPERATOR: "once, an operator id (kbwho.py), not an email address",
+                                                                                                     OPERATOR: "once, an operator id (kbwho.py) or a job submitter's operator path, not an email address",
+                                                                                                     JOB: "once, a job id (JB- and 8 characters)",
                                                                                                      REF: "one tracker id on each line, with no space"}.get(k, f"(no {k})"))
                     lines.append(f"    {k}: has {', '.join(have.get(k, [])) or '(none)'}; expected {exp}")
                 for why in state:
@@ -478,7 +518,7 @@ STRAY = ("git reads trailers only in the message's last paragraph (a blank line 
          "that paragraph, one block with Co-Authored-By and the other trailers")
 STRAY_WORK = STRAY  # the name kbgit.py re-exports
 REVIEWED = "Self-Reviewed"  # selfdoc.py's trailer; kg_trailers does not import selfdoc
-TRAILER_KEYS = (*KEYS, VERIFIED, AUTO, WORK, REF, OPERATOR, REVIEWED)  # the trailers of ours: a prose line like `kb-sprint:` is none
+TRAILER_KEYS = (*KEYS, VERIFIED, AUTO, WORK, REF, OPERATOR, JOB, REVIEWED)  # the trailers of ours: a prose line like `kb-sprint:` is none
 STRAY_KEY = re.compile(r"(" + "|".join(re.escape(k) for k in TRAILER_KEYS) + r")[ \t]*:[ \t]*\S", re.I)  # by key, any case
 
 
