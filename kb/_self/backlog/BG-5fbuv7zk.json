@@ -2,7 +2,7 @@
   "id": "BG-5fbuv7zk",
   "kind": "bug",
   "title": "The kbsettings.py meaning of announce.needs_you_after_min still says an open question waits, while kbmon names an ask at once and delays only an undecided overlap",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-hyfyn22d",
   "priority": "P3",
   "rank": 0,

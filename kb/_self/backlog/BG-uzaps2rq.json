@@ -2,7 +2,7 @@
   "id": "BG-uzaps2rq",
   "kind": "bug",
   "title": "kbmon --events drops a coord progress event's own gates list: id_list splits only item, topic and touch, so the coord.progress record loses gates_n and gates_1",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-hyfyn22d",
   "priority": "P3",
   "rank": 0,

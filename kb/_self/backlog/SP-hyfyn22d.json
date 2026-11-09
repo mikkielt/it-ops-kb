@@ -2,7 +2,7 @@
   "id": "SP-hyfyn22d",
   "kind": "sprint",
   "title": "kbmon and the benchmarks report true numbers",
-  "status": "planned",
+  "status": "active",
   "goal": "kbmon's cleanup metrics export the ask verdict; the host disk share, the coord progress event's gates list and every wall-clock time kbmon prints are exact and labelled UTC; kbmon --status all names the run states of every active sprint; the kbmon-pane mod retries a failed receipt run and gives a receipt again after /clear, /resume or /branch; the stale needs_you_after_min meaning in kbsettings is corrected; a benchmarks run leaves no scratch directory behind; the bench run commit follows the kb tree; bench duplicate-research counts one line per duplicate fact; the multi research dry-run estimate is within a factor of two of the recorded costs; benchmarks.md states the same-path limit of conflicts",
   "gates": [
     {

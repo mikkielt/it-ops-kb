@@ -2,7 +2,7 @@
   "id": "BG-yfvjzhkr",
   "kind": "bug",
   "title": "A benchmarks.py run leaves its run-<pid>-<hex> scratch directory behind, a --dry-run too, and the directories are not tidy records so they accumulate",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-hyfyn22d",
   "priority": "P3",
   "rank": 0,

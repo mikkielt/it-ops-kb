@@ -2,7 +2,7 @@
   "id": "BG-rpwrgqno",
   "kind": "bug",
   "title": "benchmarks.md describes repro compare conflicts as a pair whose numbers differ, but only facts on one article path can conflict since cross-path pairs need equal numbers",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-hyfyn22d",
   "priority": "P3",
   "rank": 0,
