@@ -2,7 +2,7 @@
   "id": "ST-liirkdss",
   "kind": "story",
   "title": "Each finished job writes one operations row with its queue wait, lock wait and run time, and kbjob.py stats prints their medians per operation",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-tmw3tokk",
   "sprint": "SP-lwkdljxg",
   "priority": "P3",
@@ -106,6 +106,19 @@
   ],
   "notes": "Why: the operator's first ask is to measure the waiting. Today the measure is reconstructed from land.step and land.end rows and the foreground tool-call rows (kb/_querylog/ops, schema in _tools/ql_capture.py; read by backlog.py landings, bl_ops.py:87 step_stats, kbmon mon_*); a job row gives queue wait, lock wait and run time directly, so the before and after of the service is a number: before (2026-11-08, real items 2026-10-02..11-08): land.end ok median 103 s content (p95 1150 s, n=1701) and 430 s code (p95 1784 s, n=133); kbgit.py sync --push step median 29.8 s (p95 176 s); rag eval 18.1 s; siblings median 0.2 s but p95 76 s, max 1081 s; wait-merge p90 240 s; done step p95 29 s; test.run full median 22.0 s (p95 34.6 s, n=3021). Row schema is closed (ql_capture) and the redactor reads it (_tools/test_redact.py names land.step), so the worker adds job.run beside land.step in the same closed-key way and keeps ids and paths out of the row (op, exit class and numbers only). Related: EP-ajw3oywi (the sprint runner measures its own work as redacted operational events) is the family this row belongs to; EP-wqgicmmj (a live console) may show the job queue as a panel later, not here. No test added unless test_redact.py must name the new event (then one line, no new id).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-61c966d6",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "8fccbb505ec238492d16ee947a81be186b9a6454",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,tempfile,subprocess; d=tempfile.mkdtemp(); env=dict(os.environ,CLAUDE_PLUGIN_DATA=d,CLAUDE_PLUGIN_ROOT=os.getcwd(),KB_HOST_LOCK_DIR=d); s=os.path.join(d,\"c.sqlite\"); kb=lambda *x: subprocess.run([sys.executable,\"_tools/kbjob.py\",\"--store\",s,*x],env=env,capture_output=True,text=True,timeout=300); assert kb(\"submit\",\"check\",\"--name\",\"backlog-check\",\"--no-ensure\").returncode==0; assert kb(\"serve\",\"--once\").returncode in (0,1); r=kb(\"stats\"); assert r.returncode==0 and r.stdout.split()[0]==\"check\" and \"run_ms\" in r.stdout and \"queued_ms\" in r.stdout, r"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
