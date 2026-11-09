@@ -1,0 +1,22 @@
+{
+  "id": "BG-zjabv2lg",
+  "kind": "bug",
+  "title": "rag.py audit --stale-gaps lists gaps answered by lines that hold the pack's known words and not the question's",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "rag.py audit --stale-gaps takes the 70 percent share over the question's own key words, so a gap whose lines state none of what it asks is not listed",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess, sys\nr = subprocess.run([sys.executable, \"_tools/rag.py\", \"audit\", \"--stale-gaps\"], capture_output=True, text=True)\nhit = \"Dev Drive with Defender performance mode\" in r.stdout\nprint(\"exit\", r.returncode, \"lists the Dev Drive timing gap as answered:\", hit)\nsys.exit(1 if hit else 0)\n"
+    ]
+  },
+  "touches": [
+    "_tools/kbfacts.py",
+    "kb/_self/tools.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
