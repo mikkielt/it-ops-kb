@@ -268,11 +268,25 @@ class Bench:
         self.record = self.date
         self.status = 0  # the exit code a scenario asks for (1: `pool` stopped at its --max-usd)
         self.commit = run_commit()
-        self.cc = (subprocess.run(["claude", "--version"], capture_output=True, text=True).stdout.split() or ["?"])[0]
+        self._cc = None  # read on first use: a --dry-run plan starts no claude, `claude --version` included
         import kbfacts
         self.topics = str(len(kbfacts.articles()))
         self.rows, self._clones, self.registered = [], {}, []
         self.arm = ""  # the arm of an ARMED scenario's rows (run --arm)
+
+    @property
+    def cc(self):
+        """The Claude Code version: `claude --version`, started the first time a row or a usage sum needs it. A `--dry-run`
+        (`dry` set) starts no claude, so it reads `?`, as does a run that sets `cc` itself."""
+        if self._cc is None:
+            if getattr(self, "dry", False):
+                return "?"
+            self._cc = (subprocess.run(["claude", "--version"], capture_output=True, text=True).stdout.split() or ["?"])[0]
+        return self._cc
+
+    @cc.setter
+    def cc(self, value):
+        self._cc = value
 
     def row(self, scenario, case, arm, metric, value, runs="", model="", note=""):
         if isinstance(value, float):

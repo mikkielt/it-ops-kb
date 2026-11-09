@@ -733,6 +733,8 @@ def main(argv=None):
         return 2
     b = (bench_load.PaidBench if a.paid else Bench)(scratch_dir(), a.reps)
     b.arm = a.arm
+    if a.paid:
+        b.cc = "?"  # a paid run starts no claude that is not a capped session; the first session's init event names the version
     b.arms, b.efforts, b.dry, b.shape, b.seed = arms, efforts, a.dry_run, a.shape, a.seed
     b.load_arms, b.window, b.pane_every, b.capture = load_arms, a.window, a.pane_every, capture
     b.intake_real, b.sessions, b.live, b.live_pids, b.paid = a.intake_real, sessions, a.live, live_pids, a.paid
