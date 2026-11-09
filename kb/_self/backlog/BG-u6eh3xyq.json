@@ -2,7 +2,7 @@
   "id": "BG-u6eh3xyq",
   "kind": "bug",
   "title": "kbext.py verify fails a valid backlog_commands module that wraps a shipped command with bl_cli.extend",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-y7fe7qqx",
   "sprint": "SP-ga3lbnlk",
   "priority": "P2",
@@ -52,6 +52,19 @@
     "parked: SP-ep7ck2ab review"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-0a3e91bc",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "4352b675a274076c50c762edc4ab59cd8a8e2967",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess,sys,tempfile,pathlib\nsys.path.insert(0,\"_tools\")\nT=pathlib.Path(tempfile.mkdtemp())\ndef W(p,v):\n    p=pathlib.Path(p); p.parent.mkdir(parents=True,exist_ok=True); p.write_text(v if isinstance(v,str) else json.dumps(v),encoding=\"utf-8\"); return p\ndef need(c,m):\n    if not c: sys.exit(\"not yet: \"+str(m)[:800])\ndef R(*a,env=None):\n    return subprocess.run([sys.executable,*a],capture_output=True,text=True,env=dict(os.environ,**(env or {})),timeout=600)\nEXT='KBEXT_REQUIRES = \">=0.1\"\\n'\ne=T/\"ext\"; W(e/\"gcmds.py\",EXT+\"import bl_cli\\ndef wrap(h):\\n    return h\\nbl_cli.extend('check', wrap, lambda p: None)\\n\")\nW(T/\"settings.json\",{\"extensions\":{\"backlog_commands\":[\"gcmds\"]},\"extension_paths\":[str(e)]})\nr=R(\"_tools/kbext.py\",\"verify\",\"--root\",str(T))\nneed(r.returncode==0, (r.returncode,r.stdout,r.stderr))\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
