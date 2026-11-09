@@ -56,6 +56,62 @@
     "ST-nwwcf3kk",
     "ST-gf2rlzcc"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does place fill the input members operator and groups, which the goal names without saying where they come from?",
+      "options": [
+        "operator is the local operator id and groups is empty, unless --url and --key-file name a central coord: then the operator it names for the key file and the ancestors of its path as groups",
+        "operator and groups are always empty"
+      ],
+      "recommendation": "operator is the local operator id and groups is empty, unless --url and --key-file name a central coord: then the operator it names for the key file and the ancestors of its path as groups",
+      "do": {
+        "operator is the local operator id and groups is empty, unless --url and --key-file name a central coord: then the operator it names for the key file and the ancestors of its path as groups": "ST-zom563hs",
+        "operator and groups are always empty": "ST-zom563hs"
+      },
+      "class": "design",
+      "answer": "operator is the local operator id and groups is empty, unless --url and --key-file name a central coord: then the operator it names for the key file and the ancestors of its path as groups",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "What do the capabilities paid and push mean in the input of place?",
+      "options": [
+        "paid is a Claude API key in the environment and push is an integration remote of the clone",
+        "both are always true"
+      ],
+      "recommendation": "paid is a Claude API key in the environment and push is an integration remote of the clone",
+      "do": {
+        "paid is a Claude API key in the environment and push is an integration remote of the clone": "ST-zom563hs",
+        "both are always true": "ST-zom563hs"
+      },
+      "class": "secrets",
+      "answer": "Neither: the capabilities describe the operation, not the host. paid is true for an operation that spends model calls (bench, dispatch, begin) and push for one that pushes to a remote (land, sync-push); both are read from the closed operation table (kj_ops), never from the environment, so place reads no credential and no remote",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Beyond the executor, identity and fallback tables, what else of the policy's reply counts as no answer?",
+      "options": [
+        "a fallback_after_s or budget_cap_usd that is no number of 0 or more also decides the workstation, an OP outside the placement operations exits 2, and a missing decided_by or reason is filled with policy and a generic reason",
+        "only the executor, identity and fallback tables are checked"
+      ],
+      "recommendation": "a fallback_after_s or budget_cap_usd that is no number of 0 or more also decides the workstation, an OP outside the placement operations exits 2, and a missing decided_by or reason is filled with policy and a generic reason",
+      "do": {
+        "a fallback_after_s or budget_cap_usd that is no number of 0 or more also decides the workstation, an OP outside the placement operations exits 2, and a missing decided_by or reason is filled with policy and a generic reason": "ST-zom563hs",
+        "only the executor, identity and fallback tables are checked": "ST-zom563hs"
+      },
+      "class": "design",
+      "answer": "a fallback_after_s or budget_cap_usd that is no number of 0 or more also decides the workstation, an OP outside the placement operations exits 2, and a missing decided_by or reason is filled with policy and a generic reason",
+      "by": "agent"
+    }
+  ],
   "notes": "Order agreed 2026-11-08 with SP-ep7ck2ab's manager (ask A1e21b0d155): shared kb/_self/map.csv rows land by first claim, the later item rebases; no hard dependency.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-61c966d6",
