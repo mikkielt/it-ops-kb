@@ -1,0 +1,22 @@
+{
+  "id": "ST-t7f4urlk",
+  "kind": "story",
+  "title": "coordination.md says only a refusal under the claims lock moves the run state back to released, though claim also does it for an item file save error, an interrupt and a SIGTERM",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/coordination.md, Who moves it, says claim moves the run state back to released on a refusal, an item file that cannot be saved, an interrupt and a SIGTERM while it waits for the claims record's lock",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; t = open(\"kb/_self/coordination.md\").read(); i = t.index(\"**Who moves it.**\"); s = t[i:i + 900]; sys.exit(0 if \"SIGTERM\" in s else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/coordination.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
