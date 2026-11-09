@@ -7,7 +7,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "Found in the SP-avwlotax review (TK-tbbknjul): the plugin skill's text that an orchestrator finding another session's files in its checkout moves to its own worktree (git worktree add) before its first claim sits in run step 4.2, reached only after run step 2 has claimed and pushed; selfcheck's checkout check passes a main checkout another session uses, so nothing warns first; and the Self-check checkout bullet names 'a checkout another session works in', a case check_checkout never reports. The move is named in the run intro or step 1/2, before the claim command, and the checkout bullet names only what selfcheck reports (or selfcheck learns to report it).",
+  "goal": "the run section of skills/sprint/SKILL.md names the move to an own worktree (git worktree add) before its first claim command; its Self-check checkout bullet names only what selfcheck's checkout check reports",
   "repro": {
     "run": [
       "python3",
@@ -16,6 +16,25 @@
     ]
   },
   "repro_reason": "the defect is the order of two instructions in a skill an agent reads; no tool runs the skill's steps, so the order of the text is the behaviour",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "t=open(\"skills/sprint/SKILL.md\",encoding=\"utf-8\").read().split(\"## Self-check\")[1];l=[x for x in t.splitlines() if x.startswith(\"- `checkout`\")];import sys;sys.exit(0 if len(l)==1 and \"another session works in\" not in l[0] else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "the run section of skills/sprint/SKILL.md names the move to an own worktree (git worktree add) before its first claim command",
+      "check": 1
+    },
+    {
+      "clause": "its Self-check checkout bullet names only what selfcheck's checkout check reports",
+      "check": 0
+    }
+  ],
   "touches": [
     "skills/sprint/SKILL.md",
     "kb/_self/backlog.md",
@@ -26,5 +45,5 @@
     "parked: SP-avwlotax review",
     "merged: BG-y22vhvpv"
   ],
-  "notes": "Merged from BG-y22vhvpv “The kb-sprint Self-check's host line names the suite-load remedy: wait for the load to fall, or run a -k selection” at the 2026-10-13 draft triage: Repro still exits 1 (the host bullet of skills/sprint/SKILL.md reads 'dispatch fewer workers.' with no -k remedy); it is a one-line wording of the same Self-check bullet list BG-adgc5qf2 rewords, and selfcheck itself prints the remedy (REMEDY['suite-load']). Its goal: skills/sprint/SKILL.md's Self-check line for host names both remedies selfcheck prints: dispatch fewer workers (host-load) and, over SUITE_LOAD_PER_CORE, wait for the load to fall or run a -k selection (suite-load) Its repro: {\"run\": [\"python3\", \"-c\", \"import sys;t=[l for l in open('skills/sprint/SKILL.md',encoding='utf-8') if l.startswith('- `host`')];sys.exit(0 if t and '-k' in t[0] else 1)\"]} Its touches: skills/sprint/SKILL.md"
+  "notes": "Merged from BG-y22vhvpv “The kb-sprint Self-check's host line names the suite-load remedy: wait for the load to fall, or run a -k selection” at the 2026-10-13 draft triage: Repro still exits 1 (the host bullet of skills/sprint/SKILL.md reads 'dispatch fewer workers.' with no -k remedy); it is a one-line wording of the same Self-check bullet list BG-adgc5qf2 rewords, and selfcheck itself prints the remedy (REMEDY['suite-load']). Its goal: skills/sprint/SKILL.md's Self-check line for host names both remedies selfcheck prints: dispatch fewer workers (host-load) and, over SUITE_LOAD_PER_CORE, wait for the load to fall or run a -k selection (suite-load) Its repro: {\"run\": [\"python3\", \"-c\", \"import sys;t=[l for l in open('skills/sprint/SKILL.md',encoding='utf-8') if l.startswith('- `host`')];sys.exit(0 if t and '-k' in t[0] else 1)\"]} Its touches: skills/sprint/SKILL.md Found in the SP-avwlotax review (TK-tbbknjul). Settled in the goal: the bullet is cut to what check_checkout reports, selfcheck learns nothing new."
 }

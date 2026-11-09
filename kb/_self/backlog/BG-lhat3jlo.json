@@ -3,7 +3,6 @@
   "kind": "bug",
   "title": "bl_procs.fresh_pids takes any transcript of the process's working-directory project as proof its session is at work, so an orphaned claude process in a busy checkout is called detached",
   "status": "draft",
-  "sprint": "SP-rzwljgxv",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

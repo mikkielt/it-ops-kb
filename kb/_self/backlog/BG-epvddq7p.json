@@ -12,13 +12,17 @@
     "run": [
       "python3",
       "-c",
-      "import sys;sys.path.insert(0,\"_tools\");import bl_dispatch as d;t=open(d.__file__,encoding=\"utf-8\").read();sys.exit(0 if \"--self-reviewed\" in t and \"stage-back\" in t and \"orchestrator passes\" in t else 1)"
+      "import sys;sys.path.insert(0,\"_tools\");import bl_dispatch as d;from bl_base import Backlog;bl=Backlog(\".\");d.staged_files=lambda b,i:[\".claude/skills/x/SKILL.md\"];t=d.compose_brief(bl,\"BG-epvddq7p\");s=t.split(\"\\n## Staging copies\\n\")[1].split(\"\\n## \")[0];sys.exit(0 if \"--self-reviewed\" in s and \"selfdoc.py stale\" in s else 1)"
     ]
   },
   "repro_reason": "the refusal shows only when stage-back meets a stale doc list; the repro reads that the brief text names the --self-reviewed form",
   "touches": [
     "_tools/bl_dispatch.py",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-oa5rs334"
   ],
   "links": [
     "parked: SP-c6tr77jl close"

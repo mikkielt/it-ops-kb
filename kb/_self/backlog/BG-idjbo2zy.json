@@ -16,8 +16,20 @@
     ]
   },
   "repro_reason": "a skill wording defect: the text is the behaviour",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open(\"skills/sprint/SKILL.md\",encoding=\"utf-8\").read().split(\"## plan\")[1].split(\"## start\")[0];s=t.split(\"\\n5. \")[1].split(\"\\n6. \")[0];sys.exit(0 if \"precheck SP\" in s and \"repro\" in s and \"window\" in s else 1)"
+      ]
+    }
+  ],
   "touches": [
     "skills/sprint/SKILL.md"
+  ],
+  "depends_on": [
+    "BG-adgc5qf2"
   ],
   "links": [
     "parked: SP-m3azo2y7 review"
