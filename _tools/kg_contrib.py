@@ -48,27 +48,31 @@ def classify_paths(changes, internal, pointers):
 
 
 def internal_dirs(head, up, changes):
-    """({internal root directory}, {internal pointer's directory}) as the publish guard reads them (kbpublic.tree_refusals):
-    a `_root.md` or pointer file saying `visibility: internal` (no line counts as internal, as kbcommon reads it) in HEAD's
-    tree, the upstream tip's or any commit of the range, so a root made public later is still held back."""
+    """({private root directory}, {private pointer's directory}) as the publish guard reads them (kbpublic.tree_refusals):
+    a `_root.md` or pointer file that does not say `visibility: public` (`internal`, another value or no line, kbpublic.not_public)
+    is private, in HEAD's tree, the upstream tip's or any commit of the range, so a root made public later is still held
+    back; a `_root.md` under `_tools/fixtures/` is a test input and no root (kbpublic.is_test_input)."""
     rooted, pointed = {}, {}
     pdir = f"kb/{kbcommon.POINTERS_DIR}/"
     for rev in (head, up):
         for x in kbpublic.tree_files(rev, KB) or []:
+            if kbpublic.is_test_input(x):
+                continue
             if x.rsplit("/", 1)[-1] == kbcommon.ROOT_FILE:
                 rooted.setdefault(f"{rev}:{x}", x)
             elif x.startswith(pdir) and x.endswith(".md") and "/" not in x[len(pdir):]:
                 pointed.setdefault(f"{rev}:{x}", x)
     for _, ch in changes:
         for st, _, new, x, _ in ch:
+            if kbpublic.is_test_input(x):
+                continue
             if st != "D" and x.rsplit("/", 1)[-1] == kbcommon.ROOT_FILE:
                 rooted.setdefault(new, x)
             elif st != "D" and x.startswith(pdir) and x.endswith(".md") and "/" not in x[len(pdir):]:
                 pointed.setdefault(new, x)
     got = kbpublic.texts([*rooted, *pointed], KB)
-    roots = {kbpublic.root_dir(x) for s, x in rooted.items() if kbcommon._meta(got.get(s, "")).get("visibility", "internal") == "internal"}
-    ptrs = {f"kb/{x[len(pdir):-len('.md')]}" for s, x in pointed.items()
-            if kbcommon._meta(got.get(s, "")).get("visibility", "internal") == "internal"}
+    roots = {kbpublic.root_dir(x) for s, x in rooted.items() if kbpublic.not_public(got.get(s, ""))}
+    ptrs = {f"kb/{x[len(pdir):-len('.md')]}" for s, x in pointed.items() if kbpublic.not_public(got.get(s, ""))}
     return roots, ptrs
 
 
