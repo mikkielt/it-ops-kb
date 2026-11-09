@@ -41,6 +41,38 @@
   "depends_on": [
     "BG-jtnkjxsc"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does kbask decide a GUID in ask text names a live session, and for which texts?",
+      "options": [
+        "Look up each GUID of an ask or answer text (at most 8) as the lease session/ID with coord get; redact.redact takes the live ones as keep",
+        "Pass every GUID of an ask text through unchanged"
+      ],
+      "recommendation": "Look up each GUID of an ask or answer text (at most 8) as the lease session/ID with coord get; redact.redact takes the live ones as keep",
+      "do": {
+        "Look up each GUID of an ask or answer text (at most 8) as the lease session/ID with coord get; redact.redact takes the live ones as keep": "BG-pqthn333",
+        "Pass every GUID of an ask text through unchanged": "BG-pqthn333"
+      },
+      "class": "querylog"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "The item's repro calls plain redact.redact with no store and expects a UUID kept, which cannot hold beside the goal (only a live session lease keeps one): which repro stands?",
+      "options": [
+        "Replace the repro by the first half of check 0 (a store with a planted lease, then kbask ask)",
+        "Keep every UUID that follows the words 'address me as'"
+      ],
+      "recommendation": "Replace the repro by the first half of check 0 (a store with a planted lease, then kbask ask)",
+      "do": {
+        "Replace the repro by the first half of check 0 (a store with a planted lease, then kbask ask)": "BG-pqthn333",
+        "Keep every UUID that follows the words 'address me as'": "BG-pqthn333"
+      },
+      "class": "querylog"
+    }
+  ],
   "links": [
     "parked: SP-3trnelzv work"
   ],
