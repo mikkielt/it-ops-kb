@@ -264,6 +264,36 @@ def handler_of(name, registry=None):
     return registry[name][0]
 
 
+def group_name(root):
+    """The `group` name of the settings layers of ROOT (the last layer that sets one), `group` when none does."""
+    import kbsettings
+    try:
+        layers = kbsettings.layer_files(root)
+    except kbsettings.SettingsError:
+        return "group"
+    return next((d["group"] for _, _, d in reversed(layers) if isinstance(d.get("group"), str) and d["group"]), "group")
+
+
+class group_loading:
+    """The state `backlog.py` has while it imports a group's modules, for a caller that is not `backlog.py` (`kbext.py
+    verify`, which imports `backlog` first so the shipped commands are registered): inside the `with`, a module's
+    `register` and `extend` calls count as the group's, in LAYER, as `load_group_commands` makes them. On leaving, the
+    registry and the group marks are as they were."""
+
+    def __init__(self, root, layer):
+        self.root, self.layer = root, layer
+
+    def __enter__(self):
+        self.before = (dict(COMMANDS), dict(GROUP))
+        _LOADING.append((self.layer, group_name(self.root)))
+        return self
+
+    def __exit__(self, *exc):
+        _LOADING.pop()
+        COMMANDS.clear(), GROUP.clear()
+        COMMANDS.update(self.before[0]), GROUP.update(self.before[1])
+
+
 def load_group_commands(root):
     """Import each module `extensions.backlog_commands` lists in the settings layers of ROOT, after the shipped modules,
     through `kbext.load_all` (kb/_self/extending.md): a module adds or replaces commands through `register` and `extend`
@@ -281,7 +311,7 @@ def load_group_commands(root):
         return []
     import kbext
     layer = source["backlog_commands"]
-    group = next((d["group"] for _, _, d in reversed(layers) if isinstance(d.get("group"), str) and d["group"]), "group")
+    group = group_name(root)
     before = (dict(COMMANDS), dict(GROUP))
     _LOADING.append((layer, group))
     try:
