@@ -2,7 +2,7 @@
   "id": "BG-v55f3dlq",
   "kind": "bug",
   "title": "The leak_scan extension point still declares file_hits without the root parameter that kbpublic now passes",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ga3lbnlk",
   "priority": "P3",
   "rank": 0,
@@ -48,5 +48,7 @@
     "parked: SP-n7zxspch review"
   ],
   "notes": "Review note (S4) of SP-n7zxspch. kbext.py:130 declares file_hits(path, text, allow, pinned=()); BG-r57wg5tg added root=None, and kbpublic passes it positionally at :644, :713 and :762. Nothing wires the point yet.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-0a3e91bc",
+  "operator": "op-f618a13e"
 }
