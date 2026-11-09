@@ -372,13 +372,63 @@ def landing_holder_item(text):
     return "?"
 
 
+def landing_queue_dir(path):
+    """The directory of the waiters' tickets, beside the landing lock file PATH."""
+    return Path(str(path)[:-len(".lock")] + ".queue") if str(path).endswith(".lock") else Path(str(path) + ".queue")
+
+
+def ticket_alive(pid):
+    """Whether process PID runs and is no zombie (a killed child its parent has not waited for still shows in `ps`)."""
+    import tests as tests_py
+    if os.name == "nt":
+        return tests_py.pid_alive(pid)
+    try:
+        out = subprocess.run(["ps", "-p", str(pid), "-o", "stat="], capture_output=True, text=True, timeout=30)
+    except (OSError, subprocess.SubprocessError):
+        return True
+    return out.returncode == 0 and not out.stdout.strip().startswith("Z")
+
+
+def landing_tickets_ahead(qdir, mine):
+    """The tickets of live processes that asked for the landing lock before the ticket named MINE, oldest first, as
+    (name, pid, item). A ticket whose process is gone is removed; one of this process is never waited for."""
+    ahead = []
+    try:
+        names = sorted(os.listdir(qdir))
+    except OSError:
+        return ahead
+    for name in names:
+        if name == mine:
+            break
+        try:
+            pid = int(name.rsplit("-", 1)[1])
+            int(name.split("-", 1)[0])
+        except (ValueError, IndexError):
+            continue  # not a ticket (a temporary name)
+        if pid == os.getpid():
+            continue
+        if not ticket_alive(pid):
+            with contextlib.suppress(OSError):
+                os.unlink(qdir / name)
+            continue
+        item = "?"
+        with contextlib.suppress(OSError, ValueError):
+            item = landing_holder_item((qdir / name).read_text(encoding="utf-8")) or "?"
+        ahead.append((name, pid, item))
+    return ahead
+
+
 @contextlib.contextmanager
 def landing_lock(root, iid, poll=None):
     """Hold the clone's landing lock for the block: an O_EXCL file whose record names the item being landed (pid,
-    clone, start, item). A second landing of the clone says which item holds it and waits, a holder whose pid no longer
-    runs is cleared, and `kg_lock.max_wait()` seconds of waiting for a live one stop the landing at step `landing
-    lock`. The lock is released on exit, on an error and on SIGTERM. The mechanism is the host main lock's
-    (`kg_lock.main_lock`), on a file of the clone's own."""
+    clone, start, item). A landing that asks for it takes a ticket in the queue directory beside the lock (`kb-landing.
+    queue`, a file named by the time it asked and its pid, naming the item) and takes the lock only when no ticket
+    of a live process is older, so waiters take it in the order they asked; a ticket of a process that is gone is
+    removed, never waited for. A second landing of the clone says which item holds the lock or asked first and waits, a
+    holder whose pid no longer runs is cleared, and `kg_lock.max_wait()` seconds of waiting stop the landing at step
+    `landing lock`. The ticket is removed once the lock is taken and on any exit, and the lock is released on exit, on an
+    error and on SIGTERM. A holder or a waiter of an older copy of this code uses the lock file alone and ignores the
+    tickets. The mechanism is the host main lock's (`kg_lock.main_lock`), on a file of the clone's own."""
     import signal
     import tests as tests_py
     import kg_lock
@@ -386,58 +436,93 @@ def landing_lock(root, iid, poll=None):
     poll = poll if poll is not None else float(os.environ.get("KB_HOST_LOCK_POLL", "1"))
     me = (f"pid={os.getpid()}\nclone={root}\nstarted={time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}\n"
           f"item={iid}\n")
-    told, waited, bound = None, 0.0, kg_lock.max_wait()
-    while True:
-        try:
-            fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
-        except FileExistsError:
-            text = tests_py.read_lock(path)
-            if text is None and not os.path.exists(path):  # released: look again
-                continue
-            holder = tests_py.parse_holder(text or "")
-            if holder is None:
-                try:
-                    young = time.time() - os.stat(path).st_mtime < tests_py.lock_grace()
-                except OSError:
-                    continue
-                if young:  # its holder has not written the record yet
-                    time.sleep(poll)
-                    continue
-            if holder is None or not tests_py.pid_alive(holder["pid"]):
-                if tests_py.clear_stale(path, text):
-                    say(f"land: clearing a stale landing lock ({holder['pid'] if holder else 'unreadable'})")
-                continue
-            item = landing_holder_item(text)
-            if holder != told:
-                say(f"land: waiting for the landing lock of this clone, held by the landing of {item} "
-                    f"(pid {holder['pid']}, started {holder['started']})")
-                told = holder
-            if waited >= bound:
-                raise land_stop("landing lock", f"the landing of {item} (pid {holder['pid']}, started "
-                                                f"{holder['started']}) still holds the clone's landing lock after "
-                                                f"{bound:g} s: run land again once it has ended")
-            began = time.monotonic()
-            time.sleep(poll)
-            waited += time.monotonic() - began
-            continue
-        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as f:
-            f.write(me)
-        break
     prev = None
     try:
         prev = signal.signal(signal.SIGTERM, lambda *_: sys.exit(143))
     except (ValueError, OSError):  # not the main thread
         pass
+    qdir, ticket = landing_queue_dir(path), None
     try:
+        name = f"{time.time_ns():020d}-{os.getpid()}"
+        qdir.mkdir(exist_ok=True)
+        fd = os.open(qdir / name, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+        ticket = name
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as f:
+            f.write(me)
+    except OSError:  # no queue to be had: the lock file alone orders the landing
+        pass
+    got = False
+    try:
+        told, waited, bound = None, 0.0, kg_lock.max_wait()
+        while True:
+            ahead = landing_tickets_ahead(qdir, ticket) if ticket else []
+            if ahead:
+                _, apid, aitem = ahead[0]
+                if told != ("queue", apid):
+                    say(f"land: waiting for the landing lock of this clone, the landing of {aitem} (pid {apid}) asked "
+                        "for it first")
+                    told = ("queue", apid)
+                if waited >= bound:
+                    raise land_stop("landing lock", f"the landing of {aitem} (pid {apid}) asked for the clone's landing "
+                                                    f"lock before this one and still waits after {bound:g} s: run land "
+                                                    "again once it has ended")
+                began = time.monotonic()
+                time.sleep(poll)
+                waited += time.monotonic() - began
+                continue
+            try:
+                fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            except FileExistsError:
+                text = tests_py.read_lock(path)
+                if text is None and not os.path.exists(path):  # released: look again
+                    continue
+                holder = tests_py.parse_holder(text or "")
+                if holder is None:
+                    try:
+                        young = time.time() - os.stat(path).st_mtime < tests_py.lock_grace()
+                    except OSError:
+                        continue
+                    if young:  # its holder has not written the record yet
+                        time.sleep(poll)
+                        continue
+                if holder is None or not tests_py.pid_alive(holder["pid"]):
+                    if tests_py.clear_stale(path, text):
+                        say(f"land: clearing a stale landing lock ({holder['pid'] if holder else 'unreadable'})")
+                    continue
+                item = landing_holder_item(text)
+                if holder != told:
+                    say(f"land: waiting for the landing lock of this clone, held by the landing of {item} "
+                        f"(pid {holder['pid']}, started {holder['started']})")
+                    told = holder
+                if waited >= bound:
+                    raise land_stop("landing lock", f"the landing of {item} (pid {holder['pid']}, started "
+                                                    f"{holder['started']}) still holds the clone's landing lock after "
+                                                    f"{bound:g} s: run land again once it has ended")
+                began = time.monotonic()
+                time.sleep(poll)
+                waited += time.monotonic() - began
+                continue
+            got = True
+            with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as f:
+                f.write(me)
+            break
+        if ticket:
+            with contextlib.suppress(OSError):
+                os.unlink(qdir / ticket)
+            ticket = None
         yield path
     finally:
+        if ticket:
+            with contextlib.suppress(OSError):
+                os.unlink(qdir / ticket)
+        if got:
+            holder = tests_py.read_holder(path)
+            if holder and holder["pid"] == os.getpid():
+                with contextlib.suppress(OSError):
+                    os.unlink(path)
         if prev is not None:
             with contextlib.suppress(ValueError, OSError):
                 signal.signal(signal.SIGTERM, prev)
-        holder = tests_py.read_holder(path)
-        if holder and holder["pid"] == os.getpid():
-            with contextlib.suppress(OSError):
-                os.unlink(path)
 
 
 def landing_worktree_path(root, iid):
