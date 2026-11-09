@@ -3,7 +3,7 @@
   "kind": "sprint",
   "title": "Monitoring reports live work correctly",
   "status": "planned",
-  "goal": "placeholder goal",
+  "goal": "kbtail skips and counts a transcript line too deeply nested to decode, ignores uncounted the entry types that hold no conversation, prints no skipped count for a window it did not read, notices a transcript rewritten in place, wakes on the coord store of the clone named by --root and rescans for a coord change that follows a rescan within 5 s; kbmon's sessions and selfcheck count a landing again after a reopen and a fresh-transcript claude session as detached, not an orphan; selfcheck's leftovers count the rows that wait for the operator; kbmon's snapshot, panels, events and split view read live work correctly: one shared snapshot per clone, a disk share just under 10% shown under 10%, kb panel rows whole at 80 columns, open gap counts by the kb's own rule, event ids split only in the documented fields, one kb.sprint span per sprint, the held-back count kept after a run that delivered nothing, and --split paths made absolute",
   "gates": [
     {
       "id": "start",
