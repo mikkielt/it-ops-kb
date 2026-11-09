@@ -22,11 +22,11 @@
     "kb/_self/tools.md"
   ],
   "depends_on": [
-    "BG-kcfbcll2"
+    "BG-rrutf5bf"
   ],
   "links": [
     "parked: SP-jwvaq2hu review"
   ],
-  "notes": "Review G2: bl_land.py:2279, kb/_self/coordination.md and backlog.md say runs --reconcile moves the state to released; for a working key whose worker is gone one run writes failed (bl_runs rule 2), only a second writes released (rule 4).",
+  "notes": "Review G2: bl_land.py:2279, kb/_self/coordination.md and backlog.md say runs --reconcile moves the state to released; for a working key whose worker is gone one run writes failed (bl_runs rule 2), only a second writes released (rule 4). 2026-11-09 run: the planned order after BG-dlp3mui2 is relaxed (depends now names an item already landed) so workers run while the landing queue drains; landings stay one at a time and a rebase conflict goes back to the worker.",
   "filed_in": "clone-0ea70e5c"
 }
