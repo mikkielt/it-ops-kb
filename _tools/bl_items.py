@@ -1351,7 +1351,12 @@ def cmd_fire(bl, a):
 def sprint_leftovers(bl, sid):
     """The items a drop of sprint SID deletes with it: its goal research story, its review story, its dropped items and
     the descendants of each, since each names the sprint and `check` reports one whose sprint does not exist. Any other
-    item of the sprint, or one of these that is claimed, refuses the drop, naming each."""
+    item of the sprint, or one of these that is claimed, refuses the drop, naming each. A sprint that has started
+    (status active) refuses too, naming `close`: it records the close ops row and removes the work/<id> worktrees and
+    branches, which a drop does not; a planned sprint has neither and drops."""
+    if bl.items[sid].get("status") == "active":
+        raise Refused(f"{bl.label(sid)} is active (started): close it with `backlog.py close {sid}`, which records the "
+                      "close row and removes the workers' worktrees and branches, as a drop does not")
     top = [i for i, x in bl.items.items() if x.get("sprint") == sid]
     held = [i for i in top if bl.items[i].get("status") != "dropped"
             and not (bl.items[i].get("review") or bl.items[i].get("goal_research"))]
