@@ -2,7 +2,7 @@
   "id": "ST-67pycz7l",
   "kind": "story",
   "title": "Research sprint goal: Providers, fetch and source registry give the right publisher, licence and change signal",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-c6tr77jl",
   "goal_research": true,
   "priority": "P1",
@@ -23,6 +23,20 @@
   ],
   "notes": "No outside facts: every item of the sprint is a bug in provider.py, fetch.py, providers.csv, kbroot.py or a skill text, and each is settled by what the kb already holds: the application-name fact in kb/public/agents/doc-change-detection.md (site name section, DER S-4e2arcjz and DOC S-inrmedim, lines read in the planning session on 2026-11-09), ST-wiv62ohc gate g4 for repository hosts, and the HTML parsing rules the planted checks read. The sprint edits no kb/public article.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-1d0b0461",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "6ae2d04adb5a972e170449208e7f78de9f372af5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-67pycz7l"
+        ],
+        "exit": 0,
+        "sha256": "0d2c427df37ff12b"
+      }
+    ]
+  }
 }
