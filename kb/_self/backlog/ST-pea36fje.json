@@ -94,7 +94,11 @@
         "no: such a job runs in the executor's environment as before": "ST-pea36fje",
         "yes: identity none disables its pushes": "ST-pea36fje"
       },
-      "class": "design"
+      "class": "design",
+      "answer": "no: such a job runs in the executor's environment as before",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g3",
