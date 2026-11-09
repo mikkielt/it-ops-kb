@@ -24,6 +24,25 @@
   "depends_on": [
     "BG-d6znzh6b"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does landing_steps tell a late step row of a landing that is over from a reopened item's next landing?",
+      "options": [
+        "Compare the row's time with the exit-0 land.end row's time, as the sprint panel's landings do",
+        "Read row order only: any land.step after a land.end shows as a landing"
+      ],
+      "recommendation": "Compare the row's time with the exit-0 land.end row's time, as the sprint panel's landings do",
+      "do": {
+        "Compare the row's time with the exit-0 land.end row's time, as the sprint panel's landings do": "BG-v53lnj6a",
+        "Read row order only: any land.step after a land.end shows as a landing": "BG-v53lnj6a"
+      },
+      "class": "design",
+      "answer": "Compare the row's time with the exit-0 land.end row's time, as the sprint panel's landings do",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-fn7letri review"
   ],

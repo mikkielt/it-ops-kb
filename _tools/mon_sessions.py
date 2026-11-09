@@ -711,21 +711,26 @@ def silence(quiet, last_activity, started, now):
 
 def landing_steps(root):
     """{item: the newest `land.step` of its landing in progress} from the ops rows of ROOT; {} when they cannot be read. A
-    landing whose `land.end` row has exit 0 is over: a `land.step` row after it (a step's row written late) opens no landing,
-    while a step after a `land.end` with another exit is a retry's and does."""
+    landing whose `land.end` row has exit 0 is over: a `land.step` row read after it with that row's time or an earlier one
+    (a step's row written late) opens no landing, while a step with a later time (a reopened item's next landing) or after
+    a `land.end` with another exit (a retry) does. Rows with no time are read in order, so a step after the end shows."""
     try:
         import bl_stall
         rows = bl_stall.ops_rows(str(root))
     except Exception:  # noqa: BLE001 - an unreadable log shows no landing
         return {}
-    cur, ended = {}, set()
+    cur, ended = {}, {}
     for r in rows:
         item = r.get("item")
         if r.get("event") == "land.end":
             cur.pop(item, None)
             if r.get("exit") == 0:
-                ended.add(item)
-        elif r.get("event") == "land.step" and isinstance(item, str) and isinstance(r.get("step"), str) and item not in ended:
+                ended[item] = str(r.get("ts") or "")
+            else:
+                ended.pop(item, None)
+        elif r.get("event") == "land.step" and isinstance(item, str) and isinstance(r.get("step"), str):
+            if item in ended and ended[item] and str(r.get("ts") or "") <= ended[item]:
+                continue  # written late, after the end of its own landing
             cur[item] = r["step"]
     return cur
 
