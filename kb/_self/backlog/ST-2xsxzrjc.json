@@ -2,7 +2,7 @@
   "id": "ST-2xsxzrjc",
   "kind": "story",
   "title": "Review sprint: kbmon and the benchmarks report true numbers",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-hyfyn22d",
   "review": true,
   "priority": "P1",
@@ -38,5 +38,44 @@
       ]
     }
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "evidence": {
+    "commit": "6d04b922a99d6783543df2b8bc7ee23ea29145d2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "93fc3873affe7e02"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "f356ffd4edf025b7"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval",
+          "--file",
+          "kb/public/_retrieval/lookup_heldout.csv",
+          "--root",
+          "public",
+          "--min",
+          "86",
+          "--max-false-good",
+          "8"
+        ],
+        "exit": 0,
+        "sha256": "a7691346f9c30601"
+      }
+    ]
+  }
 }
