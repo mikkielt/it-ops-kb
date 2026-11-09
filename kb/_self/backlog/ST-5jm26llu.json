@@ -2,7 +2,7 @@
   "id": "ST-5jm26llu",
   "kind": "story",
   "title": "Research sprint goal: The landing lock is fair, a code item lands in one run, and claims and dead runs do not block",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-mc4dzsfe",
   "goal_research": true,
   "priority": "P1",
@@ -23,6 +23,20 @@
   ],
   "notes": "No outside facts: the sprint's questions concern this repository's own land, claim and monitoring tools, so no official source or live doc applies. Baseline the sprint's review compares against, measured 2026-11-09 from backlog.py's ops rows (bl_stall.ops_rows, this host's spool and the committed sidecars) for 2026-11-08 18:00 to 2026-11-09 13:00 CET (17:00Z to 12:00Z; first row 17:05Z, last 11:51Z): 325 land.end rows, 282 exit 0, 43 non-zero. Refused at step landing lock: 13 land runs of 10 items, each a land.end with exit 1 and no step row, after 1807 to 1811 s of waiting (the bound is 1800 s); 3 other stops with no step row (ST-hojylkmb after 0.6 s and 5.6 s, ST-a73x2hvh after 215 s). Land time: 309 passes ran steps, 17.9 h from each pass's first step start to its land.end, in a 19 h window, median 100 s per pass; that includes the wait for the merge request where a pass has a wait-merge step (28 in the window, 1 of them failed). Passes per code item: 146 land.end rows carry lane=code and 129 of those items ran another stepped pass after it: the first passes took 4.4 h in all (median 90 s) and the later passes 9.5 h (median 99 s), a second run started by hand; the rows do not say whether the first pass ended on the missing code branch (BG-ot47avdg). Failed land.end rows by last step before them: 16 with none (13 lock, 3 other), siblings 7, stale 6, checks 5, kbgit.py-sync-push 3, verify 2, fetch 2, rebase 1, done 1. Command to repeat it: python3 -c over bl_stall.ops_rows('.') grouped by item, event land.step and land.end, as above. The review reruns it for the window of the sprint's own landings; fewer than 13 lock refusals per night and one stepped pass per code item are the goals' own measures.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-4bf1b2c2",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "3329268e748311f1aaaa179438cff68ecc005bbf",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-5jm26llu"
+        ],
+        "exit": 0,
+        "sha256": "1820343d1ad89c34"
+      }
+    ]
+  }
 }
