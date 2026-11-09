@@ -7,7 +7,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S2",
-  "goal": "bl_authority.detail_only ignores an explicit or default --kind blocking as a block reason while keeping every other one, so gate add and precheck SP print detail only beside a default-kind gate that asks only an implementation detail; review gap G3.",
+  "goal": "bl_authority.detail_only ignores an explicit or default --kind blocking as a block reason while keeping every other one, so gate add prints detail only beside a default-kind gate that asks only an implementation detail",
   "repro": {
     "run": [
       "python3",
@@ -29,6 +29,6 @@
   "links": [
     "parked: SP-v6crf4rx review"
   ],
-  "notes": "Order: same files bl_authority.py (after BG-hmxbenjn) and bl_items.py (after BG-gt4i6ec6).",
+  "notes": "Order: same files bl_authority.py (after BG-hmxbenjn) and bl_items.py (after BG-gt4i6ec6). Premise reproduces on origin/main (precheck 2026-11-09). precheck SP calls the same detail_only (bl_precheck.py:526), so its line follows from the fix; bl_precheck.py is left out of touches as the fix is in bl_authority.py. Review gap G3 of SP-v6crf4rx.",
   "filed_in": "clone-0ea70e5c"
 }
