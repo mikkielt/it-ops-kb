@@ -2,7 +2,7 @@
   "id": "ST-iueyyz5f",
   "kind": "story",
   "title": "A paid job is refused without a budget, and a group's daily cap refuses a job that would pass it before it starts",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-p4guu2ip",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",
@@ -52,5 +52,7 @@
     "ST-sw2xihoe"
   ],
   "notes": "Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: queues nothing",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-61c966d6",
+  "operator": "op-f618a13e"
 }
