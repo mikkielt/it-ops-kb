@@ -2,7 +2,7 @@
   "id": "BG-thhbfbx4",
   "kind": "bug",
   "title": "Publish refuses the tracked fixture roots under _tools/fixtures for good while sync never checks tree causes, so three commits since the last publish block it",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-mut2pmu3",
   "priority": "P2",
   "rank": 0,
@@ -110,6 +110,46 @@
   ],
   "notes": "Review gap G1 of SP-n7zxspch (S2). Not introduced by the sprint: the old == internal test already refused these roots. Eleven tracked _tools/fixtures/{evidence,lang,placeholders}/*/_root.md say visibility: internal. Commits e184c36f0b, bf104a9dfc and 120bfd99fc (2026-10-28) write under them after refs/kb/published (2026-10-27), so publish refuses that range for good whatever HEAD holds. kg_sync.py:842 runs range_leaks only (leak causes), never the tree check, so sync passes them. Code: kbpublic.py:500-524 tree_refusals, :894-905 the under causes. Fix options: drop _tools/fixtures from the projection, or make sync report tree causes too. The operator decides how publish handles the existing range. Premise run 2026-11-09: tree_refusals('HEAD', ...) holds 11 causes, one per tracked _tools/fixtures/{evidence,lang,placeholders}/*/_root.md; refs/kb/published exists. Design (settled in the goal, held gate g1 holds the alternative): a path under _tools/fixtures is a test input, never a root; suggested helper kbpublic.is_test_input(path), used by tree_refusals, history_refusals, internal_prefixes and by BG-ff6fhfoo's kg_contrib.internal_dirs. The fixture files then count as ordinary public files for the leak scan: the worker runs the range refs/kb/published..HEAD through history_refusals and reports any leak cause it finds in them instead of widening the exemption. Outbound paths (referrers file_hits leak_hits, read 2026-11-09): publish (history_refusals, shipped=True), the sync range gate (range_leaks, shipped=False, plus the new range_tree_causes) and contribute (kg_contrib.internal_dirs, BG-ff6fhfoo); bl_check, census and check.py read leak_hits/file_hits per file and never the root-visibility rule. The exemption check plants an internal kb/team root and a secret-shaped value (built at run time) beside a fixture root, and both must still be refused.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-ev3run01",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "eded7fc787e0ea47693e53d1a8ea7fb10087b472",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport sys,os,subprocess as s,tempfile\nsys.path.insert(0,'_tools');import kbpublic as k\nd=tempfile.mkdtemp();g=lambda *a:s.run(['git','-C',d,*a],check=True,capture_output=True)\nrev=lambda:s.run(['git','-C',d,'rev-parse','HEAD'],capture_output=True,text=True).stdout.strip()\ng('init','-q')\ndef w(p,t):\n    os.makedirs(os.path.dirname(d+'/'+p),exist_ok=True);open(d+'/'+p,'w').write(t)\ndef cm(m):\n    g('add','-A');g('-c','user.name=t','-c','user.email=t'+chr(64)+'example.com','commit','-qm',m);return rev()\nR='---\\nroot: x\\nid_prefix: X\\nvisibility: internal\\ndescription: x\\n---\\n'\nw('a','x\\n');b0=cm('base')\nw('_tools/fixtures/lang/de/_root.md',R);w('_tools/fixtures/lang/de/a.md','x\\n');b1=cm('fixture')\nf=k.tree_files('HEAD',d);t=k.tree_refusals('HEAD',f,d);h=k.history_refusals('HEAD',b0,f,d,projected=False)\nok1=not t and not h[0]\nw('kb/team/_root.md',R);w('kb/team/a.md','x\\n');b2=cm('team')\nf=k.tree_files('HEAD',d);t2=k.tree_refusals('HEAD',f,d)\nok2=any('kb/team' in x for x in t2) and not any('fixtures' in x for x in t2)\nw('_tools/fixtures/lang/de/b.md','key '+'AKIA'+'A'*16+'\\n');b3=cm('secret')\nf=k.tree_files('HEAD',d);h3=k.history_refusals('HEAD',b2,f,d,projected=False)\nok3=bool(h3[1])\nprint(ok1,ok2,ok3)\nsys.exit(0 if ok1 and ok2 and ok3 else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "1de60df3eaa1cc84"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport sys,os,subprocess as s,tempfile\nsys.path.insert(0,'_tools');import kbpublic as k\nd=tempfile.mkdtemp();g=lambda *a:s.run(['git','-C',d,*a],check=True,capture_output=True)\nrev=lambda:s.run(['git','-C',d,'rev-parse','HEAD'],capture_output=True,text=True).stdout.strip()\ng('init','-q')\ndef w(p,t):\n    os.makedirs(os.path.dirname(d+'/'+p),exist_ok=True);open(d+'/'+p,'w').write(t)\ndef cm(m):\n    g('add','-A');g('-c','user.name=t','-c','user.email=t'+chr(64)+'example.com','commit','-qm',m);return rev()\nR='---\\nroot: x\\nid_prefix: X\\nvisibility: internal\\ndescription: x\\n---\\n'\nw('a','x\\n');b0=cm('base')\nw('kb/team/_root.md',R);w('kb/team/a.md','x\\n');cm('team')\nf=getattr(k,'range_tree_causes',None)\nc=f(b0,d) if f else []\nprint(c)\nsys.exit(0 if c and any('kb/team' in x for x in c) else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "cacd966215044751"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('_tools/kg_sync.py',encoding='utf-8').read();i=t.find('range_tree_causes');j=t.find('refused:',i);print(i,j);sys.exit(0 if 0<i<j<i+800 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "ad59a7a197e8a399"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import kbpublic as k;n=len(k.tree_refusals('HEAD',k.tree_files('HEAD','.'),'.'));print('publish tree refusal causes at HEAD that sync never reports:',n);sys.exit(1 if n else 0)"
+        ],
+        "exit": 0,
+        "sha256": "74c3a09edb7a9a8e"
+      }
+    ]
+  }
 }
