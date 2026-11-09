@@ -1,0 +1,18 @@
+{
+  "id": "BG-7zpe7p3w",
+  "kind": "bug",
+  "title": "census.py run without --resume detects into factdiff-<date>-N.csv once factdiff-<date>.csv exists, then applies the old log",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "census.py run's detect step names the log it later applies, summarises and commits, so a rerun of a census date detects, applies and commits one log whichever detect logs of that date exist",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, \"_tools\"); import census; sys.exit(0 if \"--out\" in census.plan_run(\"public\", \"2026-01-01\", False, lambda p: True, lambda l, d: False)[0][\"argv\"] else 1)"
+    ]
+  },
+  "filed_in": "clone-0ea70e5c"
+}
