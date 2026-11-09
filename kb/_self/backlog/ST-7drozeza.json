@@ -25,6 +25,28 @@
   "touches": [
     "skills/sprint/SKILL.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does the run section put the rule that files a risk named in a worker report, and what does it file?",
+      "options": [
+        "Step 4.1: file a draft bug, or name the risk in the review brief",
+        "A new step 4.5 after the landing",
+        "Review section only"
+      ],
+      "recommendation": "Step 4.1: file a draft bug, or name the risk in the review brief",
+      "do": {
+        "Step 4.1: file a draft bug, or name the risk in the review brief": "ST-7drozeza",
+        "A new step 4.5 after the landing": "ST-7drozeza",
+        "Review section only": "ST-7drozeza"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "Step 4.1: file a draft bug, or name the risk in the review brief",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-pww4aqis close"
   ],
