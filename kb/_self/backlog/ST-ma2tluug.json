@@ -34,7 +34,8 @@
   "touches": [
     "_tools/kj_exec.py",
     "_tools/kj_store.py",
-    "kb/_self/coordination.md"
+    "kb/_self/coordination.md",
+    "_tools/kbjob.py"
   ],
   "depends_on": [
     "ST-nmrcazp2",
