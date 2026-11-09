@@ -42,7 +42,9 @@
       },
       "class": "design",
       "answer": "a table of cpu_s, wall_s, spawns for case 'idle hook intake real' (arm A) after the spawns table, with Setup and the intake bullet reworded to point at it",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
