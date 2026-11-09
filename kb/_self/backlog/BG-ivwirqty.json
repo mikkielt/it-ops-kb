@@ -50,6 +50,27 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does claim put the run state back on a save error, an interrupt and a SIGTERM?",
+      "options": [
+        "except BaseException around the locked section, SIGTERM turned into SystemExit(143) while it waits, previous handler restored",
+        "catch only OSError and KeyboardInterrupt beside Refused, no SIGTERM handler"
+      ],
+      "recommendation": "except BaseException around the locked section, SIGTERM turned into SystemExit(143) while it waits, previous handler restored",
+      "reason": "the one exit path covers every way the section ends and matches landing_lock",
+      "do": {
+        "except BaseException around the locked section, SIGTERM turned into SystemExit(143) while it waits, previous handler restored": "BG-ivwirqty",
+        "catch only OSError and KeyboardInterrupt beside Refused, no SIGTERM handler": "BG-ivwirqty"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "except BaseException around the locked section, SIGTERM turned into SystemExit(143) while it waits, previous handler restored",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-mc4dzsfe review"
   ],
