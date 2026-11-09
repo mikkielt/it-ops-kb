@@ -2,7 +2,7 @@
   "id": "BG-oipsx3sa",
   "kind": "bug",
   "title": "benchmarks.py run --dry-run starts claude --version: Bench.__init__ probes the Claude Code version before any plan",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-bpjqqauu",
   "priority": "P2",
   "rank": 0,
@@ -49,6 +49,19 @@
   ],
   "notes": "Premise: the bug's repro fails on the base (origin/main at the planning commit, 2026-11-09); precheck ran it through the landing's check runner. Sprint order: items that share one file are chained with depends_on.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-bdc0a493",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "92c18e6486dfdaa585d1e4fee2e683c7c7f5348c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,subprocess,sys,tempfile; t=tempfile.mkdtemp(); b=os.path.join(t,'bin'); os.mkdir(b); log=os.path.join(t,'log'); open(os.path.join(b,'claude'),'w').write('#!/bin/sh\\necho x >> '+log+'\\n'); os.chmod(os.path.join(b,'claude'),0o755); subprocess.run([sys.executable,'_tools/benchmarks.py','run','pool','--dry-run','--sample','1'],capture_output=True,env=dict(os.environ,PATH=b+os.pathsep+os.environ['PATH'])); sys.exit(1 if os.path.exists(log) else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
