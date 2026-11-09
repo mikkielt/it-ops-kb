@@ -16,7 +16,9 @@
     ]
   },
   "touches": [
-    "_tools/bench_multi.py"
+    "_tools/bench_multi.py",
+    "kb/_self/benchmarks.md",
+    "kb/_self/tools.md"
   ],
   "links": [
     "parked: SP-n7f53pgv review"
