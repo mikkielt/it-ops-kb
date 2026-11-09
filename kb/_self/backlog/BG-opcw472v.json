@@ -2,7 +2,7 @@
   "id": "BG-opcw472v",
   "kind": "bug",
   "title": "kbroot.without_paths keeps an unquoted absolute path with a space when a newline follows it, since ABS_PATH_BARE has no re.M",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-mut2pmu3",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,7 @@
   "links": [
     "parked: SP-c6tr77jl review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev3run01",
+  "operator": "op-f618a13e"
 }
