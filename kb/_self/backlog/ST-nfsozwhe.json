@@ -48,7 +48,8 @@
     "_tools/kbjob.py",
     "kb/_self/git.md",
     "kb/_self/runners.md",
-    "kb/_self/map.csv"
+    "kb/_self/map.csv",
+    "kb/_self/coordination.md"
   ],
   "depends_on": [
     "ST-kcdeil4w",
