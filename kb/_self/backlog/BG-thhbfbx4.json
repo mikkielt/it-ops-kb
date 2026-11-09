@@ -82,6 +82,27 @@
       "operator": "op-f618a13e",
       "role": "interactive",
       "agent_session": true
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How does sync's gate get the tree causes beside the leak causes, and which paths count as a test input?",
+      "options": [
+        "A separate kbpublic.range_tree_causes call beside range_leaks, and a test input is any path under _tools/fixtures/ (kbpublic.is_test_input)",
+        "One history_refusals call that returns both lists, and a test input is any _root.md whose directory holds a fixture marker"
+      ],
+      "recommendation": "A separate kbpublic.range_tree_causes call beside range_leaks, and a test input is any path under _tools/fixtures/ (kbpublic.is_test_input)",
+      "reason": "the goal's own signature and one prefix rule",
+      "do": {
+        "A separate kbpublic.range_tree_causes call beside range_leaks, and a test input is any path under _tools/fixtures/ (kbpublic.is_test_input)": "BG-thhbfbx4",
+        "One history_refusals call that returns both lists, and a test input is any _root.md whose directory holds a fixture marker": "BG-thhbfbx4"
+      },
+      "class": "push",
+      "answer": "A separate kbpublic.range_tree_causes call beside range_leaks, and a test input is any path under _tools/fixtures/ (kbpublic.is_test_input)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "links": [
