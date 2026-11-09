@@ -31,6 +31,28 @@
     "kb/_self/plugin.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which values does the closed-value rule still read as a path reference: a value with a slash whose parts are all lower-case, or any slash value?",
+      "options": [
+        "A lower-case path with a slash, and any value with a backslash, as before",
+        "A path with a slash whose parts are all lower-case only, a backslash path flagged too"
+      ],
+      "recommendation": "A lower-case path with a slash, and any value with a backslash, as before",
+      "do": {
+        "A lower-case path with a slash, and any value with a backslash, as before": "BG-vqszwskv",
+        "A path with a slash whose parts are all lower-case only, a backslash path flagged too": "BG-vqszwskv"
+      },
+      "class": "design",
+      "answer": "A lower-case path with a slash, and any value with a backslash, as before",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "notes": "The review also found kb/_self/git.md:119 still defines a placeholder value as 'a code character' and nothing in kb/_self says the closed-value reading (closing , ) ] } and a code span's backticks stripped first; a snake_case name or path so closed is a reference) or the EC armor-label exemptions (camel-case path piece, lower-camel or digit identifier cell). Whoever lands the last of the two items edits git.md and names plugin.md and tools.md only if they change.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-cdcea91c",
