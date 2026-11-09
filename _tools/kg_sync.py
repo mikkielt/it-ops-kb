@@ -710,42 +710,36 @@ GROUP_CHECK_TIMEOUT_S = 600  # a settings layer's gate check gets this long, KB_
 
 def group_gate(root):
     """The failures of the group's gate checks, as strings; empty when every check passes or none is set. Each argv of
-    the `gate_checks` lists of the settings layers (group, clone, kb root, user: `kbsettings.layer_files`, in layer
-    order) runs without a shell from ROOT, the repository root, with a timeout of its own (GROUP_CHECK_TIMEOUT_S). A
-    failure names the argv, the layer that lists it and the exit code (`timed out` or `not started` for the rest, a
-    malformed entry or an unreadable settings file too), then the last line of its output."""
+    the `gate_checks` lists of the settings layers (group, clone, kb root, user: `kbsettings.layered`, in layer order)
+    runs without a shell from ROOT, the repository root, with a timeout of its own (GROUP_CHECK_TIMEOUT_S). A failure
+    names the argv, the layer that lists it and the exit code (`timed out` or `not started` for the rest, a malformed
+    entry or an unreadable settings file too), then the last line of its output."""
     root = Path(root)
     try:
-        files = kbsettings.layer_files(root)
+        listed, layers = kbsettings.layered(root, "gate_checks")
     except kbsettings.SettingsError as exc:
         return [f"gate_checks: the settings cannot be read: {exc}"]
     limit = env_number("KB_GATE_CHECK_TIMEOUT_S", GROUP_CHECK_TIMEOUT_S) or GROUP_CHECK_TIMEOUT_S
     failures = []
-    for layer, path, data in files:
-        listed = data.get("gate_checks", [])
-        if not isinstance(listed, list):
-            failures.append(f"gate_checks of the {layer} layer ({kbsettings.shown_path(path, root)}) must be a list of "
-                            "argument lists")
+    for layer, argv in zip(layers, listed):
+        if not (isinstance(argv, list) and argv and all(isinstance(x, str) and x for x in argv)):
+            failures.append(f"gate_checks entry {json.dumps(argv)} of the {layer} layer must be a non-empty list "
+                            "of strings")
             continue
-        for argv in listed:
-            if not (isinstance(argv, list) and argv and all(isinstance(x, str) and x for x in argv)):
-                failures.append(f"gate_checks entry {json.dumps(argv)} of the {layer} layer must be a non-empty list "
-                                "of strings")
-                continue
-            name = f"{shlex.join(argv)} (layer {layer})"
-            try:
-                p = subprocess.run(argv, cwd=root, capture_output=True, text=True, encoding="utf-8", errors="replace",
-                                   timeout=limit)
-            except subprocess.TimeoutExpired:
-                failures.append(f"gate check {name} timed out after {limit:g} s")
-                continue
-            except OSError as exc:
-                failures.append(f"gate check {name} not started: {exc.strerror or type(exc).__name__}")
-                continue
-            if p.returncode:
-                tail = [ln for ln in (p.stdout + p.stderr).strip().splitlines() if ln.strip()][-1:]
-                failures.append(f"gate check {name} failed with exit code {p.returncode}"
-                                + (f": {tail[0][:200]}" if tail else ""))
+        name = f"{shlex.join(argv)} (layer {layer})"
+        try:
+            p = subprocess.run(argv, cwd=root, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                               timeout=limit)
+        except subprocess.TimeoutExpired:
+            failures.append(f"gate check {name} timed out after {limit:g} s")
+            continue
+        except OSError as exc:
+            failures.append(f"gate check {name} not started: {exc.strerror or type(exc).__name__}")
+            continue
+        if p.returncode:
+            tail = [ln for ln in (p.stdout + p.stderr).strip().splitlines() if ln.strip()][-1:]
+            failures.append(f"gate check {name} failed with exit code {p.returncode}"
+                            + (f": {tail[0][:200]}" if tail else ""))
     return failures
 
 
