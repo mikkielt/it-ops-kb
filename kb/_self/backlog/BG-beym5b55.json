@@ -8,7 +8,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "kblane.py classes the gitlink of a submodule root as content and a plain top-level file directly under the kb directory (a markdown file or the ignore file) as code, reading the entry's git mode (160000) where the path alone cannot tell (SP-c6w5hjmc review gap 8; the gate answer of BG-qgulx5sj chose the bare path and this narrows it)",
+  "goal": "kblane.path_lane classes a plain top-level file directly under the kb directory (a markdown file or the ignore file) as code, and commit_paths reads the raw git mode of each entry and leaves a submodule root's gitlink (mode 160000) out of the paths it returns, so a gitlink change stays content; path_lane keeps its signature path_lane(path) -> str (SP-c6w5hjmc review gap 8; the gate answer of BG-qgulx5sj chose the bare path and this narrows it)",
   "repro": {
     "run": [
       "python3",
