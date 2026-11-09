@@ -2,7 +2,7 @@
   "id": "BG-x4lhztge",
   "kind": "bug",
   "title": "search_urls records a PyPI 404 as no answer, asks PyPI with a space-joined query, and drops a PyPI hit as a hub page",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-2cq2hse4",
   "priority": "P3",
   "rank": 0,
@@ -36,5 +36,7 @@
   "links": [
     "parked: SP-vk3wf746 review"
   ],
-  "notes": "Found by the SP-vk3wf746 review (S3 factdiff.py:1269, S4 factdiff.py:1283; the PyPI half of that sprint goal's GitHub, arXiv or PyPI clause). One repro reads the joiner, the 404 and the trailing slash together."
+  "notes": "Found by the SP-vk3wf746 review (S3 factdiff.py:1269, S4 factdiff.py:1283; the PyPI half of that sprint goal's GitHub, arXiv or PyPI clause). One repro reads the joiner, the 404 and the trailing slash together.",
+  "claimed_by": "claude-c41d77ea",
+  "operator": "op-f618a13e"
 }
