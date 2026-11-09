@@ -1,0 +1,26 @@
+{
+  "id": "BG-sa4pmxsl",
+  "kind": "bug",
+  "title": "The leak scan and the query-log redaction pass a real password behind a placeholder-looking user, since the userinfo user class bans angle brackets",
+  "status": "todo",
+  "sprint": "SP-mut2pmu3",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "kbcommon.structured_secrets reports and redact.redact masks a url whose user part holds angle-bracket pieces and whose password is no whole placeholder; URL_USERINFO_ANGLE is defined once in kbcommon.py and redact.py imports it",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kbcommon as k;lt,gt,at=chr(60),chr(62),chr(64);u='https://'+lt+'user'+gt+':Pwd9xQ7'+at+'host/p';r=k.structured_secrets(u);print(r);sys.exit(0 if r else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/kbcommon.py",
+    "_tools/redact.py",
+    "kb/_self/plugin.md",
+    "kb/_self/tools.md",
+    "kb/_self/querylog.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
