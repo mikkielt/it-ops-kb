@@ -2,7 +2,7 @@
   "id": "BG-eaf6nttv",
   "kind": "bug",
   "title": "A CI executor on a stock GitLab runner refuses every job, since the clone's origin url carries the job token and never equals the submitter's url, and a url with a credential reaches the job record",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-lwkdljxg",
   "priority": "P1",
   "rank": 0,
@@ -50,6 +50,19 @@
     }
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-432be86e",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "e66e060db2ade0cface25f63fd6f23dc77b4dc84",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,subprocess,tempfile; sys.path.insert(0,'_tools'); import kj_store; d=tempfile.mkdtemp(); subprocess.run(['git','init','-q',d],check=True); subprocess.run(['git','-C',d,'remote','add','origin','https://gitlab-ci-token:TOK@host.example.org/g/p.git'],check=True); u=kj_store.remote_url(d); assert u=='https://host.example.org/g/p.git', u"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
