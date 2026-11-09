@@ -2,7 +2,7 @@
   "id": "BG-rrutf5bf",
   "kind": "bug",
   "title": "drop SP deletes an active sprint whose items are all dropped, bypassing close's ops row and worker cleanup",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-yriisdti",
   "priority": "P3",
   "rank": 0,

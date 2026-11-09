@@ -2,7 +2,7 @@
   "id": "BG-vgnnlwgw",
   "kind": "bug",
   "title": "backlog.py show ID --field F on a deleted item accepts an unknown field and prints {}, where a live item exits 2",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-yriisdti",
   "priority": "P3",
   "rank": 0,

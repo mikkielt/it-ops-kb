@@ -2,7 +2,7 @@
   "id": "ST-low3n2ix",
   "kind": "story",
   "title": "Research sprint goal: Backlog lifecycle bookkeeping is exact: done, drop, reconcile, land rows, show, horizon, close summary and leak refusals tell what happened",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-yriisdti",
   "goal_research": true,
   "priority": "P1",

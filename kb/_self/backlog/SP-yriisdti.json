@@ -2,7 +2,7 @@
   "id": "SP-yriisdti",
   "kind": "sprint",
   "title": "Backlog lifecycle bookkeeping is exact: done, drop, reconcile, land rows, show, horizon, close summary and leak refusals tell what happened",
-  "status": "planned",
+  "status": "active",
   "goal": "done in place ends a run at landed and runs --reconcile never calls a closed sprint's item released; the reconcile refusal text names the two runs a dead worker needs; drop refuses an active sprint close should end and names every committed neighbour file in KB-Work; land's scope stop and rebase stop record their true step and item; done reads its evidence and ledger ids exactly and calls only a bare whole-suite run a loaded-host retry; precheck's after-merge warning names only checks that read the committed store; horizon --gates and show --field on a deleted item and close --summary say what is true; new and set refuse a leak-scan hit",
   "gates": [
     {

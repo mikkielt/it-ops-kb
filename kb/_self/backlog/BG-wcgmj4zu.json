@@ -2,7 +2,7 @@
   "id": "BG-wcgmj4zu",
   "kind": "bug",
   "title": "An item done in place (a review or research story) keeps run claimed after its sprint closes, and runs --reconcile calls it released",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-yriisdti",
   "priority": "P2",
   "rank": 0,

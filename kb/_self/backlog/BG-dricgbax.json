@@ -2,7 +2,7 @@
   "id": "BG-dricgbax",
   "kind": "bug",
   "title": "precheck's after-merge warning fires on any check text that names _querylog, such as bench_querylog.py or a throwaway store",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-yriisdti",
   "priority": "P3",
   "rank": 0,

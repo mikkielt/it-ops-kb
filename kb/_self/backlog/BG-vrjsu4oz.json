@@ -2,7 +2,7 @@
   "id": "BG-vrjsu4oz",
   "kind": "bug",
   "title": "A land stopped at rebase names an older item for a file whose last change on main carries no KB-Work",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-yriisdti",
   "priority": "P3",
   "rank": 0,

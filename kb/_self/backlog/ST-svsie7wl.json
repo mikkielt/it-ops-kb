@@ -2,7 +2,7 @@
   "id": "ST-svsie7wl",
   "kind": "story",
   "title": "Review sprint: Backlog lifecycle bookkeeping is exact: done, drop, reconcile, land rows, show, horizon, close summary and leak refusals tell what happened",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-yriisdti",
   "review": true,
   "priority": "P1",

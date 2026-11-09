@@ -2,7 +2,7 @@
   "id": "BG-kcfbcll2",
   "kind": "bug",
   "title": "A review's done names a loaded host for tests.py -n 2, -x or --durations as for a bare whole-suite run",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-yriisdti",
   "priority": "P3",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "BG-xfqc7sod",
   "kind": "bug",
   "title": "horizon --gates counts an answer as the recommendation when the recommendation is only a prefix of it",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-yriisdti",
   "priority": "P3",
   "rank": 0,

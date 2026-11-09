@@ -2,7 +2,7 @@
   "id": "BG-dlp3mui2",
   "kind": "bug",
   "title": "land's scope stop records its ops row under step rebase, not scope",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-yriisdti",
   "priority": "P3",
   "rank": 0,

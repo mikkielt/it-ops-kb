@@ -2,7 +2,7 @@
   "id": "BG-vnb3sugz",
   "kind": "bug",
   "title": "close --summary credits a clause to an item that shares only generic verbs with it, ranked before the true carrier",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-yriisdti",
   "priority": "P3",
   "rank": 0,
