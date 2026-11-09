@@ -26,7 +26,7 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops).
 
 ## 1. The row
 - Public providers live in `_tools/providers.csv`, shared by every root. A team's internal provider (its wiki, its git host) goes in `kb/<root>/_providers.csv` of that team's root, never in the shared file (an `internal` root may name real hosts; `public` files may not).
-- A new provider: add its row with a CSV writer (`provider.py` `COLS` order): `provider` (lowercase name), `match` (url prefixes without scheme), and the curated columns from the provider's own documentation: `redirects`, `history`, `search_api` (`{q}` in the template), `mcp_freshness`, `rate_limit`, `reuse`. Leave the measured columns empty.
+- A new provider: add its row with a CSV writer (`provider.py` `COLS` order): `provider` (lowercase name), `match` (url prefixes without scheme), and the curated columns from the provider's own documentation: `organisation` (the publisher `kbid.py add` writes for a new source of the host when the caller gives none; leave it blank for a host of many owners' repositories, where no one publisher fits), `redirects`, `history`, `search_api` (`{q}` in the template), `mcp_freshness`, `rate_limit`, `reuse`. Leave the measured columns empty.
 - Curated values come from documentation or from facts already in the kb (`python3 _tools/rag.py pack "<provider> change detection"`, `agents/doc-change-detection.md`, `agents/doc-lookup-sources.md`); an endpoint the kb relies on and does not yet hold goes in through `/kb-research`.
 
 ## 2. Measure
