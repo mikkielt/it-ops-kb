@@ -1,0 +1,25 @@
+{
+  "id": "ST-kqy75wsv",
+  "kind": "story",
+  "title": "Closing or inserting a fact re-points the path:line citations to the lines that shifted, in the ledgers and other articles",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "factdiff.py close (and any tool that inserts a fact line) maps the lines that shifted and rewrites every path:line citation of that article in _answers.md, _gaps.md, _conflicts.md, _sources.csv and other articles, so citations still name the same fact; found 2026-11-09 when a refresh run re-pointed 24 citations with a scratch diff-based script",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/factdiff.py",
+        "close",
+        "-h"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "kb/_self/web-sources.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
