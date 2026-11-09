@@ -2,7 +2,7 @@
   "id": "ST-cjvvtbpr",
   "kind": "story",
   "title": "Research sprint goal: Sprint process: gate answers survive worker writes, start and begin chain cleanly, plans cover helpers, repros and outbound paths",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-moxpl354",
   "goal_research": true,
   "priority": "P1",
@@ -23,6 +23,20 @@
   ],
   "notes": "No outside facts: the sprint's goal concerns the backlog tools and the kb-sprint skill text, which the _self rules and the code answer; no public kb article or source row is read or changed, so the story touches no kb/public file.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-a1b2c3d4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "b8566f926cf6f509c58d63cc576998eb7ad64ac8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-cjvvtbpr"
+        ],
+        "exit": 0,
+        "sha256": "f4c98b8c2262d421"
+      }
+    ]
+  }
 }
