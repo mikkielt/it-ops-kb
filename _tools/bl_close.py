@@ -473,14 +473,16 @@ def landing_lock(root, iid, poll=None):
     poll = poll if poll is not None else float(os.environ.get("KB_HOST_LOCK_POLL", "1"))
     me = (f"pid={os.getpid()}\nclone={root}\nstarted={time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}\n"
           f"item={iid}\n")
-    prev = None
-    try:
-        prev = signal.signal(signal.SIGTERM, lambda *_: sys.exit(143))
-    except (ValueError, OSError):  # not the main thread
-        pass
     qdir, ticket = landing_queue_dir(path), None
     got = False
+    # the handler is read before it is installed and the install is inside the block whose finally restores it, so an
+    # interrupt right after the install (before `signal.signal` returns the old one) still finds `prev` to restore
+    prev = signal.getsignal(signal.SIGTERM)
     try:
+        try:
+            signal.signal(signal.SIGTERM, lambda *_: sys.exit(143))
+        except (ValueError, OSError):  # not the main thread
+            prev = None
         # the ticket's name is held before the file is made, so an interrupt at any point after os.open leaves the
         # finally below the name to remove
         name = f"{time.time_ns():020d}-{os.getpid()}"
