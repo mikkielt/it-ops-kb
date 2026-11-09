@@ -12,9 +12,10 @@
     "run": [
       "python3",
       "-c",
-      "import sys;sys.path.insert(0,'_tools');import kbpublic as k;print('SCAN_FORM',k.SCAN_FORM);sys.exit(0 if k.SCAN_FORM>=9 else 1)"
+      "import sys;sys.path.insert(0,\"_tools\");import kbpublic;sys.exit(0 if kbpublic.SCAN_FORM>8 else 1)"
     ]
   },
+  "repro_reason": "the cached verdict is keyed by SCAN_FORM; the bump is the whole fix, so the repro reads the constant against the value the earlier scan change left",
   "touches": [
     "_tools/kbpublic.py"
   ],
