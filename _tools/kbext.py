@@ -140,7 +140,7 @@ SURFACE = {
                      {"call": "", "args": ["$EMPTY", "HEAD", []], "shape": "mapping"}]},
         {"name": "leak_scan", "signature": "file_hits(path, text, allow, pinned=()) -> list", "added": "0.1.0",
          "answer": "a list of hits",
-         "samples": [{"call": "file_hits", "args": ["docs/example.md", "A note about corp.example.com.\n", [], []],
+         "samples": [{"call": "", "args": ["docs/example.md", "A note about corp.example.com.\n", [], []],
                       "shape": "list"}]},
         {"name": "backlog_commands", "signature": "list of modules adding or replacing a command through bl_cli.register(name, "
                                               "handler, add_arguments=None, help=None) or bl_cli.extend(name, wrap, "
@@ -746,7 +746,10 @@ def probe(point, spec, layer, file, root, kb_root=None):
         with tempfile.TemporaryDirectory() as tmp:
             objects = _sample_objects(tmp, root)
             for sample in entry["samples"]:
-                problem = _run_sample(sample, found["extender"], found["module"], objects)
+                try:
+                    problem = _run_sample(sample, found["extender"], found["module"], objects)
+                except ExtensionError as e:
+                    raise ExtensionError(f"{found['where']}: {e}")
                 if problem:
                     raise ExtensionError(f"{found['where']}: {problem}")
     except ExtensionError as e:
