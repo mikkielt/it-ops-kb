@@ -48,11 +48,74 @@
     "_tools/kbjob.py",
     "kb/_self/git.md",
     "kb/_self/runners.md",
-    "kb/_self/map.csv"
+    "kb/_self/map.csv",
+    "kb/_self/coordination.md",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "ST-kcdeil4w",
     "ST-nmrcazp2"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the kb-job script reach the queue its job is on, since a serve --job takes only --url and --key-file?",
+      "options": [
+        "kbjob.py --url \"$KB_COORD_URL\" --key-file \"$KB_COORD_KEY\" serve --kind ci --job \"$KB_JOB\" --once, the url a project variable and the key a file-type variable",
+        "the bare serve --kind ci --job $KB_JOB --once the goal names, which exits 2 without --url"
+      ],
+      "recommendation": "kbjob.py --url \"$KB_COORD_URL\" --key-file \"$KB_COORD_KEY\" serve --kind ci --job \"$KB_JOB\" --once, the url a project variable and the key a file-type variable",
+      "reason": "serve --job refuses a run with no central queue",
+      "do": {
+        "kbjob.py --url \"$KB_COORD_URL\" --key-file \"$KB_COORD_KEY\" serve --kind ci --job \"$KB_JOB\" --once, the url a project variable and the key a file-type variable": "ST-nfsozwhe",
+        "the bare serve --kind ci --job $KB_JOB --once the goal names, which exits 2 without --url": "ST-nfsozwhe"
+      },
+      "class": "push",
+      "answer": "kbjob.py --url \"$KB_COORD_URL\" --key-file \"$KB_COORD_KEY\" serve --kind ci --job \"$KB_JOB\" --once, the url a project variable and the key a file-type variable",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "When is a job's pipeline started, and what starts it again after a failed trigger?",
+      "options": [
+        "at the submit of a job placed on ci, a deduped submit of the same queued job posting the trigger again while it has no pipeline",
+        "at the submit only, a failed trigger needing a new job"
+      ],
+      "recommendation": "at the submit of a job placed on ci, a deduped submit of the same queued job posting the trigger again while it has no pipeline",
+      "reason": "the job stays queued as the goal says and no second command is needed",
+      "do": {
+        "at the submit of a job placed on ci, a deduped submit of the same queued job posting the trigger again while it has no pipeline": "ST-nfsozwhe",
+        "at the submit only, a failed trigger needing a new job": "ST-nfsozwhe"
+      },
+      "class": "push",
+      "hold": true,
+      "answer": "at the submit of a job placed on ci, a deduped submit of the same queued job posting the trigger again while it has no pipeline",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "How does the job's log name its pipeline, and which ref does the trigger take when none is given?",
+      "options": [
+        "log prints a first line pipeline ID WEB_URL, the ref defaulting to the branch the clone is on",
+        "a job event step pipeline-ID only, the ref a required flag"
+      ],
+      "recommendation": "log prints a first line pipeline ID WEB_URL, the ref defaulting to the branch the clone is on",
+      "reason": "log has no output before the pipeline runs, and the clone's branch is the pushed commit's",
+      "do": {
+        "log prints a first line pipeline ID WEB_URL, the ref defaulting to the branch the clone is on": "ST-nfsozwhe",
+        "a job event step pipeline-ID only, the ref a required flag": "ST-nfsozwhe"
+      },
+      "class": "push",
+      "hold": true,
+      "answer": "log prints a first line pipeline ID WEB_URL, the ref defaulting to the branch the clone is on",
+      "by": "agent"
+    }
   ],
   "notes": "Research 2026-11-08 (kb public/gitlab/variables.md, multi-project-pipelines.md): a trigger token impersonates its creator, who needs the Maintainer or Owner role; variables[KEY] are pipeline variables, held by the project's Minimum role to use pipeline variables (no_one_allowed by default for new projects in new namespaces on GitLab.com since 17.7, then only an Owner can change it). GitLab recommends inputs[name] validated against spec:inputs; whether inputs alone escape the minimum-role setting is not documented (UNK). Before the claim: check the integration project's ci_pipeline_variables_minimum_override_role, and prefer inputs[job] with a spec:inputs header in .gitlab-ci.yml if variables are refused. Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: a failed trigger leaves the job queued with the HTTP status as reason Order agreed 2026-11-08 with SP-ep7ck2ab's manager (ask A1e21b0d155): shared kb/_self/map.csv rows land by first claim, the later item rebases; no hard dependency.",
   "filed_in": "clone-0ea70e5c",

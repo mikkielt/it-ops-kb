@@ -5,7 +5,8 @@
 # Both jobs are manual (`when: manual`, `allow_failure: true`: a manual job in `rules` otherwise blocks the pipeline,
 # docs.gitlab.com/ci/jobs/job_control), so no push or merge request waits on a pipeline. The local push gate
 # (kb/_self/maintaining.md) is the gate; the pipeline exists so `kbgit.py publish` can read a CI verdict of the source
-# commit. No job writes to the repository.
+# commit. No job writes to the repository. A third job, kb-job, is not manual: it runs only in a pipeline started through
+# the pipeline trigger API (`$CI_PIPELINE_SOURCE == "trigger"`), for the one operation job its KB_JOB names.
 workflow:
   rules:
     - if: $CI_COMMIT_BRANCH
@@ -29,6 +30,7 @@ stages: [test]
 # The tools' floor (pyproject.toml requires-python >=3.11): the suite on the image's Python 3.11 instead of the 3.14
 # pinned in .python-version (UV_PYTHON takes precedence over it). The full image has git; a full clone (GIT_DEPTH 0)
 # keeps the commits the KB-* trailers check (kbgit.py check-trailers) reads.
+
 kb-tests:
   stage: test
   tags: [docker-linux]
@@ -49,6 +51,7 @@ kb-tests:
 # (Hyper-V isolation, Windows PowerShell 5.1), one job at a time; a job waits as pending while the runner is offline.
 # The image's `python` installs uv, and uv the pinned CPython; MinGit (SHA-256 checked) puts git on PATH and its own
 # sh last, as Git Bash would have it, so the launcher tests run too.
+
 kb-tests-windows:
   stage: test
   tags: [docker-windows]
@@ -91,3 +94,19 @@ kb-tests-windows:
     - if: $CI_COMMIT_BRANCH
       when: manual
       allow_failure: true
+
+# An operation job the central queue placed on `ci` (kb/_self/coordination.md, Operation jobs): `kbjob.py submit` started this
+# pipeline through the trigger API, with the job's id in KB_JOB, and this job serves that one job and no other
+# (`serve --kind ci --job`: it exits 2 for a job placed elsewhere or not queued). KB_COORD_URL is the central coord's url
+# and KB_COORD_KEY a file-type variable holding the operator's key (project CI/CD settings, never in this file).
+kb-job:
+  stage: test
+  tags: [docker-linux]
+  image: python:3.11
+  variables:
+    GIT_DEPTH: "0"
+  script:
+    - git config --global --add safe.directory "$CI_PROJECT_DIR"
+    - python3 _tools/kbjob.py --url "$KB_COORD_URL" --key-file "$KB_COORD_KEY" serve --kind ci --job "$KB_JOB" --once
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "trigger"
