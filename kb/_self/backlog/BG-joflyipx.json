@@ -2,7 +2,7 @@
   "id": "BG-joflyipx",
   "kind": "bug",
   "title": "kbmon's cleanup metrics (mon_export.cleanup_points) export only the verdicts remove and keep, so rows with the verdict ask are missing from kbmon.cleanup.leftovers",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-hyfyn22d",
   "priority": "P2",
   "rank": 0,
@@ -43,6 +43,28 @@
     "planned: SP-hyfyn22d"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-ev4run01",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "1d051d29d72d891cb60cf4af432f6a6e2e2e7d13",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; t=open(\"kb/_self/monitoring.md\",encoding=\"utf-8\").read(); i=t.find(\"kbmon.cleanup.leftovers\"); sys.exit(0 if i>=0 and \"ask\" in t[i:i+200] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0, \"_tools\"); import mon_export as m; pts = m.cleanup_points({\"counts\": {\"worktree\": {\"remove\": 0, \"keep\": 0, \"ask\": 2}}}); sys.exit(0 if any(\"ask\" in str(p) for p in pts) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
