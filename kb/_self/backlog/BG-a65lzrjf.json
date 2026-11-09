@@ -7,7 +7,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "A gate whose text says the old rows are removed from kb history, or that the worker runs foo.py as a program on the input file, is blocking: bl_authority's delete words take removed, removes and removal, and the execute clause split ends at a full stop only when a space or the end follows it; review gaps G4 and G5.",
+  "goal": "A gate whose text says the old rows are removed from kb history or that the worker runs foo.py as a program on the input file is blocking: the delete words take removed, removes and removal while the execute clause split ends at a full stop only when a space or the end follows it",
   "repro": {
     "run": [
       "python3",
@@ -27,6 +27,6 @@
   "links": [
     "parked: SP-lmpjclxz review"
   ],
-  "notes": "Order: same files bl_authority.py and test_authority.py as BG-zmwnp3hh.",
+  "notes": "Order: same files bl_authority.py and test_authority.py as BG-zmwnp3hh. Premise reproduces on origin/main (precheck 2026-11-09). Review gaps G4 and G5 of SP-lmpjclxz.",
   "filed_in": "clone-0ea70e5c"
 }
