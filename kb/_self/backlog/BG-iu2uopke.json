@@ -2,7 +2,7 @@
   "id": "BG-iu2uopke",
   "kind": "bug",
   "title": "A SIGTERM that ends claim after it saved the item file as doing puts the run state back to released, so the item file and the run state disagree",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-luspfajx",
   "priority": "P3",
   "rank": 0,
@@ -26,5 +26,7 @@
   "links": [
     "parked: SP-6aegt3bs review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-luspfajx",
+  "operator": "op-f618a13e"
 }
