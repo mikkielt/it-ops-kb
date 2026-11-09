@@ -2,7 +2,7 @@
   "id": "BG-ouhonprv",
   "kind": "bug",
   "title": "url_holds_credential reads a password that holds a backslash in the scp form as no credential since the Windows-path fix banned every backslash",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-mut2pmu3",
   "priority": "P3",
   "rank": 0,
@@ -33,5 +33,7 @@
     "parked: SP-osevumx6 review"
   ],
   "notes": "Outbound paths: url_holds_credential is called by kbcommon.py:724, kbroot.py:188 (the url a root registers) and census.py:2942; the change is inside the function in kbcommon.py, so all three read the same narrowed rule. Planted check runs the backslash password (a credential) and the drive-letter and UNC paths with an @ folder name (none).",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev3run01",
+  "operator": "op-f618a13e"
 }
