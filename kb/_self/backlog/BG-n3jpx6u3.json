@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kblane.commit_paths drops an entry when either mode is a gitlink, so a plain file that replaces a kb gitlink (or the reverse) is left out and the commit counts as content",
   "status": "draft",
+  "sprint": "SP-wjrxikw6",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

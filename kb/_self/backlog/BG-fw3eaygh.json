@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "extending.md says kbpublic.file_hits passes a leak_scan extender no root, so root is None there, but file_hits now passes the file's root to one that takes it",
   "status": "draft",
+  "sprint": "SP-wjrxikw6",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",

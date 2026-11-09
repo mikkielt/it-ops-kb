@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "Three team-clone promises the tools do not keep: /kb-git-sync resuming an upstream conflict, importing a goal-less report item, and upstream-report's exit code in tools.md",
   "status": "draft",
+  "sprint": "SP-wjrxikw6",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

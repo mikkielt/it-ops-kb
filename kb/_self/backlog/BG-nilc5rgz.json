@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "SP-mut2pmu3 changed which fixture files the leak scan reads for secrets only but SCAN_FORM was not bumped, so a cached publish verdict keeps the old secrets-only reading",
   "status": "draft",
+  "sprint": "SP-wjrxikw6",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "group_gate refuses the whole gate when one kb/<dir>/settings.json has a directory name that is not a plain name",
   "status": "draft",
+  "sprint": "SP-wjrxikw6",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",

@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kg_contrib.added_hits calls shipped_file_hits without the file's root, so a placeholder a public root lists passes publish but is left out by contribute as a leak-scan hit",
   "status": "draft",
+  "sprint": "SP-wjrxikw6",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

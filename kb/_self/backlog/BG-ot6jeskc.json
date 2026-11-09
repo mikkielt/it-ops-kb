@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kg_hooks.new_lanes judges a merge commit by diff-tree names alone, so a changed kb gitlink counts as a code path and the pre-push hook refuses a merge that was content before the gitlink fix",
   "status": "draft",
+  "sprint": "SP-wjrxikw6",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
