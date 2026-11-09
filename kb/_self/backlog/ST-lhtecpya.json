@@ -1,0 +1,22 @@
+{
+  "id": "ST-lhtecpya",
+  "kind": "story",
+  "title": "The docs map sends a kbmon-pane hooks change to monitoring.md, which states the receipt behaviour",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/map.csv maps .claude/skills/kbmon-pane/** to kb/_self/monitoring.md, so planning puts that doc in the touches of an item that changes the mod (SP-hyfyn22d close: BG-z2y2hu6p needed monitoring.md outside its touches and a second worker run)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open(\"kb/_self/map.csv\",encoding=\"utf-8\").read();sys.exit(0 if any(\"kbmon-pane\" in l and \"monitoring.md\" in l for l in t.splitlines()) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/map.csv"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
