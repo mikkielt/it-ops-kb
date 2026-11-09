@@ -2,7 +2,7 @@
   "id": "ST-ctfxq6ka",
   "kind": "story",
   "title": "Review sprint: Leak gate honesty, contained paid sessions and safe pattern rules",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-n7zxspch",
   "review": true,
   "priority": "P1",
@@ -39,6 +39,44 @@
     }
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-557596e3",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "526ecd8ee00528478f881bd78fec1d461cd05441",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "61939ecd6f54efc2"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "7c714df9ecf9ccaf"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval",
+          "--file",
+          "kb/public/_retrieval/lookup_heldout.csv",
+          "--root",
+          "public",
+          "--min",
+          "86",
+          "--max-false-good",
+          "8"
+        ],
+        "exit": 0,
+        "sha256": "53f95954d73f0182"
+      }
+    ]
+  }
 }
