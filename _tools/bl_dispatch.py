@@ -11,7 +11,8 @@ gets none. `--dry-run` prints what it would run and writes and starts nothing. D
 `backlog.py stage-back ID` copies the copies that differ into the worktree, refuses one whose base differs from that
 record, runs `selfdoc.py check`, the docs `selfdoc.py stale --since HEAD` lists and the item's checks there, and commits
 the copies alone with `KB-Work`; `--check` runs the docs check only and puts the worktree back as it was, and the
-brief's staging part names it, so a worker's report states its `problems=` count for what it staged.
+brief's staging part names it, so a worker's report states its `problems=` count for what it staged and names the
+listed docs it read and found correct, which the orchestrator passes as `--self-reviewed`.
 
 `backlog.py begin ID... --by NAME` starts up to four ready items in one call (`cmd_begin`): the overlap and local-branch
 checks (`begin_plan`), `claim --commit`, one `land_push` run for the claim commits and `dispatch --detach` of each.
@@ -587,7 +588,13 @@ def compose_brief(bl, iid, known=(), probe=None, turns=None, known_suite=(), bud
                 + f", and commits it on your branch. Once your own work is committed, run `{backlog_cmd(bl.root)} "
                 f"stage-back {iid} --check`: it runs the docs check over your copies and commits nothing, and your "
                 "report states its `problems=` count for what you staged. In your report, say what you changed in "
-                "each and which headings or anchors other docs point at that you touched.",
+                "each and which headings or anchors other docs point at that you touched."
+                + (" That run also prints the docs `selfdoc.py stale --since HEAD` lists for your copies; the "
+                   "orchestrator's stage-back is refused for any of them it is not given as `--self-reviewed DOC`, "
+                   "so read each and name, in a line of your report headed `Docs read and found correct:`, the "
+                   "ones still correct, as the orchestrator passes them (one path per doc, as the run prints it); "
+                   "one that needs an edit outside your touches stops your work with a report."
+                   if has_tool(bl.root, "selfdoc.py") else ""),
                 *[f"- {p} -> {scratch / STAGING / p}" for p in staged], ""]
     links = [(g, link_target(g)) for g in dict.fromkeys(scope(bl, iid)) if link_target(g) and g not in staged]
     if links:
