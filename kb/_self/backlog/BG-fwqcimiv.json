@@ -66,7 +66,12 @@
         "Strip the punctuation with no exemption and edit the tracked docs that then hit": "BG-fwqcimiv",
         "Strip only for values holding a digit and an upper-case letter": "BG-fwqcimiv"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "Exempt a snake_case name or a path only when closing punctuation was stripped",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "links": [
