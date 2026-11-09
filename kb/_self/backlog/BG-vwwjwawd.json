@@ -2,7 +2,7 @@
   "id": "BG-vwwjwawd",
   "kind": "bug",
   "title": "An interrupt between the creation of a landing ticket and the assignment of its name leaves the ticket in the queue, and the landing lock's SIGTERM handler is not restored",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-6aegt3bs",
   "priority": "P3",
   "rank": 0,
@@ -46,5 +46,7 @@
     "parked: SP-mc4dzsfe review"
   ],
   "notes": "Planner 2026-11-09 (SP-6aegt3bs): premise reproduces on main (repro exit 1). BG-vwwjwawd depends on BG-5b35ssgk: both change landing_lock and landing_tickets_ahead in bl_close.py, so they land one after the other. BG-ivwirqty: SIGTERM is turned into SystemExit while claim waits for the ledger lock (as landing_lock does), and its previous handler restored; its checks plant the item file save error, a KeyboardInterrupt and a SIGTERM in a child process.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ef8e3893",
+  "operator": "op-f618a13e"
 }
