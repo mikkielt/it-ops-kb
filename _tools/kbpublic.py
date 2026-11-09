@@ -79,6 +79,7 @@ INTEGRATION_KEY = "kb.integrationRemote"
 SCOPE_KEY = "kb.scope"  # the clone's deployment scope, set by kb-setup (kb/_self/git.md, Deployment scope)
 SCOPES = ("me", "team", "org")
 UPSTREAM_KEY = "kb.upstreamRemote"  # the remote the clone only fetches from; its push url is disabled, a push to it is refused
+WORK_REF_PREFIX = "refs/heads/work/"  # a worker's branch: pushed to the integration remote only, never to the public home
 CLONE_REMOTE = "origin"  # what `git clone` names its source: the integration remote unless INTEGRATION_KEY says otherwise
 PUBLISHED_REF = "refs/kb/published"
 NO_HOOK_ENV = "KB_NO_PUBLISH_HOOK"  # a non-empty value: publish --hook does nothing (a session that must never publish exports it)
@@ -1052,6 +1053,9 @@ def cmd_publish(a, cwd):
     if not remote:
         print(f"note: no public remote (git config {CONFIG_KEY} <remote>); nothing published")
         return 0
+    if f"refs/heads/{a.branch}".startswith(WORK_REF_PREFIX):
+        print(f"refused: {a.branch} is a worker branch name; work/* goes to the integration remote only, never to {remote!r}")
+        return 2
     source = a.source or f"{integration_remote(cwd)}/main"
     src_remote, _, src_branch = source.partition("/")
     if not src_branch or out(["remote", "get-url", src_remote], cwd) is None or out(["remote", "get-url", remote], cwd) is None:
@@ -1169,12 +1173,15 @@ def cmd_check_public(a, cwd):
 
 def guard_push(remote, url, refs, cwd):
     """The pre-push guard: [(ref, reason)] of pushed refs (local ref, local sha) that would carry a PRIVATE path to a
-    public remote. Deletes are skipped."""
+    public remote, or are a worker branch (work/*), which only the integration remote holds. Deletes are skipped."""
     if not is_public(remote, cwd, url):
         return []
     res = []
     for ref, sha in refs:
         if ZERO_RE.match(sha):
+            continue
+        if ref.startswith(WORK_REF_PREFIX):
+            res.append((ref, "is a worker branch (work/*): it goes to the integration remote only"))
             continue
         bad = private_commits(sha, cwd, limit=3)
         if bad is None or bad:
