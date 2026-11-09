@@ -97,7 +97,7 @@ of this clone and a placement, `{executor, host}`, the workstation of this host 
 `submit` starts no executor there, `status JOB` prints `placement` and `log_host`, `log JOB` prints the log when this host has it and
 names the host that has it otherwise, and `cancel` moves the job to cancelled on the queue, which its executor applies.
 
-  kbjob.py --url URL --key-file PATH serve [--kind workstation|server|ci] [--data DIR] [--job JB-ID] [--once] [--parallel N] [--idle-exit S]
+  kbjob.py --url URL --key-file PATH serve [--kind workstation|server|ci] [--remote URL]... [--data DIR] [--job JB-ID] [--once] [--parallel N] [--idle-exit S]
                                         run the jobs of the central queue placed on this executor kind (default workstation): a
                                         workstation executor takes only the queued jobs whose placement host is this host and whose
                                         submitter is the operator of its own key file, a server or ci executor those placed on its kind;
@@ -113,7 +113,9 @@ names the host that has it otherwise, and `cancel` moves the job to cancelled on
                                         A server executor (--kind server) runs each job in a clone of its own for the job's integration
                                         remote url under DIR (`kj_exec.Home`: cloned at the first job that names it, fetched and put on
                                         origin/main before each; a land job also gets the worktree of the remote's work/<id>), the CLI as on a
-                                        workstation. A job whose test ceiling tests.py refused over its seconds ends failed with the
+                                        workstation. It needs one --remote URL per url it serves (compared without any user or password part;
+                                        no --remote, or one on another kind, exits 2): a job naming another url fails before any git call,
+                                        and the server's git allows no `file` transport. A job whose test ceiling tests.py refused over its seconds ends failed with the
                                         reason `host condition` and the platform of the host that ran it, in `status`, and is not run again
                                         --job JB-ID (a CI pipeline's job: `serve --kind ci --job JB-ID --once`) takes that one job and no
                                         other, only when it is queued and its placement executor is the --kind (a workstation executor also
@@ -219,6 +221,7 @@ def build_parser():
     s.add_argument("--parallel", type=int, default=kj_exec.SLOTS, metavar="N", help="run at most N jobs at once (default %(default)s)")
     s.add_argument("--kind", choices=coord.PLACEMENT_EXECUTORS, default=None, help="the executor kind of the queue's jobs to take (default workstation); on the clone's own queue it keeps a mirror store")
     s.add_argument("--data", default=None, metavar="DIR", help="where the executor keeps its mirror of the queue (default: kb-jobs of the clone)")
+    s.add_argument("--remote", action="append", default=[], metavar="URL", help="with --kind server: an integration remote url the server serves, repeatable (compared without any user or password part); a job naming another url is refused")
     s.add_argument("--job", default=None, metavar="JB-ID", help="with --url: run this one job of the central queue and exit with its result (0 succeeded, 1 failed or refused, 2 not taken: placed on another kind or not queued)")
     s.add_argument("--idle-exit", type=float, default=None, metavar="S", help="exit 0 after S seconds with no live job (`ensure` sets it for a store of its own)")
     f = sub.add_parser("follow", help="print one line per move of a job and exit with its result (0, 1, 3; 4 past --timeout)")
@@ -510,11 +513,14 @@ def run(args, parser):
     remote = central(args)
     if args.command == "place":
         return place_command(args, remote)
+    if args.command == "serve" and (args.kind == kj_exec.SERVER) != bool(args.remote):
+        parser.error("serve --kind server needs --remote URL for each integration remote url it serves, and --remote is for no other kind")
     if args.command == "serve" and args.job and remote is None:
         parser.error("serve --job takes a job of a central queue: pass --url and --key-file")
     if remote is not None and args.command == "serve":
         return kj_exec.serve(str(ROOT), None, once=args.once, idle_exit=args.idle_exit, slots=args.parallel,
-                             kind=args.kind or kj_store.WORKSTATION, remote=remote, data=args.data, job=args.job)
+                             kind=args.kind or kj_store.WORKSTATION, remote=remote, data=args.data, job=args.job,
+                             remotes=args.remote)
     if remote is not None:
         if args.command == "status" and (args.job is None) == (not args.active):
             parser.error("status takes a JOB or --active, one of them")
@@ -523,7 +529,7 @@ def run(args, parser):
         return stats_command(args)
     if args.command == "serve" and (args.kind or args.data):  # an executor of one kind on the clone's own queue
         return kj_exec.serve(str(ROOT), None, once=args.once, idle_exit=args.idle_exit, slots=args.parallel, kind=args.kind or kj_store.WORKSTATION,
-                             remote=kj_store.LocalRemote(kj_store.resolve_store(ROOT, args.store)), data=args.data)
+                             remote=kj_store.LocalRemote(kj_store.resolve_store(ROOT, args.store)), data=args.data, remotes=args.remote)
     if args.command == "serve":
         return kj_exec.serve(str(ROOT), kj_store.resolve_store(ROOT, args.store), once=args.once, idle_exit=args.idle_exit,
                              slots=args.parallel)

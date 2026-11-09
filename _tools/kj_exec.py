@@ -64,8 +64,9 @@ once its delay has passed, as `Sync.offline` takes it) or naming another clone's
 placement and state; otherwise `Sync` and `drain` take only that job, no recovery pass runs, and the exit is `job_exit`: 0 succeeded,
 1 failed, refused, lost or cancelled on the queue, 2 when this executor never ran it.
 
-A server executor (`serve --kind server [--data DIR]`) serves every integration remote url its queue's jobs name, not the clone it was started in:
-`Home` keeps one clone per url under DIR (cloned at the first job, fetched before each, the tree detached on `origin/main`), runs the job's
+A server executor (`serve --kind server --remote URL... [--data DIR]`) serves the integration remote urls its `--remote` options name, not the clone it
+was started in: a job naming another url (compared as `kj_store.bare_url` gives it) fails as `Unprepared` before any git call, and the server's git
+allows no `file` transport. `Home` keeps one clone per served url under DIR (cloned at the first job, fetched before each, the tree detached on `origin/main`), runs the job's
 argument list there as the CLI does on a workstation, and gives a land job the worktree `.claude/worktrees/agent-<id>` of the remote's `work/<id>`,
 where `backlog.py land` finds the pushed worker branch; the jobs of one url run one at a time (`serial_key`). A job that tests.py refused over the
 seconds of its test ceiling ends failed with the reason `host condition` (`host_condition`, `note_condition`) and is not run again.
@@ -518,13 +519,17 @@ class Home:
     integration main (`origin/main`, detached: the executor's own tree, never a worker's) and, for a land job, makes the worktree
     `.claude/worktrees/agent-<id>` of the remote's branch `work/<id>`, where a workstation has the worker's own, so the CLI's `land`
     finds and releases it as it does there. Every git call is a child the executor's leases are kept up through (KEEP), under a
-    time limit, with prompts off and only the transports of GIT_ALLOW_PROTOCOL."""
+    time limit, with prompts off and only the transports of GIT_ALLOW_PROTOCOL (never `file`: a clone of a path on the server's disk).
+    ALLOWED, the integration remote urls the executor serves (`serve --remote URL`, each in the credential-free form `kj_store.bare_url`
+    gives), is all it clones: a job whose url is not among them is refused before any git call, so a job cannot make the server clone
+    and run the tools of any repository it names."""
 
     CLONE_S, FETCH_S = 900.0, 300.0
-    PROTOCOLS = "file:https:http:ssh:git"
+    PROTOCOLS = "https:http:ssh:git"
 
-    def __init__(self, base):
+    def __init__(self, base, allowed):
         self.base = Path(base)
+        self.allowed = frozenset(kj_store.bare_url(str(url)) for url in allowed)
 
     def dir_of(self, url):
         return self.base / hashlib.sha256(kj_store.bare_url(url).encode("utf-8")).hexdigest()[:12]
@@ -563,10 +568,13 @@ class Home:
         return p.returncode == 0
 
     def prepare(self, record, keep=lambda: None):
-        """The directory a job runs in: its url's clone made ready as the class says. Unprepared for a job with no usable url."""
+        """The directory a job runs in: its url's clone made ready as the class says. Unprepared for a job with no usable url or one
+        this server does not serve, before any git call."""
         url = kj_store.bare_url(str(record.get("remote") or ""))  # a credential in a record's url never reaches the clone's argument list
         if not url or url.startswith("-") or any(c.isspace() or ord(c) < 32 for c in url):
             raise Unprepared(f"the job names no usable integration remote url: {url[:60]!r}")
+        if url not in self.allowed:
+            raise Unprepared(f"the integration remote url {url[:200]} is not one this server serves (serve --remote URL)")
         clone = self.dir_of(url)
         if not (clone / ".git").exists():
             self.base.mkdir(parents=True, exist_ok=True)
@@ -1650,14 +1658,14 @@ def login_item(root, store=None, out=None):
     return 0
 
 
-def serve(root, store, once=False, out=None, idle_exit=None, slots=SLOTS, kind=None, remote=None, data=None, job=None):
+def serve(root, store, once=False, out=None, idle_exit=None, slots=SLOTS, kind=None, remote=None, data=None, job=None, remotes=()):
     """`kbjob.py serve`: 0 when the queue was drained (--once), when IDLE_EXIT seconds passed with no live job of this host,
     clone and operator, or when this process ended by a signal; 1 when --once ran a job that failed, 2 where the clone has no
     git directory; a second serve for the same store on the host prints the running one's pid and returns 0. With REMOTE (a
     `kj_store.Remote`) and KIND (one of coord's placement executors) it serves the central queue: its jobs are kept in a mirror
     store (in DATA, else in the clone's `kb-jobs`) and `Sync` takes and posts them. With JOB (a job id; REMOTE and KIND needed) it
     runs that one job and ends (`job_exit`): its exit is 0 when the job succeeded, 1 when it failed or was refused, 2 when it was not
-    taken."""
+    taken. A server executor (KIND server) clones only the integration remote urls in REMOTES (`Home`)."""
     out = out or sys.stdout
     clone = kj_store.clone_path(root)
     sync = home = None
@@ -1667,7 +1675,7 @@ def serve(root, store, once=False, out=None, idle_exit=None, slots=SLOTS, kind=N
             base = Path(data) if data else Path(coord.store_of(root)).parent.parent / kj_store.LOG_DIR
             digest = hashlib.sha256("\0".join((remote.url, remote.operator())).encode("utf-8")).hexdigest()[:8]
             where = base / f"server-{digest}"
-            home = Home(where / "clones")
+            home = Home(where / "clones", remotes)
         store = kj_store.Mirror(kj_store.mirror_path(root, remote, kind, where), remote, kind)
         sync = Sync(root, store, clone, out, job)
         if job is not None:  # a job this executor does not take is left as it was: no directory made, no move or event posted

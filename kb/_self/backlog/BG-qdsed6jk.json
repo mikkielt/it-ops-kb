@@ -23,10 +23,75 @@
     "kb/_self/coordination.md",
     "kb/_self/git.md",
     "kb/_self/tools.md",
-    "kb/_self/runners.md"
+    "kb/_self/runners.md",
+    "kb/_self/backlog/ST-iz6u7rem.json",
+    "kb/_self/backlog/ST-ma2tluug.json",
+    "kb/_self/backlog/ST-vst4vom3.json"
   ],
   "depends_on": [
     "BG-7b53bpeh"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does a server executor started with no --remote url, or a --remote on another kind, behave?",
+      "options": [
+        "serve exits 2 at start (kbjob.py parser error)",
+        "serve starts and refuses every job as Unprepared"
+      ],
+      "recommendation": "serve exits 2 at start (kbjob.py parser error)",
+      "reason": "a server that can serve no url fails where the operator sees it, not in each job",
+      "do": {
+        "serve exits 2 at start (kbjob.py parser error)": "BG-qdsed6jk",
+        "serve starts and refuses every job as Unprepared": "BG-qdsed6jk"
+      },
+      "class": "design",
+      "answer": "serve exits 2 at start (kbjob.py parser error)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How is a job's remote url compared with the urls a server serves?",
+      "options": [
+        "exactly, after the credential-free form of both (kj_store.bare_url)",
+        "also ignoring a trailing slash and a .git suffix"
+      ],
+      "recommendation": "exactly, after the credential-free form of both (kj_store.bare_url)",
+      "reason": "the job record and the dir_of clone name already use that form, and a looser match would serve a url the operator did not name",
+      "do": {
+        "exactly, after the credential-free form of both (kj_store.bare_url)": "BG-qdsed6jk",
+        "also ignoring a trailing slash and a .git suffix": "BG-qdsed6jk"
+      },
+      "class": "secrets",
+      "answer": "exactly, after the credential-free form of both (kj_store.bare_url)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Is Home's allowed parameter required or does it default to no urls?",
+      "options": [
+        "required: a Home built without the urls fails at once",
+        "optional, defaulting to none, so every job is refused"
+      ],
+      "recommendation": "required: a Home built without the urls fails at once",
+      "reason": "so no caller can forget the list",
+      "do": {
+        "required: a Home built without the urls fails at once": "BG-qdsed6jk",
+        "optional, defaulting to none, so every job is refused": "BG-qdsed6jk"
+      },
+      "class": "design",
+      "answer": "required: a Home built without the urls fails at once",
+      "by": "agent"
+    }
   ],
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-432be86e",
