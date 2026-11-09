@@ -6,7 +6,7 @@
   "sprint": "SP-moxpl354",
   "priority": "P3",
   "rank": 0,
-  "goal": "The kb-sprint plan step says to run referrers on each function a committed bug's repro calls or asserts on and to put each caller in touches, so a worker is not stopped for touches (BG-ui3f5s37 stopped with no fix and again at land for kb/_self/backlog.md, both for callers of scratch_dir outside its touches)",
+  "goal": "The kb-sprint plan step says to run referrers on each function a committed bug's repro calls or asserts on and to put each caller in touches, so a worker is not stopped for touches (BG-ui3f5s37 stopped with no fix and again at land for a doc that names scratch_dir, both for callers of scratch_dir outside its touches)",
   "checks": [
     {
       "run": [
@@ -22,12 +22,6 @@
         "referrers",
         "scratch_dir"
       ]
-    }
-  ],
-  "clauses": [
-    {
-      "clause": "The kb-sprint plan step says to run referrers on each function a committed bug's repro calls or asserts on and to put each caller in touches, so a worker is not stopped for touches (BG-ui3f5s37 stopped with no fix and again at land for kb/_self/backlog.md, both for callers of scratch_dir outside its touches)",
-      "check": 0
     }
   ],
   "touches": [
