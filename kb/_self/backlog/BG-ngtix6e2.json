@@ -18,6 +18,26 @@
   "touches": [
     "_tools/kbroot.py"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does without_paths find the end of an unquoted absolute path that holds a space?",
+      "options": [
+        "end at the next ': ' or end of line",
+        "end at the first space (current behaviour)",
+        "end at a known path-like token pattern"
+      ],
+      "recommendation": "end at the next ': ' or end of line",
+      "reason": "git puts its reason after ': ', so the whole path goes and the reason stays; a line with no ': ' loses its tail, which leaks nothing",
+      "do": {
+        "end at the next ': ' or end of line": "BG-ngtix6e2",
+        "end at the first space (current behaviour)": "BG-ngtix6e2",
+        "end at a known path-like token pattern": "BG-ngtix6e2"
+      },
+      "class": "secrets"
+    }
+  ],
   "links": [
     "parked: SP-yisvj7vd review"
   ],
