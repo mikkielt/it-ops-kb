@@ -32,6 +32,16 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "kg_contrib.internal_dirs holds back every root and pointer that does not say visibility: public (a restricted value or a missing line too), as publish's tree refusal does",
+      "check": 0
+    },
+    {
+      "clause": "its docstring and the git.md contribute paragraph state that a root or pointer not saying visibility: public is private",
+      "check": 1
+    }
+  ],
   "touches": [
     "_tools/kg_contrib.py",
     "kb/_self/git.md"
