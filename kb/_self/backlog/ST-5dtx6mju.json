@@ -1,0 +1,19 @@
+{
+  "id": "ST-5dtx6mju",
+  "kind": "story",
+  "title": "The plan's referrers step covers the readers of a file name or path pattern a goal changes, not only symbols and flags",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py referrers and the plan step of kb-sprint list the files that read a file name pattern a goal changes (factdiff-<date>.csv for BG-gt4egejo) so each reader lands in the item's touches before the start gate",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.exit(1)"
+      ]
+    }
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
