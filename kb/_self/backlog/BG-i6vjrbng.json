@@ -38,7 +38,9 @@
   ],
   "touches": [
     "_tools/bl_land.py",
-    "_tools/bl_ops.py"
+    "_tools/bl_ops.py",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
   ],
   "depends_on": [
     "BG-ot47avdg"
