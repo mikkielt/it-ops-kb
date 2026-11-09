@@ -3,7 +3,7 @@ url: https://wiki.gentoo.org/wiki/Handbook:AMD64/Installation/Base
 title: Handbook: Configuring Portage and choosing a profile, AMD64 (Gentoo Wiki)
 publisher: Gentoo Wiki
 licence: CC-BY-SA-4.0
-retrieved: 2026-10-21
+retrieved: 2026-11-09
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 Jump to: content
@@ -23,7 +23,7 @@ Wiki
 #
 Installing the Gentoo base system
 From Gentoo Wiki
-< Handbook:AMD64‎ | Installation
+< Handbook:AMD64 | Installation
 Jump to:navigation
 Jump to:search
 Other languages:
@@ -40,7 +40,7 @@ português do Brasil
 العربية
 தமிழ்
 中文
-中文（中国大陆）‎
+中文（中国大陆）
 日本語
 한국어
 AMD64 Handbook
@@ -348,18 +348,26 @@ FILE /etc/portage/package.use/00video_cardsExample
 */* VIDEO_CARDS: -* <GPU DRIVER NAME>
 Below is a table that can be used to easily compare the different video card types to their respective VIDEO_CARDS value.
 GPU
-VIDEO_CARDS
-(Official) Nvidia Maxwell and newer
+microcode/generation
+VIDEO_CARDS variable
+Nvidia
+Maxwell and newer
 nvidia
-Nouveau Nvidia Supported list
+Nvidia
+card list
 nouveau
-AMD since Sea Islands
+AMD
+Sea Islands and newer
 amdgpu radeonsi
-ATI and older AMD
-See radeon#Feature support
-Intel Nehalem and newer
+AMD
+before Sea Islands - card list
+ATI
+card list
+Intel
+Nehalem and newer
 intel
-Intel Gen 2 and 3 Supported list
+Intel
+Gen 2 and 3 - card list
 intel i915
 QEMU/KVM
 virgl
@@ -370,9 +378,14 @@ FILE /etc/portage/package.use/00video_cardsAMD example
 */* VIDEO_CARDS: -* amdgpu radeonsi
 FILE /etc/portage/package.use/00video_cardsIntel example
 */* VIDEO_CARDS: -* intel
-FILE /etc/portage/package.use/00video_cardsNvidia example
+FILE /etc/portage/package.use/00video_cardsNvidia example pre-Maxwell cards
+# nouveau is an nvidia driver
+*/* VIDEO_CARDS: -* nouveau
+FILE /etc/portage/package.use/00video_cardsNvidia example Maxwell or newer cards
 */* VIDEO_CARDS: -* nvidia
-Details for various GPU(s) can be found at the AMDGPU, Intel, Nouveau (Open Source), or NVIDIA (Proprietary) articles.
+# Set global USEflags to use all Nvidia features.
+*/* nvidia vdpau nvenc
+Details are available for AMD cards and for Intel cards, on the wiki. For NVIDIA cards, there is currently a choice between two drivers: nouveau (open source) and NVIDIA (Offical) (which drivers can be used depends on exact card model).
 ### Optional: Configure the ACCEPT_LICENSE variable
 Starting with Gentoo Linux Enhancement Proposal 23 (GLEP 23), a mechanism was created to allow system administrators the ability to "regulate the software they install with regards to licenses... Some want a system free of any software that is not OSI-approved; others are simply curious as to what licenses they are implicitly accepting."[2] With a motivation to have more granular control over the type of software running on a Gentoo system, the ACCEPT_LICENSE variable was born.
 During the installation process, Portage considers the value(s) set within the ACCEPT_LICENSE variable to determine if the requested package(s) meet the sysadmin's determination of an acceptable license. Here in lies a problem: the Gentoo ebuild repository is filled with thousands of ebuilds which results in hundreds of distinct software licenses... Does this implicate sysadmin into individually approving each and every new software license? Thankfully no; GLEP 23 also outlines a solution to this problem, a concept called license groups.

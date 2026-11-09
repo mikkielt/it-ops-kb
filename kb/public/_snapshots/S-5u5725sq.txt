@@ -1,0 +1,51 @@
+source: S-5u5725sq
+url: https://developers.cloudflare.com/tunnel/reference/tunnel-tokens/
+title: Tunnel tokens
+publisher: Cloudflare Docs
+licence: CC-BY-4.0 (cloudflare/cloudflare-docs)
+retrieved: 2026-11-09
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Tunnel tokens
+Last updated Sep 11, 2026||View as Markdown|Agent setup
+A remotely-managed tunnel only requires a token to run. Anyone with the token can run the tunnel.
+## Get the token
+To get the token for a remotely-managed tunnel:
+In the Cloudflare dashboard ↗︎, go to Networking > Tunnels.
+Go to Tunnels ↗
+Select your tunnel.
+Select Add a replica.
+Copy the cloudflared installation command into a text editor (do not run the command). The token is the eyJ... string.
+Required API token permissions
+At least one of the following token permissions is required:
+Cloudflare One Connectors Write
+Cloudflare One Connector: cloudflared Write
+Cloudflare Tunnel Write
+Get a Cloudflare Tunnel tokenbash
+curl "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/cfd_tunnel/$TUNNEL_ID/token" \
+--request GET \
+--header "Authorization: Bearer $CLOUDFLARE_API_TOKEN"
+## Rotate a token
+Rotate tokens regularly to reduce the risk of compromise. For tunnels with multiple replicas, rotate outside working hours and update replicas in batches.
+In the Cloudflare dashboard ↗︎, go to Networking > Tunnels.
+Go to Tunnels ↗
+Select your tunnel.
+Select Rotate token.
+After rotating the token, cloudflared cannot establish new connections with the old token. Existing connectors remain active until restarted.
+Select Add replica and copy the new cloudflared installation command.
+On each replica, reinstall the cloudflared service using the new token:
+sudo cloudflared service uninstall
+sudo cloudflared service install <NEW_TOKEN>
+Rotate a compromised token
+If your tunnel token is compromised, immediately rotate the token, then force-disconnect all existing connections:
+Required API token permissions
+At least one of the following token permissions is required:
+Cloudflare One Connectors Write
+Cloudflare One Connector: cloudflared Write
+Cloudflare Tunnel Write
+Clean up Cloudflare Tunnel connectionsbash
+curl "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/cfd_tunnel/$TUNNEL_ID/connections" \
+--request DELETE \
+--header "Authorization: Bearer $CLOUDFLARE_API_TOKEN"
+Then reinstall the cloudflared service on all replicas using the new token.
+Was this helpful?

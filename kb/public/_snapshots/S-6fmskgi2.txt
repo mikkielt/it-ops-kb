@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-sln
 title: dotnet sln
 publisher: Microsoft Learn (dotnet/docs)
 licence: CC BY 4.0 (public mirror dotnet/docs; code MIT)
-retrieved: 2026-10-21
+retrieved: 2026-11-09
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # dotnet sln command - .NET CLI | Microsoft Learn
@@ -112,7 +112,7 @@ Adds one or more projects to the solution file.
 #### Synopsis
 
 ```dotnetcli
-dotnet sln [<SOLUTION_FILE>] add [--in-root] [-s|--solution-folder <PATH>] <PROJECT_PATH> [<PROJECT_PATH>...]
+dotnet sln [<SOLUTION_FILE>] add [--in-root] [-s|--solution-folder <PATH>] [--include-references] <PROJECT_PATH> [<PROJECT_PATH>...]
 dotnet sln add [-h|--help]
 ```
 
@@ -150,6 +150,9 @@ dotnet sln add [-h|--help]
 - **`-s|--solution-folder <PATH>`**
 
     The destination solution folder path to add the projects to. Can't be used with `--in-root`.
+- **`--include-references`**
+
+    Recursively adds any project references referenced by the specified projects to the solution. Available in .NET SDK 9.0.300 and later versions.
 
 ### `remove`
 
@@ -227,6 +230,11 @@ dotnet sln [<SOLUTION_FILE>] migrate [-h|--help]
 
     ```dotnetcli
     dotnet sln add todo-app/todo-app.csproj
+    ```
+- Add a C# project and all of its project references recursively to a solution:
+
+    ```dotnetcli
+    dotnet sln add todo-app/todo-app.csproj --include-references
     ```
 - Remove a C# project from a solution:
 

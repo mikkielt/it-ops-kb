@@ -3,7 +3,7 @@ url: https://wiki.gentoo.org/wiki/Systemd
 title: systemd (Gentoo Wiki)
 publisher: Gentoo Wiki
 licence: CC-BY-SA-4.0
-retrieved: 2026-10-21
+retrieved: 2026-11-09
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 Jump to: content
@@ -36,7 +36,7 @@ magyar
 português do Brasil
 svenska
 русский
-中文（中国大陆）‎
+中文（中国大陆）
 日本語
 한국어
 Some of the information in this article may have drifted out of sync with current practices. Please help out by checking over the content (how to get started).
@@ -294,7 +294,7 @@ xkb
 Depend on x11-libs/libxkbcommon to allow logind to control the X11 keymap
 Data provided by the Gentoo Package Database
 ·
-Last update: 2026-09-22 17:24
+Last update: 2026-10-25 22:06
 More information about USE flags
 ### Profile
 Enable the systemd USE flag globally (in make.conf). The elogind USE flag should also be disabled to prevent conflicts with the systemd-logind service. It is also possible to switch to a systemd subprofile to use saner USE flags defaults in which case it is not necessary to change make.conf:
