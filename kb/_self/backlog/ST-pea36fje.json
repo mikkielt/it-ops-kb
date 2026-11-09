@@ -113,7 +113,11 @@
         "a sh script written once to a 0700 directory of the user's own under the temp directory": "ST-pea36fje",
         "a tracked script under _tools": "ST-pea36fje"
       },
-      "class": "design"
+      "class": "design",
+      "answer": "a sh script written once to a 0700 directory of the user's own under the temp directory",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g4",
