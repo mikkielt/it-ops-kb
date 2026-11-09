@@ -21,7 +21,8 @@ transport dropped `Last-Event-ID` resumability in 2026-07-28 (see
 
 ## Facts
 - The HTML Standard is a Living Standard (no numbered versions); its server-sent events section is 9.2
-  and the rendered page read for this article states "Last Updated 20 October 2026". [DOC S-6r5cdtdk]
+  and the rendered page read for this article states "Last Updated 20 October 2026". (valid 2026-10-21..2026-11-09) [DOC S-6r5cdtdk]
+- The HTML Standard is a Living Standard (no numbered versions); its server-sent events section is 9.2 and the rendered page read for this article on 2026-11-09 states "Last Updated 6 November 2026". (valid 2026-11-09..) [DOC S-6r5cdtdk]
 - Stream format: MIME type `text/event-stream`, always UTF-8 (no way to select another encoding), lines
   ended by CRLF, LF or CR. A blank line dispatches the event being built; a line starting with `:` is a
   comment and is ignored; recognised field names are `event`, `data`, `id` and `retry` (compared

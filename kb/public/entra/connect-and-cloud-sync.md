@@ -12,6 +12,7 @@ status: complete
 ## Summary
 - With Entra Connect Sync, provisioning runs on the on-premises sync server and its configuration is stored on that server; with Entra Cloud Sync, provisioning configuration is stored in and runs in the cloud (Microsoft Online Services), with lightweight on-premises agents acting as bridges between AD and Entra ID. [DOC S-2vza23mx, S-lcd7y7ff]
 - Full capability table: `sync-capability-comparison.csv`. The decision guide's comparison table lists device synchronization (hybrid Entra join; see `entra/device-identity.md`, `entra/hybrid-deviceid-objectguid.md`) as supported by both Connect Sync and Cloud Sync (device sync is enabled separately in Cloud Sync), and tells organizations that use hybrid join to include device sync in their Cloud Sync migration plan. [DOC S-6q5tyxki, S-2vza23mx]
+- The decision guide's comparison table adds that the current guided migration tool lists device synchronization as a migration blocker, and tells readers to review the migration-tool requirements separately. [DOC S-6q5tyxki]
 - Connect Sync's default delta-sync interval and propagation-delay ceiling are covered in `auth/propagation-latency.md`; this article does not repeat those numbers.
 
 ## Facts

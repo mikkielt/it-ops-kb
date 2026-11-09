@@ -20,7 +20,8 @@ files: [autopilot/v1-vs-v2.csv]
 ## Facts
 
 ### What device preparation is and requirements
-- Device preparation supports user-driven and automatic (Windows 365 Frontline shared mode, preview) deployment flows, and only Microsoft Entra join (no hybrid join). [DOC S-6htyzc3j, S-ogiphajf]
+- Device preparation supports user-driven and automatic (Windows 365 Frontline shared mode, preview) deployment flows, and only Microsoft Entra join (no hybrid join). (valid 2026-10-21..2026-11-09) [DOC S-6htyzc3j, S-ogiphajf]
+- Device preparation supports user-driven and automatic (Windows 365 Flex, formerly Frontline, shared mode, preview) deployment flows, and only Microsoft Entra join (no hybrid join). (valid 2026-11-09..) [DOC S-6htyzc3j, S-ogiphajf]
 - Supported Windows versions: Windows 11 version 24H2 or later; 23H2 with KB5035942 or later; 22H2 with KB5035942 or later. [DOC S-6htyzc3j, S-xp44rfad]
 - Windows 365 Cloud PCs: Windows 11 24H2 with KB5052093 or later, 23H2 with KB5035942 or later, or 22H2 with KB5035942 or later; the Windows 365 image-gallery images already include these updates, and custom images need installation media dated March 2025 or later. [DOC S-xp44rfad]
 - Supported editions: Windows 11 Pro, Pro Education, Pro for Workstations, Enterprise, Education, Enterprise LTSC. [DOC S-xp44rfad]
