@@ -1,0 +1,22 @@
+{
+  "id": "BG-zw3lou2i",
+  "kind": "bug",
+  "title": "kbgit.py install-hooks --uninstall prints core.hooksPath unset without reading whether git config --unset succeeded",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kg_hooks names a key as unset only when git config --unset returned success, and refuses with exit 1 when core.hooksPath could not be unset",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.exit(1)"
+    ]
+  },
+  "repro_reason": "needs a read-only git config to fail the unset; the planted input is in the notes",
+  "touches": [
+    "_tools/kg_hooks.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
