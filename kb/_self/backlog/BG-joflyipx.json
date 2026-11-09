@@ -24,6 +24,16 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "mon_export.cleanup_points emits a kbmon.cleanup.leftovers point with verdict ask beside remove and keep",
+      "check": 1
+    },
+    {
+      "clause": "kb/_self/monitoring.md lists ask among the verdicts of the metric",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/mon_export.py",
     "kb/_self/monitoring.md",
