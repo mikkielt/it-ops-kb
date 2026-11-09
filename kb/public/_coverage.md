@@ -449,6 +449,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `windows/cmd-exe-syntax-quoting-redirection` | P3 | partial | `windows/cmd-exe-syntax-quoting-redirection.md` | 12 |
 | `windows/cmd-exe-variables-expansion-errorlevel` | P3 | partial | `windows/cmd-exe-variables-expansion-errorlevel.md` | 11 |
 | `windows/dev-drive` | P3 | partial | `windows/dev-drive.md` | 6 |
+| `windows/hyper-v-checkpoints` | P3 | partial | `windows/hyper-v-checkpoints.md` | 7 |
 | `windows/openssh-estate-deployment` | P3 | partial | `windows/openssh-estate-deployment.md` | 10 |
 | `windows/openssh-key-management` | P3 | partial | `windows/openssh-key-management.md` | 5 |
 | `windows/powershell-static-analysis` | P3 | complete | `windows/powershell-static-analysis.md` | 24 |

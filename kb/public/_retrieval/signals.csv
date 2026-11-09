@@ -965,3 +965,7 @@ New-AppRetentionCompliancePolicy,security/purview-teams-retention
 New-AppRetentionComplianceRule,security/purview-teams-retention
 Set-AppRetentionCompliancePolicy,security/purview-teams-retention
 SubstrateHolds,security/purview-teams-retention
+Remove-VMSnapshot,windows/hyper-v-checkpoints
+Remove-VMCheckpoint,windows/hyper-v-checkpoints
+Merge-VHD,windows/hyper-v-checkpoints
+Get-VMSnapshot,windows/hyper-v-checkpoints

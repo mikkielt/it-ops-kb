@@ -2629,3 +2629,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 - **Which licence plans carry the "more than 30 days" retention or deletion period limit for Teams retention policies.** Looked 2026-11-09 at the Purview service description (S-w2ery36y), fetched as text and through the search chunks: it says the period must be more than 30 days "for the plans that are underlined", but the underlining is not in the text Learn returns. Needs the rendered page or the licensing guidance PDF (topic: security/purview-teams-retention)
 - **The roles needed to create and edit Teams retention policies.** Looked 2026-11-09 at the Teams retention, create-retention-policies and retention pages (S-vorhqnuy, S-h2xchig6, S-aueazq6o): each defers to the permissions section of "Get started with data lifecycle management", which was not read. Needs that page (topic: security/purview-teams-retention)
+
+## windows/hyper-v-checkpoints
+
+- **Whether deleting a checkpoint of a running VM merges live, and how long the merge takes.** Looked 2026-11-09 with the Microsoft Learn search and the checkpoints, AVHDX troubleshooting, merge-many-differencing-disks, rapid-disk-consumption, `Remove-VMSnapshot` and `Merge-VHD` pages (S-jm73ioph, S-zaodq75u, S-vmvrdxj2, S-3rvh2ao3, S-vmamynim, S-ftfjuu42): they say the files merge when the VM shuts down and that a VM can be merged online by script, but give no statement about a live merge or a duration. Needs a Hyper-V storage-internals page (topic: windows/hyper-v-checkpoints)
