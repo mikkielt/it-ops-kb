@@ -83,14 +83,14 @@ HO-epm-agent-log-names,What are the log file names and the event log channel of 
 HO-config-policy-failure-event-ids,Which event IDs does the Windows device log when a settings catalog policy fails to apply?,intune/configuration-policies.md,good,yes
 HO-sentinel-table-insights-refresh,How often does the Sentinel table insights view refresh its ingestion cost estimate?,logs/microsoft-sentinel.md,good,yes
 HO-copilot-prompt-retention-period,How long does GitHub keep Copilot prompts and suggestions?,agents/github-copilot-admin.md,good,yes
-HO-dc-count-small-domain,How many domain controllers should a small Active Directory domain have?,,weak,
-HO-wol-bios-setting,How do I enable Wake-on-LAN in the BIOS of managed laptops?,,weak,
-HO-gpp-map-network-drive,How do I map a network drive for users with Group Policy preferences?,,weak,
-HO-quick-assist-helpdesk,How do I use Quick Assist to connect to a user's PC?,,weak,
-HO-win32-app-max-package-size,What is the maximum size of a Win32 app package I can upload to Intune?,,weak,
-HO-onedrive-known-folder-move,How do I redirect Desktop and Documents to OneDrive with Known Folder Move silently through Intune?,,none,
+HO-dc-count-small-domain,How many domain controllers should a small Active Directory domain have?,ad/domain-controller-count.md,good,
+HO-wol-bios-setting,How do I enable Wake-on-LAN in the BIOS of managed laptops?,windows/wake-on-lan.md,good,
+HO-gpp-map-network-drive,How do I map a network drive for users with Group Policy preferences?,gpo/gpp-drive-maps.md,good,
+HO-quick-assist-helpdesk,How do I use Quick Assist to connect to a user's PC?,windows/quick-assist.md,good,
+HO-win32-app-max-package-size,What is the maximum size of a Win32 app package I can upload to Intune?,intune/win32-apps.md,good,
+HO-onedrive-known-folder-move,How do I redirect Desktop and Documents to OneDrive with Known Folder Move silently through Intune?,intune/onedrive-known-folder-move.md,good,
 HO-defender-safe-links,How do I turn on Safe Links for Teams and Office apps in Defender for Office 365?,,none,
-HO-temporary-access-pass,How do I create a Temporary Access Pass for a user who lost their MFA method?,,none,
+HO-temporary-access-pass,How do I create a Temporary Access Pass for a user who lost their MFA method?,entra/temporary-access-pass.md,good,
 HO-purview-retention-label-teams,Which retention label settings should I apply to Teams chat messages in Microsoft Purview?,,none,
 HO-dkim-dmarc-records,How do I publish DKIM and DMARC records for our mail domain?,,none,
 HO-lets-encrypt-internal-web,How do I get a free Let's Encrypt certificate for an internal web server?,,none,
