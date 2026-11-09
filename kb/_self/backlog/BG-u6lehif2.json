@@ -2,7 +2,7 @@
   "id": "BG-u6lehif2",
   "kind": "bug",
   "title": "A benchmark run records the worker branch's HEAD as its commit, which land's rebase rewrites, so the record names a commit that is not on main",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-bpjqqauu",
   "priority": "P2",
   "rank": 0,
@@ -50,5 +50,7 @@
     "retro: drain 2026-10-27..11-08"
   ],
   "notes": "Retro finding of the drain: session-load record rows committed on a worker branch name the worker's HEAD (bench_core.Bench.__init__ takes git rev-parse --short=7 HEAD), which land's rebase rewrites, so ST-nejgzptp's check (a session-load record row names a commit that is not on this branch) failed after landing, three times: ST-6zg57xiu's land was refused twice, and ST-rodj5ltd's rows named cd23d59 and were repointed by hand to 1f6011b. The planning side (a check never names a literal hash) is ST-6aemb7j5; this is the tool side. The retro's other remedy, land repointing the rows of the record it rebases, is not chosen: it needs a rewrite of a committed csv inside land, where the merge-base needs none. The repro plants a clone with one commit past a planted origin/main and runs Bench on it with a fake claude on PATH (no model call). Premise: the bug's repro fails on the base (origin/main at the planning commit, 2026-11-09); precheck ran it through the landing's check runner. Sprint order: items that share one file are chained with depends_on.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-bdc0a493",
+  "operator": "op-f618a13e"
 }
