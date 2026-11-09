@@ -2,7 +2,7 @@
   "id": "BG-pqthn333",
   "kind": "bug",
   "title": "A coord ask cannot carry a session id: kbask redacts the UUID, so two sessions cannot tell each other how to be addressed",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-osevumx6",
   "priority": "P2",
   "rank": 0,
@@ -86,6 +86,28 @@
   ],
   "notes": "Found 2026-10-24 by the SP-3trnelzv orchestrator: an ask to any that named its coord session id reached the other session with the id as 00000000-0000-0000-0000-000000000000 (redact reads a UUID as an object id), and cross-session messages between the two were held by different permission modes, so coord asks were the only channel and carried no address. Planning 2026-11-09: goal narrowed to the first option the bug names (keep a UUID that names a live presence lease), so the check can run it; the check plants a lease with coord.py claim and a token and a password assignment built at run time. Premise reproduces on the base (the ask text holds only zero UUIDs). Planned 2026-11-09 in SP-osevumx6: items that share a file wait on each other (kbcommon.py, redact.py then kbask.py, ql_capture.py then ql_deliver.py); no open item of the other live sprints touches this item's code files.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-cdcea91c",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "69dd010e7f8951538061358ca070e0e4dc8e054a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess as s,sys,tempfile as t,os,json;st=os.path.join(t.mkdtemp(),'coord.db');J=lambda *a:'-'.join(a);sid=J('396fb440','d928','4c33','9f3a','b375f1a2bc1d');o2=J('11111111','2222','4333','8444','555555555555');tok='gh'+'p_'+'a1B2c3D4e5'*3+'xyz123';pw='Pass'+'12345x';kv='pass'+'word='+pw;s.run([sys.executable,'_tools/coord.py','--store',st,'claim','session/'+sid,'--ttl','600'],check=True,capture_output=True);r=s.run([sys.executable,'_tools/kbask.py','ask','--store',st,'any','address me as '+sid+' not '+o2+' '+tok+' '+kv],capture_output=True,text=True);v=s.run([sys.executable,'_tools/coord.py','--store',st,'get','ask/'+json.loads(r.stdout)['id']],capture_output=True,text=True).stdout;print(v);sys.exit(0 if sid in v and o2 not in v and tok not in v and pw not in v else 1)"
+        ],
+        "exit": 0,
+        "sha256": "fcde70e21f517e81"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess as s,sys,tempfile as t,os;st=os.path.join(t.mkdtemp(),'coord.db');sid='-'.join(['396fb440','d928','4c33','9f3a','b375f1a2bc1d']);s.run([sys.executable,'_tools/coord.py','--store',st,'claim','session/'+sid,'--ttl','600'],check=True,capture_output=True);r=s.run([sys.executable,'_tools/kbask.py','ask','--store',st,'any','address me as '+sid],capture_output=True,text=True);v=s.run([sys.executable,'_tools/coord.py','--store',st,'get','ask/'+__import__('json').loads(r.stdout)['id']],capture_output=True,text=True).stdout;print(v);sys.exit(0 if sid in v else 1)"
+        ],
+        "exit": 0,
+        "sha256": "df208197b9b2561e"
+      }
+    ]
+  }
 }
