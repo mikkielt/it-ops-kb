@@ -44,7 +44,8 @@ An executor of a central queue (`serve --kind K --url URL --key-file PATH`, `Syn
 (`kj_store.Mirror`) and runs them with the code above unchanged: every SYNC_S seconds, from the loop of `drain`, it takes from the
 central store each queued job whose placement executor is K (a workstation executor only one placed on this host and submitted by
 the operator of its own key file, read from the server's `queued` event), when the clone it serves has the integration remote url the
-job names (else the job stays queued and one `job` event with step `no-clone` says why), as a job of the mirror; `move` makes each
+job names (else the job stays queued and one `job` event with step `no-clone` says why), as a job of the mirror whose `operator` stays the
+submitter's (the queue's word, `Remote.owner`) and whose `run_by` names the executor's operator, the one `pending` and `recover` match; `move` makes each
 move on the central store first, so one job is run by one executor, and a move it could not post is made again by the next sync;
 a job the central store cancelled is cancelled in the mirror (`kj_follow.cancel`, which ends its process group). The central store
 holds states and events only; the output log stays in this clone's `kb-jobs`, and the job's record names this host as `log_host`.
@@ -166,8 +167,15 @@ def poll_seconds():
     return n if n > 0 and n != float("inf") else POLL_S
 
 
+def served_by(record):
+    """The operator whose executor serves the job RECORD of a mirror: its `run_by` member when an executor of a central queue took
+    the job (the executor's own operator), else its `operator`, the submitter's, which a job of the clone's own queue is run by."""
+    return record.get("run_by", record.get("operator"))
+
+
 def pending(store, clone, host, operator, states=("queued",)):
-    """[(job id, record)] of the jobs of this host, clone and operator in one of STATES (the queued ones by default), in submit order."""
+    """[(job id, record)] of the jobs of this host and clone that the executor of OPERATOR serves (`served_by`) in one of STATES (the queued
+    ones by default), in submit order."""
     con = coord.connect(store)
     try:
         coord.ensure_schema(con)
@@ -178,7 +186,7 @@ def pending(store, clone, host, operator, states=("queued",)):
     for row in rows:
         record = coord.job_record(row["value"])
         if (record and record.get("state") in states and record.get("host") == host and record.get("clone") == clone
-                and record.get("operator") == operator and record.get("job") == row["key"][len(coord.JOB_KEYS):]):
+                and served_by(record) == operator and record.get("job") == row["key"][len(coord.JOB_KEYS):]):
             found.append((record["job"], record))
     return sorted(found, key=lambda one: (one[1].get("submitted_ts", 0), one[0]))
 
@@ -293,7 +301,7 @@ class Sync:
                 continue
             theirs, mine = central.get("state", "none"), local.get("state")
             if theirs == "cancelled" and mine not in kj_store.TERMINAL:
-                kj_follow.cancel(self.root, self.store, job, open(os.devnull, "w", encoding="utf-8"))
+                self.cancel(job, local)
             elif mine == "queued" and theirs != "queued":
                 kj_follow.move_cancelled(self.store, job)
             elif theirs not in kj_store.TERMINAL:
@@ -301,6 +309,19 @@ class Sync:
                 if self.remote.move(job, mine, fields)[0] and mine != "running":
                     self.remote.move(job, "running")
                     self.remote.move(job, mine, fields)
+
+    def cancel(self, job, local):
+        """End the mirrored JOB (LOCAL, its record) as the central store's cancel says. `kj_follow.cancel` ends a job only for its
+        submitting operator, who on this mirror is the one whose key file is this executor's: the record names this executor's operator
+        for that call and the submitter again after."""
+        submitter = local.get("operator")
+        if submitter != self.operator:
+            kj_store.amend_record(self.store, job, operator=self.operator)
+        try:
+            kj_follow.cancel(self.root, self.store, job, open(os.devnull, "w", encoding="utf-8"))
+        finally:
+            if submitter != self.operator:
+                kj_store.amend_record(self.store, job, operator=submitter)
 
     def reason(self, job, step, why):
         """Say once per serve, as one `job` event and a line, why the queued JOB is left queued (WHY: the words of the line)."""
@@ -429,7 +450,8 @@ class Sync:
                 if not go:
                     continue
             mirrored = {k: v for k, v in record.items() if k not in ("state", "exit", "step")}
-            mirrored.update(host=self.host, clone=self.clone, operator=self.operator)
+            submitter = self.owners.get(job) or self.remote.owner(job) or record.get("operator")
+            mirrored.update(host=self.host, clone=self.clone, operator=submitter, run_by=self.operator)
             if moved or trusted is not None:
                 mirrored["placement"] = moved or trusted
             with coord.Tx(self.store) as con:
@@ -967,7 +989,7 @@ def recover(root, store=None, alive=None, leased=None):
     for row in rows:
         record = coord.job_record(row["value"])
         if (record and record.get("state") in RECOVERABLE and record.get("host") == host and record.get("clone") == clone
-                and record.get("operator") == operator and record.get("job") == row["key"][len(coord.JOB_KEYS):]):
+                and served_by(record) == operator and record.get("job") == row["key"][len(coord.JOB_KEYS):]):
             found.append(record)
     moves = []
     for record in sorted(found, key=lambda r: (r.get("submitted_ts", 0), r["job"])):
