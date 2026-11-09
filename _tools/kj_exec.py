@@ -49,6 +49,14 @@ move on the central store first, so one job is run by one executor, and a move i
 a job the central store cancelled is cancelled in the mirror (`kj_follow.cancel`, which ends its process group). The central store
 holds states and events only; the output log stays in this clone's `kb-jobs`, and the job's record names this host as `log_host`.
 
+A workstation executor holds the lease `jobexec/<host>/<operator>` (`Presence`: EXEC_LEASE_TTL_S, renewed with the job leases, its value
+`{"seen": TIME}` kept after the lease ends) on the queue it serves. An executor of kind server or ci (`Sync.offline`) takes a queued job placed on a
+workstation whose lease is not held, since the later of `seen` and the job's submit, for the placement's `fallback_after_s`, when the
+decision's `fallback` is its kind: the job's placement becomes its kind (`fallback_from`, `offline_since`) and one `job` event, step
+`offline-since-<UTC time>-fallback-<kind>`, says so (`kj_store.reasoned` reads it as `reason` and `placement`); with no fallback the job
+stays queued and one event with step `offline-since-<UTC time>` says why. `serve --kind K` with no --url serves the clone's own queue so
+(`kj_store.LocalRemote` in place of the central queue's `Remote`).
+
 The job's record keeps the pid of its child (the member `pid`, written after the child starts, dropped when the job is queued
 again). Serve runs `recover` at its start and every RECOVER_S seconds, and follows each adopted child (the lease renewed
 until its pid ends) instead of starting a second process. An adopted child's exit is not known to serve, so its end is a
@@ -80,6 +88,7 @@ import kj_store
 LOCK_NAME = "kb-jobs-serve.lock"
 JOB_LEASE_TTL_S = 60
 JOB_LEASE_RENEW_S = 20
+EXEC_LEASE_TTL_S = 60  # how long a workstation executor's lease `jobexec/<host>/<operator>` lasts after its last renewal
 RECOVER_S = 30  # the wait between two recovery passes of a serve
 MAX_LOST = 2  # a job lost this many times is failed, not run again: a crash loop ends at attempt 2
 IDLE_EXIT_S = 60.0  # how long a serve that `ensure` started for a store of its own waits with no live job before it ends
@@ -161,8 +170,12 @@ def post_move(store, job, state, given):
     if code == 1 and body.get("state") != state:
         raise coord.Refused(body, 1)
     if code == 0 and state == "running":
+        placed = (kj_store.read_record(store, job) or {}).get("placement")
+        moved = placed if isinstance(placed, dict) and placed.get("fallback_from") else None
         with contextlib.suppress(kj_ops.Refusal):
-            store.remote.amend(job, log_host=platform.node(), executor=store.kind)
+            store.remote.amend(job, log_host=platform.node(), executor=store.kind, **({"placement": moved} if moved else {}))
+            if moved:  # the job this executor took from an offline workstation: its event says why and where it went
+                store.remote.note(job, kj_store.offline_step(moved["offline_since"], moved["executor"]), "running")
 
 
 SYNC_S = 2.0  # the wait between two syncs of a mirror with its central queue
@@ -177,7 +190,7 @@ class Sync:
         self.root, self.store, self.clone, self.out = root, store, clone, out
         self.remote, self.kind = store.remote, store.kind
         self.host, self.operator = platform.node(), kj_store.operator_id()
-        self.last, self.noted = None, {}
+        self.last, self.noted, self.leases, self.owners = None, {}, {}, {}
 
     def __call__(self):
         if self.last is not None and time.monotonic() - self.last < SYNC_S:
@@ -210,36 +223,128 @@ class Sync:
                     self.remote.move(job, "running")
                     self.remote.move(job, mine, fields)
 
-    def reason(self, job, step):
-        """Say once per serve, as one `job` event and a line, why the queued JOB is left queued."""
+    def reason(self, job, step, why):
+        """Say once per serve, as one `job` event and a line, why the queued JOB is left queued (WHY: the words of the line)."""
         if self.noted.get(job) != step:
             self.noted[job] = step
-            self.remote.call(["post", "--kind", "job", "--field", f"job={job}", "--field", "state=queued", "--field", f"step={step}"])
-            print(f"{job} stays queued: step {step} (no clone here with the job's integration remote url)", file=self.out, flush=True)
+            self.remote.note(job, step)
+            print(f"{job} stays queued: step {step} ({why})", file=self.out, flush=True)
+
+    def fits(self, record):
+        """Whether this executor's clone is the one the job names: the one with its integration remote url (a central queue's job),
+        else the submitting clone (the clone's own queue)."""
+        if isinstance(self.remote, kj_store.LocalRemote):
+            return record.get("clone") == self.clone
+        url = kj_store.remote_url(self.clone)
+        return bool(url) and record.get("remote") == url
+
+    def offline(self, job, record, placed):
+        """The placement this executor's kind gives the queued JOB placed on a workstation whose executor is offline, else None.
+        The workstation is offline when its lease `jobexec/<host>/<operator>` (host the placement's, operator the submitter's) is not
+        held, and since the later of the lease's last renewal (`seen`) and the job's submit; the job moves when that was FALLBACK_AFTER_S
+        seconds ago and the decision's fallback is this kind: the placement is this kind with `fallback_from` and `offline_since`.
+        A decision with no fallback leaves the job queued, one event naming the time; a fallback of another kind is that kind's."""
+        if self.kind == kj_store.WORKSTATION or placed["executor"] != kj_store.WORKSTATION:
+            return None
+        fallback = placed.get("fallback")
+        if fallback is not None and fallback != self.kind:
+            return None
+        owner = self.owners.setdefault(job, self.remote.owner(job) or record.get("operator"))
+        key = kj_store.exec_key(placed.get("host") or record.get("host"), owner)
+        if key not in self.leases:
+            self.leases[key] = self.remote.lease(key)
+        lease = self.leases[key]
+        if lease and lease.get("holder"):
+            return None
+        try:
+            seen = float(json.loads(lease["value"]).get("seen", 0)) if lease and lease.get("value") else 0.0
+        except (ValueError, TypeError, AttributeError):
+            seen = 0.0
+        since = max(seen, float(record.get("submitted_ts", 0)))
+        if time.time() - since < float(placed.get("fallback_after_s") or 0):
+            return None
+        if fallback is None:
+            self.reason(job, kj_store.offline_step(since), f"executor offline since {kj_store.offline_step(since)[len('offline-since-'):]}, its decision has no fallback")
+            return None
+        return {**{name: value for name, value in placed.items() if name not in ("fallback", "fallback_after_s")}, "executor": self.kind,
+                "fallback_from": kj_store.WORKSTATION, "offline_since": round(since, 3)}
 
     def pull(self):
-        """Take each queued job of the central store placed on this kind into the mirror, in submit order."""
+        """Take each queued job of the central store placed on this kind into the mirror, in submit order, and each job placed on
+        a workstation whose executor is offline when its decision's fallback is this kind (`offline`)."""
         have = {job for job, _ in self.mirrored()}
-        url = kj_store.remote_url(self.clone)
+        self.leases, self.owners = {}, {}
         for record in self.remote.records():
             job = record["job"]
             if record.get("state") != "queued" or job in have:
                 continue
             placed = kj_store.placement_of(record)
+            moved = None
             if placed["executor"] != self.kind:
+                moved = self.offline(job, record, placed)
+                if moved is None:
+                    continue
+            elif self.kind == kj_store.WORKSTATION and (placed.get("host") != self.host or self.remote.owner(job) != self.remote.operator()):
                 continue
-            if self.kind == kj_store.WORKSTATION and (placed.get("host") != self.host or self.remote.owner(job) != self.remote.operator()):
-                continue
-            if not url or record.get("remote") != url:
-                self.reason(job, NO_CLONE)
+            if not self.fits(record):
+                self.reason(job, NO_CLONE, "no clone here with the job's integration remote url")
                 continue
             mirrored = {k: v for k, v in record.items() if k not in ("state", "exit", "step")}
             mirrored.update(host=self.host, clone=self.clone, operator=self.operator)
+            if moved:
+                mirrored["placement"] = moved
             with coord.Tx(self.store) as con:
                 if con.execute("SELECT 1 FROM entries WHERE key = ?", (coord.JOB_KEYS + job,)).fetchone() is None:
                     con.execute("INSERT INTO entries (key, value, revision) VALUES (?, ?, 1)",
                                 (coord.JOB_KEYS + job, json.dumps(mirrored, sort_keys=True, ensure_ascii=False)))
             kj_store.queue(self.store, job, mirrored)
+
+
+class Presence:
+    """The lease `jobexec/<host>/<operator>` a workstation executor holds on the queue it serves (`kj_store.exec_key`), so the
+    executors of other kinds see it is live: `beat` takes it, renews it every JOB_LEASE_RENEW_S seconds and writes the time into the
+    key's value (`seen`, which outlives the lease: the moment the executor was last known live), `drop` writes it a last time and
+    releases the lease. Another executor of the same host and operator that holds it leaves this one with none, and `beat` tries again."""
+
+    def __init__(self, remote):
+        self.remote = remote
+        self.key = kj_store.exec_key(platform.node(), remote.operator())
+        self.token = self.revision = self.beaten = None
+
+    def beat(self):
+        """Take or renew the lease when due; a queue that cannot be reached leaves the lease to run out, as a dead executor's does."""
+        if self.beaten is not None and time.monotonic() - self.beaten < JOB_LEASE_RENEW_S:
+            return
+        self.beaten = time.monotonic()
+        with contextlib.suppress(kj_ops.Refusal, coord.Refused):
+            if self.token is None:
+                code, body = self.remote.claim(self.key, EXEC_LEASE_TTL_S, "jobexec")
+                if code:
+                    return
+                self.token, self.revision = body["token"], body["revision"]
+            elif not self.remote.renew(self.key, self.token, EXEC_LEASE_TTL_S):
+                self.token = None
+                return
+            self.stamp()
+
+    def stamp(self):
+        value = json.dumps({"seen": round(time.time(), 3)})
+        for _ in range(2):
+            if self.remote.put(self.key, value, self.revision, self.token):
+                self.revision += 1
+                return
+            found = self.remote.lease(self.key)
+            if not found:
+                return
+            self.revision = found["revision"]
+
+    def drop(self):
+        if self.token is None:
+            return
+        with contextlib.suppress(kj_ops.Refusal, coord.Refused):
+            self.stamp()
+            self.remote.release(self.key, self.token)
+        self.token = None
 
 
 def own_store(root, store):
@@ -451,18 +556,7 @@ def drop_holder(store, job):
 
 def amend(store, job, **members):
     """Set the members of JOB's record (a member given as None is dropped), keeping its state, exit and step as they are."""
-    with coord.Tx(store) as con:
-        row = con.execute("SELECT value, revision FROM entries WHERE key = ? AND value IS NOT NULL", (coord.JOB_KEYS + job,)).fetchone()
-        record = coord.job_record(row["value"]) if row is not None else None
-        if not record:
-            return
-        for name, value in members.items():
-            if value is None:
-                record.pop(name, None)
-            else:
-                record[name] = value
-        con.execute("UPDATE entries SET value = ?, revision = revision + 1 WHERE key = ?",
-                    (json.dumps(record, sort_keys=True, ensure_ascii=False), coord.JOB_KEYS + job))
+    kj_store.amend_record(store, job, **members)
 
 
 def lease_live(store, key):
@@ -1178,6 +1272,15 @@ def serve(root, store, once=False, out=None, idle_exit=None, slots=SLOTS, kind=N
         print(f"kbjob.py: serve already runs on this host: pid {holder['pid']} (clone {holder['clone']}, started {holder['started']})",
               file=out, flush=True)
         return 0
+    presence = None  # a workstation executor holds its lease on the queue it serves: the clone's own, else the central one
+    if remote is None or kind == kj_store.WORKSTATION:
+        presence = Presence(remote if remote is not None else kj_store.LocalRemote(store))
+
+    def tick():
+        if presence is not None:
+            presence.beat()
+        if sync is not None:
+            sync()
     before = None
     with contextlib.suppress(ValueError, OSError):  # not the main thread
         before = signal.signal(signal.SIGTERM, lambda *_: sys.exit(143))
@@ -1187,7 +1290,7 @@ def serve(root, store, once=False, out=None, idle_exit=None, slots=SLOTS, kind=N
             if recovered is None or time.monotonic() - recovered >= RECOVER_S:
                 failed += recovery_pass(root, store, out)
                 recovered = time.monotonic()
-            failed += drain(store, clone, host, operator, out, slots, sync)
+            failed += drain(store, clone, host, operator, out, slots, tick)
             if once:
                 break
             if idle_exit is not None:
@@ -1199,5 +1302,7 @@ def serve(root, store, once=False, out=None, idle_exit=None, slots=SLOTS, kind=N
         if before is not None:
             with contextlib.suppress(ValueError, OSError):
                 signal.signal(signal.SIGTERM, before)
+        if presence is not None:
+            presence.drop()
         drop_lock(path)
     return 1 if failed else 0
