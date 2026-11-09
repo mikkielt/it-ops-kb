@@ -1,0 +1,22 @@
+{
+  "id": "BG-ekwu5yeq",
+  "kind": "bug",
+  "title": "is_whole_suite counts tests.py --collect-only, --lf, --deselect and --ignore as a whole-suite run",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bl_land.is_whole_suite returns False for a tests.py run that selects or skips tests (--collect-only, --co, --lf, --ff, --deselect, --ignore, --help), so a review's done does not refuse such a check at a loaded host as a whole-suite run. Found by the SP-yriisdti review (S3).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, '_tools'); import bl_land; sys.exit(1 if bl_land.is_whole_suite(['python3', '_tools/tests.py', '--collect-only']) else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
