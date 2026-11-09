@@ -3,7 +3,7 @@ url: https://docs.docker.com/ai/sandboxes/security/isolation/
 title: Docker Sandboxes: Isolation layers
 publisher: Docker
 licence: Apache-2.0 (docker/docs LICENSE)
-retrieved: 2026-10-21
+retrieved: 2026-11-09
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 Manuals
@@ -44,10 +44,11 @@ Each sandbox has its own isolated network. Sandboxes cannot communicate
 directly with each other or share a network with your host. To reach a service
 running on the host through a policy-controlled connection, see
 Accessing host services from a sandbox.
-All outbound TCP traffic passes through a proxy on your host that enforces the
-network access policy. The sandbox
-routes traffic through either a forward proxy or a transparent proxy depending
-on the client's configuration. Both enforce the network policy. Only the
+All outbound TCP traffic passes through a proxy on your host that enforces
+network policy. The sandbox routes traffic through either a forward proxy or a
+transparent proxy depending on the client's configuration. Both enforce the
+network policy. For how network policy is set, see
+Sandbox governance. Only the
 forward proxy injects credentials for AI services.
 Outbound UDP is disabled by default. When you turn on
 experimental UDP egress,

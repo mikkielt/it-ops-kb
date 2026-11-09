@@ -3,7 +3,7 @@ url: https://docs.python.org/3/library/os.html
 title: os — Miscellaneous operating system interfaces
 publisher: Python Software Foundation
 licence: PSF License 2 (docs; code 0BSD)
-retrieved: 2026-10-21
+retrieved: 2026-11-09
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 ### Navigation
@@ -12,7 +12,7 @@ modules |
 next |
 previous |
 Python »
-3.15.0 Documentation »
+3.15.2 documentation »
 The Python standard library »
 Generic Operating System Services »
 os — Miscellaneous operating system interfaces
@@ -748,8 +748,8 @@ Valid values for whence are:
 SEEK_SET or 0 – set pos relative to the beginning of the file
 SEEK_CUR or 1 – set pos relative to the current file position
 SEEK_END or 2 – set pos relative to the end of the file
-SEEK_HOLE – set pos to the next data location, relative to pos
-SEEK_DATA – set pos to the next data hole, relative to pos
+SEEK_DATA – set pos to the next data location, relative to pos
+SEEK_HOLE – set pos to the next data hole, relative to pos
 Changed in version 3.3: Add support for SEEK_HOLE and SEEK_DATA.
 os.SEEK_SET¶
 os.SEEK_CUR¶
@@ -1995,7 +1995,7 @@ Time of most recent metadata change expressed in nanoseconds as an
 integer.
 Added in version 3.3.
 Changed in version 3.12: st_ctime_ns is deprecated on Windows. Use st_birthtime_ns
-for the file creation time. In the future, st_ctime will contain
+for the file creation time. In the future, st_ctime_ns will contain
 the time of the most recent metadata change, as for other platforms.
 st_birthtime¶
 Time of file creation expressed in seconds. This attribute is not
@@ -3267,7 +3267,7 @@ The setsigmask argument will set the signal mask to the signal set
 specified. If the parameter is not used, then the child inherits the
 parent’s signal mask. This argument corresponds to the C library
 POSIX_SPAWN_SETSIGMASK flag.
-The sigdef argument will reset the disposition of all signals in the set
+The setsigdef argument will reset the disposition of all signals in the set
 specified. This argument corresponds to the C library
 POSIX_SPAWN_SETSIGDEF flag.
 The scheduler argument must be a tuple containing the (optional) scheduler
@@ -3313,15 +3313,15 @@ PyOS_AfterFork_Parent() and PyOS_AfterFork_Child().
 There is no way to unregister a function.
 Availability: Unix, not WASI, not Android, not iOS.
 Added in version 3.7.
-os.spawnl(mode, path, ...)¶
-os.spawnle(mode, path, ..., env)¶
+os.spawnl(mode, file, ...)¶
+os.spawnle(mode, file, ..., env)¶
 os.spawnlp(mode, file, ...)¶
 os.spawnlpe(mode, file, ..., env)¶
-os.spawnv(mode, path, args)¶
-os.spawnve(mode, path, args, env)¶
+os.spawnv(mode, file, args)¶
+os.spawnve(mode, file, args, env)¶
 os.spawnvp(mode, file, args)¶
 os.spawnvpe(mode, file, args, env)¶
-Execute the program path in a new process.
+Execute the program file in a new process.
 (Note that the subprocess module provides more powerful facilities for
 spawning new processes and retrieving their results; using that module is
 preferable to using these functions. Check especially the
@@ -3348,7 +3348,7 @@ environment is being replaced (using one of the spawn*e variants,
 discussed in the next paragraph), the new environment is used as the source of
 the PATH variable. The other variants, spawnl(),
 spawnle(), spawnv(), and spawnve(), will not use the
-PATH variable to locate the executable; path must contain an
+PATH variable to locate the executable; file must contain an
 appropriate absolute or relative path.
 For spawnle(), spawnlpe(), spawnve(), and spawnvpe()
 (note that these all end in “e”), the env parameter must be a mapping
@@ -3364,7 +3364,7 @@ import os
 os.spawnlp(os.P_WAIT, 'cp', 'cp', 'index.html', '/dev/null')
 L = ['cp', 'index.html', '/dev/null']
 os.spawnvpe(os.P_WAIT, 'cp', L, os.environ)
-Raises an auditing event os.spawn with arguments mode, path, args, env.
+Raises an auditing event os.spawn with arguments mode, file, args, env.
 Availability: Unix, Windows, not WASI, not Android, not iOS.
 spawnlp(), spawnlpe(), spawnvp()
 and spawnvpe() are not available on Windows. spawnle() and
@@ -3945,7 +3945,7 @@ modules |
 next |
 previous |
 Python »
-3.15.0 Documentation »
+3.15.2 documentation »
 The Python standard library »
 Generic Operating System Services »
 os — Miscellaneous operating system interfaces
@@ -3961,6 +3961,6 @@ Examples, recipes, and other code in the documentation are additionally licensed
 See History and License for more information.
 The Python Software Foundation is a non-profit corporation.
 Please donate.
-Last updated on Oct 21, 2026 (07:27 UTC).
+Last updated on Nov 09, 2026 (04:04 UTC).
 Found a bug?
-Created using Sphinx 8.2.3.
+Created using Sphinx 9.1.1.

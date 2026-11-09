@@ -3,18 +3,49 @@ url: https://learn.microsoft.com/azure/ai-services/content-safety/overview
 title: What is Azure AI Content Safety?
 publisher: Microsoft Learn
 licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-ai-docs)
-retrieved: 2026-10-21
+retrieved: 2026-11-09
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # What is Azure AI Content Safety? - Azure AI services | Microsoft Learn
 
-Azure AI Content Safety is an AI service that detects harmful user-generated and AI-generated content in applications and services. Azure AI Content Safety includes text and image APIs that allow you to detect material that's harmful. The interactive Content Safety Studio allows you to view, explore, and try out sample code for detecting harmful content across different modalities.
+Important
 
-Content filtering software can help your app comply with regulations or maintain the intended environment for your users.
+The following Azure AI Content Safety public preview capabilities retire on **April 30, 2027**:
+
+- Analyze Multimodal.
+- Custom categories (rapid), including text and image.
+- Connected Content Safety containers.
+- Disconnected Content Safety containers.
+- Embedded Content Safety SDK.
+- Groundedness detection in Azure AI Content Safety and Azure OpenAI.
+
+See the linked feature pages for migration guidance and recommended alternatives.
+
+Microsoft provides safety and security guardrails for core models and agents, powered by Azure AI Content Safety. This AI service detects harmful user- and AI-generated content in models, agents, and services. Guardrails are made up of controls that specify the risk to detect, where to scan for it, and how the model or agent should respond when it is found.
+
+## Choose how to build with Azure AI Content Safety
+
+You can access guardrails in Microsoft Foundry for both Foundry Models sold by Azure and Foundry Models from partners and community, or as a standalone offering through Azure AI Content Safety Studio and APIs. The same AI service supports each access point, the difference is how and where you choose to use it.
+
+### Use guardrails in Microsoft Foundry when
+
+- Your models and agents are hosted in Foundry.
+- You want to use built-in services during model and agent calls.
+- You want free moderation on the first 1000 text characters.
+
+See details on how to use guardrails in Microsoft Foundry.
+
+### Use guardrails in Azure AI Content Safety Studio and APIs when
+
+- Your models and agents are outside Foundry - or span multiple platforms - and you want a consistent guardrail experience.
+- You want guardrails beyond model and agent calls.
+- You want moderation on all characters, following Azure AI Content Safety pricing.
+
+Continue reading for details on how to use guardrails in Content Safety.
 
 ## Prerequisites
 
-To use Azure AI Content Safety, you need:
+To use Azure AI Content Safety directly, you need:
 
 - An Azure subscription - Create one for free
 - A Content Safety resource created in a supported region
@@ -33,7 +64,7 @@ Content Safety provides several APIs for different moderation needs:
 
 | Feature | Purpose | Concepts guide | Get started |
 | --- | --- | --- | --- |
-| Prompt Shields | Scans text for the risk of a User input attack on a Large Language Model. | Prompt Shields concepts | Quickstart |
+| Prompt Shields | Scans text for the risk of a user input attack on a large language model. | Prompt Shields concepts | Quickstart |
 | Groundedness detection (preview) | Detects whether the text responses of large language models (LLMs) are grounded in the source materials provided by the users. | Groundedness detection concepts | Quickstart |
 | Protected material text detection | Scans AI-generated text for known text content (for example, song lyrics, articles, recipes, selected web content). | Protected material concepts | Quickstart |
 | Task adherence API | Detects when tool use by AI agents is misaligned, unintended, or premature in the context of a user interaction. | Task adherence concepts | Quickstart |
@@ -138,10 +169,12 @@ Feel free to contact us if your business needs other regions to be available.
 
 Content Safety features have query rate limits in requests-per-second (RPS) or requests-per-10-seconds (RP10S). See the following table for the rate limits for each feature.
 
-| Pricing tier | Moderation APIs(text and image) | Prompt Shields | Protected materialdetection | Groundednessdetection (preview) | Custom categories(rapid) (preview) | Custom categories(standard) (preview) | Multimodal |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| F0 | 5 RPS | 5 RPS | 5 RPS | N/A | 5 RPS | 5 RPS | 5 RPS |
-| S0 | 1000 RP10S | 1000 RP10S | 1000 RP10S | 50 RPS | 1000 RP10S | 5 RPS | 10 RPS |
+| Pricing tier | Moderation APIs(text and image) | Prompt Shields | Protected materialdetection | Groundednessdetection (preview) | Custom categories(rapid) (preview) | Custom categories(standard) (preview) | Multimodal | Content provenancedetection |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| F0 | 5 RPS | 5 RPS | 5 RPS | N/A | 5 RPS | 5 RPS | 5 RPS | 1 RP10S |
+| S0 | 1000 RP10S | 1000 RP10S | 1000 RP10S | 50 RPS | 1000 RP10S | 5 RPS | 10 RPS | 1 RP10S |
+
+The content provenance detection limit applies to requests that submit content to the Detect API (`POST /contentsafety/provenance:detect`). Polling for the result has a higher limit: 5 RPS on F0 and 200 RP10S on S0.
 
 If you need a faster rate, contact us to request it.
 

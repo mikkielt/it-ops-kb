@@ -3,7 +3,7 @@ url: https://docs.docker.com/ai/sandboxes/architecture/
 title: Docker Sandboxes: Architecture
 publisher: Docker
 licence: Apache-2.0 (docker/docs LICENSE)
-retrieved: 2026-10-21
+retrieved: 2026-11-09
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 Manuals
@@ -30,11 +30,12 @@ mounted into the sandbox through a filesystem passthrough. sbx run uses the
 current directory when you don't pass a path. The sandbox sees your actual
 host files, so changes in either direction are instant with no sync process
 involved.
-A directly mounted workspace appears at the same absolute path as on your
-host. Preserving absolute paths means error messages, configuration files, and
-build outputs all reference paths you can find on your host. The agent sees the
-same directory structure, which reduces confusion when debugging or reviewing
-changes.
+By default, a directly mounted workspace appears at the same absolute path as
+on your host. Preserving absolute paths means error messages, configuration
+files, and build outputs all reference paths you can find on your host. The
+agent sees the same directory structure, which reduces confusion when debugging
+or reviewing changes. You can choose a different sandbox path for
+additional workspaces.
 Clone mode uses a third storage layout. The host repository is mounted
 read-only at /run/sandbox/source, and the agent works in a private clone
 inside the sandbox. See Clone mode.
@@ -68,8 +69,9 @@ $ DOCKER_SANDBOXES_ENABLE_VIRTIOFS_CACHE=0 sbx run <agent>
 ## Networking
 All outbound TCP traffic from the sandbox routes through a proxy on your host.
 Agents use a forward proxy for HTTP and HTTPS; other TCP traffic is forwarded
-transparently. Both paths enforce
-network access policies. The forward
+transparently. Both paths enforce network policy, the rules that decide which
+destinations a sandbox can reach. For how those rules are set, see
+Sandbox governance. The forward
 proxy also handles credential injection. See
 Network isolation for how this
 works and Default security posture for what is

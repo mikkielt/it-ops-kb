@@ -3,7 +3,7 @@ url: https://cli.github.com/manual/gh_pr_create
 title: gh pr create (GitHub CLI manual)
 publisher: GitHub (cli.github.com)
 licence: MIT (cli/cli LICENSE; the manual is generated from it)
-retrieved: 2026-10-21
+retrieved: 2026-11-09
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 ## gh pr create
@@ -31,7 +31,8 @@ request. If the body text mentions Fixes #123 or Closes #123, the referenced iss
 will automatically get closed when the pull request gets merged.
 Use --attach to upload an image or video. The attachment is appended to the
 body. If the body references an attached file, such as ![alt](./login.png), that
-reference is rewritten to point at the uploaded asset instead.
+reference is rewritten to point at the uploaded asset instead. Paths in a
+--body-file are relative to its directory, falling back to the working directory.
 You can attach up to 50 files per command.
 Alt text for an image follows the path after #, as in
 --attach './login.png#The login error state'. Without it the filename is used.
