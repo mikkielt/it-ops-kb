@@ -215,7 +215,7 @@ def finish_text(log, start):
 
 
 RUN_BUCKETS = {"queued": "queued_ms", "lost": "queued_ms", "waiting-lock": "wait_ms", "waiting-merge": "wait_ms", "running": "run_ms"}
-RUN_ENDS = ("succeeded", "refused", "failed")  # the ends that write a job.run row (a cancelled job did not finish)
+RUN_ENDS = ("succeeded", "refused", "failed", "cancelled")  # the terminal states, each of which writes one job.run row (a lost job writes none until it ends)
 
 
 def job_events(store, job):
@@ -247,7 +247,7 @@ def run_times(events):
 
 
 def record_run(store, job, record, state):
-    """Write the ops row `job.run` of a job that ended in STATE (succeeded, refused or failed; none for another): its operation,
+    """Write the ops row `job.run` of a job that ended in STATE (succeeded, refused, failed or cancelled; none for another): its operation,
     the end as `class`, its attempt and the milliseconds it queued, waited for a lock or a merge, and ran, read from the job's own
     events (`ql_deliver.ops_row`: nothing in a test run). Never raises: a job never fails for its log."""
     try:
@@ -285,6 +285,7 @@ def finish_job(store, job, record, code, text, out):
     except coord.Refused as refusal:
         if refusal.body.get("state") != "cancelled":
             raise
+        record_run(store, job, record, "cancelled")
         print(f"{job} {record['op']} {record.get('subject') or '-'}: cancelled", file=out, flush=True)
         return "cancelled"
     record_run(store, job, record, state)
@@ -661,6 +662,7 @@ class LandRun(threading.Thread):
                 _, self.state = kj_land.drive(self.record, self.run_pass, self.merged, self.sleep, self.post, out=sink)
         except Cancelled:
             self.state = "cancelled"
+            record_run(self.store, self.job, self.record, "cancelled")
             print(f"{self.label()}: cancelled", file=self.out, flush=True)
         except Ended as ended:
             self.state = ended.args[0]
@@ -842,6 +844,8 @@ def drain(store, clone, host, operator, out, slots=SLOTS):
             for job, one in list(waiting.items()):  # a waiting job cancelled meanwhile leaves the table
                 now = kj_store.read_record(store, job) or {}
                 if now.get("state") != "waiting-lock":
+                    if now.get("state") == "cancelled":
+                        record_run(store, job, one["record"], "cancelled")
                     drop_holder(store, job)
                     del waiting[job]
                     release(job, one["token"])

@@ -53,7 +53,7 @@
                                         print a macOS LaunchAgent plist (Label, ProgramArguments serve, RunAtLoad, KeepAlive,
                                         StandardErrorPath) and a systemd user unit that run serve at login; it writes nothing and
                                         touches no file under the home directory: the operator saves and loads what they choose
-  kbjob.py [--store PATH] stats         print for each operation one line from the `job.run` ops rows (one per finished job, written by the
+  kbjob.py [--store PATH] stats         print for each operation one line from the `job.run` ops rows (one per ended job, a cancelled one too, written by the
                                         executor; `kb/_self/querylog.md`) of this clone's query log: `OP n=N queued_ms=MEDIAN (p95 P)
                                         wait_ms=MEDIAN (p95 P) run_ms=MEDIAN (p95 P)`, the median and the nearest-rank 95th percentile
                                         in ms of the time a job queued, waited in waiting-lock or waiting-merge, and ran, as
