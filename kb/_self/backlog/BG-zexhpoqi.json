@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "backlog.py new --commit and set --commit commit an item file whose text holds a leak-scan hit, and print only a to-fill-in note with exit 0",
   "status": "draft",
+  "sprint": "SP-yriisdti",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

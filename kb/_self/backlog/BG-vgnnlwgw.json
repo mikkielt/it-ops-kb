@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "backlog.py show ID --field F on a deleted item accepts an unknown field and prints {}, where a live item exits 2",
   "status": "draft",
+  "sprint": "SP-yriisdti",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

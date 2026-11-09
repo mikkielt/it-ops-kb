@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "land's scope stop records its ops row under step rebase, not scope",
   "status": "draft",
+  "sprint": "SP-yriisdti",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

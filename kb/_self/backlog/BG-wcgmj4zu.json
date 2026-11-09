@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "An item done in place (a review or research story) keeps run claimed after its sprint closes, and runs --reconcile calls it released",
   "status": "draft",
+  "sprint": "SP-yriisdti",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

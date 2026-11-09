@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "runs --reconcile refusal text says one run moves a dead worker's run to released, but a working key needs two runs (failed, then released)",
   "status": "draft",
+  "sprint": "SP-yriisdti",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",

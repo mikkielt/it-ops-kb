@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "A land stopped at rebase names an older item for a file whose last change on main carries no KB-Work",
   "status": "draft",
+  "sprint": "SP-yriisdti",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

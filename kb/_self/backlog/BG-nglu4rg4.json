@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "done's ledger check does not see a hyphen-prefixed source id such as S-5kvx24wm joined to more text",
   "status": "draft",
+  "sprint": "SP-yriisdti",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

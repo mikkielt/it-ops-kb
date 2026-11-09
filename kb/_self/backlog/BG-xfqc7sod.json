@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "horizon --gates counts an answer as the recommendation when the recommendation is only a prefix of it",
   "status": "draft",
+  "sprint": "SP-yriisdti",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

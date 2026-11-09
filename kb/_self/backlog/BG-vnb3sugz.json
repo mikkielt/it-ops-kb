@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "close --summary credits a clause to an item that shares only generic verbs with it, ranked before the true carrier",
   "status": "draft",
+  "sprint": "SP-yriisdti",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "done takes a query-log delivery older than a store-only story as its evidence when the story has no claim commit",
   "status": "draft",
+  "sprint": "SP-yriisdti",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

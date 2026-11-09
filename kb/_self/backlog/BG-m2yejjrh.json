@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "drop --commit names only the dropped ids in KB-Work, though it also commits the neighbour item files it cleaned (relates_to, depends_on, gate do)",
   "status": "draft",
+  "sprint": "SP-yriisdti",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
