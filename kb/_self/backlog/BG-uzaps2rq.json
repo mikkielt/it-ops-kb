@@ -15,6 +15,25 @@
       "import sys, json; sys.path.insert(0, \"_tools\"); import mon_events as m, mon_log; mon_log.coord_args = lambda ctx: [\"x\"]; mon_log.coord_wait = lambda a: json.dumps({\"events\": [{\"seq\": 1, \"at\": 1794000000.0, \"kind\": \"progress\", \"fields\": {\"item\": \"ST-aaaaaaaa\", \"state\": \"blocked\", \"gates\": \"g1,g2\"}}]}); ev, last, spans = m.coord_records(None, 0); a = ev[0][\"attributes\"]; print(a); sys.exit(0 if \"gates_n\" in a else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; t=open(\"kb/_self/monitoring.md\",encoding=\"utf-8\").read(); sys.exit(0 if \"gates_n\" in t else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "the coord.progress event record of kbmon --events keeps the event's own gates field as a list of ids (gates_n, gates_1...), as the run span does",
+      "check": 1
+    },
+    {
+      "clause": "kb/_self/monitoring.md says so",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/mon_events.py",
     "kb/_self/monitoring.md",
