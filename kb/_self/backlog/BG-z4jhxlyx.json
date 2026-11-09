@@ -25,6 +25,26 @@
   "depends_on": [
     "BG-bpy4x4os"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does kbmon --split make --store and --key-file absolute: os.path.abspath or Path.resolve (which follows symlinks)?",
+      "options": [
+        "os.path.abspath against the caller's working directory",
+        "Path.resolve, following symlinks"
+      ],
+      "recommendation": "os.path.abspath against the caller's working directory",
+      "reason": "since it keeps the path the caller named and only anchors it",
+      "do": {
+        "os.path.abspath against the caller's working directory": "BG-z4jhxlyx",
+        "Path.resolve, following symlinks": "BG-z4jhxlyx"
+      },
+      "class": "design",
+      "answer": "os.path.abspath against the caller's working directory",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-3hgirkur review"
   ],

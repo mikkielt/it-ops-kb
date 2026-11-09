@@ -168,7 +168,8 @@ def split_args(a):
         extra += ["--panel", name]
     for flag, value in (("--store", a.store), ("--url", a.url), ("--key-file", a.key_file)):
         if value:
-            extra += [flag, value]
+            # the pane starts in the clone's root, so a path is made absolute against the caller's directory here
+            extra += [flag, os.path.abspath(value) if flag != "--url" else value]
     return extra
 
 
