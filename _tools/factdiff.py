@@ -1458,7 +1458,8 @@ def search_urls(fact, anchor, row, src_url, title=""):
     shape = provider.search_shape(tpl)
     if shape is None:  # an answer this module cannot read is no answer worth a request
         return []
-    parse = shape[0]
+    parse, join = shape
+    pypi = urllib.parse.urlsplit(tpl).netloc == "pypi.org"
     queries = [re.split(r"\s+[|:-]\s+(?:Microsoft Learn|Microsoft Entra|Microsoft Intune|Configuration Manager)", title)[0]] if title else []
     if anchor and anchor.get("quote"):
         queries.append(" ".join(anchor["quote"].split()[:12]))
@@ -1467,7 +1468,7 @@ def search_urls(fact, anchor, row, src_url, title=""):
     for q in queries:
         if not q.strip():
             continue
-        req = tpl.replace("{q}", urllib.parse.quote(q))
+        req = tpl.replace("{q}", urllib.parse.quote(join(q.split()), safe=":"))  # the joiner and quoting of provider.search
         if req not in _searches:  # by the request: two providers' searches of one query are two answers
             r = provider.gated_request(req)
             res = None  # the urls of the provider's result list, read by its shape; None for an answer outside it (a sign-in page)
@@ -1476,12 +1477,16 @@ def search_urls(fact, anchor, row, src_url, title=""):
                     res = _search_hits(parse, r["body"])
                 except (ValueError, SyntaxError, AttributeError, TypeError):  # SyntaxError: the Atom feed's ParseError
                     res = None
+            elif r["status"] == 404 and pypi:
+                res = []  # PyPI answers a project name that does not exist with 404: an answer with no hit, as provider.search reads it
             _searches[req] = res or []
-            if not _http_error(req, r["status"], "search") and res is None:
+            if res == [] and r["status"] == 404:
+                pass  # the answer above: no hit, no failure
+            elif not _http_error(req, r["status"], "search") and res is None:
                 _unanswered[req] = f"no result list from the search {req.split('?')[0]}"
         _used_unanswered(req)
         hits = [u for u in _searches[req] if urllib.parse.urlsplit(u).path.rstrip("/") != urllib.parse.urlsplit(src_url).path.rstrip("/")
-                and not urllib.parse.urlsplit(u).path.endswith("/")]  # a hub or landing page holds no passage
+                and (pypi or not urllib.parse.urlsplit(u).path.endswith("/"))]  # a hub or landing page holds no passage; a PyPI project's url ends in "/"
         seg = [x for x in urllib.parse.urlsplit(src_url).path.split("/") if x and x != "en-us"][:1]
         hits.sort(key=lambda u: 0 if seg and f"/{seg[0]}/" in u else 1)  # the source's own docset first
         out += [u for u in hits[:SEARCH_TOP] if u not in out]
