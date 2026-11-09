@@ -2,7 +2,7 @@
   "id": "BG-d3b2wx43",
   "kind": "bug",
   "title": "kb!: a negation reaches across 'and' or 'but', so 'not correct and wrong PATH:LINE' records no issue",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-osevumx6",
   "priority": "P3",
   "rank": 0,
@@ -26,5 +26,7 @@
   "links": [
     "parked: SP-3g3egfll review"
   ],
-  "notes": "Planning 2026-11-09: premise reproduces on the base (repro: outcome unclassified, no issue). The old second clause ('not only wrong but stale: PATH:LINE' keeps both words) already holds on the base (the comment keeps both words, the issue is the last one, stale) and was dropped. Found by the SP-3g3egfll review (S3, BG-uo4sz2ed, gate g1 confirmed). Planned 2026-11-09 in SP-osevumx6: items that share a file wait on each other (kbcommon.py, redact.py then kbask.py, ql_capture.py then ql_deliver.py); no open item of the other live sprints touches this item's code files."
+  "notes": "Planning 2026-11-09: premise reproduces on the base (repro: outcome unclassified, no issue). The old second clause ('not only wrong but stale: PATH:LINE' keeps both words) already holds on the base (the comment keeps both words, the issue is the last one, stale) and was dropped. Found by the SP-3g3egfll review (S3, BG-uo4sz2ed, gate g1 confirmed). Planned 2026-11-09 in SP-osevumx6: items that share a file wait on each other (kbcommon.py, redact.py then kbask.py, ql_capture.py then ql_deliver.py); no open item of the other live sprints touches this item's code files.",
+  "claimed_by": "claude-cdcea91c",
+  "operator": "op-f618a13e"
 }
