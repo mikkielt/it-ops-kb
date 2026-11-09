@@ -2,7 +2,7 @@
   "id": "BG-bpy4x4os",
   "kind": "bug",
   "title": "kbmon's shared snapshot is one per checkout, not one per clone as its goal says, and the pane's receipt and needs-you runs stay unshared",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-zobzdhwi",
   "priority": "P2",
   "rank": 0,
@@ -64,6 +64,28 @@
   ],
   "notes": "Review gap 4 of SP-wpttdu7u: kbmon.py:93 and shared() use a.root.resolve()/_cache/kbmon/shared.json; register.tsx lines 111 and 166 run --receipt and notifyNeeds runs --status all per pane.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-0f9262ec",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "977ca83257e47884f56d21f090515826577fdc45",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; t = open(\"kb/_self/monitoring.md\", encoding=\"utf-8\").read(); ok = any(\"--receipt\" in p and \"--status all\" in p and \"per-pane\" in p for p in t.split(\"\\n\\n\")); print(\"monitoring.md names --receipt and --status all as per-pane\" if ok else \"monitoring.md does not name the --receipt and --status all runs as per-pane\"); sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "efcd3dd15120835b"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, subprocess, sys, tempfile; R = os.getcwd(); T = os.path.realpath(tempfile.mkdtemp()); M = os.path.join(T, \"main\"); W = os.path.join(T, \"wt\"); os.makedirs(M); env = {k: v for k, v in os.environ.items() if not k.startswith(\"GIT_\")}; sh = lambda *a: subprocess.run(a, cwd=M, env=env, capture_output=True, text=True, timeout=120); sh(\"git\", \"init\", \"-q\", \".\"); sh(\"git\", \"-c\", \"user.email=a@example.com\", \"-c\", \"user.name=n\", \"commit\", \"-q\", \"--allow-empty\", \"-m\", \"i\"); sh(\"git\", \"worktree\", \"add\", \"-q\", \"-b\", \"w\", W); p = subprocess.run([sys.executable, os.path.join(R, \"_tools\", \"kbmon.py\"), \"--root\", W, \"--once\", \"--shared\", \"--max-age\", \"0\", \"--panel\", \"host\"], cwd=T, env=env, capture_output=True, text=True, timeout=120); ok = os.path.exists(os.path.join(M, \"_cache\", \"kbmon\", \"shared.json\")); print(\"exit\", p.returncode, \"snapshot in the main checkout:\", ok, \"in the worktree:\", os.path.exists(os.path.join(W, \"_cache\", \"kbmon\", \"shared.json\"))); sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "4f77eb1468b40612"
+      }
+    ]
+  }
 }
