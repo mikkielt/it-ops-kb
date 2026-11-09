@@ -217,7 +217,7 @@ QUESTION_WORDS = {
                        r"\buploa(?:d|ds|ded|ding)\b|\bdeploy(?:s|ed|ing|ment)?\b", re.I),
     "querylog": re.compile(r"query[- ]?log|querylog|redact", re.I),
     "agents-rule": re.compile(r"(?<![\w.-])(?:AGENTS|CLAUDE)\.md|\bskill\b|\bagent definition", re.I),
-    "delete": re.compile(r"\bdelet|\bremov(?:e|ing) .*(?:kb|content|history)|purge|erase", re.I),
+    "delete": re.compile(r"\bdelet|\bremov(?:e|es|ed|ing|al) .*(?:kb|content|history)|purge|erase", re.I),
 }
 # The `ceiling` words are the wordings the rules use for the suite's ceiling (`seconds ceiling`, `darwin ceiling`, `the
 # suite's ceiling`, `ceiling for the test suite`, `tests.py ceiling`, `ceiling profile`, `max_seconds`), so a gate that
@@ -339,12 +339,16 @@ STRICT_WORDS = {
 STRICT_KINDS = tuple(STRICT_WORDS)
 PROGRAM_WORD = re.compile(r"\bprograms?\b", re.I)
 RUN_WORD = re.compile(r"\b(?:run|runs|running|ran)\b", re.I)
+# A clause ends at `;`, `:`, `?`, `!`, a line break, or a full stop that a space or the end follows: the dot inside a
+# file name (`foo.py`) or a version (`1.2`) ends none.
+CLAUSE_END = re.compile(r"[;:?!\n]|\.(?=\s|$)")
 
 
 def strict_signals(gate):
     """[(kind, word)] for each of STRICT_KINDS that the gate's question, options, `do` and `host_check` words name, the
     first word of each kind in text order; [] for a design question with none. `execute` is `execute` with its endings,
-    or `program` and `run` within one clause (a stretch with no `.`, `;`, `:`, `?` or `!` in it)."""
+    or `program` and `run` within one clause (a stretch with no `;`, `:`, `?`, `!`, line break or full stop followed by a
+    space or the end in it: `foo.py` ends none)."""
     options = [str(o) for o in gate.get("options", []) or []]
     texts = [str(gate.get("question", "")), *options, command_words(gate)]
     out = []
@@ -352,7 +356,7 @@ def strict_signals(gate):
         word = next((m.group(0) for t in texts for m in [rx.search(t)] if m), None)
         if kind == "execute" and not word:
             for t in texts:
-                for clause in re.split(r"[.;:?!\n]", t):
+                for clause in CLAUSE_END.split(t):
                     p, r = PROGRAM_WORD.search(clause), RUN_WORD.search(clause)
                     if p and r:
                         word = f"{p.group(0)} ... {r.group(0)}"
