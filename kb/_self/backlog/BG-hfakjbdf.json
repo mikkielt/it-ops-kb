@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "Snapshot S2194 starts with page chrome (Repository navigation, You must be signed in) although its header says page chrome removed",
   "status": "draft",
+  "sprint": "SP-c6tr77jl",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
-  "goal": "kb/public/_snapshots/S2194.txt (and any snapshot of the same host) holds the page body without the site chrome lines its header line says are removed, by fixing the reduction that wrote it. Found by the SP-5bvg4tnl review (BG-gjqcfpw4, pre-existing).",
+  "goal": "fetch._PageText, the reducer provider.doc_text uses to write a snapshot, leaves out the visually hidden heading and the role=tooltip text of a GitHub repository page (Repository navigation, You must be signed in to star a repository) and keeps the page's body; kb/public/_snapshots/S2194.txt, rewritten with it, starts with the page body as its header line says. Found by the SP-5bvg4tnl review (BG-gjqcfpw4, pre-existing).",
   "repro": {
     "run": [
       "python3",
@@ -15,11 +16,37 @@
     ]
   },
   "repro_reason": "The snapshot is written from the live page over the network; the stored file is what review reads, so the repro reads it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,\"_tools\");import provider as P\nh=\"<html><body><div><h2 class=\\\"prc-src-InternalVisuallyHidden-2YaI6\\\">Repository navigation</h2><nav class=\\\"x\\\"><ul><li><a href=\\\"/a\\\">Code</a></li></ul></nav></div><ul><li><a aria-label=\\\"You must be signed in to star a repository\\\" href=\\\"/login\\\">Star</a><span role=\\\"tooltip\\\" aria-hidden=\\\"true\\\">You must be signed in to star a repository</span></li></ul><h2>About</h2><p>Body kept</p></body></html>\"\nt=P.doc_text(h,\"text/html\",\"https://github.com/jan.kowalski/proj\")\nbad=[w for w in (\"Repository navigation\",\"signed in\") if w in t]\nprint(repr(t),bad);sys.exit(1 if bad or \"Body kept\" not in t else 0)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "fetch._PageText, the reducer provider.doc_text uses to write a snapshot, leaves out the visually hidden heading and the role=tooltip text of a GitHub repository page (Repository navigation, You must be signed in to star a repository) and keeps the page's body",
+      "check": 0
+    },
+    {
+      "clause": "kb/public/_snapshots/S2194.txt, rewritten with it, starts with the page body as its header line says. Found by the SP-5bvg4tnl review (BG-gjqcfpw4, pre-existing)",
+      "check": 1
+    }
+  ],
   "touches": [
+    "_tools/fetch.py",
     "kb/public/_snapshots/S2194.txt",
-    "_tools/provider.py"
+    "kb/_self/web-sources.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-rhql6r5i",
+    "ST-67pycz7l"
   ],
   "links": [
     "parked: SP-5bvg4tnl review"
-  ]
+  ],
+  "notes": "Premise: the reducer is fetch._PageText (provider.doc_text calls it), not provider.py; run on a fresh GitHub page it still writes the chrome (2026-11-09). Orders after BG-rhql6r5i, which also edits fetch._PageText. The planted page in the check is shaped from the live page: a visually hidden h2 before the nav, and a role=tooltip span. S2194 is also named by the kb/public/** globs of other sessions' research stories (SP-2cq2hse4 census, SP-osevumx6); only a census that re-reads S2194 itself would clash, and the landing rebase settles a snapshot edit. The worker rewrites the snapshot with the fixed reducer from a live fetch (the page is fetchable), not by hand. Planned 2026-11-09 by a headless plan session; left out as off the theme or in a file another live session plans: BG-55zjrwpn and BG-cgbpg3lq (kbfacts.py)."
 }

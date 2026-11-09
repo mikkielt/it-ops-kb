@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "provider.GITLAB_DOC_FILE gives CC BY-SA to a doc/../ code path and misses the legacy blob and the -/tree doc forms",
   "status": "draft",
+  "sprint": "SP-c6tr77jl",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
-  "goal": "provider.read_licence gives the gitlab-org/gitlab doc/ licence only to a url whose path below the ref starts with doc/ and holds no '..' segment, and to the legacy /gitlab-org/gitlab/blob/<ref>/doc/ form and a -/tree/<ref>/doc directory as well as -/blob and -/raw, so a code file reached through doc/../ keeps the API's MIT; the kbid licence part of test_live_kb.py proves each form (no new test id). Found by the SP-b36246xo review (S4).",
+  "goal": "provider.read_licence gives the gitlab-org/gitlab doc/ licence (CC BY-SA 4.0) only to a url whose path below the ref starts with doc/ and holds no '..' segment, plain or percent-encoded, so a code file reached through doc/../ keeps the API's MIT; it gives that licence as well to the legacy /gitlab-org/gitlab/blob/<ref>/doc/ form and to a -/tree/<ref>/doc directory without a trailing slash, as to -/blob, -/raw and -/tree/<ref>/doc/.... Found by the SP-b36246xo review (S4).",
   "repro": {
     "run": [
       "python3",
@@ -14,12 +15,35 @@
       "import sys;sys.path.insert(0,'_tools');import provider as p;p.request=lambda *a,**k:{'status':404,'error':'x','body':b'','headers':{}};l=p.read_licence('https://gitlab.com/gitlab-org/gitlab/-/blob/master/doc/../lib/a.rb')['licence'];print(l);sys.exit(1 if l.startswith('CC BY-SA') else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import provider as p;p.request=lambda *a,**k:{'status':404,'error':'x','body':b'','headers':{}};b='https://gitlab.com/gitlab-org/gitlab/';bad=[s for s in ('-/blob/master/doc/a.md','-/raw/master/doc/a.md','-/tree/master/doc','-/tree/master/doc/user','blob/master/doc/a.md') if not p.read_licence(b+s)['licence'].startswith('CC BY-SA')]+[s for s in ('-/blob/master/lib/a.rb','-/blob/master/doc/%2e%2e/lib/a.rb','-/blob/master/doc/../lib/a.rb') if p.read_licence(b+s)['licence'].startswith('CC BY-SA')];print(bad);sys.exit(1 if bad else 0)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "provider.read_licence gives the gitlab-org/gitlab doc/ licence (CC BY-SA 4.0) only to a url whose path below the ref starts with doc/ and holds no '..' segment, plain or percent-encoded, so a code file reached through doc/../ keeps the API's MIT",
+      "check": 0
+    },
+    {
+      "clause": "it gives that licence as well to the legacy /gitlab-org/gitlab/blob/<ref>/doc/ form and to a -/tree/<ref>/doc directory without a trailing slash, as to -/blob, -/raw and -/tree/<ref>/doc/.... Found by the SP-b36246xo review (S4)",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/provider.py",
     "kb/_self/tools.md",
     "kb/_self/web-sources.md"
   ],
+  "depends_on": [
+    "BG-ml7dreio"
+  ],
   "links": [
     "parked: SP-b36246xo review"
-  ]
+  ],
+  "notes": "Premise run on the base 2026-11-09 by precheck of SP-c6tr77jl: the repro and each added check fail on the premise (an assertion), none on a traceback. Planned 2026-11-09 by a headless plan session; left out as off the theme or in a file another live session plans: BG-55zjrwpn and BG-cgbpg3lq (kbfacts.py)."
 }

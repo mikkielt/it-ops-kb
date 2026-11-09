@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "providers.csv names GitLab as the organisation of gitlab.com, a repository host, so every gitlab.com project's row gets publisher GitLab",
   "status": "draft",
+  "sprint": "SP-c6tr77jl",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "the gitlab row of _tools/providers.csv (match gitlab.com/) has an empty organisation cell, as ST-wiv62ohc gate g4 decides for hosts that hold many owners' repositories, so kbid.py add takes a gitlab.com project's publisher from its page's site name or refuses for --publisher; docs.gitlab.com keeps GitLab. Found by the SP-b36246xo review (S3).",
+  "goal": "the gitlab row of _tools/providers.csv (match gitlab.com/) has an empty organisation cell, as ST-wiv62ohc gate g4 decides for hosts that hold many owners' repositories, so provider.read_page of a gitlab.com project gives the page's site name or no organisation; docs.gitlab.com keeps GitLab. Found by the SP-b36246xo review (S3).",
   "repro": {
     "run": [
       "python3",
@@ -14,11 +15,32 @@
       "import sys;sys.path.insert(0,'_tools');import provider as p;r=[x for x in p.providers(None) if x['match']=='gitlab.com/'][0];print(r['organisation']);sys.exit(1 if r['organisation'] else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,\"_tools\");import provider as P\nh=b\"<html><head><title>x</title></head><body><p>x</p></body></html>\"\nP.request=lambda *a,**k:{\"status\":200,\"error\":\"\",\"body\":h,\"headers\":{\"content-type\":\"text/html\"}}\na=P.read_page(\"https://gitlab.com/jan.kowalski/proj\",P.providers(None))[\"organisation\"];b=P.read_page(\"https://docs.gitlab.com/ee/x.html\",P.providers(None))[\"organisation\"];print(repr(a),repr(b));sys.exit(0 if a==\"\" and b==\"GitLab\" else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "the gitlab row of _tools/providers.csv (match gitlab.com/) has an empty organisation cell, as ST-wiv62ohc gate g4 decides for hosts that hold many owners' repositories, so provider.read_page of a gitlab.com project gives the page's site name or no organisation",
+      "check": 1
+    },
+    {
+      "clause": "docs.gitlab.com keeps GitLab. Found by the SP-b36246xo review (S3)",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/providers.csv",
-    "kb/_self/web-sources.md"
+    "kb/_self/web-sources.md",
+    "kb/_self/tools.md"
   ],
   "links": [
     "parked: SP-b36246xo review"
-  ]
+  ],
+  "notes": "Premise run on the base 2026-11-09 by precheck of SP-c6tr77jl: the repro and each added check fail on the premise (an assertion), none on a traceback. Planned 2026-11-09 by a headless plan session; left out as off the theme or in a file another live session plans: BG-55zjrwpn and BG-cgbpg3lq (kbfacts.py)."
 }

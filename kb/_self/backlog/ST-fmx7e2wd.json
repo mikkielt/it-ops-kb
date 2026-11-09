@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "kb-probe's list of curated provider columns names organisation, which kbid.py add reads for a new row's publisher",
   "status": "draft",
+  "sprint": "SP-c6tr77jl",
   "priority": "P3",
   "rank": 0,
   "goal": "the kb-probe SKILL.md step that lists the curated columns of a new providers.csv row names organisation (the publisher kbid.py add writes for the host, blank for a host of many owners' repositories), as web-sources.md does, so a probe-added row does not leave it blank unasked. Found by the SP-b36246xo review (S4).",
@@ -16,9 +17,13 @@
     }
   ],
   "touches": [
-    ".claude/skills/kb-probe/SKILL.md"
+    ".claude/skills/kb-probe/SKILL.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/web-sources.md"
   ],
   "links": [
     "parked: SP-b36246xo review"
-  ]
+  ],
+  "notes": "AGENTS.md and maintaining.md are in the touches only because the docs map sends the skill there; edit them only if a line there is stale (AGENTS.md has its 4 KB cap, and ST-j3y2gugk of SP-2cq2hse4 also edits it: the landing rebase merges). Premise run 2026-11-09: kb-probe SKILL.md has no word organisation. Planned 2026-11-09 by a headless plan session; left out as off the theme or in a file another live session plans: BG-55zjrwpn and BG-cgbpg3lq (kbfacts.py)."
 }

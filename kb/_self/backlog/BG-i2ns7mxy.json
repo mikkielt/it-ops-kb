@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "A refused redirect hop leaves the redirect response open until garbage collection",
   "status": "draft",
+  "sprint": "SP-c6tr77jl",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
@@ -15,10 +16,22 @@
     ]
   },
   "repro_reason": "an unclosed socket shows only as a ResourceWarning at garbage collection, which depends on the interpreter's timing; the repro reads that redirect_request does not close fp before raising",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,\"_tools\");import provider as p\nclass FP:\n    closed=False\n    def close(self):self.closed=True\nfp=FP()\ntry:\n    p._Chain(refuse=lambda u:\"held back\").redirect_request(None,fp,302,\"Found\",{},\"https://example.org/x\")\nexcept p._Refused:\n    pass\nprint(\"closed\",fp.closed);sys.exit(0 if fp.closed else 1)"
+      ]
+    }
+  ],
   "touches": [
-    "_tools/provider.py"
+    "_tools/provider.py",
+    "kb/_self/tools.md",
+    "kb/_self/web-sources.md"
   ],
   "links": [
     "parked: SP-ficl7pxl review"
-  ]
+  ],
+  "notes": "Premise run on the base 2026-11-09 by precheck of SP-c6tr77jl: the repro and each added check fail on the premise (an assertion), none on a traceback. Planned 2026-11-09 by a headless plan session; left out as off the theme or in a file another live session plans: BG-55zjrwpn and BG-cgbpg3lq (kbfacts.py)."
 }
