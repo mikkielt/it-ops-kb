@@ -2,7 +2,7 @@
   "id": "BG-k6tyqqbn",
   "kind": "bug",
   "title": "A group's daily cap counts no spend of a finished bench job, so it bounds only the budgets of jobs alive together",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",
   "rank": 0,
@@ -27,5 +27,7 @@
   "depends_on": [
     "BG-qdsed6jk"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-432be86e",
+  "operator": "op-f618a13e"
 }
