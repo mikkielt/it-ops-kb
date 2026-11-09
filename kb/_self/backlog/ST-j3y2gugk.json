@@ -2,7 +2,7 @@
   "id": "ST-j3y2gugk",
   "kind": "story",
   "title": "A source whose page moved is re-pointed by kbid.py repoint, which writes the new row, supersedes the old one and re-keys its anchor and doc2query rows",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-2cq2hse4",
   "priority": "P2",
@@ -99,6 +99,19 @@
   ],
   "notes": "Found 2026-11-09 when two refresh runs re-pointed 20 moved sources by hand with scratch scripts for 60 anchor and 15 doc2query rows, and kbid.py add refused hosts with no registry licence record. Premise: the planted-root check exits 1 on 55dde769f (no repoint subcommand). The command is registered in kbid.py main; its Use: docstring line and kbtools catalog follow.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-c41d77ea",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "b1fb69dfaed1253354a8d7737b5fd39d4a2dbbce",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv, io, os, subprocess, sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport kbid, kbroot, kbfacts\nt = tempfile.mkdtemp()\nd = os.path.join(t, \"zq\")\nold_url, new_url = \"https://example.org/docs/old-page\", \"https://example.org/docs/new-page\"\nold, new = kbid.source_id(old_url, \"ZQ\"), kbid.source_id(new_url, \"ZQ\")\nfact = \"The setting is on by default. [DOC %s]\"\nart = [\"---\", \"topic: win/a\", \"priority: P1\", \"applies_to: x\", \"retrieved_utc: 2026-01-01\", \"sources: [\" + old + \"]\", \"status: complete\", \"---\", \"\", \"# A\", \"\",\n       \"## Summary\", \"- Summary line one. [DOC \" + old + \"]\", \"\", \"## Facts\", \"- \" + fact % old, \"\"]\nfiles = {\"_root.md\": kbroot.root_md(\"zq\", \"ZQ\", \"internal\", \"planted\"), **{k: v.format(name=\"zq\") for k, v in kbroot.FILES.items()},\n         \"win/a.md\": \"\\n\".join(art)}\nfiles[\"_sources.csv\"] += old + \",\" + old_url + \",Old page,Example Org,CC BY 4.0 (planted),quote,2026-01-01,,,win/a.md,\\n\"\nokey = kbfacts.fact_key(fact % old)\nfiles[\"_anchors.csv\"] = \"fact,path,source_id,status,heading,terms,sha,quote,verified_utc\\n\" + okey + \",win/a.md,\" + old + \",unlocated:no-match,,,,,2026-01-01\\n\"\nfiles[\"_retrieval/doc2query/expansions.csv\"] = \"key,question\\n\" + okey + \",Is the setting on by default?\\n\"\nfor rel, text in files.items():\n    os.makedirs(os.path.dirname(os.path.join(d, rel)) or d, exist_ok=True)\n    open(os.path.join(d, rel), \"w\", newline=\"\").write(text)\nenv = dict(os.environ, KB_ROOTS=d)\nrun = lambda *a: subprocess.run([sys.executable, *a], env=env, capture_output=True, text=True)\nr = run(\"_tools/kbid.py\", \"repoint\", old, new_url, \"--root\", \"zq\")\nrd = lambda p: open(os.path.join(d, p), newline=\"\").read()\nrows = {x[\"id\"]: x for x in csv.DictReader(io.StringIO(rd(\"_sources.csv\")))}\nnk = kbfacts.fact_key(fact % new)\nbad = []\nif old not in rows or rows[old][\"superseded_by\"] != new:\n    bad.append(\"old row not superseded_by the new id\")\nn = rows.get(new, {})\nif n.get(\"url\") != new_url or (n.get(\"licence\"), n.get(\"reuse\"), n.get(\"publisher\")) != (\"CC BY 4.0 (planted)\", \"quote\", \"Example Org\"):\n    bad.append(\"new row missing or without the old licence, reuse and publisher\")\nif \"- \" + fact % new not in rd(\"win/a.md\") or old in rd(\"win/a.md\").split(\"## Facts\")[1]:\n    bad.append(\"the citing fact's tag is not moved to the new id\")\nif nk not in rd(\"_anchors.csv\") or okey in rd(\"_anchors.csv\"):\n    bad.append(\"anchor row not re-keyed\")\nif nk not in rd(\"_retrieval/doc2query/expansions.csv\") or okey in rd(\"_retrieval/doc2query/expansions.csv\"):\n    bad.append(\"doc2query row not re-keyed\")\nfor cmd in ((\"_tools/check.py\", \"--root\", \"zq\"), (\"_tools/doc2query.py\", \"stale\")):\n    c = run(*cmd)\n    if c.returncode:\n        bad.append(cmd[1] + \" exits \" + str(c.returncode))\nprint(\"repoint exit\", r.returncode, r.stderr[-200:], bad)\nsys.exit(1 if r.returncode or bad else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "e5cd90eaa3b171d5"
+      }
+    ]
+  }
 }
