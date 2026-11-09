@@ -111,7 +111,7 @@ def cherry_pick(tip, sha, parent):
     if code == 1:
         return None, "it conflicts with the upstream main and the commits taken before it"
     if code:
-        return None, "git merge-tree --write-tree failed (git 2.38 or later is needed): " + e.strip()[-200:]
+        return None, "git merge-tree --write-tree failed (git 2.40 or later is needed): " + e.strip()[-200:]
     return o.decode("utf-8", "replace").split("\n", 1)[0].strip(), ""
 
 
@@ -127,11 +127,11 @@ def write_commit(tree, tip, sha):
 
 
 def old_git():
-    """Why this git cannot apply a commit (`merge-tree --write-tree` came with git 2.38), naming its version, else ''."""
+    """Why this git cannot apply a commit (`merge-tree --write-tree --merge-base` came with git 2.40), naming its version, else ''."""
     version = out("--version") or ""
     m = re.search(r"(\d+)\.(\d+)", version)
-    if m and (int(m.group(1)), int(m.group(2))) < (2, 38):
-        return f"{version} has no merge-tree --write-tree; git 2.38 or later is needed"
+    if m and (int(m.group(1)), int(m.group(2))) < (2, 40):
+        return f"{version} has no merge-tree --write-tree --merge-base; git 2.40 or later is needed"
     return ""
 
 
