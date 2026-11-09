@@ -2,7 +2,7 @@
   "id": "BG-oqnz2vve",
   "kind": "bug",
   "title": "kbmon's held-back count reads 0 after a delivery run that waited on CI or found the lock taken",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-iowijan3",
   "sprint": "SP-zobzdhwi",
   "priority": "P3",
@@ -25,5 +25,7 @@
     "parked: SP-vmtfnkim review"
   ],
   "notes": "Found by the SP-vmtfnkim review on 2026-10-26 (ST-m4mpjjiv's panel count): held_back takes the last line that starts an APPLY_OUTCOMES outcome as the run's end, including waiting and locked runs that never reach bring; the delivery that held files is then the previous run and the panel shows none held back while they are still held (the next delivery retries them). ql_report.last_pushed already skips those outcomes. Planner 2026-11-09: peers shows _tools/mon_querylog.py also planned by session s-62540b (a planning session, no claim); no code sprint holds it. The repro names the module by joined strings so precheck's after-merge warning (it matches _querylog in any check text) does not fire on this check, which plants its own log directory.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-0f9262ec",
+  "operator": "op-f618a13e"
 }
