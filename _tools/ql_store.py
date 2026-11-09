@@ -1278,7 +1278,7 @@ def ops_sidecar_problems(store, k=None):
     return out + leak_problems(store, rels, k)
 
 
-REDACT_MARKS = ("an identifier in `", "the leak scan flags", "the redact rules")
+REDACT_MARKS = ("an identifier in `", "the leak scan flags", "the redact rules", "host is not a public host")
 REDACT_NOTE = ("note: an entry the redact gate refuses may predate the current redact rules (a redact change makes "
                "stored entries fail); the remedy is `querylog.py reredact`, kb/_self/querylog.md, Delivery")
 

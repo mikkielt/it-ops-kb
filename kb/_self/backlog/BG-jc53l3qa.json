@@ -21,6 +21,28 @@
     "kb/_self/querylog.md",
     "kb/_self/usage.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which problem lines does the redact note cover for a public-host failure?",
+      "options": [
+        "one mark for both fetch host and source host",
+        "fetch host only"
+      ],
+      "recommendation": "one mark for both fetch host and source host",
+      "reason": "both checks call public_host, which asks redact.redact, so both depend on what the redact rules name",
+      "do": {
+        "one mark for both fetch host and source host": "BG-jc53l3qa",
+        "fetch host only": "BG-jc53l3qa"
+      },
+      "class": "querylog",
+      "answer": "one mark for both fetch host and source host",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
+    }
+  ],
   "links": [
     "parked: SP-vx6eufpj review"
   ],
