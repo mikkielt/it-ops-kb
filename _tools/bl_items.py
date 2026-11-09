@@ -361,13 +361,15 @@ def cmd_claim(bl, a):
     who = operator_who()[0]
     moved = False
     recorded = True
-    prev = None
     before = run_state_of(iid)
+    # the handler is read before it is installed and the install is inside the block whose finally restores it, so an
+    # interrupt right after the install (before `signal.signal` returns the old one) still finds `prev` to restore
+    prev = signal.getsignal(signal.SIGTERM)
     try:
-        prev = signal.signal(signal.SIGTERM, lambda *_: sys.exit(143))  # a SIGTERM while waiting for the lock ends the claim
-    except (ValueError, OSError):  # not the main thread
-        pass
-    try:
+        try:
+            signal.signal(signal.SIGTERM, lambda *_: sys.exit(143))  # a SIGTERM while waiting for the lock ends the claim
+        except (ValueError, OSError):  # not the main thread
+            prev = None
         try:
             moved = take_claim(iid, a.by, mine=it.get("status") == "doing" and it.get("claimed_by") == a.by)
         except Refused:  # the claim changed nothing
