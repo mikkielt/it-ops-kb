@@ -438,3 +438,5 @@ EV-sprint-plan-measured-figures-margin-against-spread,"what must a planner measu
 EV-sprint-plan-check-reads-every-part-of-clause,"what must a check mapped to a goal clause read, and what happens to a part of the clause no check reads",backlog.md,good,yes,reads every part of that clause,kb-sprint:plan
 SQ-kbask-coordinate-strategy-decide-overlap-another,kbask coordinate strategy decide overlap another session item,coordination.md,good,yes,proceed (anything else exits,
 SQ-backlog-gate-classes-blocking-operator-provisional,backlog gate classes blocking operator provisional answer delegate agent_session,backlog.md,good,yes,"provisional, stores `hold: true",
+SQ-operator-class-answer-recorded-agent-session,operator-class answer recorded from an agent session re-confirm from a terminal,tools.md,good,yes,review story lists them,
+SQ-import-direction-between-modules-bl-kg,import direction between modules bl_ and kg_ flat prefixed modules,README.md,good,yes,"failures, flat prefixed modules",
