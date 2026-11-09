@@ -23,6 +23,26 @@
   "depends_on": [
     "BG-skqyzfeq"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which cross-path facts does match_facts hold back when code spans or numbers differ: only pairs the word share makes, or every pair on two article paths including a high difflib ratio?",
+      "options": [
+        "every pair on two article paths",
+        "only pairs the word share makes"
+      ],
+      "recommendation": "every pair on two article paths",
+      "reason": "a high ratio between two sentences of different options (the repro) is the same false claim, so the check covers both routes",
+      "do": {
+        "every pair on two article paths": "BG-nek3djiy",
+        "only pairs the word share makes": "BG-nek3djiy"
+      },
+      "class": "design",
+      "answer": "every pair on two article paths",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-75hdeqld review"
   ],
