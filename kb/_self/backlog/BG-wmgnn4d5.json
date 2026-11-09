@@ -2,7 +2,7 @@
   "id": "BG-wmgnn4d5",
   "kind": "bug",
   "title": "kbext.py verify fails a leak_scan extender whose function is not named file_hits, and that FAIL line names no point, module or layer",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-y7fe7qqx",
   "sprint": "SP-ga3lbnlk",
   "priority": "P2",
@@ -47,5 +47,7 @@
   "links": [
     "parked: SP-ep7ck2ab review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-0a3e91bc",
+  "operator": "op-f618a13e"
 }
