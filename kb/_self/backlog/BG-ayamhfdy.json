@@ -59,7 +59,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "head line count and per-class ask count; answer_of stays out of this item",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [

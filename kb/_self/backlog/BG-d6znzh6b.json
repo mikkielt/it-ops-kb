@@ -46,7 +46,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "snapshot reads the transcript of the claude process's working directory",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
