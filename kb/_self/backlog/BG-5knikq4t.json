@@ -22,8 +22,13 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "depends_on": [
+    "BG-hmxbenjn",
+    "BG-gt4i6ec6"
+  ],
   "links": [
     "parked: SP-v6crf4rx review"
   ],
+  "notes": "Order: same files bl_authority.py (after BG-hmxbenjn) and bl_items.py (after BG-gt4i6ec6).",
   "filed_in": "clone-0ea70e5c"
 }
