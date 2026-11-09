@@ -41,7 +41,12 @@
         "after the pack's passes and held decisions, before domain_article": "BG-ept67yjj",
         "before the pack, right after the pasted and tool checks": "BG-ept67yjj"
       },
-      "class": "design"
+      "class": "design",
+      "answer": "after the pack's passes and held decisions, before domain_article",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "notes": "Found 2026-11-09 when 'which coordination strategy does a session suggest when another item touching the same files is working' (asked 4 times) was filed again as F-ed67905154ee hours after F-debac1b47a9e closed it as a _self question. The _self branch (a question the _self root's pack answers good with a tested question) is not in this item. Premise: the repro, ql_apply.gap_decision on that question against the committed ledger, gives keep on 55dde769f.",
