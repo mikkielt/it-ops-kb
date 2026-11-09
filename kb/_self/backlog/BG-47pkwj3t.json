@@ -2,7 +2,7 @@
   "id": "BG-47pkwj3t",
   "kind": "bug",
   "title": "census.py apply and factdiff.py apply write the same census.phase token, so the query log report cannot tell the phase-2 outcomes from factdiff's apply",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-2cq2hse4",
   "priority": "P3",
@@ -44,5 +44,7 @@
   "links": [
     "parked: SP-gavrmuvx review"
   ],
-  "notes": "Found by the fresh-context review of SP-gavrmuvx on 2026-10-21 (headless reviewer over git diff a4b91d2f1e..ae798b6984), verified by the manager; premise: the repro fails on ae798b6984."
+  "notes": "Found by the fresh-context review of SP-gavrmuvx on 2026-10-21 (headless reviewer over git diff a4b91d2f1e..ae798b6984), verified by the manager; premise: the repro fails on ae798b6984.",
+  "claimed_by": "claude-c41d77ea",
+  "operator": "op-f618a13e"
 }
