@@ -2,7 +2,7 @@
   "id": "BG-z2y2hu6p",
   "kind": "bug",
   "title": "The kbmon-pane mod gives no receipt after /clear, /resume or /branch until the alert set changes",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-hyfyn22d",
   "priority": "P3",
@@ -47,6 +47,19 @@
   "links": [
     "parked: SP-3hgirkur review"
   ],
-  "claimed_by": "claude-ev4run01",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "4c360be3e537ca97f48760b370ebbee6a2516c14",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('.claude/skills/kbmon-pane/hooks/register.tsx',encoding='utf-8').read();sys.exit(0 if ('SessionStart' in t and 'lastAlerts = null' in t) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
