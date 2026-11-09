@@ -2,7 +2,7 @@
   "id": "BG-xfqc7sod",
   "kind": "bug",
   "title": "horizon --gates counts an answer as the recommendation when the recommendation is only a prefix of it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-yriisdti",
   "priority": "P3",
   "rank": 0,
@@ -23,5 +23,7 @@
   "links": [
     "parked: SP-v6crf4rx review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev2run01",
+  "operator": "op-f618a13e"
 }
