@@ -2,7 +2,7 @@
   "id": "BG-tj3k7mk6",
   "kind": "bug",
   "title": "kbmon --events splits free text with a comma in any coord field into id pieces",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-zobzdhwi",
   "priority": "P3",
   "rank": 0,
@@ -22,5 +22,7 @@
   ],
   "links": [
     "parked: SP-qh2j24z2 review"
-  ]
+  ],
+  "claimed_by": "claude-0f9262ec",
+  "operator": "op-f618a13e"
 }
