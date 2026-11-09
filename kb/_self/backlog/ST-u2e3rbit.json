@@ -68,7 +68,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "Backlog.save, every command, gate fields the loaded copy lacked",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [

@@ -46,7 +46,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "a sentence in plan step 6 beside the detail-only rule",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [

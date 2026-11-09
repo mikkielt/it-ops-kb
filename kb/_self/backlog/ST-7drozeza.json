@@ -44,7 +44,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "Step 4.1: file a draft bug, or name the risk in the review brief",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
