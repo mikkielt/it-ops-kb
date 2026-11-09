@@ -40,9 +40,10 @@ def index_age(kbfacts):
     return max(0, int(time.time() - max(times))) if times else None
 
 
-def open_entries(kbfacts, name):
-    """The entries of a ledger (`_gaps.md`, `_conflicts.md`) in every root that no continuation line has settled."""
-    return sum(1 for e in kbfacts.ledger_entries(name) if not kbfacts.OPEN_GAP.search(e["text"]))
+def open_entries(kbfacts, name, tag=""):
+    """The entries of a ledger (`_gaps.md`, `_conflicts.md`) in every root that no continuation line has settled and whose
+    text holds `tag` (the gaps' `[UNK`, as `bench_pool.open_gaps` reads them; none for the conflicts)."""
+    return sum(1 for e in kbfacts.ledger_entries(name) if tag in e["text"] and not kbfacts.OPEN_GAP.search(e["text"]))
 
 
 def census_date(kbcommon):
@@ -145,7 +146,7 @@ def collect(ctx):
     import kbfacts
     age = index_age(kbfacts)
     roots, refreshed = counts(kbfacts, kbcommon)
-    return {"roots": roots, "gaps": open_entries(kbfacts, kbcommon.GAPS), "conflicts": open_entries(kbfacts, kbcommon.CONFLICTS),
+    return {"roots": roots, "gaps": open_entries(kbfacts, kbcommon.GAPS, "[UNK"), "conflicts": open_entries(kbfacts, kbcommon.CONFLICTS),
             "refreshed": refreshed, "census": census_date(kbcommon), "census_tag": census_tag(ctx.root),
             "eval": last_eval(ctx.root), "index_age_s": age, "tools": tool_counts(ctx.root)}
 
