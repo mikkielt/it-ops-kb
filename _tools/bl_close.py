@@ -479,17 +479,26 @@ def landing_lock(root, iid, poll=None):
     except (ValueError, OSError):  # not the main thread
         pass
     qdir, ticket = landing_queue_dir(path), None
-    try:
-        name = f"{time.time_ns():020d}-{os.getpid()}"
-        qdir.mkdir(exist_ok=True)
-        fd = os.open(qdir / name, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
-        ticket = name
-        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as f:
-            f.write(me)
-    except OSError:  # no queue to be had: the lock file alone orders the landing
-        pass
     got = False
     try:
+        # the ticket's name is held before the file is made, so an interrupt at any point after os.open leaves the
+        # finally below the name to remove
+        name = f"{time.time_ns():020d}-{os.getpid()}"
+        ticket = name
+        try:
+            qdir.mkdir(exist_ok=True)
+            fd = os.open(qdir / name, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            try:
+                f = os.fdopen(fd, "w", encoding="utf-8", newline="\n")
+            except BaseException:
+                os.close(fd)
+                raise
+            with f:
+                f.write(me)
+        except OSError:  # no queue to be had: the lock file alone orders the landing
+            with contextlib.suppress(OSError):
+                os.unlink(qdir / name)
+            ticket = None
         told, waited, bound = None, 0.0, kg_lock.max_wait()
         while True:
             ahead = landing_tickets_ahead(qdir, ticket) if ticket else []
