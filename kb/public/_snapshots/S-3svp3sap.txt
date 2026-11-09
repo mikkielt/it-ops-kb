@@ -3,10 +3,16 @@ url: https://learn.microsoft.com/azure/ai-services/content-safety/quickstart-gro
 title: Quickstart: Use Groundedness detection (preview)
 publisher: Microsoft Learn
 licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-ai-docs)
-retrieved: 2026-09-28
+retrieved: 2026-11-09
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Quickstart: Groundedness detection (preview) - Azure AI services | Microsoft Learn
+
+Important
+
+Groundedness detection in Azure AI Content Safety and Azure OpenAI retires on **April 30, 2027**. Update affected workloads before that date.
+
+Evaluate Microsoft Foundry evaluation tooling, or implement customer-owned grounding validation using an LLM or a system prompt.
 
 This guide shows you how to use the groundedness detection API. This feature automatically detects and corrects text that goes against the provided source documents, ensuring that the generated content is aligned with factual or intended references. Below, we explore several common scenarios to help you understand how and when to apply these features to achieve the best outcomes.
 

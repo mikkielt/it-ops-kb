@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/azure/foundry/agents/how-to/tools/toolbox
 title: Create and manage a toolbox in Foundry
 publisher: Microsoft Learn
 licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-ai-docs)
-retrieved: 2026-10-21
+retrieved: 2026-11-09
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Create and manage a toolbox in Microsoft Foundry - Microsoft Foundry | Microsoft Learn
@@ -23,11 +23,11 @@ This article shows you how to create a toolbox, add and configure tools, verify 
     - **Agent identity** (required if using a prompt agent) — the agent's managed identity that calls tools at runtime.
     - **End user** (required only for OAuth flows) — any user whose identity is proxied through OAuth or UserEntraToken connections (for example, OAuth-based MCP or user Entra token (managed user identity passthrough) flows).
 
-    For step-by-step instructions to assign the **Foundry User** role to an agent identity, see Assign permissions to the agent identity.
+    For assignment procedures, see Assign Azure roles using the Azure CLI, and use the agent identity's object ID as the assignee. For the identity and authorization model, see Assign permissions to the agent identity.
 - Your Foundry project needs to be at one of the supported regions. Individual tool types within a toolbox are further limited by region and model – not all tool types are available in every region or with every model. See Region and model compatibility.
 - Visual Studio Code (VS Code).
 - Install the Microsoft Foundry Toolkit for Visual Studio Code extension from the Visual Studio Code Marketplace.
-- **Python SDK**: `pip install azure-ai-projects azure-identity`
+- **Python SDK**: `pip install azure-ai-projects`
 - **.NET SDK**: Install the coherent preview package set and Azure Identity:
 
     ```bash
@@ -91,7 +91,7 @@ You can add the following tools to a toolbox. This table shows SDK and tooling s
 | Fabric IQ | ✅ Yes | ✅ Yes | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
 | Work IQ | ✅ Yes | ✅ Yes | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
 | Tool search | ✅ Yes | ❌ No | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ |
-| Skills | ✅ Yes | ❌ No | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ | No |
+| Skills | ✅ Yes | Yes, for prompt agents that use the Microsoft Copilot harness | ✔️ | ✔️ | ✔️ | ✔️ | ✔️ | No |
 
 Tool availability also depends on your project's region and model. Before you deploy a toolbox, verify that your target region supports the tool types you plan to use. See Tool support by region and model.
 
@@ -311,8 +311,8 @@ The pattern is the same for every connection kind and auth type:
       - name: <other-skill>
         version: "2"               # pin to a specific skill version (string)
     policies:
-      rai_config:
-        rai_policy_name: <policy-name>    # must already exist on the project
+      raiConfig:
+        raiPolicyName: <policy-name>    # must already exist on the project
     ```
 
     At least one of `connections`, `skills`, or `tools` must be non-empty. Skill references must point to skills that already exist in the same Foundry project; see Use skills in Foundry to create them with `azd ai skill create`. For end-to-end Tool Search setup details, see Use tool search.
@@ -322,7 +322,11 @@ The pattern is the same for every connection kind and auth type:
     azd ai toolbox create <toolbox-name> --from-file ./my-toolbox.yaml
     ```
 
-    The first version becomes the default automatically. Use `azd ai toolbox list`, `azd ai toolbox show <name>`, `azd ai toolbox version list <name>`, and `azd ai toolbox delete <name> --force` to manage toolboxes.
+    The first version becomes the default automatically. Use `azd ai toolbox list`, `azd ai toolbox show <name>`, `azd ai toolbox versions list <name>`, and `azd ai toolbox delete <name> --force` to manage toolboxes.
+
+To build a local toolbox definition incrementally, use `azd ai toolbox add connection <connection-name>` and `azd ai toolbox add skill <skill-name>@<version>`. These commands edit `toolbox.yaml` by default; use `--file` to select another file. They don't change Foundry resources.
+
+For repeatable deployment, declare the definition inline in an `azure.ai.toolbox` service in `azure.yaml` and run `azd deploy <service>`. Toolbox services don't load `toolbox.yaml` automatically or support a root `$ref`.
 
 **Example: MCP server with key-based auth**
 
@@ -543,7 +547,8 @@ Use the toolbox MCP endpoint with a scaffolded hosted agent sample to validate t
 2. Select **Scaffold code template**.
 3. Choose a project folder when prompted.
 4. Follow the generated `README.md` to install dependencies, configure environment variables, and run the sample locally.
-5. Use **Agent Inspector** or run `python main.py` to confirm the toolbox tools load and respond.
+5. For Python samples, add `PYTHONNOUSERSITE: "1"` to the agent service's `env` map in `azure.yaml`, or set `ENV PYTHONNOUSERSITE=1` in the Python Dockerfile. See Configure Python startup for dependency compatibility.
+6. Use **Agent Inspector** or run `python main.py` to confirm the toolbox tools load and respond.
 
 For version-specific validation before you promote a new toolbox version, use the Python or REST API tab in this step.
 
@@ -930,13 +935,13 @@ resources:
 
 Note
 
-You can delete toolbox versions only through the Python SDK, .NET SDK, JavaScript SDK, and REST API. The Azure Developer CLI supports list, get, and publish (default-version promotion) operations.
+The Azure Developer CLI also supports version deletion with `azd ai toolbox delete <name> --version <version>`. You can't delete the default version while other versions exist; publish a different default first. Deleting the only remaining version requires `--force` and also removes the toolbox.
 
 Toolbox versions are immutable snapshots of a toolbox's tool configuration. Every call to the create endpoint produces a new `ToolboxVersionObject`. The parent `ToolboxObject` has a `default_version` field that controls which version the MCP endpoint serves. Creating a new version doesn't automatically promote it - you decide when to update `default_version`. This process lets you stage changes, test a new version independently, and promote it to production on your own schedule.
 
 Note
 
-For the Azure Developer CLI, every mutating operation that targets the current default version — `azd ai toolbox connection add/remove` and `azd ai toolbox skill add/remove` — creates a **new** toolbox version that carries forward all previously attached connections and skills with the requested change applied. None of these commands automatically change `default_version`; run `azd ai toolbox publish <toolbox-name> <version>` when you're ready to make the new version active. To inspect a pending (non-default) version, use `azd ai toolbox show <name> --version <n>`.
+For the Azure Developer CLI, `azd ai toolbox connection add`, `azd ai toolbox connection remove`, `azd ai toolbox skill add`, and `azd ai toolbox skill remove` create a **new** version branched from the latest version, not the default. Sequential changes accumulate. Use `--from-version` to branch from a specific version. These commands don't change `default_version`; run `azd ai toolbox publish <toolbox-name> <version>` to promote the result. Inspect an unpublished version with `azd ai toolbox show <name> --version <n>`.
 
 | Object | Key fields | Description |
 | --- | --- | --- |
@@ -1075,7 +1080,7 @@ Use the Python, .NET, JavaScript, or REST API tab to list toolbox versions.
 
 ```bash
 # The current default version is marked with *
-azd ai toolbox version list <toolbox-name>
+azd ai toolbox versions list <toolbox-name>
 ```
 
 ::: zone-end
@@ -1223,8 +1228,8 @@ azd ai toolbox publish <toolbox-name> <version_id> --no-prompt
 
 ```python
 # Delete a toolbox version
-project.toolboxes.delete_toolbox_version(
-    toolbox_name="<toolbox-name>",
+project.toolboxes.delete_version(
+    name="<toolbox-name>",
     version="<version_id>",
 )
 ```
@@ -1499,8 +1504,8 @@ console.log(`Created version: ${toolboxVersion.version}`);
 name: my-toolbox
 description: Toolbox with guardrail
 policies:
-  rai_config:
-    rai_policy_name: /subscriptions/<subscription-id>/resourceGroups/<resource-group>/providers/Microsoft.CognitiveServices/accounts/<account-name>/raiPolicies/<policy-name>
+  raiConfig:
+    raiPolicyName: /subscriptions/<subscription-id>/resourceGroups/<resource-group>/providers/Microsoft.CognitiveServices/accounts/<account-name>/raiPolicies/<policy-name>
 tools:
   - type: web_search
 ```

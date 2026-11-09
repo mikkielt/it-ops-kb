@@ -3,7 +3,7 @@ url: https://wiki.gentoo.org/wiki/Eselect/Repository
 title: eselect repository (Gentoo Wiki)
 publisher: Gentoo Wiki
 licence: CC-BY-SA-4.0
-retrieved: 2026-10-21
+retrieved: 2026-11-09
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 Jump to: content
@@ -33,7 +33,7 @@ français
 magyar
 русский
 தமிழ்
-中文（中国大陆）‎
+中文（中国大陆）
 日本語
 Resources
 GitHub

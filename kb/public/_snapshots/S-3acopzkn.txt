@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/en-us/sql/t-sql/statements/open-symmetric-key-t
 title: OPEN SYMMETRIC KEY (Transact-SQL)
 publisher: Microsoft (MicrosoftDocs/sql-docs)
 licence: CC BY 4.0 (public mirror MicrosoftDocs/sql-docs)
-retrieved: 2026-09-28
+retrieved: 2026-11-09
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # OPEN SYMMETRIC KEY (Transact-SQL) - SQL Server | Microsoft Learn
@@ -72,6 +72,14 @@ The caller must have some permission on the key and must not have been denied VI
 ### A. Opening a symmetric key by using a certificate
 
 The following example opens the symmetric key `SymKeyMarketing3` and decrypts it by using the private key of certificate `MarketingCert9`.
+
+::: moniker range="azuresqldb-current fabric-sqldb"
+
+Note
+
+In Azure SQL Database and SQL database in Microsoft Fabric, the `USE` statement isn't available. Instead, connect directly to intended database and run the rest of the code sample.
+
+::: moniker-end
 
 ```sql
 USE AdventureWorks2022;

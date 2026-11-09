@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/azure/ai-services/content-safety/region-availab
 title: Azure AI Content Safety region availability
 publisher: Microsoft Learn
 licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-ai-docs)
-retrieved: 2026-10-21
+retrieved: 2026-11-09
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Region availability and service limits - Azure AI Content Safety - Azure AI services | Microsoft Learn
@@ -75,10 +75,10 @@ When you use Azure AI Content Safety directly, create the resource in the region
 # Americas
 | **Guardrail** | **brazilsouth** | **canadacentral** | **canadaeast** | **centralus** | **eastus** | **eastus2** | **northcentralus** | **southcentralus** | **westus** | **westus2** | **westus3** |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Content harms text | - | - | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | - | ✅ | ✅ |
-| Content harms image | - | - | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | - | ✅ | ✅ |
-| Prompt shields | - | - | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | - | ✅ | ✅ |
-| Protected material | - | - | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | - | ✅ | ✅ |
+| Content harms text | - | - | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Content harms image | - | - | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Prompt shields | - | - | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Protected material | - | - | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Groundedness | - | - | - | - | ✅ | ✅ | - | - | ✅ | - | - |
 | Task Adherence | - | - | - | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Content provenance detection | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | - | ✅ | ✅ |
@@ -86,10 +86,10 @@ When you use Azure AI Content Safety directly, create the resource in the region
 # Europe
 | **Guardrail** | **francecentral** | **germanywestcentral** | **italynorth** | **norwayeast** | **polandcentral** | **spaincentral** | **swedencentral** | **switzerlandnorth** | **switzerlandwest** | **uksouth** | **westeurope** |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Content harms text | ✅ | - | - | - | ✅ | - | - | ✅ | - | - | - |
-| Content harms image | ✅ | - | - | - | ✅ | - | - | ✅ | - | - | - |
-| Prompt shields | ✅ | - | - | - | ✅ | - | - | ✅ | - | - | ✅ |
-| Protected material | ✅ | - | - | - | ✅ | - | - | ✅ | - | - | - |
+| Content harms text | ✅ | - | - | - | ✅ | - | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Content harms image | ✅ | - | - | - | ✅ | - | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Prompt shields | ✅ | - | - | - | ✅ | - | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Protected material | ✅ | - | - | - | ✅ | - | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Groundedness | ✅ | - | - | - | - | - | ✅ | - | - | ✅ | - |
 | Task Adherence | - | - | - | ✅ | - | - | - | - | - | - | - |
 | Content provenance detection | ✅ | ✅ | - | - | ✅ | ✅ | - | ✅ | ✅ | - | - |
@@ -97,10 +97,10 @@ When you use Azure AI Content Safety directly, create the resource in the region
 # Asia Pacific
 | **Guardrail** | **australiaeast** | **japaneast** | **koreacentral** | **southeastasia** | **southindia** |
 | --- | --- | --- | --- | --- | --- |
-| Content harms text | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Content harms image | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Prompt shields | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Protected material | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Content harms text | ✅ | ✅ | - | - | ✅ |
+| Content harms image | ✅ | ✅ | - | - | ✅ |
+| Prompt shields | ✅ | ✅ | - | - | ✅ |
+| Protected material | ✅ | ✅ | - | - | ✅ |
 | Groundedness | - | - | - | - | - |
 | Task Adherence | - | - | - | - | - |
 | Content provenance detection | ✅ | ✅ | ✅ | ✅ | ✅ |
@@ -108,10 +108,10 @@ When you use Azure AI Content Safety directly, create the resource in the region
 # Middle East &amp; Africa
 | **Guardrail** | **southafricanorth** | **uaenorth** |
 | --- | --- | --- |
-| Content harms text | - | - |
-| Content harms image | - | - |
-| Prompt shields | - | - |
-| Protected material | - | - |
+| Content harms text | - | ✅ |
+| Content harms image | - | ✅ |
+| Prompt shields | - | ✅ |
+| Protected material | - | ✅ |
 | Groundedness | - | - |
 | Task Adherence | - | - |
 | Content provenance detection | ✅ | ✅ |

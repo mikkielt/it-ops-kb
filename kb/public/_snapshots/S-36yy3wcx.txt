@@ -3,7 +3,7 @@ url: https://docs.python.org/3/library/textwrap.html
 title: textwrap — Text wrapping and filling
 publisher: Python Software Foundation
 licence: PSF License 2 (docs; code 0BSD)
-retrieved: 2026-10-21
+retrieved: 2026-11-09
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 ### Navigation
@@ -12,7 +12,7 @@ modules |
 next |
 previous |
 Python »
-3.15.0 Documentation »
+3.15.2 documentation »
 The Python standard library »
 Text Processing Services »
 textwrap — Text wrapping and filling
@@ -176,10 +176,10 @@ unable to detect the difference between “Dr.” in
 and “Spot.” in
 [...] See Spot. See Spot run [...]
 fix_sentence_endings is false by default.
-Since the sentence detection algorithm relies on string.lowercase for
-the definition of “lowercase letter”, and a convention of using two spaces
-after a period to separate sentences on the same line, it is specific to
-English-language texts.
+Since the sentence detection algorithm defines “lowercase letter” using
+the characters in string.ascii_lowercase, and relies on a convention
+of using two spaces after a period to separate sentences on the same line,
+it is specific to English-language texts.
 break_long_words¶
 (default: True) If true, then words longer than width will be
 broken in order to ensure that no lines are longer than width. If
@@ -227,7 +227,7 @@ modules |
 next |
 previous |
 Python »
-3.15.0 Documentation »
+3.15.2 documentation »
 The Python standard library »
 Text Processing Services »
 textwrap — Text wrapping and filling
@@ -243,6 +243,6 @@ Examples, recipes, and other code in the documentation are additionally licensed
 See History and License for more information.
 The Python Software Foundation is a non-profit corporation.
 Please donate.
-Last updated on Oct 21, 2026 (07:27 UTC).
+Last updated on Nov 09, 2026 (00:37 UTC).
 Found a bug?
-Created using Sphinx 8.2.3.
+Created using Sphinx 9.1.1.

@@ -3,11 +3,11 @@ url: https://developers.cloudflare.com/agents/runtime/lifecycle/agent-class/
 title: Cloudflare Agents docs: Agent class internals
 publisher: Cloudflare
 licence: CC-BY-4.0 (cloudflare/cloudflare-docs)
-retrieved: 2026-10-21
+retrieved: 2026-11-09
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # Agent class internals
-Last updated Aug 17, 2026||View as Markdown|Agent setup
+Last updated Oct 29, 2026||View as Markdown|Agent setup
 The core of the agents library is the Agent class. You extend it, override a few methods, and get state management, WebSockets, scheduling, RPC, and more for free. This page explains how Agent is built, layer by layer, so you understand what is happening under the hood.
 The snippets shown here are illustrative and do not necessarily represent best practices. For the full API, refer to the API reference and the source code ↗︎.
 ## What is the Agent?

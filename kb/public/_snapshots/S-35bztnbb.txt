@@ -3,7 +3,7 @@ url: https://learn.microsoft.com/en-us/sql/t-sql/functions/percentile-disc-trans
 title: PERCENTILE_DISC (Transact-SQL)
 publisher: Microsoft
 licence: CC BY 4.0 (public mirror MicrosoftDocs/sql-docs)
-retrieved: 2026-10-21
+retrieved: 2026-11-09
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 # PERCENTILE_DISC (Transact-SQL) - SQL Server | Microsoft Learn
@@ -81,6 +81,14 @@ The following example uses `PERCENTILE_CONT` and `PERCENTILE_DISC` to find each 
 
 - `PERCENTILE_CONT` returns the appropriate value, even if it doesn't exist in the data set.
 - `PERCENTILE_DISC` returns an actual set value.
+
+::: moniker range="azuresqldb-current fabric-sqldb"
+
+Note
+
+In Azure SQL Database and SQL database in Microsoft Fabric, the `USE` statement isn't available. Instead, connect directly to intended database and run the rest of the code sample.
+
+::: moniker-end
 
 ```sql
 USE AdventureWorks2022;
