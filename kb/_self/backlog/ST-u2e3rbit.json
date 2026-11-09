@@ -2,7 +2,7 @@
   "id": "ST-u2e3rbit",
   "kind": "story",
   "title": "A gate answer the orchestrator commits on a worker branch survives the worker's later item writes",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-moxpl354",
   "priority": "P2",
   "rank": 0,
@@ -54,5 +54,7 @@
     "parked: SP-ep7ck2ab close"
   ],
   "notes": "Parked draft from the SP-ep7ck2ab close retrospective (night manager c9419db9, operator-delegated, 2026-11-09). Its check reads the rule text only: the planner adds a check that runs the behaviour on a planted input before the start gate. Retrospective item R2. Premise (planner, 2026-11-09, base): reproduced. Check 0 plants an item file, loads it, writes an answer into the file as the orchestrator's commit does, then saves the loaded copy (done runs its checks, minutes, between its load and its bl.save at bl_land.py cmd_done end): the answer is gone. Write path found by reading, not by replaying the four wipes: Backlog.save writes the loaded copy whole. Check 1 passes on the base on purpose: it pins that an answer cleared by the command itself is not restored. A worktree probe of answer --root WORKTREE --commit followed by set --commit kept the answer, so only a load-to-save gap loses it. bl_base.py is in the touches of the locks sprint SP-mc4dzsfe's closed claim items only; an ask to its runner is open.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-a1b2c3d4",
+  "operator": "op-f618a13e"
 }
