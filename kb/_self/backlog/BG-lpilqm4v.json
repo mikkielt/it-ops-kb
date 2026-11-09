@@ -20,5 +20,12 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "depends_on": [
+    "BG-gt4i6ec6"
+  ],
+  "links": [
+    "found by: SP-pww4aqis review (gap 1, on BG-gt4i6ec6)"
+  ],
+  "notes": "Found by the SP-pww4aqis fresh-context review on 2026-11-09, and flagged by the worker of BG-gt4i6ec6 in its report as a stale-checkout risk. bl_runs.drift_of reads only the local item file for the landed to none arm; the on_main guard of BG-5tvbfivn covers only the done to landed direction. Premise reproduces on origin/main (repro prints none, exits 1). Fix direction: write none only when the item is not done on refs/remotes/<remote>/main either.",
   "filed_in": "clone-0ea70e5c"
 }
