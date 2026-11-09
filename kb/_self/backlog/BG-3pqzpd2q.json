@@ -24,6 +24,16 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "this clone's backlog.json lists gitkraken@synced in worker_plugins_off",
+      "check": 0
+    },
+    {
+      "clause": "backlog.json takes a setting worker_plugins_off (a list of plugin keys, default none) and claude_argv adds --settings with enabledPlugins false for each, so dispatch, begin and dispatch --resume start a worker with those plugins off and no wrapper is needed",
+      "check": 1
+    }
+  ],
   "touches": [
     "_tools/bl_dispatch.py",
     "_tools/bl_base.py",
