@@ -2,7 +2,7 @@
   "id": "ST-7drozeza",
   "kind": "story",
   "title": "A risk a worker names in its report is filed as a draft bug before the item lands",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-moxpl354",
   "priority": "P3",
   "rank": 0,
@@ -52,6 +52,19 @@
   ],
   "notes": "Unchained from ST-upd6ssky during the run: its edit is in the run section, the others edit the plan section.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-a1b2c3d4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "b0f79361b3fbcf36fe35825b4f8c825d5c0352b4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,pathlib\nt=pathlib.Path('skills/sprint/SKILL.md').read_text(encoding='utf-8')\ns=t.split('## run',1)[1].split('## review',1)[0].lower()\nmiss=[w for w in ['risk named in a worker report'] if w not in s]\nsys.exit('not yet: run section lacks '+', '.join(miss) if miss else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
