@@ -1,0 +1,21 @@
+{
+  "id": "BG-b24gsrj7",
+  "kind": "bug",
+  "title": "An interrupt right after landing_lock installs its SIGTERM handler, before the block that restores it opens, leaves the handler installed",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "landing_lock restores the SIGTERM handler it replaced on an interrupt that lands right after the handler is installed",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os, signal, subprocess, sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport bl_close\nt = tempfile.mkdtemp()\nsubprocess.run([\"git\", \"init\", \"-q\", t], check=True)\ndef mine(*_):\n    pass\nsignal.signal(signal.SIGTERM, mine)\nreal = signal.signal\ndef interrupt_after_install(num, handler):\n    old = real(num, handler)\n    if handler is not mine and callable(handler):\n        signal.signal = real\n        raise KeyboardInterrupt\n    return old\nsignal.signal = interrupt_after_install\ntry:\n    with bl_close.landing_lock(t, \"ST-aaaaaaaa\"):\n        pass\nexcept BaseException as e:\n    print(\"interrupted by\", type(e).__name__)\nfinally:\n    signal.signal = real\nrestored = signal.getsignal(signal.SIGTERM) is mine\nprint(\"SIGTERM handler restored after an interrupt right after its install:\", restored)\nsys.exit(0 if restored else 1)\n"
+    ]
+  },
+  "touches": [
+    "_tools/bl_close.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
