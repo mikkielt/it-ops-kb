@@ -44,7 +44,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "a digest in the map's own group_mappers key, compared by where",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [

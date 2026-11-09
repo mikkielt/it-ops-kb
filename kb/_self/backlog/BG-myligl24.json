@@ -65,7 +65,9 @@
       "class": "push",
       "hold": true,
       "answer": "lists: all entries in layer order with a parallel list of layers; group: last value with its layer",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
@@ -83,7 +85,9 @@
       "class": "push",
       "hold": true,
       "answer": "No: extension_paths must be a list, as kbext.SURFACE says",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
