@@ -2,7 +2,7 @@
   "id": "ST-low3n2ix",
   "kind": "story",
   "title": "Research sprint goal: Backlog lifecycle bookkeeping is exact: done, drop, reconcile, land rows, show, horizon, close summary and leak refusals tell what happened",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-yriisdti",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,7 @@
     "kb/public/**"
   ],
   "notes": "No outside facts: the goal is about the backlog tool's own bookkeeping; every committed bug carries a repro that failed on origin/main when planned (precheck 2026-11-09), and the kb holds no source for any of it.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev2run01",
+  "operator": "op-f618a13e"
 }
