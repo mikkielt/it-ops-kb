@@ -2085,7 +2085,10 @@ def land_locked(bl, a):
         need(bl, iid)
         family = [iid] + bl.descendants(iid)
         late, _, owners = unlanded_code(lroot, family)
-        LAND_OPS["lane"] = "code" if late else "content"
+        if late:  # a lane found in one pass stays: the pass after the merge request merged finds no unlanded code
+            LAND_OPS["lane"] = "code"
+        elif not LAND_OPS["lane"]:
+            LAND_OPS["lane"] = "content"
         if late == ["(no such ref)"]:
             raise land_stop("fetch", f"{upstream} does not exist after the fetch")
         if late:
