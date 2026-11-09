@@ -21,6 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: the sprint's goal concerns this repository's own benchmark tools and report; no question needs a kb fact from an official source, and the pack for the bench tools answers from the _self docs.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-bdc0a493",
   "operator": "op-f618a13e"
