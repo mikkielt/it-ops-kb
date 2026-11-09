@@ -1264,7 +1264,8 @@ REPO_PAGES = ("blob", "tree", "raw", "blame")  # the path words after OWNER/REPO
 GITLAB_SPDX = {k.lower(): k for k in (  # GitLab names a licence by its lowercase SPDX id; the ids not here are upper-cased
     "Apache-2.0", "Artistic-2.0", "BSD-2-Clause", "BSD-3-Clause", "BSL-1.0", "MIT", "MPL-2.0", "Unlicense", "Zlib")}
 META_FEEDBACK = re.compile(r"<meta\b[^>]*\bname=\"github_feedback_content_git_url\"[^>]*>", re.I)
-GITLAB_DOC_FILE = re.compile(r"^/gitlab-org/gitlab/-/(?:raw|blob|tree)/(?P<ref>[^/]+)/doc/")  # a file of doc/, its LICENSE's CC BY-SA 4.0 subtree
+GITLAB_DOC_FILE = re.compile(  # doc/ or a file below it (-/blob, -/raw, -/tree, or the legacy /blob form): its LICENSE's CC BY-SA 4.0 subtree
+    r"^/gitlab-org/gitlab/(?:-/)?(?:raw|blob|tree)/(?P<ref>[^/]+)/doc(?:/(?P<rest>.*))?$")
 
 
 def _found(family, licence, reuse, evidence):
@@ -1321,6 +1322,11 @@ def _repository_of(u):
         head, dash, rest = u.path.partition("/-/")
         if dash and rest.split("/")[0] not in REPO_PAGES:  # an issue, a merge request, a wiki: not the repository's files
             return None
+        if not dash:  # the legacy form, /GROUP/PROJECT/blob/REF/PATH, has no `/-/`: the project ends before the page word
+            segs = [x for x in head.split("/") if x]
+            legacy = next((i for i, x in enumerate(segs) if i >= 2 and x in REPO_PAGES), None)
+            if legacy is not None and len(segs) > legacy + 1:
+                head = "/" + "/".join(segs[:legacy])
         parts = [urllib.parse.unquote(x) for x in head.split("/") if x]
         if len(parts) >= 2:
             slug = re.sub(r"[.]git$", "", "/".join(parts))
@@ -1358,7 +1364,8 @@ def _repo_licence(u):
         return _unread("repository", "not a file or the front page of a GitHub or GitLab repository")
     forge, slug, api = got
     doc = GITLAB_DOC_FILE.match(urllib.parse.unquote(u.path)) if forge == "GitLab" and slug == "gitlab-org/gitlab" else None
-    if doc:  # the repository's LICENSE puts everything under doc/ under CC BY-SA 4.0, not the MIT the API reports for the project
+    if doc and ".." not in (doc.group("rest") or "").split("/"):  # a `..` segment, plain or percent-encoded, leaves doc/ for the code
+        # the repository's LICENSE puts everything under doc/ under CC BY-SA 4.0, not the MIT the API reports for the project
         return _found("repository", "CC BY-SA 4.0 (doc/, per gitlab-org/gitlab LICENSE; code MIT)", "copy",
                       f"https://gitlab.com/gitlab-org/gitlab/-/raw/{doc.group('ref')}/LICENSE")
     status, spdx, _, note = _repository_licence(forge, api)
