@@ -770,10 +770,13 @@ def _clear_stale_lock(lock, seen):
 
 
 @contextlib.contextmanager
-def ledger_lock(path):
+def ledger_lock(path, optional=False):
     """Hold the exclusive lock of the claims ledger for the block: the file `<ledger>.lock`, made by exclusive create
     (no fcntl, so the same on every OS) and removed on exit, so concurrent `claim` and dispatch runs read and write the
-    ledger one at a time. Refused when it is still held after twice the stale age. The holder removes the lock on exit
+    ledger one at a time. Refused when it is still held after twice the stale age. Where the lock file cannot be made at
+    all (an OSError other than FileExistsError: a git dir that is not writable) the lock is refused too, except with
+    OPTIONAL, where the block runs without a lock and `as locked` is False (True otherwise), for a caller that does not
+    need the ledger to go on. The holder removes the lock on exit
     only when the file at the name is the one it made (its inode and modification time, as the stale clearer compares
     them), so a lock another waiter made after a stale clearer removed the holder's is never removed by the wrong holder,
     even when the filesystem gave the new file the freed inode number."""
@@ -791,6 +794,9 @@ def ledger_lock(path):
         except FileExistsError:
             pass
         except OSError as e:
+            if optional:
+                yield False
+                return
             raise Refused(f"cannot lock the claims ledger {path}: {e}")
         try:
             seen = lock.stat()
@@ -804,7 +810,7 @@ def ledger_lock(path):
             raise Refused(f"the claims ledger is locked ({lock}); remove the file if no dispatch or claim runs")
         time.sleep(LEDGER_LOCK_POLL_S)
     try:
-        yield
+        yield True
     finally:
         with contextlib.suppress(OSError):
             now = lock.stat()
