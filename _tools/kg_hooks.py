@@ -121,7 +121,7 @@ def hook_pre_push(args, stdin, gate, dirty_paths):
     delete-only pushes, and with a note when the pushed commit is not HEAD (the checks read the working tree). GATE and
     DIRTY_PATHS are the facade's: the sync gate with its trailer audit, and the staged and unstaged paths."""
     remote = args[0] if args else kbpublic.integration_remote(KB)
-    pushed = [(p[0], p[1]) for p in (ln.split() for ln in stdin.splitlines()) if len(p) == 4]
+    pushed = [(p[0], p[1], p[2]) for p in (ln.split() for ln in stdin.splitlines()) if len(p) == 4]
     url = args[1] if len(args) > 1 else None
     frozen = kbpublic.guard_upstream(remote, url, pushed, KB)
     for ref, why in frozen:
