@@ -1,0 +1,22 @@
+{
+  "id": "ST-uh7kxean",
+  "kind": "story",
+  "title": "The sprint skill's plan step asks every leak-scan or redaction exemption for a check that plants a real-secret-shaped value beside it",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The plan step of .claude/skills/kb-sprint/SKILL.md says an item that adds an exemption to the leak scan or to redact carries one check per exemption that plants a secret-shaped value (built at run time) the exemption must still flag, so a fix like the closed-value path exemption of BG-fwqcimiv cannot pass its own positive layouts while opening a hole (SP-osevumx6 review: BG-vqszwskv, BG-fjptk52z)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();import sys;sys.exit(0 if 'exemption' in t and 'must still flag' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
