@@ -2,7 +2,7 @@
   "id": "BG-ff6fhfoo",
   "kind": "bug",
   "title": "kbgit.py contribute holds back only roots that say visibility: internal while publish refuses every root that does not say public",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-mut2pmu3",
   "priority": "P2",
   "rank": 0,
@@ -53,5 +53,7 @@
     "parked: SP-n7zxspch review"
   ],
   "notes": "Review gap G3 of SP-n7zxspch. kg_contrib.py:69 and :71 test == internal; the docstring at :51-53 claims it reads them as tree_refusals does, which is false since BG-2iqdafwm. git.md:116 repeats visibility: internal. kg_contrib.py:95 calls file_hits(x, added, allow, pinned) with no root, so a listed placeholder still refuses there (S4, stricter only). Fix: kbpublic.not_public in both lines. Premise run 2026-11-09: the repro fails on the base (kg_contrib.py tests == internal at lines 69 and 71). The goal leaves out the S4 half of the review gap (file_hits called with no root at kg_contrib.py:95, which only makes the scan stricter). Contribute reads the same roots as publish, so it follows BG-thhbfbx4's rule for _tools/fixtures: ordered after it (depends_on), and the fixture check plants a fixture _root.md beside an internal root. Outbound path: contribute is an outbound path of file_hits (shipped_file_hits, never the group's replacing scan); this item changes only which roots are held back, not the scan, and a planted secret in a commit still reaches added_hits.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev3run01",
+  "operator": "op-f618a13e"
 }
