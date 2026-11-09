@@ -2,12 +2,12 @@
 "Operation jobs").
 
 A job is the coord key `job/JB-<8 characters>` holding one JSON record, `{job, op, subject, host, clone, operator, by,
-options, state, attempt, submitted_ts}`, and moving by coord's own job table (`coord.JOB_TRANSITIONS`; the move none to
+options, state, attempt, submitted_ts, placement}`, and moving by coord's own job table (`coord.JOB_TRANSITIONS`; the move none to
 queued is `coord.job_transition`'s). The clone's idempotence is a second key, `jobkey/<sha256 of the clone, the operation
-and the subject>`, holding the id of the newest job of that triple.
+and the subject, for a check its name>`, holding the id of the newest job of that triple.
 
-  submit(root, op, subject, by, options=None, store=None)  -> {job, state, deduped, seq, follow}
-  status(root, job, since=0, store=None)                    -> {job, state, exit, step, log, events, last}
+  submit(root, op, subject, by, options=None, store=None, placement=None)  -> {job, state, deduped, seq, follow}
+  status(root, job, since=0, store=None)                    -> {job, state, exit, step, log, placement, events, last}
 
 `submit` reads the triple's key and that job's record, writes the key and a new job's record in one `BEGIN IMMEDIATE`
 transaction (so racing submits meet one winner and the rest read its job), then moves the record from none to queued. A job
@@ -18,8 +18,8 @@ server calls. A refusal is a `kj_ops.Refusal`.
 
 A central queue is a `coord.py serve` reached with --url and --key-file (`Remote`, which runs coord.py itself, so its plain-http
 refusal and key file mode rule are coord's). `submit_remote` and `status_remote` are `submit` and `status` on it; its job record
-adds `remote` (the url of the submitting clone's integration remote), `placement` (`{executor, host}`; a job with none is placed on
-the workstation, `placement_of`) and, once an executor runs it, `log_host` and `executor`. The central store holds states and
+adds `remote` (the url of the submitting clone's integration remote); a job's `placement` (the decision of `kj_place`, with `host`;
+a job with none is placed on the workstation, `placement_of`) is on the local queue too and, once an executor runs it, `log_host` and `executor`. The central store holds states and
 events only: the output log stays on the executor's host.
 """
 import base64
@@ -70,6 +70,12 @@ def new_id():
 
 def triple_key(clone, op, subject):
     return TRIPLE_KEYS + hashlib.sha256("\0".join((clone, op, subject)).encode("utf-8")).hexdigest()
+
+
+def key_subject(subject, given):
+    """What the triple's key names besides the operation: the SUBJECT, for an operation with none the check's `name` of its options
+    GIVEN, so two checks are two jobs and never one."""
+    return subject or str(given.get("name", ""))
 
 
 def operator_id():
@@ -138,9 +144,15 @@ def queue(store, job, record):
             raise
 
 
-def submit(root, op, subject, by, options=None, store=None):
+def placed(decision):
+    """The placement member of a job record: the decision of `kj_place` (a dict) with the submitting host, None for no decision."""
+    return {**decision, "host": platform.node()} if isinstance(decision, dict) else None
+
+
+def submit(root, op, subject, by, options=None, store=None, placement=None):
     """Queue the operation OP on SUBJECT (a backlog id, empty for an operation with none) for the clone at ROOT, or return
-    the live job of the same clone, operation and subject. {job, state, deduped, seq, follow}."""
+    the live job of the same clone, operation and subject. {job, state, deduped, seq, follow}. PLACEMENT, the decision of
+    `kj_place.place`, is kept in the record of a new job as `placement`; a live job keeps the one it was queued with."""
     subject = subject or ""
     by = by or None
     given = kj_ops.check_job(op, subject, by, options)
@@ -152,7 +164,9 @@ def submit(root, op, subject, by, options=None, store=None):
     clone = clone_path(root)
     record = {"job": new_id(), "op": op, "subject": subject, "host": platform.node(), "clone": clone, "operator": operator_id(),
               "by": by, "options": given, "attempt": 1, "submitted_ts": round(time.time(), 3)}
-    job, deduped = enqueue(store, triple_key(clone, op, subject), record)
+    if placement is not None:
+        record["placement"] = placed(placement)
+    job, deduped = enqueue(store, triple_key(clone, op, key_subject(subject, given)), record)
     have = read_record(store, job) or {}
     if have.get("state", "none") == "none":
         queue(store, job, have or record)
@@ -169,8 +183,8 @@ def log_path(root, job):
 
 
 def status(root, job, since=0, store=None):
-    """{job, state, exit, step, log, events, last} of JOB: the record's state, exit and step (null when it has none), the path
-    of its output file (null before the job has run and written it), its `job` events after sequence SINCE and the newest
+    """{job, state, exit, step, log, placement, events, last} of JOB: the record's state, exit and step (null when it has none), the path
+    of its output file (null before the job has run and written it), its placement (`placement_of`), its `job` events after sequence SINCE and the newest
     sequence the store holds (the next SINCE)."""
     store = resolve_store(root, store)
     if not coord.FIELD_VALUE.fullmatch(str(job)) or "/" in str(job):
@@ -188,7 +202,7 @@ def status(root, job, since=0, store=None):
     path = log_path(root, job)
     log = str(path) if path is not None and path.is_file() else None
     return {"job": job, "state": record.get("state", "none"), "exit": record.get("exit"), "step": record.get("step"),
-            "log": log, "events": events, "last": rows[-1]["seq"] if rows else int(since)}
+            "log": log, "placement": placement_of(record), "events": events, "last": rows[-1]["seq"] if rows else int(since)}
 
 
 LOG_TAIL_BYTES = 1 << 20  # how far from the end of a log a tail reads
@@ -317,9 +331,10 @@ def placement_of(record):
     return {"executor": WORKSTATION, "host": record.get("host")}
 
 
-def submit_remote(root, remote, op, subject, by, options=None):
+def submit_remote(root, remote, op, subject, by, options=None, placement=None):
     """`submit` on a central queue: {job, state, deduped, seq, follow} of the live job of the same clone (its integration remote's
-    url), operator, operation and subject, or of a new job placed on the workstation of this host. The triple's key is taken by
+    url), operator, operation and subject, or of a new job placed as PLACEMENT (a decision of `kj_place.place`) says, else on the
+    workstation of this host; a live job keeps its first placement. The triple's key is taken by
     a revision-checked write first, so racing submits meet one winner."""
     subject, by = subject or "", by or None
     given = kj_ops.check_job(op, subject, by, options)
@@ -331,7 +346,7 @@ def submit_remote(root, remote, op, subject, by, options=None):
     if not url:
         raise kj_ops.Refusal("this clone has no integration remote url to name: a job on a central queue runs in the clone with that url")
     me = remote.operator()
-    key = triple_key(url + "\0" + me, op, subject)
+    key = triple_key(url + "\0" + me, op, key_subject(subject, given))
     fields = [f"item={subject}"] if subject else []
     for _ in range(8):
         found = remote.entry(key)
@@ -352,7 +367,7 @@ def submit_remote(root, remote, op, subject, by, options=None):
                 continue  # another submit won the key
             record = {"job": job, "op": op, "subject": subject, "host": platform.node(), "remote": url, "operator": me, "by": by,
                       "options": given, "attempt": attempt, "submitted_ts": round(time.time(), 3),
-                      "placement": {"executor": WORKSTATION, "host": platform.node()}}
+                      "placement": placed(placement) or {"executor": WORKSTATION, "host": platform.node()}}
             if not remote.put(JOB_KEYS + job, json.dumps(record, sort_keys=True, ensure_ascii=False), 0):
                 raise kj_ops.Refusal(f"the central store refused the record of {job}")
             have = record

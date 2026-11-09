@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """kbjob: queue an operation as a job in coord's store (stdlib only). Docs: kb/_self/coordination.md, section "Operation jobs".
 
-  kbjob.py [--store PATH] submit OP [SUBJECT] [--by claude-<8 hex>] [--option KEY=VALUE]... [--name CHECK] [--no-ensure]
+  kbjob.py [--store PATH] submit OP [SUBJECT] [--by claude-<8 hex>] [--option KEY=VALUE]... [--name CHECK] [--no-ensure] [--opa URL]
                                         after `ensure` (a job is never queued for nobody: when it had to start the executor it prints
                                         `kbjob: no executor, started pid N` on stderr, and when none comes up it queues nothing and
                                         exits 1; --no-ensure skips it), queue the operation OP on SUBJECT for this clone and print one JSON object,
                                         {job, state, deduped, seq, follow}: the job is the key job/JB-<8 characters>, its
-                                        state queued, `follow` the command line `python3 _tools/kbjob.py follow JOB`.
-                                        A second submit of the same clone, operation and subject (options aside) while the
+                                        state queued, `follow` the command line `python3 _tools/kbjob.py follow JOB`. Before it queues,
+                                        it asks `kj_place` (the policy at --opa, else KB_OPA_URL) where and as whom OP runs and keeps the
+                                        decision in the job's record as `placement`, with `host`; a decision that cannot be had is the
+                                        workstation with its reason, and a submit that joins a live job keeps that job's first decision.
+                                        A second submit of the same clone, operation and subject (for a check its --name; other options aside) while the
                                         job is queued, running, waiting-lock, waiting-merge or lost returns that job with
                                         deduped true, also when submits race (one job); after a terminal state (succeeded,
                                         failed, refused, cancelled) a submit makes a new job with its attempt raised by one
@@ -37,7 +40,8 @@
                                         and exits 4: the next follow from N misses no move. It only reads.
 
   kbjob.py [--store PATH] status [JOB | --active]
-                                        print the JSON of kj_store.status for JOB (with `holder`, {pid, clone, step}, while the job waits
+                                        print the JSON of kj_store.status for JOB (with `placement`, where and as whom it runs and which level
+                                        decided, and with `holder`, {pid, clone, step}, while the job waits
                                         in waiting-lock for a lock a process outside the executor holds), or the JSON list of the records of every job
                                         not in a terminal state, oldest first
   kbjob.py [--store PATH] log JOB [--tail N]
@@ -144,6 +148,7 @@ def build_parser():
     p.add_argument("--option", action="append", default=[], metavar="KEY=VALUE", help="an option of the operation, repeatable")
     p.add_argument("--name", default=None, help="the check of the operation check")
     p.add_argument("--no-ensure", action="store_true", help="queue the job without starting an executor when none runs")
+    p.add_argument("--opa", default=None, metavar="URL", help="the OPA server to ask for the placement (default: KB_OPA_URL; with neither, the workstation)")
     pl = sub.add_parser("place", help="ask the OPA placement policy where and as whom an operation runs; any failure to answer decides the workstation")
     pl.add_argument("op", help="one of " + ", ".join(coord.PLACEMENT_OPS))
     pl.add_argument("subject", nargs="?", default="", help="the backlog id, or the name of a check")
@@ -273,7 +278,10 @@ def central(args):
 def run_central(args, remote):
     """The commands that reach a central queue: submit, follow, status, log and cancel (`serve` is `kj_exec.serve`'s)."""
     if args.command == "submit":
-        print(json.dumps(kj_store.submit_remote(str(ROOT), remote, args.op, args.subject, args.by, options_of(args)), sort_keys=True, ensure_ascii=False))
+        given = options_of(args)
+        kj_ops.check_job(args.op, args.subject, args.by or None, given)  # a refused job asks no policy
+        placement = decide(args.op, args.subject or str(given.get("name", "")), args.opa, remote)
+        print(json.dumps(kj_store.submit_remote(str(ROOT), remote, args.op, args.subject, args.by, given, placement), sort_keys=True, ensure_ascii=False))
         return 0
     if args.command == "follow":
         return kj_store.follow_remote(remote, args.job, args.since, args.timeout, sys.stdout)
@@ -286,20 +294,29 @@ def run_central(args, remote):
     return kj_store.cancel_remote(remote, args.job, sys.stdout)
 
 
+def decide(op, subject, opa, remote):
+    """The placement decision for OP on SUBJECT: `kj_place.place` for the operator (with --url and --key-file the one the central coord
+    names for the key file, else the local operator id) and its groups. A decision that cannot be had, whatever the cause, is the
+    workstation with the reason (`kj_place.refused`): a job is queued either way."""
+    try:
+        operator = None
+        if remote is not None:
+            try:
+                operator = remote.operator()
+            except kj_ops.Refusal:  # a coord that names no operator is no reason to refuse a placement: the local one stands
+                operator = None
+        groups = kj_place.group_paths(operator)
+        return kj_place.place(op, subject, opa, operator or kj_store.operator_id(), groups)
+    except Exception as error:  # noqa: BLE001 - a policy that cannot be asked never refuses a job
+        return kj_place.refused(f"the placement could not be decided: {type(error).__name__}: {str(error)[:100]}")
+
+
 def place_command(args, remote):
     """`kbjob.py place OP [SUBJECT] [--opa URL]`: 0 printing the one JSON decision of `kj_place.place`. With --url and --key-file
     the operator is the one the central coord names for the key file and its groups follow from that path; else the local operator id, no group."""
     if args.op not in coord.PLACEMENT_OPS:
         raise kj_ops.Refusal(f"operation {args.op[:40]!r} is none of {', '.join(coord.PLACEMENT_OPS)}")
-    operator = None
-    if remote is not None:
-        try:
-            operator = remote.operator()
-        except kj_ops.Refusal:  # a coord that names no operator is no reason to refuse a placement: the local one stands
-            operator = None
-    groups = kj_place.group_paths(operator)
-    operator = operator or kj_store.operator_id()
-    print(json.dumps(kj_place.place(args.op, args.subject, args.opa, operator, groups), sort_keys=True, ensure_ascii=False))
+    print(json.dumps(decide(args.op, args.subject, args.opa, remote), sort_keys=True, ensure_ascii=False))
     return 0
 
 
@@ -357,7 +374,10 @@ def run(args, parser):
                 return 1
             if started:
                 print(f"kbjob: no executor, started pid {pid}", file=sys.stderr, flush=True)
-        body = kj_store.submit(str(ROOT), args.op, args.subject, args.by, options_of(args), store=args.store)
+        given = options_of(args)
+        kj_ops.check_job(args.op, args.subject, args.by or None, given)  # a refused job asks no policy
+        placement = decide(args.op, args.subject or str(given.get("name", "")), args.opa, None)
+        body = kj_store.submit(str(ROOT), args.op, args.subject, args.by, given, store=args.store, placement=placement)
         print(json.dumps(body, sort_keys=True, ensure_ascii=False))
         return 0
     store = kj_store.resolve_store(ROOT, args.store)
