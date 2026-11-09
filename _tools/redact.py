@@ -159,11 +159,15 @@ def _known_store(base):
 
 
 def _known_load(store, key):
+    """The stored scan for KEY, or None (the caller scans in full) when the file is unreadable, nested too deep to parse,
+    for another key or not the shape `_known_save` writes: a JSON object whose "known" holds one list of strings per field."""
     try:
         data = json.loads(store.read_text(encoding="utf-8"))
-        if data.get("key") == key:
-            return Known(*(set(data["known"][f]) for f in Known._fields))
-    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        if isinstance(data, dict) and data.get("key") == key and isinstance(data.get("known"), dict):
+            lists = [data["known"][f] for f in Known._fields]
+            if all(isinstance(v, list) and all(isinstance(s, str) for s in v) for v in lists):
+                return Known(*(set(v) for v in lists))
+    except (OSError, ValueError, KeyError, TypeError, AttributeError, RecursionError):
         pass
     return None
 
