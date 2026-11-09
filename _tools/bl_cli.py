@@ -295,7 +295,8 @@ class group_loading:
 
 
 def load_group_commands(root):
-    """Import each module `extensions.backlog_commands` lists in the settings layers of ROOT, after the shipped modules,
+    """Import each module `extensions.backlog_commands` lists in the settings layers of ROOT, or, with no such setting, the
+    module of the one entry point of group `it_ops_kb.backlog_commands` (`kbext` is imported only for one), after the shipped modules,
     through `kbext.load_all` (kb/_self/extending.md): a module adds or replaces commands through `register` and `extend`
     as it is imported, the module being the one that calls them. A module that `kbext` refuses (it cannot be imported,
     declares no API version this one meets, raises) is named on stderr with its layer and file and every command the
@@ -307,10 +308,14 @@ def load_group_commands(root):
     except kbsettings.SettingsError as e:
         _note(f"group commands not loaded: {e}")
         return []
-    if "backlog_commands" not in merged:  # no group: kbext (and its entry point scan) is never imported
-        return []
+    if "backlog_commands" in merged:
+        layer = source["backlog_commands"]
+    else:
+        from importlib import metadata  # kbext is imported only when a group installed an entry point of this point
+        if not metadata.entry_points(group="it_ops_kb.backlog_commands"):
+            return []
+        layer = "entry point"
     import kbext
-    layer = source["backlog_commands"]
     group = group_name(root)
     before = (dict(COMMANDS), dict(GROUP))
     _LOADING.append((layer, group))
