@@ -1,0 +1,22 @@
+{
+  "id": "BG-thfng7f5",
+  "kind": "bug",
+  "title": "monitoring.md's receipt paragraph does not say a failed --receipt run or append is retried at the next refresh",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The receipt paragraph of kb/_self/monitoring.md says a --receipt run that fails (no output, bad JSON, timeout) or whose append fails is tried again at the next refresh",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open(\"kb/_self/monitoring.md\",encoding=\"utf-8\").read();i=t.find(\"**The receipt.**\");seg=t[i:i+1800];sys.exit(0 if (\"fails\" in seg and \"next refresh\" in seg) else 1)"
+    ]
+  },
+  "repro_reason": "the defect is a doc paragraph that omits the retry; the pane mod runs only in an interactive session",
+  "touches": [
+    "kb/_self/monitoring.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
