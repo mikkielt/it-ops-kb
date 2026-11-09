@@ -1,0 +1,22 @@
+{
+  "id": "SP-mc4dzsfe",
+  "kind": "sprint",
+  "title": "The landing lock is fair, a code item lands in one run, and claims and dead runs do not block",
+  "status": "planned",
+  "goal": "waiters of the clone's landing lock take it in the order they asked, so the landing that has waited longest is next and none is refused at step landing lock while younger waiters pass it; a landing lock ticket of a process that died is skipped, so a dead waiter holds nobody up; one land run of a code item waits for its merge request and finishes, also when the merge request merged and removed code/ID right after the push; the wait for the merge starts once the landing holds the lock for its second pass; a land stop in the second pass prints the step and the reason; a code item's land.end row names the code lane and ops prints it after the last step; a land that died leaves no landing run state that kbmon and peers read as a held lock; a claim asks coord and the operator outside the claims-ledger lock; a claim in a checkout whose git dir cannot be written goes through with a warning; a concurrency fix's checks plant the same key and a different key",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e",
+  "filed_in": "clone-0ea70e5c"
+}
