@@ -2,7 +2,7 @@
   "id": "BG-hoy65wor",
   "kind": "bug",
   "title": "census.py run takes no topic or directory selection, so a census of one domain runs its phases 0 and 1 as separate factdiff.py and census.py commands",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-2cq2hse4",
   "priority": "P2",
   "rank": 0,
@@ -82,6 +82,19 @@
     "parked: SP-yojt6y7v run"
   ],
   "notes": "Planner: the selection reaches detect as the same flags and the check step as --source for each selected source id (census.py check has --source). Premise: the repro exits 1 on 55dde769f (argparse refuses --dir); its no-selection arm already holds.",
-  "claimed_by": "claude-c41d77ea",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "caee209985703c4955cd5f1c2cc47ae3b505c8fc",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, sys\ndef steps(*extra):\n    r = subprocess.run([sys.executable, \"_tools/census.py\", \"run\", \"--date\", \"2026-01-01\", \"--dry-run\", *extra], capture_output=True, text=True)\n    return r.returncode, {l.split(\":\", 1)[0].split()[-1]: l.split(\":\", 1)[1].strip() for l in r.stdout.splitlines() if l.startswith(\"step \")}, r.stderr[-200:]\ncode0, plain, _ = steps()\ncode1, picked, err = steps(\"--dir\", \"ad\")\nbad = []\nif code0 or plain.get(\"detect\") != \"python3 _tools/factdiff.py detect --date 2026-01-01 --sitemaps\" or \"--source\" in plain.get(\"check\", \"--source\"):\n    bad.append(\"a run with no selection changed\")\nif code1 or \"--dir ad\" not in picked.get(\"detect\", \"\") or \"--source\" not in picked.get(\"check\", \"\"):\n    bad.append(\"a run with --dir ad does not pass the selection to detect and the selected sources to check\")\nprint(bad, err)\nsys.exit(1 if bad else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "d01d92ad8ef03cb7"
+      }
+    ]
+  }
 }
