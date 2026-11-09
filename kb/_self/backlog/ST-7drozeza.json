@@ -2,7 +2,7 @@
   "id": "ST-7drozeza",
   "kind": "story",
   "title": "A risk a worker names in its report is filed as a draft bug before the item lands",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-moxpl354",
   "priority": "P3",
   "rank": 0,
@@ -29,5 +29,7 @@
     "parked: SP-pww4aqis close"
   ],
   "notes": "Unchained from ST-upd6ssky during the run: its edit is in the run section, the others edit the plan section.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-a1b2c3d4",
+  "operator": "op-f618a13e"
 }
