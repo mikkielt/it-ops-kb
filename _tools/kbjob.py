@@ -62,6 +62,23 @@
                                         with TERM, then KILL (a POSIX host, the job's own); for the submitting operator only,
                                         exit 1 for another's
 
+Central queue: the global --url URL --key-file PATH [--plain-http] (as coord.py's: the same plain-http refusal beyond loopback and
+the same key file mode rule, exit 2) aim submit, follow, status, log and cancel at the job table of a central `coord.py serve`
+through POST /v1/run (`kj_store.Remote`), not at --store (the two together exit 2). The job record names the integration remote url
+of this clone and a placement, `{executor, host}`, the workstation of this host unless it names another kind (`kj_store.placement_of`);
+`submit` starts no executor there, `status JOB` prints `placement` and `log_host`, `log JOB` prints the log when this host has it and
+names the host that has it otherwise, and `cancel` moves the job to cancelled on the queue, which its executor applies.
+
+  kbjob.py --url URL --key-file PATH serve [--kind workstation|server|ci] [--data DIR] [--once] [--parallel N] [--idle-exit S]
+                                        run the jobs of the central queue placed on this executor kind (default workstation): a
+                                        workstation executor takes only the queued jobs whose placement host is this host and whose
+                                        submitter is the operator of its own key file, a server or ci executor those placed on its kind;
+                                        each job runs in the clone this serve is started in when that clone's integration remote url is
+                                        the one the job names (else it stays queued, one `job` event with step `no-clone` says why);
+                                        every move is posted to the central store, which holds states and events only (the output log
+                                        stays here, in the clone's kb-jobs). --data DIR holds the executor's mirror store instead of the
+                                        clone's kb-jobs. Other flags as above. `ping`, `ensure`, `login-item` and `stats` take no --url
+
 OP is one of the closed table `kj_ops.OPS`, so `publish`, `answer` and any operator-only command are no operation:
   land SUBJECT          options wait_merge=SECONDS, trailer='Key: value' (repeatable)
   done SUBJECT          options commit=true, trailer='Key: value' (repeatable)
@@ -96,6 +113,9 @@ ROOT = Path(__file__).resolve().parent.parent
 def build_parser():
     parser = argparse.ArgumentParser(prog="kbjob.py", description=__doc__.split("\n", 1)[0])
     parser.add_argument("--store", default=None, help="the coord SQLite file (default: KB_COORD_STORE, else the clone's)")
+    parser.add_argument("--url", default=None, help="the central coord.py serve to queue on and follow (with --key-file)")
+    parser.add_argument("--key-file", default=None, help="the file holding this operator's token for --url")
+    parser.add_argument("--plain-http", action="store_true", help="allow a plain http --url on a host that is not loopback")
     sub = parser.add_subparsers(dest="command", required=True)
     p = sub.add_parser("submit", help="queue an operation as a job, or return the live one")
     p.add_argument("op", help="one of " + ", ".join(kj_ops.OPS))
@@ -111,6 +131,8 @@ def build_parser():
     s = sub.add_parser("serve", help="run the queued jobs of this host, clone and operator, at most --parallel at once")
     s.add_argument("--once", action="store_true", help="drain the queue and exit (1 when a job failed)")
     s.add_argument("--parallel", type=int, default=kj_exec.SLOTS, metavar="N", help="run at most N jobs at once (default %(default)s)")
+    s.add_argument("--kind", choices=coord.PLACEMENT_EXECUTORS, default=None, help="the executor kind of a central queue's jobs to take (default workstation; needs --url)")
+    s.add_argument("--data", default=None, metavar="DIR", help="where the executor keeps its mirror of a central queue (default: kb-jobs of the clone)")
     s.add_argument("--idle-exit", type=float, default=None, metavar="S", help="exit 0 after S seconds with no live job (`ensure` sets it for a store of its own)")
     f = sub.add_parser("follow", help="print one line per move of a job and exit with its result (0, 1, 3; 4 past --timeout)")
     f.add_argument("job")
@@ -203,7 +225,47 @@ def stats_command():
     return 0
 
 
+def central(args):
+    """The `kj_store.Remote` of --url and --key-file, None without them; a refusal for one without the other, for --store beside
+    them and for a command a central queue does not take."""
+    if bool(args.url) != bool(args.key_file):
+        raise kj_ops.Refusal("--url and --key-file go together")
+    if not args.url:
+        if args.command == "serve" and (args.kind or args.data):
+            raise kj_ops.Refusal("serve --kind and --data are for a central queue: pass --url and --key-file")
+        return None
+    if args.store:
+        raise kj_ops.Refusal("--url and --store name two queues: pass one")
+    if args.command not in ("submit", "follow", "status", "log", "cancel", "serve"):
+        raise kj_ops.Refusal(f"{args.command} takes no --url: a central queue is reached by submit, follow, status, log, cancel and serve")
+    return kj_store.Remote(args.url, args.key_file, args.plain_http)
+
+
+def run_central(args, remote):
+    """The commands that reach a central queue: submit, follow, status, log and cancel (`serve` is `kj_exec.serve`'s)."""
+    if args.command == "submit":
+        print(json.dumps(kj_store.submit_remote(str(ROOT), remote, args.op, args.subject, args.by, options_of(args)), sort_keys=True, ensure_ascii=False))
+        return 0
+    if args.command == "follow":
+        return kj_store.follow_remote(remote, args.job, args.since, args.timeout, sys.stdout)
+    if args.command == "status":
+        body = kj_store.active_remote(remote) if args.active else kj_store.status_remote(remote, args.job)
+        print(json.dumps(body, sort_keys=True, ensure_ascii=False))
+        return 0
+    if args.command == "log":
+        return kj_store.log_remote(ROOT, remote, args.job, args.tail, sys.stdout)
+    return kj_store.cancel_remote(remote, args.job, sys.stdout)
+
+
 def run(args, parser):
+    remote = central(args)
+    if remote is not None and args.command == "serve":
+        return kj_exec.serve(str(ROOT), None, once=args.once, idle_exit=args.idle_exit, slots=args.parallel,
+                             kind=args.kind or kj_store.WORKSTATION, remote=remote, data=args.data)
+    if remote is not None:
+        if args.command == "status" and (args.job is None) == (not args.active):
+            parser.error("status takes a JOB or --active, one of them")
+        return run_central(args, remote)
     if args.command == "stats":
         return stats_command()
     if args.command == "serve":
