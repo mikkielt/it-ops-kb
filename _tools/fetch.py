@@ -152,30 +152,45 @@ class _PageText(html.parser.HTMLParser):
     """Visible text of an HTML page, one block per line; <main> only when the page has one. `headings` starts each
     h1-h6 line with Markdown `#` marks (provider.py's document text; the hash text of --diff has none). An <aside>
     inside <main> or <article> is kept only when it has data-type="sidebar" (a book's content box) and neither it nor
-    an ancestor has role=navigation; any other aside is site navigation or an on-this-page list and is skipped."""
+    an ancestor has role=navigation (an element's reach ends where it ends, an omitted end tag of p or li
+    included); any other aside is site navigation or an on-this-page list and is skipped."""
     SKIP = {"script", "style", "noscript", "svg", "template", "head", "nav", "footer", "button", "form", "aside"}
     VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"}
+    ENCLOSING = {"html", "body", "main", "article", "section", "div", "header", "footer", "aside", "nav", "ul", "ol",
+                 "menu", "dl", "table", "thead", "tbody", "tfoot", "tr", "form", "details", "figure", "blockquote"}
+    # (element whose end tag may be left out, start tags that end it, elements the search for it stops at)
+    IMPLIED = (
+        ("p", {"address", "article", "aside", "blockquote", "details", "div", "dl", "fieldset", "figcaption", "figure",
+               "footer", "form", "h1", "h2", "h3", "h4", "h5", "h6", "header", "hgroup", "hr", "main", "menu", "nav",
+               "ol", "p", "pre", "section", "table", "ul"}, {"button", "table", "template"}),
+        ("li", {"li"}, {"ul", "ol", "menu"}),
+        ("dt", {"dt", "dd"}, {"dl"}),
+        ("dd", {"dt", "dd"}, {"dl"}),
+    )
     BLOCK = {"p", "div", "li", "tr", "br", "h1", "h2", "h3", "h4", "h5", "h6", "pre", "table", "section", "article", "dd", "dt"}
 
     def __init__(self, headings=False):
         super().__init__(convert_charrefs=True)
         self.skip = self.main = self.article = 0
         self.asides = []  # per open <aside>: True when it was skipped
-        self.navtag, self.navdepth = None, 0  # the outermost open element with role=navigation, and its nesting
+        self.navstack = []  # open elements from the outermost one with role=navigation (first) down; empty outside it
         self.headings = headings
         self.all, self.in_main, self.saw_main = [], [], False
 
     def handle_starttag(self, tag, attrs):
         a = dict(attrs)
         navrole = "navigation" in (a.get("role") or "").lower().split()
-        if self.navtag:
-            self.navdepth += tag == self.navtag
+        if self.navstack:
+            self._nav_implied_end(tag)
+        if self.navstack:
+            if tag not in self.VOID:
+                self.navstack.append(tag)
         elif navrole and tag != "aside" and tag not in self.VOID:
-            self.navtag, self.navdepth = tag, 1
+            self.navstack = [tag]
         if tag == "aside":
             kind = (a.get("data-type") or "").strip().lower()
             dropped = (bool(self.skip) or not (self.main or self.article) or kind != "sidebar"
-                       or navrole or bool(self.navtag))
+                       or navrole or bool(self.navstack))
             self.asides.append(dropped)
             self.skip += dropped
         elif tag in self.SKIP:
@@ -191,10 +206,11 @@ class _PageText(html.parser.HTMLParser):
             self._emit("#" * int(tag[1]) + " ")
 
     def handle_endtag(self, tag):
-        if self.navtag == tag:
-            self.navdepth -= 1
-            if not self.navdepth:
-                self.navtag = None
+        if self.navstack:
+            if tag in self.navstack:
+                del self.navstack[len(self.navstack) - 1 - self.navstack[::-1].index(tag):]
+            elif tag in self.ENCLOSING:  # the end tag of an ancestor of the role=navigation element
+                self.navstack = []
         if tag == "aside":
             if self.asides and self.asides.pop() and self.skip:
                 self.skip -= 1
@@ -206,6 +222,19 @@ class _PageText(html.parser.HTMLParser):
             self.article -= 1
         if tag in self.BLOCK:
             self._emit("\n")
+
+    def _nav_implied_end(self, tag):
+        """Pops the open elements inside a role=navigation element that the start tag `tag` ends by HTML's own rules
+        (an end tag the parser lets the author leave out: p, li, dt, dd), so its reach ends where its element does."""
+        for closed, closers, scope in self.IMPLIED:
+            if tag not in closers:
+                continue
+            for i in range(len(self.navstack) - 1, -1, -1):
+                if self.navstack[i] == closed:
+                    del self.navstack[i:]
+                    break
+                if self.navstack[i] in scope:
+                    break
 
     def handle_data(self, data):
         if not self.skip:
