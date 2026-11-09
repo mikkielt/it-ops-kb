@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "Planning 2026-11-09: every item of this sprint is a bug in this repository's own extension API code (kbsettings, kbext, kg_sync, kb_mcp, kbingest, bl_cli) with a repro run at planning; no Microsoft or Claude product claim is in play, so the worker closes it with a note stating that no outside facts are needed, in the form the researched check reads.",
   "filed_in": "clone-0ea70e5c"
 }
