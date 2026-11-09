@@ -2,7 +2,7 @@
   "id": "ST-525ypepb",
   "kind": "story",
   "title": "The worker brief and agents/worker.md say to run selfdoc.py stale --since origin/main again after the rebase onto origin/main",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-moxpl354",
   "priority": "P2",
   "rank": 0,
@@ -69,6 +69,28 @@
     "parked: SP-osevumx6 close"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-a1b2c3d4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "dcdaa4b0c2513d9868c8166484d2b52be15b6e5e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys\nout=subprocess.run([sys.executable,'_tools/backlog.py','brief','ST-uh7kxean'],capture_output=True,text=True).stdout\nph='again after the reb' + 'ase onto origin/main'\nok=(ph in out)==True\nprint('brief of ST-uh7kxean has: '+ph if ok else 'brief of ST-uh7kxean: want phrase present: '+ph)\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "ba7fd61dbefbd649"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,pathlib\nt=pathlib.Path('agents/worker.md').read_text(encoding='utf-8').lower()\nmiss=[w for w in ['after the rebase', 'selfdoc.py stale'] if w not in t]\nsys.exit('not yet: agents/worker.md lacks '+', '.join(miss) if miss else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
