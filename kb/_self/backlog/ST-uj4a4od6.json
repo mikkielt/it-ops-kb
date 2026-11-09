@@ -2,7 +2,7 @@
   "id": "ST-uj4a4od6",
   "kind": "story",
   "title": "Research sprint goal: Monitoring reports live work correctly",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-zobzdhwi",
   "goal_research": true,
   "priority": "P1",
@@ -23,6 +23,20 @@
   ],
   "notes": "No outside facts: every item of the sprint fixes a defect of the repository's own monitoring tools (kbtail, kbmon, selfcheck, procs), whose behaviour the tools' code and kb/_self/monitoring.md define; no vendor or standard fact is needed, so no kb article or gap entry changes.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-0f9262ec",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "7d58932524f847f2cafcc673804e3032f6265aa6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-uj4a4od6"
+        ],
+        "exit": 0,
+        "sha256": "ca42523593023712"
+      }
+    ]
+  }
 }
