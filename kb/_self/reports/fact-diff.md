@@ -145,6 +145,8 @@ Both runs read 4,488 sources on 264 hosts. The wall time did not fall: the diffe
 
 **Why the map does not shorten the run.** The map reaches the sources whose repository is public, whose file is found by the mapped path and whose baseline names a day. Of the Learn sources of `intune/` and `windows/`, most sit in a repository that answers 404 (`memdocs`, `windows-itpro-docs`), so the requests that make the wall time (one per 1.1 s per host) are the same in both runs. A shorter run needs a public source for those two repositories, or a signal that does not ask Learn.
 
+The map has since dropped both entries: `intune/` and the `windows/` fallback map to no repository, so their pages go to Learn with no clone attempt and the run no longer makes the two failed clones.
+
 ## Haiku 5.5 on the census's judging steps, 2026-10-11
 
 Two census steps are one model call with no tools: the batch judge of fact diff review items (`census.py judge`, step `judge`) and the phase-4 checker's passage judgments (`census.py sample --brief`, step `check`). Haiku 5.5 (`claude-haiku-5-5`) was measured against the model each step ran on, `claude-sonnet-5-5` for the judge and `claude-opus-5-5` (the model the census sessions run on) for the checker, and became the default of both: `census.STEP_MODELS`. `factdiff.py review --judge` keeps `factdiff.JUDGE_MODEL`.
