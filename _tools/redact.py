@@ -85,11 +85,9 @@ WORD_PIECES = re.compile(r"[A-Z]?[a-z]+|[A-Z]+(?![a-z])|\d+")
 SECRETS = [re.compile(f"(?i:{p[4:]})" if p.startswith("(?i)") else p) for p in kbcommon.SECRETS]
 # The assignment, header and url-password shapes are kbcommon's (the leak scan reads them too): one owner, so the
 # redactor and the scan cannot drift apart.
-ASSIGNMENT, ASSIGNED_PLACEHOLDER, AUTH_HEADER, URL_USERINFO = (kbcommon.ASSIGNMENT, kbcommon.ASSIGNED_PLACEHOLDER,
-                                                               kbcommon.AUTH_HEADER, kbcommon.URL_USERINFO)
-# A url password that holds an angle bracket (`a<b>cccccc`): URL_USERINFO's password class leaves `<` and `>` out, so it
-# does not match one. This shape takes exactly those, up to the `@`; a password that is a placeholder whole stays.
-URL_USERINFO_ANGLE = re.compile(r"""(\b[A-Za-z][A-Za-z0-9+.-]*://[^\s/:@"'<>]*:)([^\s/"']*[<>][^\s/"']*)(?=@)""")
+ASSIGNMENT, URL_USERINFO_ANGLE, ASSIGNED_PLACEHOLDER, AUTH_HEADER, URL_USERINFO = (
+    kbcommon.ASSIGNMENT, kbcommon.URL_USERINFO_ANGLE, kbcommon.ASSIGNED_PLACEHOLDER, kbcommon.AUTH_HEADER,
+    kbcommon.URL_USERINFO)
 # Nine English function words: a bare word of this list after a secret key name or an Authorization scheme is prose ("LAPS
 # password: where stored", "use Authorization: Bearer in Graph"), not a value. No other word is kept, a quoted word
 # is a value, and so is a word of the list inside a URL's user:password@ part.
