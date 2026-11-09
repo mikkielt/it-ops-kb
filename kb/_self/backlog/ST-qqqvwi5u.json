@@ -2,7 +2,7 @@
   "id": "ST-qqqvwi5u",
   "kind": "story",
   "title": "The sprint skill's plan step runs a bug's repro against the goal's design choice before the start gate",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-moxpl354",
   "priority": "P2",
   "rank": 0,
@@ -42,5 +42,7 @@
   "links": [
     "parked: SP-osevumx6 close"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-a1b2c3d4",
+  "operator": "op-f618a13e"
 }
