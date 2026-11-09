@@ -24,6 +24,28 @@
   "depends_on": [
     "BG-23p2mmcx"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does kbtail tell a transcript rewritten in place with the same first kilobyte from an append?",
+      "options": [
+        "Compare the bytes just before the read position at each read",
+        "Compare a hash of the whole prefix read so far",
+        "Compare the file's modification time"
+      ],
+      "recommendation": "Compare the bytes just before the read position at each read",
+      "reason": "reads one small window, no hashing of a growing file, and an append never changes those bytes",
+      "do": {
+        "Compare the bytes just before the read position at each read": "BG-65gsygjc",
+        "Compare a hash of the whole prefix read so far": "BG-65gsygjc",
+        "Compare the file's modification time": "BG-65gsygjc"
+      },
+      "class": "design",
+      "answer": "Compare the bytes just before the read position at each read",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-7ba3r4ec review"
   ],
