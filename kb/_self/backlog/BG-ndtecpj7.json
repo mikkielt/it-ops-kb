@@ -2,7 +2,7 @@
   "id": "BG-ndtecpj7",
   "kind": "bug",
   "title": "kbtail.py --root another clone watches the script's own clone's coord store, so new sessions there wait for the 30 s timer",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-booflukv",
   "sprint": "SP-zobzdhwi",
   "priority": "P3",
@@ -27,5 +27,7 @@
   "links": [
     "parked: SP-7ba3r4ec review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-0f9262ec",
+  "operator": "op-f618a13e"
 }
