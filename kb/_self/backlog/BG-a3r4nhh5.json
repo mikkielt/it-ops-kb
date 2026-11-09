@@ -1,0 +1,21 @@
+{
+  "id": "BG-a3r4nhh5",
+  "kind": "bug",
+  "title": "load_group_commands reads the it_ops_kb.backlog_commands entry point before extension_paths are on sys.path, so a distribution installed under an extension_paths directory is missed",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "load_group_commands finds an it_ops_kb.backlog_commands entry point whose distribution sits under a directory of extension_paths, as the other extension points do",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "\nimport json,os,sys,tempfile,pathlib\nsys.path.insert(0,\"_tools\")\nT=pathlib.Path(tempfile.mkdtemp())\nsite=T/\"site\"; (site/\"gx-0.1.dist-info\").mkdir(parents=True)\n(site/\"gx-0.1.dist-info\"/\"METADATA\").write_text(\"Metadata-Version: 2.1\\nName: gx\\nVersion: 0.1\\n\")\n(site/\"gx-0.1.dist-info\"/\"entry_points.txt\").write_text(\"[it_ops_kb.backlog_commands]\\ngx = gcmds\\n\")\n(site/\"gcmds.py\").write_text(\"KBEXT_REQUIRES = \\\">=0.1\\\"\\nimport bl_cli\\nbl_cli.register(\\\"hello\\\", lambda a: print(\\\"hi\\\"))\\n\")\n(T/\"ws\").mkdir()\n(T/\"ws\"/\"settings.json\").write_text(json.dumps({\"extension_paths\":[str(site)]}))\nimport bl_cli\nbl_cli.load_group_commands(T/\"ws\")\nsys.exit(0 if \"hello\" in bl_cli.COMMANDS else \"not yet: an entry point under extension_paths loaded no command\")\n"
+    ]
+  },
+  "links": [
+    "parked: SP-ga3lbnlk review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

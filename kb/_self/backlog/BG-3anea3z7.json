@@ -1,0 +1,21 @@
+{
+  "id": "BG-3anea3z7",
+  "kind": "bug",
+  "title": "group_gate refuses the whole gate when one kb/<dir>/settings.json has a directory name that is not a plain name",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "group_gate runs the gate_checks of the readable kb roots and does not fail the whole gate for a kb directory whose name layered refuses as not a plain name",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "\nimport json,sys,tempfile,pathlib\nsys.path.insert(0,\"_tools\")\nT=pathlib.Path(tempfile.mkdtemp())\nd=T/\"kb\"/\"odd dir\"; d.mkdir(parents=True)\n(d/\"settings.json\").write_text(json.dumps({\"gate_checks\":[[\"true\"]]}))\nimport kg_sync\nf=kg_sync.group_gate(T)\nsys.exit(0 if not f else \"not yet: \"+str(f)[:300])\n"
+    ]
+  },
+  "links": [
+    "parked: SP-ga3lbnlk review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

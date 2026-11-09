@@ -14,5 +14,8 @@
       "import sys; sys.path.insert(0,\"_tools\"); import kbpublic,inspect; sys.exit(0 if \"scan(path, text, allow, pinned, root)\" in inspect.getsource(kbpublic.file_hits) else \"not yet: the extender call has no root\")"
     ]
   },
+  "links": [
+    "parked: SP-ga3lbnlk review"
+  ],
   "filed_in": "clone-0ea70e5c"
 }
