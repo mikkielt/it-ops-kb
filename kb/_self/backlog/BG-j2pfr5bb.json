@@ -2,7 +2,7 @@
   "id": "BG-j2pfr5bb",
   "kind": "bug",
   "title": "gate_checks in a kb root's settings.json never run, though extending.md and group_gate's docstring list the kb root layer",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-y7fe7qqx",
   "sprint": "SP-ga3lbnlk",
   "priority": "P3",
@@ -54,6 +54,19 @@
   ],
   "notes": "Planning 2026-11-09: the original goal left a choice (run the kb root layer, or stop listing it); settled to running it, which is what extending.md promises. Order after BG-myligl24: group_gate then reads gate_checks through kbsettings.layered.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-0a3e91bc",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "02b95b3bbd07a19530087fa077f611a48b7dae41",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess,sys,tempfile,pathlib\nsys.path.insert(0,\"_tools\")\nT=pathlib.Path(tempfile.mkdtemp())\ndef W(p,v):\n    p=pathlib.Path(p); p.parent.mkdir(parents=True,exist_ok=True); p.write_text(v if isinstance(v,str) else json.dumps(v),encoding=\"utf-8\"); return p\ndef need(c,m):\n    if not c: sys.exit(\"not yet: \"+str(m)[:800])\ndef R(*a,env=None):\n    return subprocess.run([sys.executable,*a],capture_output=True,text=True,env=dict(os.environ,**(env or {})),timeout=600)\nEXT='KBEXT_REQUIRES = \">=0.1\"\\n'\nW(T/\"kb\"/\"team\"/\"settings.json\",{\"gate_checks\":[[\"python3\",\"-c\",\"import sys; sys.exit(1)\"]]})\nimport kg_sync\nf=kg_sync.group_gate(T)\nneed(f, \"a failing gate check in kb/team/settings.json did not run\")\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
