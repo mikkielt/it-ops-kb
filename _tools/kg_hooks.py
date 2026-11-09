@@ -12,8 +12,8 @@ import kblane
 import kbpublic
 import kg_lane
 from kg_base import KB, git, rev_parse
-from kg_trailers import (INDEX, KEY_LINE, STRAY, WORK, apply_trailers, compute, judge_work, message_strays,
-                         message_trailers, valid_date, WORK_RULE)
+from kg_trailers import (INDEX, KEY_LINE, STRAY, WORK, apply_trailers, compute, job_trailers, judge_work,
+                         message_strays, message_trailers, valid_date, WORK_RULE)
 
 HOOKS_DIR = ".githooks"
 HOOKS = ("prepare-commit-msg", "commit-msg", "pre-push")
@@ -401,7 +401,8 @@ def hook_commit_msg(args):
     if verified and not valid_date(verified):
         print(f"kbgit.py: KB_VERIFIED={verified!r} is not YYYY-MM-DD; not added", file=sys.stderr)
         verified = None
-    new = apply_trailers(msg, compute(base, INDEX), verified, session_operator())
+    job_operator, job = job_trailers()  # a commit made in a queue job names its submitter and the job, whatever git author
+    new = apply_trailers(msg, compute(base, INDEX), verified, job_operator or session_operator(), job)
     if new != msg:
         with open(args[0], "w", encoding="utf-8", newline="") as f:
             f.write(new)
