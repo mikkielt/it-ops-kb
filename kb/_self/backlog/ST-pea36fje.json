@@ -2,7 +2,7 @@
   "id": "ST-pea36fje",
   "kind": "story",
   "title": "An executor runs a job as the identity its placement names, reading the credential from a 0600 file or a masked CI variable, and refuses a job whose credential is missing",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-p4guu2ip",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",
@@ -141,6 +141,28 @@
   ],
   "notes": "Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: the job ends refused with that reason Order agreed 2026-11-08 with SP-ep7ck2ab's manager (ask A1e21b0d155): shared kb/_self/map.csv rows land by first claim, the later item rebases; no hard dependency.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-61c966d6",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "c48678c5c00ae2ea2738484d6c461017bfffc32b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,tempfile,subprocess\nsys.path.insert(0,os.path.abspath(\"_tools\")); import kj_cred\nd=tempfile.mkdtemp(); f=os.path.join(d,\"group\",\"corp\",\"ops\"); os.makedirs(os.path.dirname(f)); open(f,\"w\").write(\"tok-placeholder\"); os.chmod(f,0o600)\ne1=kj_cred.resolve(\"none\",\"corp/ops\",\"corp/ops/jan.kowalski\",d,{})\ne2=kj_cred.resolve(\"group-bot\",\"corp/ops\",\"corp/ops/jan.kowalski\",d,{})\nout=subprocess.run([e2[\"GIT_ASKPASS\"],\"Password for 'https://gitlab.corp.example.com':\"],capture_output=True,text=True,env=dict(os.environ,**e2)).stdout.strip()\nassert out==\"tok-placeholder\" and \"tok-placeholder\" not in \"\".join(e2.values()) and \"tok-placeholder\" not in \"\".join(e1.values()), (e1,e2)\ne3=kj_cred.resolve(\"group-bot\",\"corp/dev\",\"corp/dev/anna.nowak\",d,{\"KB_GROUP_TOKEN_CORP_DEV\":\"ci-placeholder\"})\nassert e3.get(\"GIT_ASKPASS\"), e3\nfor args in ((\"operator\",\"corp/ops\",\"corp/ops/jan.kowalski\"),(\"group-bot\",\"corp/qa\",\"corp/qa/piotr.nowak\")):\n    try: kj_cred.resolve(*args,d,{}); assert False, args\n    except kj_cred.Refused as x: assert args[0] in str(x), x\nos.chmod(f,0o644)\ntry: kj_cred.resolve(\"group-bot\",\"corp/ops\",\"corp/ops/jan.kowalski\",d,{}); assert False\nexcept kj_cred.Refused as x: assert \"0600\" in str(x), x\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,json,tempfile,subprocess,threading,http.server\nclass H(http.server.BaseHTTPRequestHandler):\n    def do_POST(s):\n        n=int(s.headers.get(\"Content-Length\") or 0); s.rfile.read(n)\n        b=json.dumps({\"result\":{\"executor\":\"workstation\",\"identity\":\"group-bot\",\"fallback\":None,\"fallback_after_s\":0,\"budget_cap_usd\":None,\"decided_by\":\"corp/qa\"}}).encode(); s.send_response(200); s.send_header(\"Content-Length\",str(len(b))); s.end_headers(); s.wfile.write(b)\n    def log_message(s,*a): pass\nsrv=http.server.HTTPServer((\"127.0.0.1\",0),H); threading.Thread(target=srv.serve_forever,daemon=True).start()\nd=tempfile.mkdtemp(); env=dict(os.environ,KB_COORD_STORE=os.path.join(d,\"c.sqlite\"),KB_CRED_DIR=os.path.join(d,\"cred\"))\nenv.pop(\"KB_GROUP_TOKEN_CORP_QA\",None)\nkj=lambda *x: subprocess.run([sys.executable,\"_tools/kbjob.py\",*x],capture_output=True,text=True,timeout=300,env=env)\nj=json.loads(kj(\"submit\",\"check\",\"--name\",\"backlog-check\",\"--no-ensure\",\"--opa\",f\"http://127.0.0.1:{srv.server_port}\").stdout)[\"job\"]\nr=kj(\"serve\",\"--once\")\nst=json.loads(kj(\"status\",j).stdout); log=kj(\"log\",j).stdout\nassert (st[\"state\"],st[\"step\"])==(\"refused\",\"credential\") and \"group-bot\" in log and \"KB_GROUP_TOKEN_CORP_QA\" in log and \"refused at step credential\" in r.stdout and r.returncode==0, (st,log,r.stdout,r.stderr)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
