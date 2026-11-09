@@ -22,7 +22,7 @@ from bl_check import (
 )  # bl_intake: the module refused_command_errors reads check_program_refusal from, so `new` and `check` agree
 from bl_land import (
     REOPENED_REFS, RESEARCH_DEFAULT_GOAL, cleanup_gate_do, clauses_left_behind, move_run, prune_reopened_refs,
-    run_check, own_failure, take_claim,
+    run_check, own_failure, take_claim, run_claimer, ops_token,
 )  # move_run: bl_land owns the run-state move, since bl_land cannot import bl_items without a cycle
 from bl_view import (
     held_answers, is_near, similar,
@@ -347,16 +347,26 @@ def cmd_claim(bl, a):
     # ledger lock is taken: each can take longer than the lock's stale age, and a waiter clears a lock older than that.
     # The coord transition is what lets one of two concurrent claims win; a refusal under the lock that follows it
     # (the item claimed meanwhile, another session's claim in this checkout), an item file that cannot be saved, an
-    # interrupt and a SIGTERM while the lock is waited for each put the run state back, so no claim leaves `claimed`
+    # interrupt and a SIGTERM from the transition on (its own call included, whose result an interrupt loses, so the key
+    # is read) each put the run state back, so no claim leaves `claimed`
     who = operator_who()[0]
-    moved = take_claim(iid, a.by, mine=it.get("status") == "doing" and it.get("claimed_by") == a.by)
+    moved = False
     recorded = True
     prev = None
+    before = run_state_of(iid)
     try:
         prev = signal.signal(signal.SIGTERM, lambda *_: sys.exit(143))  # a SIGTERM while waiting for the lock ends the claim
     except (ValueError, OSError):  # not the main thread
         pass
     try:
+        try:
+            moved = take_claim(iid, a.by, mine=it.get("status") == "doing" and it.get("claimed_by") == a.by)
+        except Refused:  # the claim changed nothing
+            raise
+        except BaseException:  # an interrupt or a SIGTERM once the transition may have run: its result is lost, so the key is read
+            if before != "claimed" and run_state_of(iid) == "claimed" and run_claimer(iid) == ops_token(a.by):
+                moved = True
+            raise
         # the ledger is read and written under the lock `dispatch` takes to add a worker's pid and session, and through
         # a temp file of this process's own, so a claim made beside a dispatch waits and neither side drops the other's
         # record; a lock file that cannot be made (a git dir that is not writable) does not refuse the claim, which
