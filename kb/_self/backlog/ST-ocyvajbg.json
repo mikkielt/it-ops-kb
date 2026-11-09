@@ -2,7 +2,7 @@
   "id": "ST-ocyvajbg",
   "kind": "story",
   "title": "Plan step runs referrers on every symbol a bug's repro calls, so a repro that needs a shared function changed has its callers in touches before the start",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-moxpl354",
   "priority": "P3",
   "rank": 0,

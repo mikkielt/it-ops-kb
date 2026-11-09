@@ -2,7 +2,7 @@
   "id": "ST-3jixsi5t",
   "kind": "story",
   "title": "Review sprint: Sprint process: gate answers survive worker writes, start and begin chain cleanly, plans cover helpers, repros and outbound paths",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-moxpl354",
   "review": true,
   "priority": "P1",

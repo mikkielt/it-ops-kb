@@ -2,7 +2,7 @@
   "id": "ST-cjvvtbpr",
   "kind": "story",
   "title": "Research sprint goal: Sprint process: gate answers survive worker writes, start and begin chain cleanly, plans cover helpers, repros and outbound paths",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-moxpl354",
   "goal_research": true,
   "priority": "P1",

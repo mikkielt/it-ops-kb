@@ -2,7 +2,7 @@
   "id": "ST-tbtyolzp",
   "kind": "story",
   "title": "A planned repro or check that plants an extender at one signature breaks the landing of a later item that changes how the point is called",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-moxpl354",
   "priority": "P2",
   "rank": 0,
