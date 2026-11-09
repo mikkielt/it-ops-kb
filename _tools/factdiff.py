@@ -2578,18 +2578,22 @@ def window_start(unit, on):
     return ""
 
 
-def rekey(path, old, new, root_file):
+def rekey(path, old, new, root_file, also=None):
     """Move the rows of `path` (a CSV with a `key` column, or the anchors' `fact` column) from key `old` to key `new`;
-    the number of rows moved."""
+    the number of rows moved. `also` is (column, old value, new value): a moved row that holds the old value there
+    gets the new one (a re-pointed source's id in an anchor row)."""
     if not os.path.exists(path):
         return 0
     with open(path, encoding="utf-8", newline="") as f:
         rows = list(csv.reader(f))
     col = rows[0].index(root_file)
+    other = rows[0].index(also[0]) if also else None
     n = 0
     for r in rows[1:]:
         if r and r[col] == old:
             r[col] = new
+            if also and r[other] == also[1]:
+                r[other] = also[2]
             n += 1
     if n:
         with open(path, "w", encoding="utf-8", newline="") as f:

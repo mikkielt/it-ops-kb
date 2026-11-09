@@ -8,6 +8,9 @@
   kbid.py eval "QUESTION" [--root NAME]     the EV-<slug> id for a row of the root's _retrieval/lookup_eval.csv
   kbid.py add URL [--title T] [--publisher P] [--licence L --reuse CLASS] [--version V] [--sha256 HEX] [--root NAME]
                                             append the url's row to the root's _sources.csv and print its id
+  kbid.py repoint OLD_ID NEW_URL [--root NAME]
+                                            re-point a source whose page moved to NEW_URL: the new row, the old row's
+                                            superseded_by, the facts' tags, their anchor and doc2query rows
   kbid.py check                             every root's _sources.csv: hash-id collisions, ids that do not match
                                             their url or do not carry the root's prefix
 
@@ -59,12 +62,23 @@ marked `check:` and exits 2, and the row is written when the flags are given aft
 Both flags, or neither: explicit flags always win and no network is asked; a url already in the root with its row
 is unchanged without a read.
 
+Re-pointing a moved source. `repoint OLD_ID NEW_URL` is `add` for a page that moved, in one command and with no network
+read and no registry licence record: the new row takes the old row's title, publisher, licence, reuse, retrieved_utc and
+used_in (its version_or_date names the old id), the old row gets `superseded_by`, every tag of the root's articles that
+cites OLD_ID cites the new id (and so the front matter `sources:` of those articles), and the `_anchors.csv` and doc2query
+rows of each fact whose text so changed move to its new key (an anchor row also to the new source id), so `check.py` and
+`doc2query.py stale` stay clean; the same command again changes nothing more. It prints the new id and what moved. A url already in the root is its own row: only the
+old row's `superseded_by` and the tags change. The anchors are not re-verified on the new page: `factdiff.py anchor
+--source NEW_ID` does that. Exit 0 done; 2 refused (an unknown old id or one superseded to another page, the old row's own url, a url
+that is not http(s), a url or hash id that clashes with a row, a locked sources file).
+
 Answer ids. New research answers in _answers.md are headed `## QK-<slug>. <question>`: lowercase words
 joined by hyphens. Existing Q/QA/QS/QR/QG/R headings stay.
 
 Answers: which source id, answer id or eval id a url or a question gets in a root
 Answers: how to add a source row to a root's _sources.csv without an id clash
-Use: python3 _tools/kbid.py url|answer|eval|add [ARGS]
+Answers: how to re-point a source whose page moved, with its facts, anchors and doc2query rows
+Use: python3 _tools/kbid.py url|answer|eval|add|repoint [ARGS]
 """
 import argparse, base64, collections, contextlib, csv, datetime, functools, hashlib, os, re, sys, time, urllib.parse
 import kbcommon
@@ -212,6 +226,10 @@ def main():
     d.add_argument("--version", default=None, help="the row's version_or_date (omitted: the page's own date; '' for none)")
     d.add_argument("--sha256", default="", help="the row's artifact_sha256")
     d.add_argument("--root", default="public", help="the root the row is for (default public)")
+    r = sub.add_parser("repoint", help="re-point a source whose page moved: new row, superseded_by, tags, anchors, doc2query rows")
+    r.add_argument("old_id", help="the source id of the old page")
+    r.add_argument("url", help="the page's new url")
+    r.add_argument("--root", default="public", help="the root the source is in (default public)")
     sub.add_parser("check", help="every root: hash-id collisions, ids that do not match their url or their root's prefix")
     a = ap.parse_args()
     if a.cmd == "check":
@@ -224,6 +242,8 @@ def main():
         sys.exit(str(e))
     if a.cmd == "add":
         sys.exit(cmd_add(a, root))
+    if a.cmd == "repoint":
+        sys.exit(cmd_repoint(a, root))
     try:
         rows = read_rows(root)
     except (OSError, csv.Error):
@@ -325,6 +345,81 @@ def add_source(root, url, title, publisher, licence, reuse, version="", sha256="
             raise ValueError(f"the lock on {root.name}/{kbcommon.SOURCES} was lost before the row was written: run `add` again")
         kbcommon.write_csv(path, header, rows, atomic=True)
     return sid, True
+
+
+def repoint_source(root, old_id, new_url, today=None):
+    """Re-point the source `old_id` of the root to the page `new_url` it moved to: ({"new": id, "written": bool,
+    "facts": n, "files": [...], "anchors": n, "expansions": n, "left": n}). The new row (the existing one when the url is
+    there) takes the old row's title, publisher, licence, reuse, retrieved_utc and used_in, no registry licence record
+    is read; the old row's `superseded_by` names it; each tag of the root's articles that cites the old id cites the new
+    one, the front matter `sources:` of those articles too; the anchor and doc2query rows of the facts whose text so
+    changed move to the new fact key (an anchor row also to the new source id). ValueError, naming the problem, for an
+    unknown or already superseded old id, a url that is the old row's own or not http(s), or a row under another url."""
+    import kbfacts
+    from factdiff import rekey  # the facade of the anchor tools: reached inside the function, as it imports this module
+    old_id, url = canonical_id(old_id), _check_url(new_url)
+    path = os.path.join(root.path, kbcommon.SOURCES)
+    nid, norm = source_id(url, root.id_prefix), normalize_url(url)
+    day = today or datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
+    with _sources_lock(path, f"{root.name}/{kbcommon.SOURCES}") as held:
+        try:
+            with open(path, encoding="utf-8-sig", newline="") as f:
+                header, rows = kbcommon.parse_csv(f"{root.name}/{kbcommon.SOURCES}", f.read(), ADD_COLS)
+        except (OSError, kbcommon.CsvError) as e:
+            raise ValueError(str(e))
+        old = next((r for r in rows if r.get("id") == old_id), None)
+        if old is None:
+            raise ValueError(f"{old_id} is not in {root.name}/{kbcommon.SOURCES}")
+        if (old.get("superseded_by") or "").strip() not in ("", nid):  # the same url again finishes a run that stopped part way
+            raise ValueError(f"{old_id} is superseded by {old['superseded_by']} already")
+        if normalize_url(old.get("url") or "") == norm:
+            raise ValueError(f"{url} is {old_id}'s own url: nothing moved")
+        have = next((r for r in rows if normalize_url(r.get("url") or "") == norm), None)
+        if have is None and any(r.get("id") == nid for r in rows):
+            raise ValueError(f"hash id {nid} is taken by another url")
+        if have is not None:
+            nid = have["id"]
+        else:
+            new = {c: "" for c in header}
+            new.update(id=nid, url=url, title=old.get("title", ""), publisher=old.get("publisher", ""),
+                       licence=old.get("licence", ""), reuse=old.get("reuse", ""), retrieved_utc=old.get("retrieved_utc") or day,
+                       version_or_date=f"re-pointed from {old_id}", used_in=old.get("used_in", ""))
+            rows.insert(next((i for i, r in enumerate(rows) if _row_key(r["id"]) > _row_key(nid)), len(rows)), new)
+        old["superseded_by"] = nid
+        if not held():
+            raise ValueError(f"the lock on {root.name}/{kbcommon.SOURCES} was lost before the row was written: run `repoint` again")
+        kbcommon.write_csv(path, header, rows, atomic=True)
+    tag_id = re.compile(rf"(?<![\w-]){re.escape(old_id)}(?![\w-])")
+    keys = lambda: {(kbfacts.bare(u["path"]), u["line"]): (kbfacts.fact_key(u["text"]), u["tags"])  # noqa: E731
+                    for u in kbfacts.units(root.name, with_csv=False)}
+    before = keys()
+    paths = sorted({p for (p, _), (_, tags) in before.items() if any(old_id in t["ids"] for t in tags)})
+    for rel in paths:
+        full = os.path.join(root.path, rel)
+        text = kbcommon.read(full, newline="")
+        text = kbfacts.TAG.sub(lambda m: tag_id.sub(nid, m.group(0)), text)
+        text = re.sub(r"(?m)^(sources:.*)$", lambda m: _swap_listed(m.group(1), old_id, nid), text, count=1)
+        with open(full, "w", encoding="utf-8", newline="") as f:
+            f.write(text)
+    after = keys()
+    moves = {before[k][0]: after[k][0] for k in before if k in after and before[k][0] != after[k][0]}
+    anchors = expansions = 0
+    for old_key, new_key in moves.items():
+        anchors += rekey(os.path.join(root.path, kbcommon.ANCHORS), old_key, new_key, "fact", also=("source_id", old_id, nid))
+        expansions += rekey(os.path.join(root.path, kbcommon.DATA_DIR, "doc2query", "expansions.csv"), old_key, new_key, "key")
+    left = sum(1 for u in kbfacts.units(root.name) if any(old_id in t["ids"] for t in u["tags"]))
+    return {"new": nid, "written": have is None, "facts": len(moves), "files": paths, "anchors": anchors,
+            "expansions": expansions, "left": left}
+
+
+def _swap_listed(line, old_id, new_id):
+    """A front matter `sources: [a, b]` line with `old_id` replaced by `new_id` (dropped when the line lists it already)."""
+    m = re.fullmatch(r"(sources:\s*\[)([^\]]*)(\].*)", line)
+    if not m:
+        return line
+    ids = [i.strip() for i in m.group(2).split(",") if i.strip()]
+    ids = [i for i in ids if i != old_id] if new_id in ids else [new_id if i == old_id else i for i in ids]
+    return m.group(1) + ", ".join(ids) + m.group(3)
 
 
 LOCK_SUFFIX = ".lock"
@@ -526,6 +621,23 @@ def cmd_add(a, root):
     print(sid)
     if not written:
         print(f"{a.url.strip()} is already in {root.name}/{kbcommon.SOURCES} as {sid}: unchanged", file=sys.stderr)
+    return 0
+
+
+def cmd_repoint(a, root):
+    """kbid.py repoint: the exit code (0 done, 2 refused: repoint_source's ValueError)."""
+    try:
+        res = repoint_source(root, a.old_id, a.url)
+    except ValueError as e:
+        print(f"refused: {e}", file=sys.stderr)
+        return 2
+    print(res["new"])
+    print(f"{canonical_id(a.old_id)} superseded by {res['new']} ({'new row' if res['written'] else 'row already there'}); "
+          f"facts re-tagged={res['facts']} in {len(res['files'])} file(s), anchor rows moved={res['anchors']}, "
+          f"doc2query rows moved={res['expansions']}", file=sys.stderr)
+    if res["left"]:
+        print(f"{res['left']} unit(s) outside the articles still cite {canonical_id(a.old_id)}: re-point them by hand", file=sys.stderr)
+    print(f"anchors are not re-verified: python3 _tools/factdiff.py --root {root.name} anchor --source {res['new']}", file=sys.stderr)
     return 0
 
 

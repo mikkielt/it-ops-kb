@@ -36,6 +36,67 @@
   "depends_on": [
     "ST-kqy75wsv"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "What does the new row of kbid.py repoint carry as retrieved_utc and version_or_date, given the command reads no page?",
+      "options": [
+        "old row's retrieved_utc, version_or_date names the old id",
+        "today's date and the old row's version_or_date"
+      ],
+      "recommendation": "old row's retrieved_utc, version_or_date names the old id",
+      "reason": "the command fetched nothing, so a new date would claim a read that did not happen",
+      "do": {
+        "old row's retrieved_utc, version_or_date names the old id": "ST-j3y2gugk",
+        "today's date and the old row's version_or_date": "ST-j3y2gugk"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "old row's retrieved_utc, version_or_date names the old id",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Does kbid.py repoint re-verify the moved facts' anchors on the new page, and which citations does it move?",
+      "options": [
+        "no page read: anchor rows keep status and verified_utc, only articles' tags move, other citing units are reported",
+        "fetch the new page and re-anchor"
+      ],
+      "recommendation": "no page read: anchor rows keep status and verified_utc, only articles' tags move, other citing units are reported",
+      "reason": "the command stays offline and the follow-up is factdiff.py anchor --source",
+      "do": {
+        "no page read: anchor rows keep status and verified_utc, only articles' tags move, other citing units are reported": "ST-j3y2gugk",
+        "fetch the new page and re-anchor": "ST-j3y2gugk"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "no page read: anchor rows keep status and verified_utc, only articles' tags move, other citing units are reported",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "Where does the re-pointing code live, and does a repeat run converge?",
+      "options": [
+        "kbid.repoint_source, with factdiff.rekey (new also= argument) reached inside the function; the same url again finishes a stopped run",
+        "a new subcommand of factdiff.py"
+      ],
+      "recommendation": "kbid.repoint_source, with factdiff.rekey (new also= argument) reached inside the function; the same url again finishes a stopped run",
+      "reason": "the goal names kbid.py repoint and add_source's consumers stay unchanged",
+      "do": {
+        "kbid.repoint_source, with factdiff.rekey (new also= argument) reached inside the function; the same url again finishes a stopped run": "ST-j3y2gugk",
+        "a new subcommand of factdiff.py": "ST-j3y2gugk"
+      },
+      "class": "agents-rule",
+      "answer": "kbid.repoint_source, with factdiff.rekey (new also= argument) reached inside the function; the same url again finishes a stopped run",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "notes": "Found 2026-11-09 when two refresh runs re-pointed 20 moved sources by hand with scratch scripts for 60 anchor and 15 doc2query rows, and kbid.py add refused hosts with no registry licence record. Premise: the planted-root check exits 1 on 55dde769f (no repoint subcommand). The command is registered in kbid.py main; its Use: docstring line and kbtools catalog follow.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-c41d77ea",
