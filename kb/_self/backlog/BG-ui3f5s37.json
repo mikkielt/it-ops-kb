@@ -2,7 +2,7 @@
   "id": "BG-ui3f5s37",
   "kind": "bug",
   "title": "Two session-load runs at once share one sandbox clone, so the later one records only a git checkout error",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-bpjqqauu",
   "priority": "P2",
   "rank": 0,

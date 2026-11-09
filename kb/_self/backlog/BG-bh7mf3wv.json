@@ -2,7 +2,7 @@
   "id": "BG-bh7mf3wv",
   "kind": "bug",
   "title": "session-load's arm B replays kbmon --once without --shared, so it does not measure the shared snapshot the pane mod now uses",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-bpjqqauu",
   "priority": "P2",
   "rank": 0,

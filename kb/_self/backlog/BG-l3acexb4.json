@@ -2,7 +2,7 @@
   "id": "BG-l3acexb4",
   "kind": "bug",
   "title": "benchmarks.md still says the real intake hook's cost is not measured and shows none of the 2026-10-28 intake-real rows",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-bpjqqauu",
   "priority": "P2",
   "rank": 0,

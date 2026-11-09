@@ -2,7 +2,7 @@
   "id": "BG-oipsx3sa",
   "kind": "bug",
   "title": "benchmarks.py run --dry-run starts claude --version: Bench.__init__ probes the Claude Code version before any plan",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-bpjqqauu",
   "priority": "P2",
   "rank": 0,

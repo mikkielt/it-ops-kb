@@ -2,7 +2,7 @@
   "id": "BG-qphes2ks",
   "kind": "bug",
   "title": "repro compare records eval_passed 0 for an instance whose end eval printed no json instead of refusing",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-bpjqqauu",
   "priority": "P3",
   "rank": 0,

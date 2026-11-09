@@ -2,7 +2,7 @@
   "id": "BG-uoqtn67j",
   "kind": "bug",
   "title": "benchmarks.md chains the 2026-10-23 held-out-only record against earlier runs on different rows with no note",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-bpjqqauu",
   "priority": "P3",
   "rank": 0,

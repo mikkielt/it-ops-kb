@@ -2,7 +2,7 @@
   "id": "BG-4cq32a53",
   "kind": "bug",
   "title": "session-load --live with a window shorter than one ps listing divides by zero and writes no live row",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-bpjqqauu",
   "priority": "P2",
   "rank": 0,

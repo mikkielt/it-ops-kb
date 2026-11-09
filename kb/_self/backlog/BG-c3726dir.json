@@ -2,7 +2,7 @@
   "id": "BG-c3726dir",
   "kind": "bug",
   "title": "session-load's live mode classes kbtail and a bare kbmon.py as other when ps shows the interpreter as Python",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-bpjqqauu",
   "priority": "P2",
   "rank": 0,

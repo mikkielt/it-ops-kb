@@ -2,7 +2,7 @@
   "id": "BG-mhlxillg",
   "kind": "bug",
   "title": "benchmarks.md's record table joins the paid record's spend to 553d9e5, a commit before the paid mode existed",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-bpjqqauu",
   "priority": "P2",
   "rank": 0,

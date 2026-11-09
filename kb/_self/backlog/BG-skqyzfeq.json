@@ -2,7 +2,7 @@
   "id": "BG-skqyzfeq",
   "kind": "bug",
   "title": "match_facts pairs different rows of one CSV table that cite one source, since the content-word stem share reaches 0.5",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-bpjqqauu",
   "priority": "P2",
   "rank": 0,
