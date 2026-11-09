@@ -70,7 +70,11 @@
         "Replace the repro by the first half of check 0 (a store with a planted lease, then kbask ask)": "BG-pqthn333",
         "Keep every UUID that follows the words 'address me as'": "BG-pqthn333"
       },
-      "class": "querylog"
+      "class": "querylog",
+      "answer": "Replace the repro by the first half of check 0 (a store with a planted lease, then kbask ask)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
