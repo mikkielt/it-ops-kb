@@ -7,15 +7,38 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S4",
-  "goal": "Either kbmon's shared snapshot lives once per clone (the main checkout's _cache) or the docs and goal say one per checkout; and the pane's --receipt and --status all runs on an alert change take the shared snapshot or are named as per-pane",
+  "goal": "kbmon's shared snapshot lives once per clone, in the main checkout's _cache (found through the git common directory), not once per checkout; kb/_self/monitoring.md names the pane's --receipt and --status all runs as per-pane and unshared",
   "repro": {
     "run": [
       "python3",
       "-c",
-      "import sys\nsys.path.insert(0, '_tools')\nimport inspect, kbmon\nsrc = inspect.getsource(kbmon)\nassert 'git-common-dir' in src or 'common_dir' in src, 'the shared snapshot path is the checkout root, not the clone'"
+      "import os, subprocess, sys, tempfile; R = os.getcwd(); T = os.path.realpath(tempfile.mkdtemp()); M = os.path.join(T, \"main\"); W = os.path.join(T, \"wt\"); os.makedirs(M); env = {k: v for k, v in os.environ.items() if not k.startswith(\"GIT_\")}; sh = lambda *a: subprocess.run(a, cwd=M, env=env, capture_output=True, text=True, timeout=120); sh(\"git\", \"init\", \"-q\", \".\"); sh(\"git\", \"-c\", \"user.email=a@example.com\", \"-c\", \"user.name=n\", \"commit\", \"-q\", \"--allow-empty\", \"-m\", \"i\"); sh(\"git\", \"worktree\", \"add\", \"-q\", \"-b\", \"w\", W); p = subprocess.run([sys.executable, os.path.join(R, \"_tools\", \"kbmon.py\"), \"--root\", W, \"--once\", \"--shared\", \"--max-age\", \"0\", \"--panel\", \"host\"], cwd=T, env=env, capture_output=True, text=True, timeout=120); ok = os.path.exists(os.path.join(M, \"_cache\", \"kbmon\", \"shared.json\")); print(\"exit\", p.returncode, \"snapshot in the main checkout:\", ok, \"in the worktree:\", os.path.exists(os.path.join(W, \"_cache\", \"kbmon\", \"shared.json\"))); sys.exit(0 if ok else 1)"
     ]
   },
-  "repro_reason": "the gap is where one path points (checkout root against the clone's common directory); the path expression in the code is what decides it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; t = open(\"kb/_self/monitoring.md\", encoding=\"utf-8\").read(); ok = any(\"--receipt\" in p and \"--status all\" in p and \"per-pane\" in p for p in t.split(\"\\n\\n\")); print(\"monitoring.md names --receipt and --status all as per-pane\" if ok else \"monitoring.md does not name the --receipt and --status all runs as per-pane\"); sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbmon's shared snapshot lives once per clone, in the main checkout's _cache (found through the git common directory), not once per checkout",
+      "check": 1
+    },
+    {
+      "clause": "kb/_self/monitoring.md names the pane's --receipt and --status all runs as per-pane and unshared",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "kb/_self/tools.md",
+    "kb/_self/monitoring.md",
+    "_tools/kbmon.py"
+  ],
   "links": [
     "parked: SP-wpttdu7u review"
   ],

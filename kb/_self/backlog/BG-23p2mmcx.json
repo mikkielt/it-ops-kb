@@ -8,7 +8,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
-  "goal": "kbtail.py --once --history 0 prints no line and no skipped count, and the history read stays bounded on a large transcript whose tail holds few displayable entries",
+  "goal": "kbtail.py --once --history 0 prints no line and no skipped count",
   "repro": {
     "run": [
       "python3",
@@ -21,9 +21,12 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
+  "depends_on": [
+    "BG-k5mgppjq"
+  ],
   "links": [
     "parked: SP-wurbmsid review"
   ],
-  "notes": "The reviewer also found the history read re-reading from scratch in windows growing x4, up to the whole file, when the tail holds few displayable entries.",
+  "notes": "The reviewer also found the history read re-reading from scratch in windows growing x4, up to the whole file, when the tail holds few displayable entries. Planner 2026-11-09: the reviewer's second finding (the history read re-reads in windows growing x4, up to the whole file, when the tail holds few displayable entries) is left out of this item's goal for want of a measured bound; the worker may bound it as part of the fix but no check reads it.",
   "filed_in": "clone-0ea70e5c"
 }

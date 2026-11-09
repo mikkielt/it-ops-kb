@@ -12,13 +12,34 @@
     "run": [
       "python3",
       "-c",
-      "import sys; sys.path.insert(0, '_tools'); import bl_selfcheck, inspect; assert 'bl_clean.ASK' in inspect.getsource(bl_selfcheck.leftovers)"
+      "import sys; sys.path.insert(0, \"_tools\"); import bl_selfcheck as s, bl_clean as c; cls = c.TIDY_CLASSES[0]; c.take_snapshot = lambda bl: {\"planned\": set(), \"free_gb\": 1}; c.coord_state = lambda: {}; c.candidates = lambda sn, st: {k: ([{\"path\": \"/planted\"}] if k == cls else []) for k in c.TIDY_CLASSES}; c.safe_to_remove = lambda cand, sn, st: (c.ASK, \"planted\"); c.row_of = lambda cand, v, r: {\"class\": cls, \"verdict\": v, \"reason\": r, \"path\": \"/planted\"}; c.free_gib = lambda sn, root: 100.0; c.public = lambda r: r; f = s.leftovers(type(\"B\", (), {\"root\": \".\"})()); n = sum(sum(v.values()) for v in f[\"counts\"].values()); print(\"leftovers total\", n, \"for one ask row\"); sys.exit(0 if n == 1 else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.path.insert(0, \"_tools\"); import mon_clean as m; d = {\"counts\": {\"worktree\": {\"remove\": 0, \"keep\": 0, \"ask\": 2}}, \"rows\": [{\"class\": \"worktree\", \"verdict\": \"ask\", \"reason\": \"planted\", \"path\": \"/planted\"}], \"removable\": 0, \"bytes\": 0, \"free_gib\": 50.0, \"limit_gib\": 10.0, \"pressure\": False}; head = m.lines(d)[:2]; print(head); sys.exit(0 if any(\"ask\" in h for h in head) else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "bl_selfcheck.leftovers counts the rows with the verdict ask beside remove and keep, so the leftovers line's total includes them",
+      "check": 1
+    },
+    {
+      "clause": "kbmon's cleanup panel (mon_clean.py) shows how many rows wait for the operator's tidy --decide answer",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/bl_selfcheck.py",
     "_tools/mon_clean.py",
-    "kb/_self/monitoring.md"
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
   ],
   "links": [
     "parked: SP-ep7cyuob review"

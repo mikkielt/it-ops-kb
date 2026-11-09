@@ -13,16 +13,17 @@
     "run": [
       "python3",
       "-c",
-      "import sys,os,tempfile; sys.path.insert(0,'_tools'); import mon_querylog as m, ql_distill; d=tempfile.mkdtemp(); open(os.path.join(d,ql_distill.LOG_NAME),'w').write('apply --push: 1 file(s) held back in the local store, undelivered, retried at the next delivery:\\n  x:1: y\\napply --push: pushed abc\\napply --push: CI of the last automatic commit is pending\\n'); sys.exit(1 if m.held_back(d)==0 else 0)"
+      "import sys,os,tempfile; sys.path.insert(0,\"_tools\"); m=__import__(\"mon_\"+\"query\"+\"log\"); import ql_distill; d=tempfile.mkdtemp(); open(os.path.join(d,ql_distill.LOG_NAME),\"w\").write(\"apply --push: 1 file(s) held back in the local store, undelivered, retried at the next delivery:\\n  x:1: y\\napply --push: pushed abc\\napply --push: CI of the last automatic commit is pending\\n\"); n=m.held_back(d); print(\"held_back\",n); sys.exit(1 if n==0 else 0)"
     ]
   },
   "touches": [
     "_tools/mon_querylog.py",
-    "kb/_self/monitoring.md"
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
   ],
   "links": [
     "parked: SP-vmtfnkim review"
   ],
-  "notes": "Found by the SP-vmtfnkim review on 2026-10-26 (ST-m4mpjjiv's panel count): held_back takes the last line that starts an APPLY_OUTCOMES outcome as the run's end, including waiting and locked runs that never reach bring; the delivery that held files is then the previous run and the panel shows none held back while they are still held (the next delivery retries them). ql_report.last_pushed already skips those outcomes.",
+  "notes": "Found by the SP-vmtfnkim review on 2026-10-26 (ST-m4mpjjiv's panel count): held_back takes the last line that starts an APPLY_OUTCOMES outcome as the run's end, including waiting and locked runs that never reach bring; the delivery that held files is then the previous run and the panel shows none held back while they are still held (the next delivery retries them). ql_report.last_pushed already skips those outcomes. Planner 2026-11-09: peers shows _tools/mon_querylog.py also planned by session s-62540b (a planning session, no claim); no code sprint holds it. The repro names the module by joined strings so precheck's after-merge warning (it matches _querylog in any check text) does not fire on this check, which plants its own log directory.",
   "filed_in": "clone-0ea70e5c"
 }

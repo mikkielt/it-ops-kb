@@ -13,7 +13,7 @@
     "run": [
       "python3",
       "-c",
-      "import re,glob,sys;n=sum(len(re.findall(r'classify\\([^)]*fresh=',open(f,encoding='utf-8').read())) for f in glob.glob('_tools/*.py'));print(n);sys.exit(0 if n else 1)"
+      "\nimport json, os, shutil, subprocess, sys, tempfile, time, uuid\nif os.name == \"nt\":\n    print(\"check skipped: a fake claude process needs a POSIX host\"); sys.exit(0)\nR = os.getcwd(); T = os.path.realpath(tempfile.mkdtemp()); C = os.path.join(T, \"cfg\")\nenv = {k: v for k, v in os.environ.items() if not k.startswith(\"GIT_\")}\nenv.update(CLAUDE_CONFIG_DIR=C, KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"))\ndef sh(*a, cwd=T):\n    return subprocess.run(a, cwd=cwd, env=env, capture_output=True, text=True, timeout=120)\nK = os.path.join(T, \"clone\"); os.makedirs(K)\nsh(\"git\", \"init\", \"-q\", \".\", cwd=K)\nsh(\"git\", \"-c\", \"user.email=a@example.com\", \"-c\", \"user.name=n\", \"commit\", \"-q\", \"--allow-empty\", \"-m\", \"i\", cwd=K)\nshutil.copy(os.path.join(R, \"backlog.json\"), K); os.makedirs(os.path.join(K, \"kb\", \"_self\", \"backlog\"))\nos.makedirs(os.path.join(T, \"bin\")); FAKE = os.path.join(T, \"bin\", \"claude\"); os.symlink(\"/bin/sleep\", FAKE)\nWT = os.path.join(K, \".claude\", \"worktrees\", \"agent-ST-aaaaaaaa\")\nsh(\"git\", \"worktree\", \"add\", \"-q\", \"-b\", \"work/ST-aaaaaaaa\", WT, cwd=K)\nsid = str(uuid.uuid4())\npdir = os.path.join(C, \"projects\", \"\".join(c if c.isalnum() else \"-\" for c in WT)); os.makedirs(pdir)\nwith open(os.path.join(pdir, sid + \".jsonl\"), \"w\") as f:\n    f.write(json.dumps({\"type\": \"user\", \"cwd\": WT, \"sessionId\": sid, \"timestamp\": \"2026-10-26T10:00:00Z\", \"message\": {\"role\": \"user\", \"content\": \"planted-line\"}}) + \"\\n\")\nsubprocess.run([\"sh\", \"-c\", FAKE + \" 60 &\"], cwd=WT, env=env)\ntime.sleep(1.0)\ntry:\n    r = subprocess.run([sys.executable, os.path.join(R, \"_tools\", \"backlog.py\"), \"procs\"], cwd=K, env=env, capture_output=True, text=True, timeout=120)\n    rows = [x for x in r.stdout.splitlines() if \" claude \" in x]\n    print(\"\\n\".join(rows) or r.stdout[-300:] + r.stderr[-300:])\nfinally:\n    subprocess.run([\"pkill\", \"-f\", FAKE])\nsys.exit(0 if rows and all(\"orphan\" not in x for x in rows) else 1)\n"
     ]
   },
   "repro_reason": "the end-to-end failure needs a live orphaned claude pid with a fresh transcript; the repro counts callers that pass fresh= to classify",
@@ -21,7 +21,12 @@
     "_tools/bl_procs.py",
     "_tools/bl_selfcheck.py",
     "_tools/mon_sessions.py",
-    "kb/_self/monitoring.md"
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "BG-ayamhfdy"
   ],
   "links": [
     "parked: SP-fn7letri review"
