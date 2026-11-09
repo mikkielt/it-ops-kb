@@ -1,0 +1,26 @@
+{
+  "id": "BG-lhat3jlo",
+  "kind": "bug",
+  "title": "bl_procs.fresh_pids takes any transcript of the process's working-directory project as proof its session is at work, so an orphaned claude process in a busy checkout is called detached",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bl_procs.fresh_pids counts a claude process fresh only by a transcript that process can have written (not one last written before the process started), so a leftover claude process in a checkout where other sessions write stays an orphan in procs, selfcheck and the sessions panel",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os, sys, tempfile, time; T = tempfile.mkdtemp(); os.environ[\"CLAUDE_CONFIG_DIR\"] = T; sys.path.insert(0, \"_tools\"); import bl_procs, kbusage; cwd = os.path.join(T, \"checkout\"); os.makedirs(cwd); base = kbusage.config_dir() / \"projects\" / kbusage.project_name(cwd); base.mkdir(parents=True); f = base / \"other-session.jsonl\"; f.write_text(\"{}\\n\"); now = time.time(); os.utime(f, (now - 100, now - 100)); procs = [{\"pid\": 9, \"comm\": \"claude\", \"start\": now - 30}]; got = bl_procs.fresh_pids(procs, {9: cwd}, now); print(\"fresh:\", sorted(got)); sys.exit(0 if not got else 1)"
+    ]
+  },
+  "repro_reason": "the fix needs a way to tie a process to its own session, which the repro cannot plant; this plants the one case no binding can excuse: a transcript last written before the process started",
+  "touches": [
+    "_tools/bl_procs.py",
+    "_tools/mon_sessions.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
