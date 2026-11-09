@@ -2,7 +2,7 @@
   "id": "BG-7po2pir4",
   "kind": "bug",
   "title": "provider.read_page takes an application-name meta as any page's organisation, which the kb says names a web application only",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-c6tr77jl",
   "priority": "P3",
   "rank": 0,

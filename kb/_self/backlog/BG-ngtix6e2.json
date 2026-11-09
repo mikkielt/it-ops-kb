@@ -2,7 +2,7 @@
   "id": "BG-ngtix6e2",
   "kind": "bug",
   "title": "kbroot.py fetch failure lines keep the tail of an unquoted absolute path that holds a space",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-c6tr77jl",
   "priority": "P3",
   "rank": 0,

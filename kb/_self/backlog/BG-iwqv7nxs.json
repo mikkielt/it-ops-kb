@@ -2,7 +2,7 @@
   "id": "BG-iwqv7nxs",
   "kind": "bug",
   "title": "provider.GITLAB_DOC_FILE gives CC BY-SA to a doc/../ code path and misses the legacy blob and the -/tree doc forms",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-c6tr77jl",
   "priority": "P3",
   "rank": 0,

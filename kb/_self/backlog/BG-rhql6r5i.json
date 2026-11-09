@@ -2,7 +2,7 @@
   "id": "BG-rhql6r5i",
   "kind": "bug",
   "title": "fetch.py's reducer drops every later sidebar aside after a role=navigation element that has no end tag",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-c6tr77jl",
   "priority": "P3",
   "rank": 0,

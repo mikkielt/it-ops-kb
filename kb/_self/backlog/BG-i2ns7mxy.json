@@ -2,7 +2,7 @@
   "id": "BG-i2ns7mxy",
   "kind": "bug",
   "title": "A refused redirect hop leaves the redirect response open until garbage collection",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-c6tr77jl",
   "priority": "P3",
   "rank": 0,

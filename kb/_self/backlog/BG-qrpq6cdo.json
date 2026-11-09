@@ -2,7 +2,7 @@
   "id": "BG-qrpq6cdo",
   "kind": "bug",
   "title": "providers.csv names GitLab as the organisation of gitlab.com, a repository host, so every gitlab.com project's row gets publisher GitLab",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-c6tr77jl",
   "priority": "P3",
   "rank": 0,

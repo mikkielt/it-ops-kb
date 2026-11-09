@@ -2,7 +2,7 @@
   "id": "SP-c6tr77jl",
   "kind": "sprint",
   "title": "Providers, fetch and source registry give the right publisher, licence and change signal",
-  "status": "planned",
+  "status": "active",
   "goal": "Providers, fetch and the source registry give the right publisher, licence and change signal: provider.read_page takes no organisation from the application-name meta and the gitlab.com row names none, docs.gitlab.com keeping GitLab; the gitlab-org/gitlab doc/ licence goes only to a real doc/ path, the legacy blob form and a -/tree directory included; azurerm_latest_tag asks the registry once per process, failure included, and a refused redirect hop closes its response; fetch's reducer keeps a sidebar after a role=navigation element with no end tag and leaves GitHub page chrome out of a snapshot; kbroot fetch failure lines keep no fragment of a path with a space; kb-probe's column list names organisation.",
   "gates": [
     {

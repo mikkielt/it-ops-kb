@@ -2,7 +2,7 @@
   "id": "BG-ml7dreio",
   "kind": "bug",
   "title": "azurerm_latest_tag asks the registry once per process, failure included",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-c6tr77jl",
   "priority": "P3",
   "rank": 0,

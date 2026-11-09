@@ -2,7 +2,7 @@
   "id": "BG-hfakjbdf",
   "kind": "bug",
   "title": "Snapshot S2194 starts with page chrome (Repository navigation, You must be signed in) although its header says page chrome removed",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-c6tr77jl",
   "priority": "P3",
   "rank": 0,
