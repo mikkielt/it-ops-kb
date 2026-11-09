@@ -32,6 +32,29 @@
     "kb/_self/tools.md",
     "kb/_self/git.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the landing lock queue order its waiters and tell a dead one?",
+      "options": [
+        "Tickets in kb-landing.queue named by ask time in ns and pid, a ticket whose pid is gone or a zombie removed, ticket removed once the lock is taken",
+        "A counter file under its own lock holding the next ticket number"
+      ],
+      "recommendation": "Tickets in kb-landing.queue named by ask time in ns and pid, a ticket whose pid is gone or a zombie removed, ticket removed once the lock is taken",
+      "reason": "no second lock to guard, and a zombie (a killed child not yet waited for) counts as dead, which tests.pid_alive does not",
+      "do": {
+        "Tickets in kb-landing.queue named by ask time in ns and pid, a ticket whose pid is gone or a zombie removed, ticket removed once the lock is taken": "ST-ngfxdk42",
+        "A counter file under its own lock holding the next ticket number": "ST-ngfxdk42"
+      },
+      "class": "agents-rule",
+      "answer": "Tickets in kb-landing.queue named by ask time in ns and pid, a ticket whose pid is gone or a zombie removed, ticket removed once the lock is taken",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "links": [
     "parked: SP-zobzdhwi close"
   ],
