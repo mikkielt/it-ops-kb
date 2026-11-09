@@ -2,7 +2,7 @@
   "id": "ST-q5sulzbo",
   "kind": "story",
   "title": "Research sprint goal: Claim and dispatch follow-ups: claim restores its SIGTERM handler, a reworded gate gets no old answer, workers start with named plugins off, and the dispatch usage text names the real turn caps and --max-budget-usd",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ejeki6bv",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev5run01",
+  "operator": "op-f618a13e"
 }
