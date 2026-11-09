@@ -2,7 +2,7 @@
   "id": "BG-pwhlp2sy",
   "kind": "bug",
   "title": "The leak scan passes a url password that holds an angle bracket, because URL_USERINFO's password class excludes < and > and _value reads any < or > as a placeholder",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-mut2pmu3",
   "priority": "P2",
   "rank": 0,
@@ -33,5 +33,7 @@
     "parked: SP-osevumx6 review"
   ],
   "notes": "Found while fixing BG-5dcfyrks (redact side, a redact-only URL_USERINFO_ANGLE shape in _tools/redact.py). The fix is in kbcommon.py, which the in-flight BG-fwqcimiv also changes: order it after that item. Outbound paths (referrers file_hits leak_hits, read 2026-11-09): structured_secrets is read by kbcommon.leak_hits and kbpublic's tracked-file scan (kbpublic.py:559), so every caller of leak_hits and file_hits sees the new report: publish, contribute and the sync range gate (shipped scan), bl_check, census, check.py, bl_land, ql_store, ql_research, kbingest, kbtail. All take the report through one function in kbcommon.py, the only file changed; none passes a different scan for this shape. Planted check runs a whole placeholder (still no hit) and an angle-bracket password (a hit). Order after BG-ouhonprv dropped 2026-11-09 at run time: that item waits on an operator-only gate (class secrets), and this one edits a different function of kbcommon.py.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev3run01",
+  "operator": "op-f618a13e"
 }
