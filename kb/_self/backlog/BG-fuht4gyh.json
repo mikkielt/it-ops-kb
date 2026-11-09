@@ -1,0 +1,22 @@
+{
+  "id": "BG-fuht4gyh",
+  "kind": "bug",
+  "title": "A group's locked list does nothing for a list or string key, so a later layer's extension_paths replaces the code of an extender the group locked",
+  "status": "draft",
+  "parent": "EP-y7fe7qqx",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "a key a group file lists under locked raises SettingsError naming the key and the group file when a later layer sets it, for list and string keys (extension_paths, gate_checks, group) as for object leaves, so no later layer's extension_paths can shadow a locked extender",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,subprocess,sys,tempfile,pathlib\nsys.path.insert(0,\"_tools\")\nT=pathlib.Path(tempfile.mkdtemp())\ndef W(p,v):\n    p=pathlib.Path(p); p.parent.mkdir(parents=True,exist_ok=True); p.write_text(v if isinstance(v,str) else json.dumps(v),encoding=\"utf-8\"); return p\ndef need(c,m):\n    if not c: sys.exit(\"not yet: \"+str(m)[:800])\ndef R(*a,env=None):\n    return subprocess.run([sys.executable,*a],capture_output=True,text=True,env=dict(os.environ,**(env or {})),timeout=600)\nEXT='KBEXT_REQUIRES = \">=0.1\"\\n'\ng=W(T/\"g.json\",{\"extension_paths\":[],\"locked\":[\"extension_paths\"]})\nos.environ[\"KB_GROUP_SETTINGS\"]=str(g)\nW(T/\"ws\"/\"settings.json\",{\"extension_paths\":[str(T/\"u\")]})\nimport kbsettings\ntry:\n    kbsettings.layer_files(T/\"ws\")\nexcept kbsettings.SettingsError as e:\n    need(\"extension_paths\" in str(e), e); sys.exit(0)\nneed(False,\"a clone file set extension_paths, which the group file locks, and layer_files raised nothing\")\n"
+    ]
+  },
+  "links": [
+    "parked: SP-ep7ck2ab review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

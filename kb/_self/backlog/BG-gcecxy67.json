@@ -1,0 +1,22 @@
+{
+  "id": "BG-gcecxy67",
+  "kind": "bug",
+  "title": "kb_mcp leaves out every mcp_tools tool of a group whose name has a hyphen, a name kbext.py init-team accepts",
+  "status": "draft",
+  "parent": "EP-y7fe7qqx",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb_mcp.py serves a group's mcp_tools under a prefix for every group name kbext.GROUP_NAME_RE accepts (single hyphens included), the prefix a valid MCP tool name, and extending.md states the prefix rule",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,subprocess,sys,tempfile,pathlib\nsys.path.insert(0,\"_tools\")\nT=pathlib.Path(tempfile.mkdtemp())\ndef W(p,v):\n    p=pathlib.Path(p); p.parent.mkdir(parents=True,exist_ok=True); p.write_text(v if isinstance(v,str) else json.dumps(v),encoding=\"utf-8\"); return p\ndef need(c,m):\n    if not c: sys.exit(\"not yet: \"+str(m)[:800])\ndef R(*a,env=None):\n    return subprocess.run([sys.executable,*a],capture_output=True,text=True,env=dict(os.environ,**(env or {})),timeout=600)\nEXT='KBEXT_REQUIRES = \">=0.1\"\\n'\ne=T/\"ext\"; W(e/\"gt.py\",EXT+\"def hello(args):\\n    return 'hi'\\nTOOLS=[{'name':'hello','description':'say hi','inputSchema':{'type':'object','properties':{}},'call':hello}]\\n\")\nW(T/\"settings.json\",{\"group\":\"acme-corp\",\"extensions\":{\"mcp_tools\":\"gt:TOOLS\"},\"extension_paths\":[str(e)]})\nos.environ[\"CLAUDE_PROJECT_DIR\"]=str(T)\nimport kbext\nneed(kbext.GROUP_NAME_RE.fullmatch(\"acme-corp\"), \"GROUP_NAME_RE no longer accepts acme-corp\")\nimport kb_mcp\nlisted,handlers=kb_mcp.group_tools()\nneed(len(listed)==1, (\"tools served for group acme-corp\", listed))\n"
+    ]
+  },
+  "links": [
+    "parked: SP-ep7ck2ab review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

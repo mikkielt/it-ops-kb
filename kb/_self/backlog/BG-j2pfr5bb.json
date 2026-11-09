@@ -1,0 +1,23 @@
+{
+  "id": "BG-j2pfr5bb",
+  "kind": "bug",
+  "title": "gate_checks in a kb root's settings.json never run, though extending.md and group_gate's docstring list the kb root layer",
+  "status": "draft",
+  "parent": "EP-y7fe7qqx",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "the gate_checks of each kb root's settings.json run in kg_sync.group_gate in layer order, or extending.md and the group_gate docstring stop listing the kb root layer for gate_checks",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,subprocess,sys,tempfile,pathlib\nsys.path.insert(0,\"_tools\")\nT=pathlib.Path(tempfile.mkdtemp())\ndef W(p,v):\n    p=pathlib.Path(p); p.parent.mkdir(parents=True,exist_ok=True); p.write_text(v if isinstance(v,str) else json.dumps(v),encoding=\"utf-8\"); return p\ndef need(c,m):\n    if not c: sys.exit(\"not yet: \"+str(m)[:800])\ndef R(*a,env=None):\n    return subprocess.run([sys.executable,*a],capture_output=True,text=True,env=dict(os.environ,**(env or {})),timeout=600)\nEXT='KBEXT_REQUIRES = \">=0.1\"\\n'\nW(T/\"kb\"/\"team\"/\"settings.json\",{\"gate_checks\":[[\"python3\",\"-c\",\"import sys; sys.exit(1)\"]]})\nimport kg_sync\nf=kg_sync.group_gate(T)\nneed(f, \"a failing gate check in kb/team/settings.json did not run\")\n"
+    ]
+  },
+  "repro_reason": "the fix may instead be the doc's: the repro runs group_gate on a planted kb root; a doc-only fix rewrites this repro to read the doc's gate_checks layer list",
+  "links": [
+    "parked: SP-ep7ck2ab review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

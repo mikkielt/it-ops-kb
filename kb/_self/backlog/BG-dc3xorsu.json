@@ -1,0 +1,22 @@
+{
+  "id": "BG-dc3xorsu",
+  "kind": "bug",
+  "title": "extensions.backlog_commands is the one extension point whose it_ops_kb entry point is never read",
+  "status": "draft",
+  "parent": "EP-y7fe7qqx",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "with no extensions.backlog_commands setting, bl_cli.load_group_commands loads the modules an it_ops_kb.backlog_commands entry point names, as the other points do, and costs no import of kbext when no entry point of that group is installed",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,subprocess,sys,tempfile,pathlib\nsys.path.insert(0,\"_tools\")\nT=pathlib.Path(tempfile.mkdtemp())\ndef W(p,v):\n    p=pathlib.Path(p); p.parent.mkdir(parents=True,exist_ok=True); p.write_text(v if isinstance(v,str) else json.dumps(v),encoding=\"utf-8\"); return p\ndef need(c,m):\n    if not c: sys.exit(\"not yet: \"+str(m)[:800])\ndef R(*a,env=None):\n    return subprocess.run([sys.executable,*a],capture_output=True,text=True,env=dict(os.environ,**(env or {})),timeout=600)\nEXT='KBEXT_REQUIRES = \">=0.1\"\\n'\ne=T/\"ext\"; W(e/\"gcmds.py\",EXT+\"import bl_cli\\nbl_cli.register('hello', lambda a: print('hi'))\\n\")\nd=T/\"site\"/\"gx-0.1.dist-info\"; W(d/\"METADATA\",\"Metadata-Version: 2.1\\nName: gx\\nVersion: 0.1\\n\")\nW(d/\"entry_points.txt\",\"[it_ops_kb.backlog_commands]\\ngx = gcmds\\n\")\nsys.path[:0]=[str(T/\"site\"),str(e)]\nW(T/\"ws\"/\"settings.json\",{})\nimport bl_cli\nbl_cli.load_group_commands(T/\"ws\")\nneed(\"hello\" in bl_cli.COMMANDS, \"an entry point of group it_ops_kb.backlog_commands loaded no command\")\n"
+    ]
+  },
+  "links": [
+    "parked: SP-ep7ck2ab review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

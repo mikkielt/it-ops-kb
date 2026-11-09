@@ -1,12 +1,13 @@
 {
   "id": "BG-myligl24",
   "kind": "bug",
-  "title": "kbsettings.layered(root, \"gate_checks\") raises key gate_checks must be an object for the list SURFACE and the docs give it",
+  "title": "kbsettings.layered raises must be an object for the list and string keys group, gate_checks and extension_paths, which its goal and the docs name",
   "status": "draft",
+  "parent": "EP-y7fe7qqx",
   "priority": "P2",
   "rank": 0,
-  "severity": "S3",
-  "goal": "kbsettings.layered(root, 'gate_checks') returns the merged list of argument lists over the settings layers, as kbext.SURFACE and kb/_self/extending.md describe the key (list of argument lists), instead of raising SettingsError 'key gate_checks must be an object'; ST-vsdhy56r reads the layers' files with layer_files meanwhile",
+  "severity": "S2",
+  "goal": "kbsettings.layered(root, name) returns the merged value with its layer map for group (a string), gate_checks and extension_paths (lists of the layers in order), as kbext.SURFACE and kb/_self/extending.md describe them, instead of raising SettingsError 'must be an object'; kg_sync and kbext then read them through layered, not layer_files",
   "repro": {
     "run": [
       "python3",
@@ -14,5 +15,8 @@
       "import json,sys,tempfile,pathlib; sys.path.insert(0,'_tools'); import kbsettings; d=pathlib.Path(tempfile.mkdtemp()); (d/'settings.json').write_text(json.dumps({'gate_checks':[['true']]})); kbsettings.layered(d,'gate_checks')"
     ]
   },
+  "links": [
+    "parked: SP-ep7ck2ab review"
+  ],
   "filed_in": "clone-0ea70e5c"
 }
