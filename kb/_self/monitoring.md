@@ -292,14 +292,14 @@ The panel reads the clone the script is in; `--root` naming another clone makes 
 
 | key | holds |
 |---|---|
-| `rows` | each leftover `backlog.py tidy` lists, as tidy's `--json` rows: `class` (`worktree`, `branch`, `sandbox` or `scratch`), `verdict` (`remove` or `keep`), `reason`, `bytes`, the `path` or the `branch`, the `item` when a record names one and `approximate` where the walk that measured the bytes was cut |
-| `counts` | `{class: {remove, keep}}` for each of the four classes |
+| `rows` | each leftover `backlog.py tidy` lists, as tidy's `--json` rows: `class` (`worktree`, `branch`, `sandbox` or `scratch`), `verdict` (`remove`, `keep` or `ask`), `reason`, `bytes`, the `path` or the `branch`, the `item` when a record names one and `approximate` where the walk that measured the bytes was cut |
+| `counts` | `{class: {remove, keep, ask}}` for each of the four classes; `ask` counts the rows that wait for the operator's `tidy --decide` answer |
 | `removable`, `bytes`, `approximate` | how many rows are `remove`, the bytes they free (a nested path counted once) and whether a walk was cut |
 | `free_gib`, `limit_gib`, `pressure` | the free space of the clone's volume, tidy's disk-pressure limit (`--disk-free-gb`'s default) and whether the first is under the second |
 
 - **One verdict.** The verdict, reason and bytes of a row are `bl_clean.safe_to_remove`'s, the same function `backlog.py tidy` and `selfcheck` call; the panel removes nothing (`tidy --apply` does) and writes nothing. A clone with no integration main is `unsupported`, a coord store that stays locked is `error`, and `--url` is `unsupported`: the records are read from the local store (`--store`, else `KB_COORD_STORE`, else the default of the clone at `--root`).
 - **Inside the timeout.** The bytes of all the `remove` rows are walked for `bl_selfcheck.BYTES_BUDGET_S` seconds together (and `bl_clean.BYTES_SECONDS` a row at most); a row past the budget keeps 0 bytes and is `approximate`. `REFRESH_S` is 30 seconds in the live view.
-- **View.** Under the title `cleanup  ok  S.Ss`: the removable count with its bytes and the free space, a line of `remove/all` for each class, then up to `ROWS_SHOWN` rows (the `remove` ones first) as verdict, class, bytes, name and reason, and `+N more in --json`. The first line starts `! ` while the disk is under pressure.
+- **View.** Under the title `cleanup  ok  S.Ss`: the removable count with its bytes and the free space, a line of `remove/all` for each class (with `ask N` after a class that has rows waiting for the operator's `tidy --decide` answer; the first line counts them too), then up to `ROWS_SHOWN` rows (the `remove` ones first) as verdict, class, bytes, name and reason, and `+N more in --json`. The first line starts `! ` while the disk is under pressure.
 
 ## The bench panel
 
