@@ -3,6 +3,7 @@ ad/computer-attributes,P1,complete,ad/computer-attributes.md;ad/computer-attribu
 ad/krbtgt-password-reset,P1,complete,ad/krbtgt-password-reset.md,7
 ad/ldap-paging-filters,P1,complete,ad/ldap-paging-filters.md,6
 ad/fsmo-roles,P2,complete,ad/fsmo-roles.md,4
+ad/domain-controller-count,P3,complete,ad/domain-controller-count.md,3
 agents/agent-caching,P1,complete,agents/agent-caching.md,14
 agents/agent-dispatch-and-shared-services,P1,complete,agents/agent-dispatch-and-shared-services.md,10
 agents/agent-error-catalogue,P1,complete,agents/agent-error-catalogue.md;agents/agent-error-catalogue.csv,23
@@ -193,6 +194,7 @@ entra/dsregcmd,P1,complete,entra/dsregcmd.md;entra/dsregcmd-fields.csv,2
 entra/hybrid-deviceid-objectguid,P1,complete,entra/hybrid-deviceid-objectguid.md,8
 entra/stale-devices,P1,complete,entra/stale-devices.md,3
 entra/pim-and-governance,P2,complete,entra/pim-and-governance.md,16
+entra/temporary-access-pass,P3,complete,entra/temporary-access-pass.md,1
 gitlab/codeowners,P0,complete,gitlab/codeowners.md,5
 gitlab/mr-approvals,P0,complete,gitlab/mr-approvals.md,11
 gitlab/pipelines-rules,P0,partial,gitlab/pipelines-rules.md,7
@@ -225,6 +227,7 @@ gitlab/work-items-planning,P3,complete,gitlab/work-items-planning.md,11
 gpo/admx-central-store,P1,complete,gpo/admx-central-store.md,8
 gpo/dsc-group-policy-adapter,P2,complete,gpo/dsc-group-policy-adapter.md,3
 gpo/gpo-export,P2,complete,gpo/gpo-export.md,7
+gpo/gpp-drive-maps,P3,partial,gpo/gpp-drive-maps.md,3
 graph/batching-and-query,P1,complete,graph/batching-and-query.md;graph/change-notification-lifetimes.csv,13
 graph/csdl-device,P1,complete,graph/csdl-device.md;graph/csdl-device.properties.csv;graph/csdl/device.v1.0.xml;graph/csdl/device.beta.xml,5
 graph/csdl-managedDevice,P1,complete,graph/csdl-managedDevice.md;graph/csdl-managedDevice.properties.csv;graph/csdl/managedDevice.v1.0.xml;graph/csdl/managedDevice.beta.xml,6
@@ -258,6 +261,7 @@ intune/remote-help,P2,complete,intune/remote-help.md;intune/remote-help.csv,5
 intune/reports-export-api,P2,complete,intune/reports-export-api.md;intune/export-report-names.csv,13
 intune/win32-apps,P2,complete,intune/win32-apps.md;intune/win32-apps.csv,9
 intune/linux-management,P3,complete,intune/linux-management.md,12
+intune/onedrive-known-folder-move,P3,complete,intune/onedrive-known-folder-move.md,3
 logs/ecs-log-fields,P1,complete,logs/ecs-log-fields.md;logs/ecs-log.yml,7
 logs/otel-log-data-model,P1,complete,logs/otel-log-data-model.md,1
 logs/otel-log-semconv,P1,complete,logs/otel-log-semconv.md;logs/otel-semconv-log-registry.yaml;logs/otel-semconv-code-registry.yaml,5
@@ -441,5 +445,7 @@ windows/openssh-estate-deployment,P3,partial,windows/openssh-estate-deployment.m
 windows/openssh-key-management,P3,partial,windows/openssh-key-management.md,5
 windows/powershell-static-analysis,P3,complete,windows/powershell-static-analysis.md,24
 windows/process-parent-and-command-line,P3,partial,windows/process-parent-and-command-line.md,10
+windows/quick-assist,P3,complete,windows/quick-assist.md,1
 windows/robocopy,P3,partial,windows/robocopy.md,3
+windows/wake-on-lan,P3,partial,windows/wake-on-lan.md,5
 windows/windows-sandbox,P3,complete,windows/windows-sandbox.md,4

@@ -2616,3 +2616,11 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## python/stdlib-re-backtracking
 
 - **Which `re` entry points reach the matcher's signal check (`fullmatch`, `findall`, `sub`, `split`; `search` was probed) and whether it holds on other CPython versions and on Windows.** Looked 2026-11-08 at the matcher function of `sre_lib.h` at v3.14.7 (S-ysz5zha6) and one `search` probe on Python 3.13.2, macOS: the check runs every 4096 opcodes in the dispatch step, but the entry points' calls into the matcher were not traced. Needs the call sites of the matcher read in `Modules/_sre/_sre.c` at the pinned commit, or a probe per function. [UNK] (topic: python/stdlib-re-backtracking)
+
+## gpo/gpp-drive-maps
+
+- **The Group Policy Management Editor path to the Drive Maps node and the item dialog's tab and field labels (Reconnect, Label as, Use first available).** Looked 2026-11-09 at the Group Policy preferences overview (S-37hjm3ml), the MS-GPPREF element attributes (S-ahtrer5d) and the manual-drive-mappings KB (S-pwena4zn): they give the extension, attributes and actions but no console path. Needs the Windows Server Group Policy preferences how-to pages (topic: gpo/gpp-drive-maps)
+
+## windows/wake-on-lan
+
+- **The BIOS/UEFI menu name and path that enables wake from LAN on non-Surface laptops (Dell, HP, Lenovo).** Looked 2026-11-09 with the Microsoft Learn search and the Windows, Configuration Manager, Intune DFCI and Surface pages (S-jnot3jwd, S-nf2pxtta, S-ma44wwsm, S-sz3xwsns): they say the BIOS may need enabling and that the setting depends on the manufacturer, without naming one. Needs each vendor's own BIOS documentation (topic: windows/wake-on-lan)
