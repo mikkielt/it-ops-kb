@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: the sprint goal changes this repository's own refresh, census, pack and query log tools, so it asks the kb no question about Windows endpoint management and needs no live-docs lookup.",
   "filed_in": "clone-0ea70e5c"
 }
