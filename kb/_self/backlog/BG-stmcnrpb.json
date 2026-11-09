@@ -20,5 +20,9 @@
     "_tools/kbpublic.py",
     "kb/_self/git.md"
   ],
+  "links": [
+    "parked: SP-mut2pmu3 review"
+  ],
+  "notes": "SP-mut2pmu3 review gap 7 (S3, a design question for the operator). kg_sync.py:850-862 now prints refused for every commit of UP..HEAD that writes under an internal root, an internal pointer or its gitlink (kbpublic.range_tree_causes, added by BG-thhbfbx4). A team's own internal root lands on the integration remote by kbgit.py sync --push, so in a group clone that holds internal roots the gate blocks that sync for good; only publish to the public home must refuse it. Planted: base commit, then a commit adding kb/team/_root.md (visibility: internal) and kb/team/b.md: range_tree_causes(base, repo) returns causes and the gate FAILS. This repo has no internal root, so its own sync is unaffected. Fix options: run it only where the clone publishes (kbpublic.publish_remote set), or keep only the _private and _cache causes for the integration remote, or say in git.md that sync refuses internal-root commits.",
   "filed_in": "clone-0ea70e5c"
 }
