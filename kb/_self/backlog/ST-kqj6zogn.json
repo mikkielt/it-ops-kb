@@ -1,0 +1,19 @@
+{
+  "id": "ST-kqj6zogn",
+  "kind": "story",
+  "title": "A worker's item-file commit on its branch keeps the operator answers a gate answer wrote there",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py done, set and gate add run in a worker's worktree after an answer was committed there by --root keep that answer: the worker's own item-file write starts from the item file as it stands on the branch, not from the one it read before the answer",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.exit(1)"
+      ]
+    }
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
