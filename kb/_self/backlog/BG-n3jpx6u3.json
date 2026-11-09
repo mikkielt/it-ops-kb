@@ -12,7 +12,7 @@
     "run": [
       "python3",
       "-c",
-      "import sys;sys.exit(1)"
+      "\nimport subprocess,sys,tempfile,os\nsys.path.insert(0,\"_tools\")\nimport kblane\nd=tempfile.mkdtemp()\ndef g(*a): return subprocess.run([\"git\",\"-c\",\"user.name=t\",\"-c\",\"user.email=t@example.com\",*a],cwd=d,check=True,capture_output=True,text=True).stdout\ng(\"init\",\"-q\")\ng(\"update-index\",\"--add\",\"--cacheinfo\",\"160000,\"+\"1\"*40+\",kb/team\")\ng(\"commit\",\"-qm\",\"link\")\ng(\"rm\",\"-q\",\"--cached\",\"kb/team\")\nos.makedirs(d+\"/kb\",exist_ok=True)\nopen(d+\"/kb/team\",\"w\").write(\"x\")\ng(\"add\",\"kb/team\")\ng(\"commit\",\"-qm\",\"file\")\nsys.exit(0 if kblane.commit_paths(d,\"HEAD\")==[\"kb/team\"] else 1)\n"
     ]
   },
   "repro_reason": "needs a repository where a commit turns the gitlink kb/team into a regular file; the planted input is in the notes",
