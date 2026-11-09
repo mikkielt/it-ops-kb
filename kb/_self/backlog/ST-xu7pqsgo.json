@@ -1,0 +1,23 @@
+{
+  "id": "ST-xu7pqsgo",
+  "kind": "story",
+  "title": "A plan's goal clause that says every site of a printed value names the sites its checks read",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "step 6 of the plan section in skills/sprint/SKILL.md says a goal clause that names every site of a printed value (every wall-clock time kbmon prints) lists its sites from a grep of the code in the item's notes and has a check for each site, since SP-hyfyn22d's clause every wall-clock time kbmon prints was met for two sites and its review found three more",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open(\"skills/sprint/SKILL.md\",encoding=\"utf-8\").read();i=t.find(\"6. When a conflict predictor\");sys.exit(0 if \"every site of a printed value\" in t[i:i+60000] else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
