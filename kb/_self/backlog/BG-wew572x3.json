@@ -2,7 +2,7 @@
   "id": "BG-wew572x3",
   "kind": "bug",
   "title": "kbingest.py where reuses a cached map of the commit after the group's ingest_mappers change, so a group mapper's symbols are missing until the cache is deleted",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-y7fe7qqx",
   "sprint": "SP-ga3lbnlk",
   "priority": "P3",
@@ -29,5 +29,7 @@
   "links": [
     "parked: SP-ep7ck2ab review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-0a3e91bc",
+  "operator": "op-f618a13e"
 }
