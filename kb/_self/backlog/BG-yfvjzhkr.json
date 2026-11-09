@@ -1,0 +1,23 @@
+{
+  "id": "BG-yfvjzhkr",
+  "kind": "bug",
+  "title": "A benchmarks.py run leaves its run-<pid>-<hex> scratch directory behind, a --dry-run too, and the directories are not tidy records so they accumulate",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Bench.close removes the run's own scratch directory when it holds no raw log worth keeping, and a --dry-run makes none, or backlog.py tidy lists the leftover run directories as its own records",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "\nimport os, subprocess, sys, tempfile\nt = tempfile.mkdtemp()\nsubprocess.run([sys.executable, \"_tools/benchmarks.py\", \"run\", \"pool\", \"--dry-run\", \"--sample\", \"1\"], capture_output=True, env=dict(os.environ, BENCH_SCRATCH=t))\nleft = [n for n in os.listdir(t) if n.startswith(\"run-\")]\nprint(left); sys.exit(1 if left else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bench_core.py",
+    "_tools/bl_clean.py",
+    "kb/_self/benchmarks.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
