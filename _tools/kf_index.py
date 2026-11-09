@@ -798,6 +798,7 @@ PRICE_ASK = re.compile(  # a question for a price; a cost counted in units (`in 
     r"(?!\s+(?:(?:extra|more|additional|total|free|local|available)\s+)?" + _QUANTITY + r"\b)"
     r"(?!(?!\s+(?:is|are|was|were|will|would)\b).*\b" + _QUANTITY + r"\b)"
     r"(?=.*\bper\s+(?:user|device|month|year)\b)")
+NOT_STATED = re.compile(r"(?i)\bnot (?:stated|documented|specified|published)\b|\b(?:do|does|did) not state\b|\bnever states?\b")  # an UNK line that says the fact is not stated
 AMOUNT = re.compile(r"(?i)[$€£]\s?\d|\b\d[\d,.]*\s?(?:usd|eur|gbp|pln|dollars?|euros?)\b|\b(?:usd|eur|gbp|pln)\s?\d")  # an amount
 
 
@@ -1259,6 +1260,20 @@ def _pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", fo
             passing = rare
         priced = bool(PRICE_ASK.search(question)) and not any(AMOUNT.search(u["text"]) for u in lead_units)
         parted = name_apart(question, known, [{t for t in known if has(u, t)} for u in lead_units])
+    # a `good` whose closest line to the question (the one holding the most key words, the better score on a tie, and
+    # no tagged fact of another kind holding as many) is the article's own UNK line saying the fact is not stated: the
+    # words match because the kb records that it lacks the fact, so the pack is no answer. A note that routes
+    # `split`, never a verdict change.
+    unstated = None
+    if verdict == "good" and not lifted and not rules and known:
+        held_by = [(sum(1 for t in known if has(u, t)), u) for _, u in scored]
+        top_held, closest = max(held_by, key=lambda x: x[0], default=(0, None))
+        # a tagged fact of another kind that holds as many key words is an answer as near as the UNK line is
+        if (closest and closest["tags"] and all(p["kind"] == "UNK" for p in closest["tags"])
+                and NOT_STATED.search(closest["text"])
+                and not any(n >= top_held for n, u in held_by
+                            if u["tags"] and any(p["kind"] != "UNK" for p in u["tags"]))):
+            unstated = f"{closest['path']}:{closest['line']}"
     head = f"coverage: {verdict}"
     counted = informative if rules else known
     if tested:
@@ -1301,6 +1316,10 @@ def _pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", fo
     if parted:
         out.append(f"check: no fact of the lead article holds {', '.join(together)}; the facts may be about "
                    "something related. Answer only if a cited line answers the question itself.")
+    if unstated:
+        out.append(f"check: the line closest to the question, {unstated}, is the article's own UNK line (the fact is not "
+                   "stated or not confirmed); the facts may be about something related. Answer only if a cited line "
+                   "answers the question itself.")
     if priced:
         out.append("check: the question asks for a price and no fact of the lead article states an amount; the facts "
                    "may be about something related. Answer only if a cited line answers the question itself.")
@@ -1308,7 +1327,7 @@ def _pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", fo
     if fresh:
         out.append(fresh)
     route = None if rules and verdict == "none" else route_of(verdict, unmatched, spread, missing,
-                                                                   passing or priced or parted)
+                                                                   passing or priced or parted or unstated)
     # a near miss (a `none` that routes split: only a language or format name is nowhere in the kb) prints what a
     # `weak` pack would, its facts and source footer, and no none sentence, so the reader answers the part the kb has
     # (sp_getapplock for the T-SQL question) and looks up only the rest
