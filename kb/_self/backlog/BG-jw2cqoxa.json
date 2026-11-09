@@ -19,5 +19,9 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "links": [
+    "parked: SP-pww4aqis review"
+  ],
+  "notes": "Review gap 4 of SP-pww4aqis (probed 2026-11-09 on origin/main): the delete pattern \\bremov(?:e|es|ed|ing|al) .*(?:kb|content|history) widened by BG-a65lzrjf matches the new endings anywhere before kb, content or history; fails closed (a blocking gate for the operator). Same file as BG-a65lzrjf, which landed.",
   "filed_in": "clone-0ea70e5c"
 }
