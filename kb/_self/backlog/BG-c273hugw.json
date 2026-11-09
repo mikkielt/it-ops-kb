@@ -15,6 +15,11 @@
       "import sys;sys.path.insert(0,'_tools');import ql_store as s;e={'id':'a','fetches':[{'host':'pc01.corp','outcome':'ok'}]};sys.exit(1 if s.reredact_entry(e)[1]==[] and not s.public_host('pc01.corp') else 0)"
     ]
   },
+  "touches": [
+    "_tools/ql_store.py",
+    "_tools/querylog.py",
+    "kb/_self/querylog.md"
+  ],
   "links": [
     "parked: SP-osevumx6 review"
   ],
