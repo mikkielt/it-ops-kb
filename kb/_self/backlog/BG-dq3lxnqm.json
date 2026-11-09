@@ -2,7 +2,7 @@
   "id": "BG-dq3lxnqm",
   "kind": "bug",
   "title": "backlog.py upstream-report checks the issue body it writes for the shared upstream with the group's replaced leak scan, not the shipped one",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-y7fe7qqx",
   "sprint": "SP-ep7ck2ab",
   "priority": "P1",
@@ -56,5 +56,7 @@
     "kb/_self/extension-changelog.md",
     "kb/_self/tools.md"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-a796fc75",
+  "operator": "op-f618a13e"
 }
