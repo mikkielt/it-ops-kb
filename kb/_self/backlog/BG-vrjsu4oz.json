@@ -2,7 +2,7 @@
   "id": "BG-vrjsu4oz",
   "kind": "bug",
   "title": "A land stopped at rebase names an older item for a file whose last change on main carries no KB-Work",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-yriisdti",
   "priority": "P3",
   "rank": 0,
@@ -27,5 +27,7 @@
     "parked: SP-basca7ae review"
   ],
   "notes": "2026-11-09 plan: narrowed to the clause the repro reads. The earlier goal also held two further review gaps, left out here and open for a later draft: a rebase that fails with no unmerged file prints no conflict remedy, and a path holding a space or non-ASCII letters is named whole (the unmerged list is read with .split()).",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev2run01",
+  "operator": "op-f618a13e"
 }
