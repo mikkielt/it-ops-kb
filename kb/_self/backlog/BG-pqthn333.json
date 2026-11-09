@@ -2,7 +2,7 @@
   "id": "BG-pqthn333",
   "kind": "bug",
   "title": "A coord ask cannot carry a session id: kbask redacts the UUID, so two sessions cannot tell each other how to be addressed",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-osevumx6",
   "priority": "P2",
   "rank": 0,
@@ -45,5 +45,7 @@
     "parked: SP-3trnelzv work"
   ],
   "notes": "Found 2026-10-24 by the SP-3trnelzv orchestrator: an ask to any that named its coord session id reached the other session with the id as 00000000-0000-0000-0000-000000000000 (redact reads a UUID as an object id), and cross-session messages between the two were held by different permission modes, so coord asks were the only channel and carried no address. Planning 2026-11-09: goal narrowed to the first option the bug names (keep a UUID that names a live presence lease), so the check can run it; the check plants a lease with coord.py claim and a token and a password assignment built at run time. Premise reproduces on the base (the ask text holds only zero UUIDs). Planned 2026-11-09 in SP-osevumx6: items that share a file wait on each other (kbcommon.py, redact.py then kbask.py, ql_capture.py then ql_deliver.py); no open item of the other live sprints touches this item's code files.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-cdcea91c",
+  "operator": "op-f618a13e"
 }
