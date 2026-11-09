@@ -16,6 +16,12 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "The plan step of .claude/skills/kb-sprint/SKILL.md says an item that adds an exemption to the leak scan or to redact carries one check per exemption that plants a secret-shaped value (built at run time) the exemption must still flag, so a fix like the closed-value path exemption of BG-fwqcimiv cannot pass its own positive layouts while opening a hole (SP-osevumx6 review: BG-vqszwskv, BG-fjptk52z)",
+      "check": 0
+    }
+  ],
   "touches": [
     "skills/sprint/SKILL.md"
   ],
