@@ -2,7 +2,7 @@
   "id": "BG-ivir5ulw",
   "kind": "bug",
   "title": "census.py's LEARN_MAP win32 entry looks up a lower-case path that the mixed-case win32 repository does not hold, so its pages still go to Learn",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-2cq2hse4",
   "priority": "P3",
@@ -35,6 +35,19 @@
     "parked: SP-gavrmuvx review"
   ],
   "notes": "Found by the fresh-context review of SP-gavrmuvx on 2026-10-21 (headless reviewer over git diff a4b91d2f1e..ae798b6984), verified by the manager; premise: the repro fails on ae798b6984.",
-  "claimed_by": "claude-c41d77ea",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "29939c46f83e55810ea2ce5da2d6250252179aa9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, subprocess, sys, tempfile\nsys.path.insert(0, '_tools')\nimport census\nt = tempfile.mkdtemp()\nw = os.path.join(t, 'w')\nos.makedirs(os.path.join(w, 'desktop-src', 'ADSI'))\nopen(os.path.join(w, 'desktop-src', 'ADSI', 'binding-with-encryption.md'), 'w').write('x\\n')\nfor a in (['init', '-q'], ['add', '.'], ['-c', 'user.name=a', '-c', 'user.email=a@corp.example.com', 'commit', '-qm', 'x']):\n    subprocess.run(['git', '-C', w] + a, check=True)\nrepo, path = census.learn_source('https://learn.microsoft.com/en-us/windows/win32/adsi/binding-with-encryption')\nv = census.check_learn(w, path, '2026-01-01')\nprint(repo, path, v)\nsys.exit(0 if v else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "ffa680b11e0304e9"
+      }
+    ]
+  }
 }
