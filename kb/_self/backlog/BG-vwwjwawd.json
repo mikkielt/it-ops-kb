@@ -2,7 +2,7 @@
   "id": "BG-vwwjwawd",
   "kind": "bug",
   "title": "An interrupt between the creation of a landing ticket and the assignment of its name leaves the ticket in the queue, and the landing lock's SIGTERM handler is not restored",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-6aegt3bs",
   "priority": "P3",
   "rank": 0,
@@ -67,6 +67,28 @@
   ],
   "notes": "Planner 2026-11-09 (SP-6aegt3bs): premise reproduces on main (repro exit 1). BG-vwwjwawd depends on BG-5b35ssgk: both change landing_lock and landing_tickets_ahead in bl_close.py, so they land one after the other. BG-ivwirqty: SIGTERM is turned into SystemExit while claim waits for the ledger lock (as landing_lock does), and its previous handler restored; its checks plant the item file save error, a KeyboardInterrupt and a SIGTERM in a child process.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-ef8e3893",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "5b1af84e8ceb114703da32bbe5718d1e9f8e00a9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, signal, subprocess, sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport bl_close\nt = tempfile.mkdtemp()\nsubprocess.run([\"git\", \"init\", \"-q\", t], check=True)\ndef mine(*_):\n    pass\nsignal.signal(signal.SIGTERM, mine)\nwith bl_close.landing_lock(t, \"ST-aaaaaaaa\"):\n    pass\nnormal = signal.getsignal(signal.SIGTERM) is mine\nreal = os.fdopen\ndef boom(*a, **k):\n    os.fdopen = real\n    raise KeyboardInterrupt\nos.fdopen = boom\ntry:\n    with bl_close.landing_lock(t, \"ST-aaaaaaaa\"):\n        pass\nexcept BaseException:\n    pass\nfinally:\n    os.fdopen = real\ninterrupted = signal.getsignal(signal.SIGTERM) is mine\nprint(\"handler restored after a normal exit:\", normal, \"after an interrupt:\", interrupted)\nsys.exit(0 if normal and interrupted else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "356dac61b9772968"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, subprocess, sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport bl_close\nt = tempfile.mkdtemp()\nsubprocess.run([\"git\", \"init\", \"-q\", t], check=True)\nqdir = bl_close.landing_queue_dir(bl_close.landing_lock_path(t))\nreal = os.fdopen\ndef boom(*a, **k):\n    os.fdopen = real\n    raise KeyboardInterrupt\nos.fdopen = boom  # an interrupt lands between the creation of the ticket and the assignment of its name\ntry:\n    with bl_close.landing_lock(t, \"ST-aaaaaaaa\"):\n        pass\nexcept BaseException as e:\n    print(\"interrupted by\", type(e).__name__)\nfinally:\n    os.fdopen = real\nleft = os.listdir(qdir) if qdir.is_dir() else []\nprint(\"tickets left in the queue:\", left)\nsys.exit(0 if not left else 1)"
+        ],
+        "exit": 0,
+        "sha256": "cb4eecb210942ef0"
+      }
+    ]
+  }
 }
