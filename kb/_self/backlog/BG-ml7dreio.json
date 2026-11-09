@@ -2,7 +2,7 @@
   "id": "BG-ml7dreio",
   "kind": "bug",
   "title": "azurerm_latest_tag asks the registry once per process, failure included",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-c6tr77jl",
   "priority": "P3",
   "rank": 0,
@@ -46,5 +46,7 @@
   "links": [
     "parked: SP-ovwzbc7u review"
   ],
-  "notes": "Found by the SP-ovwzbc7u review on 2026-10-23: _azurerm_tag[\"tag\"] is set only on a valid tag, so with the registry answering 500 three calls make three requests; the operator asked for one ask per process. Premise run on the base 2026-11-09 by precheck of SP-c6tr77jl: the repro and each added check fail on the premise (an assertion), none on a traceback. Planned 2026-11-09 by a headless plan session; left out as off the theme or in a file another live session plans: BG-55zjrwpn and BG-cgbpg3lq (kbfacts.py)."
+  "notes": "Found by the SP-ovwzbc7u review on 2026-10-23: _azurerm_tag[\"tag\"] is set only on a valid tag, so with the registry answering 500 three calls make three requests; the operator asked for one ask per process. Premise run on the base 2026-11-09 by precheck of SP-c6tr77jl: the repro and each added check fail on the premise (an assertion), none on a traceback. Planned 2026-11-09 by a headless plan session; left out as off the theme or in a file another live session plans: BG-55zjrwpn and BG-cgbpg3lq (kbfacts.py).",
+  "claimed_by": "claude-1d0b0461",
+  "operator": "op-f618a13e"
 }
