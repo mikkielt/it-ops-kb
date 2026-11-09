@@ -81,7 +81,9 @@
       },
       "class": "design",
       "answer": "digest label and id prefix",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Found 2026-10-28 running SP-lmpjclxz: ask A92f312cef4 to s-0e0c2d (the label backlog.py peers printed for the other orchestrator) was never answered. coord_hook.new_asks (.claude/hooks/coord_hook.py:672) shows an ask only when its to is the session's full id, any or one of its announced items, and kbask.refuse_ended checks only full session ids, so a label target passes and is lost. A second ask, Afe61c64057 to the item ST-qqpcgqe7, was not answered either while that item's worker had returned and its orchestrator went on to land it; whether an item ask reaches the orchestrator that dispatched the item, rather than only the worker's session, is not yet known and is for the worker to read in coord_hook and the intents. A session idle in a coord.py wait --kind progress makes no tool call, so the hook shows it no ask until its wait returns. Planned 2026-11-09 in SP-osevumx6: items that share a file wait on each other (kbcommon.py, redact.py then kbask.py, ql_capture.py then ql_deliver.py); no open item of the other live sprints touches this item's code files.",
