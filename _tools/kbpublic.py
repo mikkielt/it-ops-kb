@@ -434,9 +434,10 @@ def tree_files(rev, cwd):
     return [x for x in o.decode("utf-8", "replace").split("\0") if x] if code == 0 else None
 
 
-def texts(specs, cwd, chunk=2000):
+def texts(specs, cwd, chunk=2000, bad=None):
     """{spec: text} of the utf-8 blobs SPECS (object names: a sha or REV:PATH), read CHUNK at a time through one
-    `git cat-file --batch` each; binary, missing and unreadable ones are left out."""
+    `git cat-file --batch` each; binary, missing and unreadable ones are left out. BAD, a set, collects the specs of the
+    blobs that are not valid utf-8 (`texts_marked` answers them as None)."""
     specs = [x for x in dict.fromkeys(specs) if "\n" not in x]
     res = {}
     for i in range(0, len(specs), chunk):
@@ -455,14 +456,30 @@ def texts(specs, cwd, chunk=2000):
                     try:
                         res[x] = o[pos:pos + size].decode("utf-8")
                     except UnicodeDecodeError:
-                        pass
+                        if bad is not None:
+                            bad.add(x)
                 pos += size + 1
+    return res
+
+
+def texts_marked(specs, cwd):
+    """`texts` that also answers each blob that is not valid utf-8 as None, for the readers of a `_root.md` or a pointer,
+    which must not let an unreadable file pass as one that says `visibility: public`."""
+    bad = set()
+    res = texts(specs, cwd, bad=bad)
+    res.update({x: None for x in bad})
     return res
 
 
 def blobs(rev, paths, cwd):
     """{path: text} of the utf-8 files PATHS of REV's tree (binary and unreadable ones are left out)."""
     got = texts([f"{rev}:{x}" for x in paths], cwd)
+    return {x: got[f"{rev}:{x}"] for x in paths if f"{rev}:{x}" in got}
+
+
+def blobs_marked(rev, paths, cwd):
+    """{path: text} as `blobs`, with None for a file of REV's tree that is not valid utf-8 (see `texts_marked`)."""
+    got = texts_marked([f"{rev}:{x}" for x in paths], cwd)
     return {x: got[f"{rev}:{x}"] for x in paths if f"{rev}:{x}" in got}
 
 
@@ -485,15 +502,18 @@ def allowlist(proj, cwd):
 def not_public(text):
     """Whether the front matter of TEXT (a `_root.md` or a pointer file) leaves a root out of the public home: its
     `visibility` is anything but `public`, a missing line and a value other than `internal` included (the rule
-    `tree_hits` reads a root for secrets only by)."""
+    `tree_hits` reads a root for secrets only by). TEXT None is a file that is not valid utf-8: not public."""
     import kbcommon
-    return kbcommon._meta(text).get("visibility", "internal") != "public"
+    return text is None or kbcommon._meta(text).get("visibility", "internal") != "public"
 
 
 def says_visibility(path, text):
     """What the file PATH (with TEXT) holds for `visibility`, for a cause: `PATH says visibility: VALUE`, or
-    `PATH has no visibility line` (which counts as internal, as kbcommon reads it)."""
+    `PATH has no visibility line` (which counts as internal, as kbcommon reads it), or `PATH could not be read (not
+    valid utf-8)` for TEXT None, which counts as not public."""
     import kbcommon
+    if text is None:
+        return f"{path} could not be read (not valid utf-8)"
     value = kbcommon._meta(text).get("visibility")
     return f"{path} says visibility: {value}" if value is not None else f"{path} has no visibility line"
 
@@ -517,12 +537,12 @@ def tree_refusals(proj, files, cwd):
     for x in files:
         if FORBIDDEN_RE.search(x):
             res.append(f"the projection's tree holds {x}, a path under _private or _cache")
-    for x, text in sorted(blobs(proj, [f for f in files if f.rsplit("/", 1)[-1] == kbcommon.ROOT_FILE and not is_test_input(f)], cwd).items()):
+    for x, text in sorted(blobs_marked(proj, [f for f in files if f.rsplit("/", 1)[-1] == kbcommon.ROOT_FILE and not is_test_input(f)], cwd).items()):
         if not_public(text):
             res.append(f"the projection's tree holds the internal root {x.rsplit('/', 1)[0] or '.'} ({says_visibility(x, text)})")
     pdir = f"kb/{kbcommon.POINTERS_DIR}/"
     internal = {}  # internal pointer name -> its file
-    for x, text in sorted(blobs(proj, [f for f in files if f.startswith(pdir) and f.endswith(".md") and "/" not in f[len(pdir):]], cwd).items()):
+    for x, text in sorted(blobs_marked(proj, [f for f in files if f.startswith(pdir) and f.endswith(".md") and "/" not in f[len(pdir):]], cwd).items()):
         if not_public(text):
             internal[x[len(pdir):-len(".md")]] = (x, text)
             res.append(f"the projection's tree holds the pointer {x} of an internal root ({says_visibility(x, text)})")
@@ -656,9 +676,9 @@ def internal_prefixes(rev, files, cwd):
     import kbcommon
     pdir = f"kb/{kbcommon.POINTERS_DIR}/"
     out = []
-    for x, text in sorted(blobs(rev, [f for f in files if (f.rsplit("/", 1)[-1] == kbcommon.ROOT_FILE and not is_test_input(f))
+    for x, text in sorted(blobs_marked(rev, [f for f in files if (f.rsplit("/", 1)[-1] == kbcommon.ROOT_FILE and not is_test_input(f))
                                       or (f.startswith(pdir) and f.endswith(".md") and "/" not in f[len(pdir):])], cwd).items()):
-        if kbcommon._meta(text).get("visibility", "internal") != "public":
+        if not_public(text):
             out.append(f"kb/{x[len(pdir):-len('.md')]}/" if x.startswith(pdir) else root_dir(x) + "/")
     return tuple(p for p in out if p != "/")  # a root at the top of the tree would make every file internal
 
@@ -907,7 +927,7 @@ def history_refusals(proj, tip, files, cwd, sources=None, bound=None, projected=
         for x in paths or []:
             if is_root(x):
                 roots.setdefault(f"{rev}:{x}", set()).add(x)
-    rtext = texts(list(roots), cwd)
+    rtext = texts_marked(list(roots), cwd)
     says = {}  # internal root directory -> what its `_root.md` holds for `visibility`
     for spec, text in rtext.items():
         if not_public(text):
@@ -926,7 +946,7 @@ def history_refusals(proj, tip, files, cwd, sources=None, bound=None, projected=
         for x in paths or []:
             if is_pointer(x):
                 pointers.setdefault(f"{rev}:{x}", set()).add(x)
-    ptext = texts(list(pointers), cwd)
+    ptext = texts_marked(list(pointers), cwd)
     # no `visibility` line counts as internal, as kbcommon reads it
     internal_pointers = {x[len(pdir):-len(".md")]: says_visibility(x, text) for spec, text in ptext.items()
                          if not_public(text) for x in sorted(pointers[spec])}
