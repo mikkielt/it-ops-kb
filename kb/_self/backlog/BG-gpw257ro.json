@@ -2,7 +2,7 @@
   "id": "BG-gpw257ro",
   "kind": "bug",
   "title": "kbmon's Needs-you disk line shows a share just under 10% as 10%, where the host alert shows it as 9.99%",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-zobzdhwi",
   "priority": "P3",
   "rank": 0,
@@ -23,5 +23,7 @@
   "links": [
     "parked: SP-yisvj7vd review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-0f9262ec",
+  "operator": "op-f618a13e"
 }
