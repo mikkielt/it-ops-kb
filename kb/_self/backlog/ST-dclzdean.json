@@ -2,7 +2,7 @@
   "id": "ST-dclzdean",
   "kind": "story",
   "title": "Research sprint goal: Publish, sync and the leak scan agree on tree causes, lanes and secret shapes, and the query-log spool and needs-you line stop naming dead deliveries",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-mut2pmu3",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev3run01",
+  "operator": "op-f618a13e"
 }
