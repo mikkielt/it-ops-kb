@@ -7,6 +7,16 @@
   "priority": "P2",
   "rank": 0,
   "goal": "rag.py audit --stale-gaps runs the pack for each open gap entry's question and lists the entries whose pack is good with a cited line in another article than the gap's notes, so a gap sweep closes stale entries without a model; found 2026-11-09 when 9 of 15 gaps a research run chose were already answered (commit b7e486fe8)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "audit",
+        "--stale-gaps"
+      ]
+    }
+  ],
   "touches": [
     "_tools/rag.py",
     "kb/_self/tools.md"

@@ -17,7 +17,6 @@
   ],
   "touches": [
     "agents/worker.md",
-    ".claude/agents/kb-worker.md",
     "kb/_self/backlog.md"
   ],
   "links": [

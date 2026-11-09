@@ -17,11 +17,8 @@
   ],
   "touches": [
     "skills/backlog/SKILL.md",
-    ".claude/skills/kb-backlog/SKILL.md",
     "skills/item/SKILL.md",
-    ".claude/skills/kb-item/SKILL.md",
     "skills/sprint/SKILL.md",
-    ".claude/skills/kb-sprint/SKILL.md",
     "kb/_self/backlog.md"
   ],
   "links": [

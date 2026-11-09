@@ -16,8 +16,7 @@
   },
   "repro_reason": "a skill wording defect: the text is the behaviour",
   "touches": [
-    "skills/sprint/SKILL.md",
-    ".claude/skills/kb-sprint/SKILL.md"
+    "skills/sprint/SKILL.md"
   ],
   "links": [
     "parked: SP-m3azo2y7 review"

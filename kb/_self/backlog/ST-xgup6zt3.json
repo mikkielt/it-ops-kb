@@ -17,7 +17,7 @@
   ],
   "touches": [
     "kb/_self/backlog.md",
-    ".claude/skills/kb-item/SKILL.md",
+    "skills/item/SKILL.md",
     "AGENTS.md",
     "kb/_self/maintaining.md"
   ],

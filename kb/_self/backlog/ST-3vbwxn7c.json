@@ -17,7 +17,7 @@
   ],
   "touches": [
     "_tools/bl_dispatch.py",
-    ".claude/agents/kb-worker.md"
+    "agents/worker.md"
   ],
   "links": [
     "parked: SP-a3w7xdij close"

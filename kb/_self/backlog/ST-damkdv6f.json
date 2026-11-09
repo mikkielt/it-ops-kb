@@ -18,7 +18,7 @@
   "touches": [
     "_tools/bl_dispatch.py",
     "kb/_self/backlog.md",
-    ".claude/skills/kb-sprint/SKILL.md"
+    "skills/sprint/SKILL.md"
   ],
   "links": [
     "parked: SP-ysuvdxsn close"
