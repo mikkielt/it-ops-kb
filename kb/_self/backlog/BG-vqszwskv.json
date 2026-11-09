@@ -1,0 +1,35 @@
+{
+  "id": "BG-vqszwskv",
+  "kind": "bug",
+  "title": "The path exemption of the closed-value rule passes any slash-bearing secret value that prose closes with a comma or bracket",
+  "status": "todo",
+  "sprint": "SP-osevumx6",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kbpublic.file_hits flags an unquoted assignment whose value is a mixed-case base64-style string holding slashes and is followed by , ) ] }, while a lower-case path such as kb/public/x.md and a snake_case code name stay unflagged when so closed",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kbpublic as p;v='wJalrXUtnFEM'+'I/K7MDENG/bPxRfiCY';k='sec'+'ret=';ts=[k+v+',','('+k+v+')','the '+k[:-1]+': '+v+', then'];r=[bool([h for h in p.file_hits('kb/public/x.md',t,{}) if h[0]=='secret']) for t in ts];print(r);sys.exit(0 if all(r) else 1)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import kbpublic as p;a='api_'+'key=';ts=[a+'token_provider,','('+a+'token_provider)','path='+'kb/public/x.md,'];r=[bool([h for h in p.file_hits('kb/public/x.md',t,{}) if h[0]=='secret']) for t in ts];print(r);sys.exit(0 if not any(r) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbcommon.py",
+    "_tools/fixtures/redact/adversarial.json",
+    "kb/_self/git.md",
+    "kb/_self/plugin.md",
+    "kb/_self/tools.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
