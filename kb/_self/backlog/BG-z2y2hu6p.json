@@ -2,7 +2,7 @@
   "id": "BG-z2y2hu6p",
   "kind": "bug",
   "title": "The kbmon-pane mod gives no receipt after /clear, /resume or /branch until the alert set changes",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-hyfyn22d",
   "priority": "P3",
@@ -25,5 +25,7 @@
   ],
   "links": [
     "parked: SP-3hgirkur review"
-  ]
+  ],
+  "claimed_by": "claude-ev4run01",
+  "operator": "op-f618a13e"
 }
