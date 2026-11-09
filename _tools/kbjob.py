@@ -78,8 +78,11 @@
                                         print a macOS LaunchAgent plist (Label, ProgramArguments serve, RunAtLoad, KeepAlive,
                                         StandardErrorPath) and a systemd user unit that run serve at login; it writes nothing and
                                         touches no file under the home directory: the operator saves and loads what they choose
-  kbjob.py [--store PATH] stats         print for each operation one line from the `job.run` ops rows (one per ended job, a cancelled one too, written by the
-                                        executor; `kb/_self/querylog.md`) of this clone's query log: `OP n=N queued_ms=MEDIAN (p95 P)
+  kbjob.py [--store PATH] stats [--format text|json] [--home DIR ...]
+                                        print for each operation one line from the `job.run` ops rows (one per ended job, a cancelled one too, written by the
+                                        executor, and by `follow` with origin follower; a job counts once, the executor's row preferred;
+                                        `kb/_self/querylog.md`) of this clone's query log, or of the query log homes (a
+                                        ${CLAUDE_PLUGIN_DATA}) --home names, alone; --format json prints one object keyed by operation: `OP n=N queued_ms=MEDIAN (p95 P)
                                         wait_ms=MEDIAN (p95 P) run_ms=MEDIAN (p95 P)`, the median and the nearest-rank 95th percentile
                                         in ms of the time a job queued, waited in waiting-lock or waiting-merge, and ran, as
                                         `backlog.py landings` measures a landing; operations in name order; exit 0, a note when no row
@@ -228,7 +231,10 @@ def build_parser():
     g = sub.add_parser("log", help="print the end of a job's output log")
     g.add_argument("job")
     g.add_argument("--tail", type=int, default=kj_follow.TAIL_LINES, help="lines to print (default %(default)s)")
-    sub.add_parser("stats", help="print each operation's count and the median and p95 of its queue wait, lock wait and run time")
+    st = sub.add_parser("stats", help="print each operation's count and the median and p95 of its queue wait, lock wait and run time")
+    st.add_argument("--format", choices=("text", "json"), default="text", help="one line per operation, or one JSON object keyed by operation (default %(default)s)")
+    st.add_argument("--home", action="append", default=None, metavar="DIR",
+                    help="read the ops rows of the query log home DIR (a ${CLAUDE_PLUGIN_DATA}) alone, not this clone's; repeat for more, a job counted once")
     c = sub.add_parser("cancel", help="cancel a job of the submitting operator, ending a running one's process group")
     c.add_argument("job")
     return parser
@@ -352,33 +358,65 @@ def with_reason(body, record):
     return body
 
 
-def stat_lines(rows):
-    """One line per operation of the `job.run` ROWS, in name order: `OP n=N queued_ms=MEDIAN (p95 P) wait_ms=... run_ms=...`
-    (`bl_ops.median` and `nearest_rank`, as `backlog.py landings` computes them)."""
+def stat_groups(rows):
+    """{operation: {n, queued_ms, wait_ms, run_ms}} of the `job.run` ROWS, each job counted once (`ql_capture.jobs_once`: the executor's
+    row, not the follower's), each time as {median, p95} or None (`bl_ops.median` and `nearest_rank`, as `backlog.py landings`)."""
     import bl_ops
+    import ql_capture
     groups = {}
-    for row in rows:
-        if row.get("event") == "job.run" and isinstance(row.get("op"), str):
+    for row in ql_capture.jobs_once([r for r in rows if r.get("event") == "job.run"]):
+        if isinstance(row.get("op"), str):
             groups.setdefault(row["op"], []).append(row)
-    lines = []
+    out = {}
     for op, found in sorted(groups.items()):
-        parts = [f"{op} n={len(found)}"]
+        entry = {"n": len(found)}
         for key in ("queued_ms", "wait_ms", "run_ms"):
             values = sorted(r[key] for r in found if bl_ops.number(r.get(key)))
-            parts.append(f"{key}={bl_ops.median(values):.0f} (p95 {bl_ops.nearest_rank(values, 95):.0f})" if values else f"{key}=-")
+            entry[key] = {"median": bl_ops.median(values), "p95": bl_ops.nearest_rank(values, 95)} if values else None
+        out[op] = entry
+    return out
+
+
+def stat_lines(rows):
+    """One line per operation of the `job.run` ROWS, in name order: `OP n=N queued_ms=MEDIAN (p95 P) wait_ms=... run_ms=...`."""
+    lines = []
+    for op, entry in stat_groups(rows).items():
+        parts = [f"{op} n={entry['n']}"]
+        for key in ("queued_ms", "wait_ms", "run_ms"):
+            parts.append(f"{key}={entry[key]['median']:.0f} (p95 {entry[key]['p95']:.0f})" if entry[key] else f"{key}=-")
         lines.append(" ".join(parts))
     return lines
 
 
-def stats_command():
-    """`kbjob.py stats`: 0 printing the lines of `stat_lines` over this clone's ops rows, or a note when it has no job.run row."""
+def home_rows(homes):
+    """The ops rows in the spools of the query log HOMES (each a ${CLAUDE_PLUGIN_DATA}: its `querylog/spool`)."""
+    import ql_capture
+    import ql_distill
+    rows = []
+    for home in homes:
+        for f in sorted((Path(home) / "querylog" / "spool").glob("tools-*.jsonl")):
+            for r in ql_distill.spool_rows(f)[0]:
+                if r.get("surface") == ql_capture.OPS and not ql_capture.ops_problems({k: v for k, v in r.items() if k not in ("id", "ts", "surface", "v")}):
+                    rows.append(r)
+    return sorted(rows, key=lambda r: (str(r.get("ts")), str(r.get("id"))))
+
+
+def stats_command(args=None):
+    """`kbjob.py stats`: 0 printing the lines of `stat_lines` (with --format json the object of `stat_groups`) over this clone's ops
+    rows, or over the spools of the --home query log homes alone; a note when there is no job.run row."""
     import bl_stall
+    homes = getattr(args, "home", None)
     try:
-        lines = stat_lines(bl_stall.ops_rows(str(ROOT)))
+        rows = home_rows(homes) if homes else bl_stall.ops_rows(str(ROOT))
+        groups = stat_groups(rows)
     except Exception as error:  # noqa: BLE001 - an unreadable log is said, never read as no row
         print(f"kbjob.py: the ops rows could not be read: {str(error)[:200]}", file=sys.stderr)
         return 1
-    print("\n".join(lines) if lines else "kbjob: no job.run row yet")
+    if getattr(args, "format", "text") == "json":
+        print(json.dumps(groups, sort_keys=True))
+    else:
+        lines = stat_lines(rows)
+        print("\n".join(lines) if lines else "kbjob: no job.run row yet")
     return 0
 
 
@@ -481,7 +519,7 @@ def run(args, parser):
             parser.error("status takes a JOB or --active, one of them")
         return run_central(args, remote)
     if args.command == "stats":
-        return stats_command()
+        return stats_command(args)
     if args.command == "serve" and (args.kind or args.data):  # an executor of one kind on the clone's own queue
         return kj_exec.serve(str(ROOT), None, once=args.once, idle_exit=args.idle_exit, slots=args.parallel, kind=args.kind or kj_store.WORKSTATION,
                              remote=kj_store.LocalRemote(kj_store.resolve_store(ROOT, args.store)), data=args.data)
@@ -522,7 +560,11 @@ def run(args, parser):
         return 0
     store = kj_store.resolve_store(ROOT, args.store)
     if args.command == "follow":
-        return kj_follow.follow(str(ROOT), store, args.job, args.since, args.timeout, sys.stdout)
+        code = kj_follow.follow(str(ROOT), store, args.job, args.since, args.timeout, sys.stdout)
+        record = kj_store.read_record(store, args.job) or {}
+        if code != kj_follow.STILL_RUNNING_EXIT and record.get("state") in kj_store.TERMINAL:
+            kj_exec.record_run(store, args.job, record, record["state"], origin=kj_exec.FOLLOWER)
+        return code
     if args.command == "status":
         if (args.job is None) == (not args.active):
             parser.error("status takes a JOB or --active, one of them")

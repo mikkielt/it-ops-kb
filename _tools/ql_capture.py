@@ -133,7 +133,8 @@ _FILE_MS = {"file": "test_file", "ms": "ms"}
 OPS_EVENTS = {  # the closed set of events, each with its closed keys
     "land.step": _spec({"item": "item", "step": "token", "exit": "exit", "ms": "ms"}),
     "land.end": _spec({"item": "item", "exit": "exit", "ms": "ms"}, {"lane": "token"}),
-    "job.run": _spec({"op": "token", "class": "token", "attempt": "count", "queued_ms": "ms", "wait_ms": "ms", "run_ms": "ms"}),
+    "job.run": _spec({"op": "token", "class": "token", "attempt": "count", "queued_ms": "ms", "wait_ms": "ms", "run_ms": "ms"},
+                     {"job": "token", "origin": "token"}),
     "sync.gate": _spec({"ms": "ms"}, {"checks": _CHECK_ROW, "scope": "token", "files": "count", "push": "token",
                                        "exit": "exit"}),
     "done.refused": _spec({"item": "item", "reasons": ("list", len(OPS_REFUSED), "reason"), "ms": "ms"},
@@ -232,6 +233,20 @@ def _shape_ok(shape, v):
     if kind == "list":
         return all(OPS_KINDS[sub](x) for x in v)
     return all(isinstance(x, dict) and x and set(x) <= set(sub) and all(OPS_KINDS[sub[k]](x[k]) for k in x) for x in v)
+
+
+def jobs_once(rows):
+    """ROWS (ops rows, dicts) with each job counted once: of the `job.run` rows that name one job, the executor's (its `origin` is
+    not `follower`; the first in ROWS order) stands and the follower's are left out, or the first follower row when the executor
+    wrote none; every other row, a `job.run` row with no `job` too, is kept. The order of ROWS is kept."""
+    best = {}
+    for i, r in enumerate(rows):
+        if r.get("event") == "job.run" and isinstance(r.get("job"), str):
+            old = best.get(r["job"])
+            if old is None or (rows[old].get("origin") == "follower" and r.get("origin") != "follower"):
+                best[r["job"]] = i
+    keep = set(best.values())
+    return [r for i, r in enumerate(rows) if not (r.get("event") == "job.run" and isinstance(r.get("job"), str)) or i in keep]
 
 
 def ops_problems(fields, where=""):

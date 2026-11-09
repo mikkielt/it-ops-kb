@@ -14,7 +14,7 @@ from ql_store import (DAY, ENTRY_KEYS, FETCH_KEYS, FINDING_KINDS, FINDING_STATES
                       RUN_ID, SURFACES, USAGE, add_models, finding_id, finding_states, findings_files, load_run, records,
                       resolve_id, run_files, run_ids, served_models, store_entries, usage_counts, usage_files, usage_records, work_files,
                       work_line_problems, ops_files, ops_line_problems)
-from ql_capture import FEEDBACK_ISSUES, FEEDBACK_OUTCOMES, FEEDBACK_TOOL_ISSUES, VERDICTS
+from ql_capture import FEEDBACK_ISSUES, FEEDBACK_OUTCOMES, FEEDBACK_TOOL_ISSUES, VERDICTS, jobs_once
 
 DIGEST_MARKER = "digest-week"  # beside the spool: the ISO week in which the SessionStart digest was last shown
 DIGEST_CACHE = "digest-{week}.json"  # beside the spool: last week's digest, computed once per ISO week
@@ -167,7 +167,7 @@ def row_day(row, run_id):
 
 def ops_lines(files, in_week):
     """The digest's ops block for the rows of the ops sidecars `files` whose own day (`ts`, else the sidecar's run
-    day) `in_week` accepts, so a Monday distill does not move the last week's rows: `ops: N rows (event n,
+    day) `in_week` accepts, so a Monday distill does not move the last week's rows, each job's `job.run` rows counted once (`ql_capture.jobs_once`): `ops: N rows (event n,
     ...)`, then `  land.end|sync.gate|test.run|census.phase: N, failed F, median M ms`, `  done.refused: N`, `  agent.run: N (group
     n, ...)`, `  call.tool: N calls, errors E, interrupts I; top classes: class n, ...` and one line per hook event
     kind present; [] when the week's sidecars hold no row. A sidecar that breaks the ops gates is left out whole, as
@@ -177,6 +177,7 @@ def ops_lines(files, in_week):
         lines = [w for _, w in objs]
         if lines and not any(ops_line_problems(w, p.stem) for w in lines):
             rows += [w for w in lines if in_week(row_day(w, p.stem))]
+    rows = jobs_once(rows)
     if not rows:
         return []
     by = {}
