@@ -1,0 +1,22 @@
+{
+  "id": "SP-uz3rhdlq",
+  "kind": "sprint",
+  "title": "Backlog gates, land, report and skill text tell the truth: gate classes match meaning, whole-suite detection exact, land tokens right, upstream import reads workers right, skills and agents name the real rules, kbingest guards and digests hold",
+  "status": "planned",
+  "goal": "Gate classes follow meaning: a bare doc file name in an option is no path outside the touches, a dotted usage field name is no secret, a design question about removing a flag is no delete; whole-suite detection counts only a real whole run; land gives ops tokens the query log accepts and reads hyphen-prefixed source ids; a released item lands after a re-claim; upstream-import keeps a whole fenced premise; the skills, agents and docs name the real rules (gate classes, worker turn cap, referrers kind=ref, coord route for overlaps, check warnings, eval row); kbingest guards slow patterns and digests its mapper's helper modules",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e",
+  "filed_in": "clone-0ea70e5c"
+}
