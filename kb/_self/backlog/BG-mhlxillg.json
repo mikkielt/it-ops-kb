@@ -2,7 +2,7 @@
   "id": "BG-mhlxillg",
   "kind": "bug",
   "title": "benchmarks.md's record table joins the paid record's spend to 553d9e5, a commit before the paid mode existed",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-bpjqqauu",
   "priority": "P2",
   "rank": 0,
@@ -50,6 +50,19 @@
   ],
   "notes": "Review gap 3 of SP-wv3ob5vy: benchmarks.md:1417 row '2026-10-28 | 553d9e5 | ... | $0.56'; 648 paid rows name 1f6011b, 3 intake-real rows 553d9e5 (one record date, two commits). Premise: the bug's repro fails on the base (origin/main at the planning commit, 2026-11-09); precheck ran it through the landing's check runner. Sprint order: items that share one file are chained with depends_on.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-bdc0a493",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "fce6f211bae6e990de47e0411418329e9b277d9f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; t=open(\"kb/_self/reports/benchmarks.md\",encoding=\"utf-8\").read(); print(\"1f6011b\" in t); sys.exit(0 if \"1f6011b\" in t else 1)"
+        ],
+        "exit": 0,
+        "sha256": "a9ac0c3ac83c40e1"
+      }
+    ]
+  }
 }
