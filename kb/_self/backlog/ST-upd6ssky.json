@@ -16,6 +16,12 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "the sprint plan step settles, in the goal of a committed item whose title or text holds a gate-class word (token, mirror, push, secret), the implementation choice a worker would otherwise ask as a blocking gate",
+      "check": 0
+    }
+  ],
   "touches": [
     "skills/sprint/SKILL.md"
   ],
