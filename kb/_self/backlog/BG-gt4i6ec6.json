@@ -7,7 +7,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "reopen of a done item moves its coord run state from landed to none, and runs --reconcile moves a landed run state whose item file is not done to none, so land's first step takes a reopened item to landing",
+  "goal": "reopen of a done item moves its coord run state from landed to none and runs --reconcile moves a landed run state whose item file is not done to none, so land's first step takes a reopened item to landing",
   "repro": {
     "run": [
       "python3",
@@ -33,6 +33,6 @@
   "links": [
     "retro: drain 2026-10-27..11-08"
   ],
-  "notes": "Retro finding of the drain: after reopen of an item that had landed its coord run state stays landed, so land printed 'run/ID is landed, which does not move to landing' at every step, and runs --reconcile did not repair it. Premise (reproduces: the repro): bl_items.cmd_reopen clears evidence, claim and operator and leaves the run key, and bl_runs.drift_of reads a done item whose state is not landed, but never a landed state of an item whose file is not done, since landed is in SETTLED. The new state is none (bl_runs.NONE), the value an item with no run has. BG-mwqxiqqx also edits bl_items.py (cmd_reopen gains --commit): land one after the other. Order: same file bl_items.py (cmd_reopen) as BG-mwqxiqqx.",
+  "notes": "Retro finding of the drain: after reopen of an item that had landed its coord run state stays landed, so land printed 'run/ID is landed, which does not move to landing' at every step, and runs --reconcile did not repair it. Premise (reproduces: the repro): bl_items.cmd_reopen clears evidence, claim and operator and leaves the run key, and bl_runs.drift_of reads a done item whose state is not landed, but never a landed state of an item whose file is not done, since landed is in SETTLED. The new state is none (bl_runs.NONE), the value an item with no run has. BG-mwqxiqqx also edits bl_items.py (cmd_reopen gains --commit): land one after the other. Order: same file bl_items.py (cmd_reopen) as BG-mwqxiqqx. Premise reproduces on origin/main (precheck 2026-11-09): the repro fails on its first assert, reopen leaves landed.",
   "filed_in": "clone-0ea70e5c"
 }
