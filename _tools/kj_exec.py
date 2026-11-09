@@ -851,11 +851,33 @@ def note_condition(store, job, code, text, state, out):
           "the job is not run again", file=out, flush=True)
 
 
+SPEND_LINE = re.compile(r"^[a-z][a-z0-9-]*: [0-9]+ rows, \$([0-9]+\.[0-9]{2}) in [0-9]+ paid runs, ", re.M)  # benchmarks.py's line per scenario that paid
+
+
+def note_spend(store, job, record, text):
+    """A paid job (`kj_ops.PAID`) that ended keeps the USD its process spent in its record, here and on the queue, as `spent_usd`: the sum
+    of the spend lines of the process's output TEXT (`SPEND_LINE`, the scenario's total `benchmarks.py` prints when it ends) added to
+    what an earlier attempt of the job kept (0 when it printed none: a process killed before its scenario ended spent what no line
+    names). Written before the move to the end state, so no finished job is without it: the group's daily cap counts it
+    (`kj_store.finished_spend`)."""
+    if record.get("op") not in kj_ops.PAID:
+        return
+    spent = round(kj_store.spent_of(kj_store.read_record(store, job) or {}) + sum(float(m.group(1)) for m in SPEND_LINE.finditer(text or "")), 6)
+    with contextlib.suppress(sqlite3.Error):
+        amend(store, job, spent_usd=spent)
+    remote = getattr(store, "remote", None)
+    if remote is not None:
+        with contextlib.suppress(kj_ops.Refusal, coord.Refused):
+            remote.amend(job, spent_usd=spent)
+
+
 def finish_job(store, job, record, code, text, out):
     """Move a job whose child ended with exit CODE and output TEXT to the state classify gives, with one line printed; returns the
-    state it moved to. A job cancelled meanwhile (kbjob.py cancel) stays cancelled, one line says so and cancelled is returned."""
+    state it moved to. A job cancelled meanwhile (kbjob.py cancel) stays cancelled, one line says so and cancelled is returned.
+    A paid job's spend is kept first (`note_spend`), a cancelled one's too."""
     state, step = classify(code, text)
     number = exit_number(code)
+    note_spend(store, job, record, text)
     try:
         move(store, job, state, exit=number, step=step)
     except coord.Refused as refusal:
