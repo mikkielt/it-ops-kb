@@ -21,6 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: the sprint's goal is the behaviour of this repository's own landing lock, claim and land code; no vendor documentation or kb article is involved, so no kb file changes.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-ef8e3893",
   "operator": "op-f618a13e"
