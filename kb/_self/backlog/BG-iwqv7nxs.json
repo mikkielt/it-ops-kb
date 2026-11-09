@@ -42,6 +42,23 @@
   "depends_on": [
     "BG-ml7dreio"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does read_licence recognise the legacy /GROUP/PROJECT/blob/REF/PATH gitlab.com form, which has no /-/ and made the whole path the project slug?",
+      "options": [
+        "_repository_of ends the project at the first blob, tree, raw or blame segment after the second path segment, also for the other gitlab.com projects",
+        "a special case for gitlab-org/gitlab only"
+      ],
+      "recommendation": "_repository_of ends the project at the first blob, tree, raw or blame segment after the second path segment, also for the other gitlab.com projects",
+      "do": {
+        "_repository_of ends the project at the first blob, tree, raw or blame segment after the second path segment, also for the other gitlab.com projects": "BG-iwqv7nxs",
+        "a special case for gitlab-org/gitlab only": "BG-iwqv7nxs"
+      },
+      "class": "push"
+    }
+  ],
   "links": [
     "parked: SP-b36246xo review"
   ],
