@@ -16,6 +16,12 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "backlog.py start SP commits the item files it rewrites in one commit that names the sprint in KB-Work, whether or not --commit is passed, so the first begin of the sprint finds a clean tree and pushes its claims with no hand commit",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/bl_plan.py",
     "kb/_self/backlog.md"
