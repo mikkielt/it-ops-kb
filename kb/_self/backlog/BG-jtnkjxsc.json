@@ -2,7 +2,7 @@
   "id": "BG-jtnkjxsc",
   "kind": "bug",
   "title": "redact._known_load crashes on a deep cache file and loads a wrong-shaped one as a Known of characters",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-osevumx6",
   "priority": "P3",
@@ -27,5 +27,7 @@
     "parked: SP-uh5h46fm review"
   ],
   "notes": "Planned 2026-11-09 in SP-osevumx6: items that share a file wait on each other (kbcommon.py, redact.py then kbask.py, ql_capture.py then ql_deliver.py); no open item of the other live sprints touches this item's code files.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-cdcea91c",
+  "operator": "op-f618a13e"
 }
