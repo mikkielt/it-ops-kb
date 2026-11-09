@@ -40,7 +40,9 @@
       },
       "class": "design",
       "answer": "Compare the row's time with the exit-0 land.end row's time, as the sprint panel's landings do",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
