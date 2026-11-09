@@ -1,0 +1,25 @@
+{
+  "id": "BG-sacebta6",
+  "kind": "bug",
+  "title": "money_approved lifts the paid-session stub for a refused gate (answer no) and for any gate whose text holds spent or paid, since it tests only that an answer exists and a money word",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bl_dispatch.money_approved counts a gate as approving spend only when its answer is one of the gate's options that is not the refusal option and the gate's question names a money signal",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import bl_dispatch as d;it={\"gates\":[{\"id\":\"g1\",\"question\":\"Spend USD 5 on a paid smoke test?\",\"options\":[\"yes\",\"no\"],\"answer\":\"no\"}]};sys.exit(1 if d.money_approved(it) else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-rzwljgxv review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

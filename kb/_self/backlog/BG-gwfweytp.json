@@ -1,0 +1,25 @@
+{
+  "id": "BG-gwfweytp",
+  "kind": "bug",
+  "title": "agents/worker.md still says a worker whose brief names no cap commits 15 turns before the cap, which for a cap of 30 or less is half the cap since the commit-by clamp",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "agents/worker.md rule 2 gives the commit-by turn as bl_dispatch.commit_by_turn computes it (the cap minus 15 above a cap of 30, else half the cap)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open(\"agents/worker.md\",encoding=\"utf-8\").read();sys.exit(1 if \"at the latest 15 turns before the turn cap\" in t else 0)"
+    ]
+  },
+  "repro_reason": "the rule is prose in the role file: only its text can be read",
+  "touches": [
+    "agents/worker.md"
+  ],
+  "links": [
+    "parked: SP-rzwljgxv review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

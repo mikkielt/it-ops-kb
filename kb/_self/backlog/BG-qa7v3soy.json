@@ -1,0 +1,26 @@
+{
+  "id": "BG-qa7v3soy",
+  "kind": "bug",
+  "title": "The stub claude of a dispatched worker is an extensionless /bin/sh script, so on Windows the real claude stays reachable with no warning",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "dispatch's paid-session guard on win32 writes a claude.cmd stub (or refuses to start a worker it cannot guard) beside the /bin/sh one",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open(\"_tools/bl_dispatch.py\",encoding=\"utf-8\").read();sys.exit(0 if \"claude.cmd\" in t else 1)"
+    ]
+  },
+  "repro_reason": "the behaviour is Windows-only and this host cannot run it: only the source can be read",
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-rzwljgxv review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
