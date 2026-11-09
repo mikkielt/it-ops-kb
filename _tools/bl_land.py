@@ -53,7 +53,8 @@ def delivery_evidence(root, ids, globs):
     trailer KB-Auto: querylog and no KB-Work) that a story of the query-log store only (`store_only`) takes as its
     evidence in place of a work commit: one that changed a file GLOBS match, that is on the integration main when that
     ref is fetched, and that was authored no earlier than the item's latest claim commit on HEAD (the author time, which
-    a rebase keeps; no claim commit on HEAD, no bound). Its checks still run: they read what the delivery wrote."""
+    a rebase keeps; with no claim commit on HEAD, the commit that added the item's file, and none of either, no bound).
+    Its checks still run: they read what the delivery wrote."""
     if not store_only(globs):
         return []
     fmt = ("%H%x00%at%x00%s%x00%(trailers:key=KB-Work,valueonly,separator=%x2C)%x00"
@@ -68,6 +69,10 @@ def delivery_evidence(root, ids, globs):
             claimed = max(claimed, at)
         if "querylog" in [k.strip() for k in kinds.split(",")]:
             auto.append((sha, at))
+    if not claimed and ids:  # never claimed with --commit: the item did not exist before the commit that added its file
+        added = git(root, "log", "HEAD", "--no-merges", "--diff-filter=A", "--format=%at", "--",
+                    f"{bl_base.rel_dir()}/{ids[0]}.json").split()
+        claimed = max((int(t) for t in added if t.isdigit()), default=0)
     import kbpublic
     ref = f"refs/remotes/{kbpublic.integration_remote(root)}/main"
     fetched = subprocess.run(["git", "rev-parse", "--verify", "-q", ref], cwd=root, capture_output=True).returncode == 0
