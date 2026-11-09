@@ -2,7 +2,7 @@
   "id": "BG-7zpe7p3w",
   "kind": "bug",
   "title": "census.py run without --resume detects into factdiff-<date>-N.csv once factdiff-<date>.csv exists, then applies the old log",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-2cq2hse4",
   "priority": "P2",
   "rank": 0,
@@ -55,6 +55,19 @@
   ],
   "notes": "Regression of BG-gt4egejo (landed in SP-2cq2hse4); premise: the repro exits 1 on origin/main.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-c41d77ea",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "496a8009375cb7e519253ecccab40cb8bab9d8cf",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0, \"_tools\"); import census; sys.exit(0 if \"--out\" in census.plan_run(\"public\", \"2026-01-01\", False, lambda p: True, lambda l, d: False)[0][\"argv\"] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
