@@ -18,5 +18,8 @@
   "touches": [
     "kb/_self/map.csv"
   ],
+  "links": [
+    "parked: SP-hyfyn22d close"
+  ],
   "filed_in": "clone-0ea70e5c"
 }
