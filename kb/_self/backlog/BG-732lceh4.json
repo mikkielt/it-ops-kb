@@ -1,0 +1,23 @@
+{
+  "id": "BG-732lceh4",
+  "kind": "bug",
+  "title": "census.py phase 2 brief names the earlier detect log in its factdiff.py dead command when the rows came from a numbered log",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "census.py groups, brief and dispatch without --factdiff fill the brief rules' factdiff.py dead command with the numbered detect log the review items were read from",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.exit(1)"
+    ]
+  },
+  "repro_reason": "needs a census log whose evidence names a numbered detect log: phase2_context (census.py near line 2120) falls back to factdiff-DATE.csv for flog while FACTDIFF_REVIEW reads factdiff-DATE-2.csv; the reviewer probed it on a planted log, the planner writes the real repro",
+  "touches": [
+    "_tools/census.py",
+    "kb/_self/web-sources.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
