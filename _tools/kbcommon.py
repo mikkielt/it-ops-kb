@@ -209,7 +209,7 @@ def maker_names_allowed(root, policy=None):
 # lower-case letter follows, or a one-letter to two-letter hump (`tEk`) after a lower-case letter, is no path piece: random
 # base64 has one, a word, a `CamelCase` name or a `Win32` has not; a segment that is a word of four letters or more
 # followed only by capitalised words, however short (`ConfigMgr`, `UserSvc`), is one whatever its humps; nor is a run that starts with three capitalised words of
-# three letters or more, `PrivateKeyInfoStructure`, an identifier), or three lines (or cells) of at least 8 base64 characters, each ending its line, for a body wrapped under 20
+# three letters or more, `PrivateKeyInfoStructure`, an identifier, nor a whole run of three or more humps, each of three lower-case letters or digits or more, `deviceManagementConfigurationPolicy`, `Win32LobAppAssignmentSettings`), or three lines (or cells) of at least 8 base64 characters, each ending its line, for a body wrapped under 20
 # characters (a gap before such a line may leave a `//` or `///` to the
 # line, as `/` is base64, so `//8x89Kh` is a line of 8). A header value
 # is free text up to the first gap (those characters, whitespace, an escaped newline, a pipe) that a header or the
@@ -224,7 +224,7 @@ _VALUE = (r"(?:(?!" + _GAP + _NEXT + r")(?:(?:[^\S\r\n]|\\+[nrt]|[>#|]|[*-](?=\s
 _LINE = r"[A-Za-z0-9+/]{8,}+(?=[^\S\r\n]*+(?:[\r\n|]|\\+[nrt]|$))"
 _PIECE = (r"(?:(?=[A-Z]?[a-z]{3,}(?:[A-Z][a-z]++)++(?![A-Za-z0-9]))"
           r"|(?![A-Za-z0-9]*?(?:[a-z0-9][A-Z](?![a-z])|[a-z][A-Z][a-z]{1,2}(?![a-z]))))[A-Za-z0-9]++")
-_KEY = r"(?:(?!(?:[A-Z][a-z]{2,}){3})(?!(?:" + _PIECE + r"/)+" + _PIECE + r"[._-])(?=[A-Za-z0-9+/]{0,19}[A-Z0-9+])[A-Za-z0-9+/]{20}[A-Za-z0-9+/]*+|" +_LINE + r"(?:" + _GAPS + _LINE + r"){2})"
+_KEY = r"(?:(?!(?:[A-Z][a-z]{2,}){3})(?![A-Za-z][a-z0-9]{2,}(?:[A-Z][a-z0-9]{2,}){2,}(?![A-Za-z0-9+/]))(?!(?:" + _PIECE + r"/)+" + _PIECE + r"[._-])(?=[A-Za-z0-9+/]{0,19}[A-Z0-9+])[A-Za-z0-9+/]{20}[A-Za-z0-9+/]*+|" +_LINE + r"(?:" + _GAPS + _LINE + r"){2})"
 SECRETS = (
     r"-----BEGIN (?:(?:RSA |OPENSSH |DSA |PGP |ENCRYPTED )?PRIVATE KEY-----"
     r"|(?:EC PRIVATE KEY|PGP PRIVATE KEY BLOCK)-----"

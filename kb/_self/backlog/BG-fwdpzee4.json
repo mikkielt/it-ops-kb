@@ -42,6 +42,25 @@
   "depends_on": [
     "BG-c3vnscx7"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the EC/PGP armor lookahead tell a lower-camel or digit-bearing identifier cell from random base64?",
+      "options": [
+        "A whole run of three or more humps, each of three lower-case letters or digits or more, ending at a non-base64 character, is an identifier",
+        "Any run with no slash and no upper-case run of two letters is an identifier"
+      ],
+      "recommendation": "A whole run of three or more humps, each of three lower-case letters or digits or more, ending at a non-base64 character, is an identifier",
+      "do": {
+        "A whole run of three or more humps, each of three lower-case letters or digits or more, ending at a non-base64 character, is an identifier": "BG-fwdpzee4",
+        "Any run with no slash and no upper-case run of two letters is an identifier": "BG-fwdpzee4"
+      },
+      "class": "design",
+      "answer": "A whole run of three or more humps, each of three lower-case letters or digits or more, ending at a non-base64 character, is an identifier",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-mk6ikval review"
   ],
