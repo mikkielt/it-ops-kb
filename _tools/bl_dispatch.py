@@ -882,18 +882,22 @@ def stage_back_copies(bl, iid, wt, scratch):
 
 
 def half_copied(bl, iid, wt, scratch):
-    """[(path, copy, worktree file, git root, the file at HEAD)] of the staging copies a stage-back that died already
-    copied in: the worktree's file equals its copy, differs from HEAD, and HEAD's file is the one the copy was made
-    from (its digest is the recorded base). `stage_back_copies` skips these, since they equal their copy."""
+    """[(path, copy, worktree file, git root, the file at HEAD, None when HEAD has none)] of the staging copies a
+    stage-back that died already copied in: the worktree's file equals its copy, differs from HEAD, and HEAD's file is
+    the one the copy was made from (its digest is the recorded base; a recorded None is a file HEAD has none of, which
+    the dead run left untracked). `stage_back_copies` skips these, since they equal their copy."""
     bases, out = read_bases(scratch), []
     for p in staged_files(bl, iid):
         copy = scratch.joinpath(STAGING, *p.split("/"))
         top, target, _ = staged_places(bl, iid, wt, p)
-        if not (copy.is_file() and target.is_file() and target.read_bytes() == copy.read_bytes() and bases.get(p)):
+        if not (copy.is_file() and target.is_file() and target.read_bytes() == copy.read_bytes() and p in bases):
             continue
         head = subprocess.run(["git", "-C", str(top), "show", f"HEAD:{target.relative_to(top).as_posix()}"],
                               capture_output=True)
-        if head.returncode == 0 and head.stdout != copy.read_bytes() \
+        if bases[p] is None:
+            if head.returncode:
+                out.append((p, copy, target, top, None))
+        elif head.returncode == 0 and head.stdout != copy.read_bytes() \
                 and hashlib.sha256(head.stdout).hexdigest() == bases[p]:
             out.append((p, copy, target, top, head.stdout))
     return out
