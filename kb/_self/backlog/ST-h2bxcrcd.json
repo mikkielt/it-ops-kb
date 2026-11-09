@@ -30,6 +30,6 @@
   "links": [
     "parked: SP-ga3lbnlk close"
   ],
-  "notes": "Met again in SP-pww4aqis on 2026-11-09: the first begin after start stopped at the claim push on 13 unstaged item files; committed by hand.",
+  "notes": "Met again in SP-pww4aqis on 2026-11-09: the first begin after start stopped at the claim push on 13 unstaged item files; committed by hand. Premise (planner, 2026-11-09, base): reproduced. Check 0 plants a git repo with an approved sprint and three draft items and runs start: it exits 0 and leaves four modified item files, one commit in the repo. start already takes --commit (commit_written at the end of cmd_start in bl_plan.py); the skill's start step runs it without. Choice settled in the goal: start commits by default, so no flag.",
   "filed_in": "clone-0ea70e5c"
 }
