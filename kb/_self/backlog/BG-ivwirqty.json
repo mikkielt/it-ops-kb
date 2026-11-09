@@ -1,0 +1,21 @@
+{
+  "id": "BG-ivwirqty",
+  "kind": "bug",
+  "title": "A claim whose item file cannot be saved, or that is interrupted while it waits for the ledger lock, leaves the coord run state at claimed, which refuses the next claimer and which runs --reconcile does not clear",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "claim puts the coord run state back to released on any failure after it took the state, not only on a Refused: an OSError from saving the item file, SIGTERM or KeyboardInterrupt while it waits for the claims-ledger lock",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json, os, subprocess, sys, tempfile\nfrom pathlib import Path\nsys.path.insert(0, \"_tools\")\nimport backlog, bl_base, bl_land\nr = Path(tempfile.mkdtemp())\ng = lambda *a: subprocess.run([\"git\", \"-C\", str(r), *a], check=True, capture_output=True, text=True).stdout.strip()\ng(\"init\", \"-q\")\n(r / \"backlog.json\").write_text(json.dumps({\"item_dir\": \"items\"}))\n(r / \"items\").mkdir()\nitem = {\"id\": \"ST-aaaaaaaa\", \"kind\": \"story\", \"title\": \"t\", \"status\": \"todo\", \"priority\": \"P3\", \"goal\": \"g\",\n        \"touches\": [\"x.txt\"], \"checks\": [{\"run\": [\"python3\", \"-c\", \"pass\"]}]}\n(r / \"items\" / \"ST-aaaaaaaa.json\").write_text(json.dumps(item, indent=2) + \"\\n\")\ng(\"add\", \"-A\")\ng(\"-c\", \"user.name=x\", \"-c\", \"user.email=x@example.com\", \"commit\", \"-qm\", \"i\")\ndef save(self, it):\n    raise OSError(28, \"No space left on device\")  # the item file cannot be written after the run state was taken\nbl_base.Backlog.save = save\nos.environ[\"CLAUDE_CODE_SESSION_ID\"] = \"chk\"\nos.environ.pop(\"KB_BACKLOG_CONFIG\", None)\ntry:\n    backlog.main([\"--root\", str(r), \"claim\", \"ST-aaaaaaaa\", \"--by\", \"w\"])\nexcept BaseException as e:\n    print(\"claim ended with\", type(e).__name__)\nbacklog.OUTPUT_ROOT[0] = str(r)\nstate = bl_land.run_state(\"ST-aaaaaaaa\")\nprint(\"run state of the item after the failed claim:\", repr(state))\nsys.exit(0 if state in (\"\", \"released\") else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_items.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
