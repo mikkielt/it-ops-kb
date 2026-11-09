@@ -2,7 +2,7 @@
   "id": "BG-rpwrgqno",
   "kind": "bug",
   "title": "benchmarks.md describes repro compare conflicts as a pair whose numbers differ, but only facts on one article path can conflict since cross-path pairs need equal numbers",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-hyfyn22d",
   "priority": "P3",
   "rank": 0,
@@ -23,6 +23,19 @@
     "parked: SP-bpjqqauu review"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-ev4run01",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "353bc8160a47e61d325ba4654406c40a8637e2a5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; t=open(\"kb/_self/benchmarks.md\",encoding=\"utf-8\").read(); i=t.find(\"a pair whose numbers differ\"); ok=i>=0 and \"same path\" in t[i-300:i+500]; print(ok); sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "a9ac0c3ac83c40e1"
+      }
+    ]
+  }
 }
