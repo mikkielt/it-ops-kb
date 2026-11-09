@@ -2,7 +2,7 @@
   "id": "BG-2naamm5z",
   "kind": "bug",
   "title": "done takes a query-log delivery older than a store-only story as its evidence when the story has no claim commit",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-yriisdti",
   "priority": "P3",
   "rank": 0,
@@ -25,5 +25,7 @@
   ],
   "links": [
     "parked: SP-sqgyoiaz review"
-  ]
+  ],
+  "claimed_by": "claude-ev2run01",
+  "operator": "op-f618a13e"
 }
