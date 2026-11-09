@@ -19,7 +19,10 @@
     "_tools/bench_core.py",
     "kb/_self/benchmarks.md",
     "kb/_self/tools.md",
-    "_tools/bench_load.py"
+    "_tools/bench_load.py",
+    "_tools/bench_repro.py",
+    "_tools/bench_multi.py",
+    "_tools/bl_clean.py"
   ],
   "depends_on": [
     "BG-bh7mf3wv"
