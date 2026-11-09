@@ -15,6 +15,15 @@
       "import glob, json, os, subprocess, sys, tempfile\nwith tempfile.TemporaryDirectory() as d:\n    bindir = os.path.join(d, \"bin\"); os.mkdir(bindir)\n    log = os.path.join(d, \"argv.log\")\n    open(os.path.join(bindir, \"claude\"), \"w\").write(\"#!/bin/sh\\necho \\\"$@\\\" >> \\\"$ARGV_LOG\\\"\\ncat >/dev/null\\necho '{\\\"is_error\\\":false,\\\"session_id\\\":\\\"s\\\"}'\\n\")\n    os.chmod(os.path.join(bindir, \"claude\"), 0o755)\n    env = dict(os.environ, PATH=bindir + os.pathsep + os.environ[\"PATH\"], ARGV_LOG=log, KB_COORD_STORE=os.path.join(d, \"coord.sqlite\"))\n    origin = os.path.join(d, \"origin.git\")\n    subprocess.run([\"git\", \"init\", \"-q\", \"--bare\", \"-b\", \"main\", origin], check=True)\n    root = os.path.join(d, \"root\"); os.mkdir(root)\n    def g(*a):\n        return subprocess.run([\"git\", \"-C\", root, *a], capture_output=True, text=True)\n    def bl(*a):\n        return subprocess.run([sys.executable, \"_tools/backlog.py\", \"--root\", root, *a], capture_output=True, text=True, env=env, timeout=120)\n    g(\"init\", \"-q\", \"-b\", \"main\"); g(\"config\", \"user.email\", \"x@example.com\"); g(\"config\", \"user.name\", \"x\"); g(\"remote\", \"add\", \"origin\", origin)\n    json.dump({\"worker_plugins_off\": [\"gitkraken@synced\"]}, open(os.path.join(root, \"backlog.json\"), \"w\"))\n    open(os.path.join(root, \"README\"), \"w\").write(\"x\\n\"); g(\"add\", \".\"); g(\"commit\", \"-qm\", \"init\"); g(\"push\", \"-q\", \"origin\", \"main\")\n    iid = bl(\"new\", \"story\", \"--title\", \"T\", \"--goal\", \"g\", \"--touch\", \"f.txt\", \"--check\", \"python3 -c pass\").stdout.split()[2]\n    path = glob.glob(os.path.join(root, \"**\", iid + \".json\"), recursive=True)[0]\n    item = json.load(open(path)); item[\"status\"] = \"todo\"; json.dump(item, open(path, \"w\"))\n    g(\"add\", \".\"); g(\"commit\", \"-qm\", \"plant todo\"); g(\"push\", \"-q\", \"origin\", \"main\")\n    claimed = bl(\"claim\", iid, \"--by\", \"claude-aaaaaaaa\")\n    assert claimed.returncode == 0, (\"claim\", (claimed.stdout + claimed.stderr)[-300:])\n    dispatched = bl(\"dispatch\", iid)\n    argv = open(log).read() if os.path.exists(log) else \"\"\n    assert argv, (\"the worker session did not start\", (dispatched.stdout + dispatched.stderr)[-300:])\n    assert \"--settings\" in argv and \"gitkraken@synced\" in argv, (\"dispatch gave the worker session no --settings turning the plugin off\", argv[:200])\n"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json; assert 'gitkraken@synced' in json.load(open('backlog.json'))['worker_plugins_off']"
+      ]
+    }
+  ],
   "touches": [
     "_tools/bl_dispatch.py",
     "_tools/bl_base.py",
