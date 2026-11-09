@@ -2,7 +2,7 @@
   "id": "BG-lhat3jlo",
   "kind": "bug",
   "title": "bl_procs.fresh_pids takes any transcript of the process's working-directory project as proof its session is at work, so an orphaned claude process in a busy checkout is called detached",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rzwljgxv",
   "priority": "P3",
   "rank": 0,
@@ -38,5 +38,7 @@
     "parked: SP-zobzdhwi review"
   ],
   "notes": "Planner narrowed the goal to bl_procs (procs, selfcheck), the code the repro reads. mon_sessions.py keeps its own fresh test (the quiet seconds of a session's transcript against FRESH_S, which has no process start to compare): the sessions panel is left as it is and a follow-up draft is filed if the worker finds it still wrong; mon_sessions.py leaves the touches so the sprint of the kbmon panels meets no file of this one. The added check (a transcript written after the process started keeps it fresh) passes before the work on purpose: it pins the behaviour that must stay, so a fix that never counts a process fresh fails it. The repro is the check that fails first.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev1run01",
+  "operator": "op-f618a13e"
 }
