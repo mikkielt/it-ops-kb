@@ -1,0 +1,21 @@
+{
+  "id": "BG-j4736uwa",
+  "kind": "bug",
+  "title": "A landing whose own ticket another landing removed counts every later ticket as ahead and is starved behind later askers until its wait bound",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "landing_tickets_ahead lists no ticket once the ticket of the asking landing is missing from the queue, and the landing takes its place in the queue again",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os, subprocess, sys, tempfile, time\nsys.path.insert(0, \"_tools\")\nimport bl_close\nt = tempfile.mkdtemp()\nsubprocess.run([\"git\", \"init\", \"-q\", t], check=True)\nqdir = bl_close.landing_queue_dir(bl_close.landing_lock_path(t))\nqdir.mkdir()\nchild = subprocess.Popen([sys.executable, \"-c\", \"import time; time.sleep(60)\"])\ntry:\n    time.sleep(1)\n    now = time.time_ns()\n    later = \"%020d-%d\" % (now + 5 * 10 ** 9, child.pid)\n    (qdir / later).write_text(\"pid=%d\\nclone=%s\\nstarted=x\\nitem=ST-bbbbbbbb\\n\" % (child.pid, t))\n    mine = \"%020d-%d\" % (now, os.getpid())\n    ahead = [a[0] for a in bl_close.landing_tickets_ahead(qdir, mine)]\n    print(\"tickets this landing waits for, all asked after it:\", ahead)\n    sys.exit(0 if not ahead else 1)\nfinally:\n    child.kill()\n"
+    ]
+  },
+  "touches": [
+    "_tools/bl_close.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
