@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """kbjob: queue an operation as a job in coord's store (stdlib only). Docs: kb/_self/coordination.md, section "Operation jobs".
 
-  kbjob.py [--store PATH] submit OP [SUBJECT] [--by claude-<8 hex>] [--option KEY=VALUE]... [--name CHECK] [--budget USD] [--no-ensure] [--opa URL]
+  kbjob.py [--store PATH] submit OP [SUBJECT] [--by claude-<8 hex>] [--option KEY=VALUE]... [--name CHECK] [--budget USD] [--no-ensure] [--opa URL] [--clone-url URL]
                                         after `ensure` (a job is never queued for nobody: when it had to start the executor it prints
                                         `kbjob: no executor, started pid N` on stderr, and when none comes up it queues nothing and
                                         exits 1; --no-ensure skips it), queue the operation OP on SUBJECT for this clone and print one JSON object,
@@ -17,7 +17,11 @@
                                         A second submit of the same clone, operation and subject (for a check its --name; other options aside) while the
                                         job is queued, running, waiting-lock, waiting-merge or lost returns that job with
                                         deduped true, also when submits race (one job); after a terminal state (succeeded,
-                                        failed, refused, cancelled) a submit makes a new job with its attempt raised by one
+                                        failed, refused, cancelled) a submit makes a new job with its attempt raised by one.
+                                        On the clone's own queue a job a server may run (placed on a server or ci, or with a fallback to one)
+                                        or given --clone-url URL names an integration remote url in its record, `remote`: URL, else this
+                                        clone's own; a server (`serve --kind server`) runs it in its clone of that url. --clone-url takes
+                                        no white space and no leading `-`, and exits 2 on a central queue, whose job names this clone's url
 
   kbjob.py [--store PATH] serve [--once] [--parallel N] [--idle-exit S]
                                         run the queued jobs of this host, clone and operator in submit order, at most N at once
@@ -90,6 +94,11 @@ names the host that has it otherwise, and `cancel` moves the job to cancelled on
                                         takes a queued job placed on a workstation whose lease has been missing for the decision's
                                         fallback_after_s when the decision's fallback is its kind, and `status` gives a queued job left there
                                         the member `reason`, `executor offline since T`. --kind and --data without --url serve the clone's own queue
+                                        A server executor (--kind server) runs each job in a clone of its own for the job's integration
+                                        remote url under DIR (`kj_exec.Home`: cloned at the first job that names it, fetched and put on
+                                        origin/main before each; a land job also gets the worktree of the remote's work/<id>), the CLI as on a
+                                        workstation. A job whose test ceiling tests.py refused over its seconds ends failed with the
+                                        reason `host condition` and the platform of the host that ran it, in `status`, and is not run again
 
   kbjob.py place OP [SUBJECT] [--opa URL]
                                         ask an OPA placement policy where and as whom OP runs and print one JSON decision, {executor,
@@ -130,6 +139,7 @@ Use: python3 _tools/kbjob.py [--store PATH] submit OP [SUBJECT] [--by claude-<8 
 """
 import argparse
 import json
+import platform
 import sqlite3
 import sys
 from pathlib import Path
@@ -161,6 +171,7 @@ def build_parser():
     p.add_argument("--budget", default=None, metavar="USD", help="the most a paid operation (bench, dispatch, begin) may spend, in US dollars; required for one")
     p.add_argument("--no-ensure", action="store_true", help="queue the job without starting an executor when none runs")
     p.add_argument("--opa", default=None, metavar="URL", help="the OPA server to ask for the placement (default: KB_OPA_URL; with neither, the workstation)")
+    p.add_argument("--clone-url", default=None, metavar="URL", help="the integration remote url a server runs the job in the clone of (default: this clone's own; on the clone's own queue only)")
     pl = sub.add_parser("place", help="ask the OPA placement policy where and as whom an operation runs; any failure to answer decides the workstation")
     pl.add_argument("op", help="one of " + ", ".join(coord.PLACEMENT_OPS))
     pl.add_argument("subject", nargs="?", default="", help="the backlog id, or the name of a check")
@@ -246,6 +257,49 @@ def with_holder(body, store):
     return {**body, "holder": held} if held else body
 
 
+def clone_url(given):
+    """The url --clone-url gives, as it is: a refusal for one a git clone would read as an option or that holds white space or a control character."""
+    if given is not None and (not given or given.startswith("-") or any(c.isspace() or ord(c) < 32 for c in given)):
+        raise kj_ops.Refusal(f"--clone-url is an integration remote url (no white space, not an option), not {given[:40]!r}")
+    return given
+
+
+def name_remote(body, placement, url, store):
+    """A job of the clone's own queue that a server may run (placed on a server or ci, or with a fallback to one) or given --clone-url
+    names the integration remote url it runs against in its record, as `remote`: URL, else this clone's own. A job joined, not made, keeps its
+    record; a clone with no integration remote url names none (the server leaves the job queued, step no-clone)."""
+    placed = placement if isinstance(placement, dict) else {}
+    away = placed.get("executor") not in (None, kj_store.WORKSTATION) or placed.get("fallback") in coord.PLACEMENT_EXECUTORS
+    if body.get("deduped") or not (url or away):
+        return
+    found = url or kj_store.remote_url(kj_store.clone_path(ROOT))
+    if found:
+        kj_store.amend_record(store, body["job"], remote=found)
+
+
+def server_log(record, count):
+    """The last COUNT lines of the output log a server that runs on this host kept for the job (the record's `log_file`, written by the
+    executor), None when the record names none, another host has it or the file is not there: `log` then says what it always says."""
+    path = Path(str((record or {}).get("log_file") or ""))
+    if not path.is_absolute() or (record or {}).get("log_host") != platform.node() or not path.is_file():
+        return None
+    with open(path, "rb") as f:
+        size = f.seek(0, 2)
+        f.seek(max(size - kj_follow.TAIL_BYTES, 0))
+        lines = f.read().decode("utf-8", errors="replace").splitlines()
+    if size > kj_follow.TAIL_BYTES and lines:
+        lines = lines[1:]
+    return lines[max(len(lines) - count, 0):] if count > 0 else []
+
+
+def with_reason(body, record):
+    """BODY (kj_store.status's JSON) with the `reason` and `platform` the executor kept in the record of a job that ended failed
+    for a host condition (the test ceiling's seconds); the body of any other job as it is."""
+    if body.get("state") == "failed" and record and record.get("reason"):
+        return {**body, "reason": record["reason"], **({"platform": record["platform"]} if record.get("platform") else {})}
+    return body
+
+
 def stat_lines(rows):
     """One line per operation of the `job.run` ROWS, in name order: `OP n=N queued_ms=MEDIAN (p95 P) wait_ms=... run_ms=...`
     (`bl_ops.median` and `nearest_rank`, as `backlog.py landings` computes them)."""
@@ -293,6 +347,8 @@ def central(args):
 def run_central(args, remote):
     """The commands that reach a central queue: submit, follow, status, log and cancel (`serve` is `kj_exec.serve`'s)."""
     if args.command == "submit":
+        if args.clone_url:
+            raise kj_ops.Refusal("--clone-url is for the clone's own queue: a job of a central queue names the integration remote url of this clone")
         given = options_of(args)
         kj_ops.check_job(args.op, args.subject, args.by or None, given)  # a refused job asks no policy
         placement = decide(args.op, args.subject or str(given.get("name", "")), args.opa, remote)
@@ -301,10 +357,15 @@ def run_central(args, remote):
     if args.command == "follow":
         return kj_store.follow_remote(remote, args.job, args.since, args.timeout, sys.stdout)
     if args.command == "status":
-        body = kj_store.active_remote(remote) if args.active else kj_store.status_remote(remote, args.job)
+        body = kj_store.active_remote(remote) if args.active else with_reason(kj_store.status_remote(remote, args.job), remote.record(args.job))
         print(json.dumps(body, sort_keys=True, ensure_ascii=False))
         return 0
     if args.command == "log":
+        kept = server_log(remote.record(args.job), args.tail)
+        if kept is not None and args.tail >= 0:
+            if kept:
+                print("\n".join(kept))
+            return 0
         return kj_store.log_remote(ROOT, remote, args.job, args.tail, sys.stdout)
     return kj_store.cancel_remote(remote, args.job, sys.stdout)
 
@@ -394,8 +455,10 @@ def run(args, parser):
                 print(f"kbjob: no executor, started pid {pid}", file=sys.stderr, flush=True)
         given = options_of(args)
         kj_ops.check_job(args.op, args.subject, args.by or None, given)  # a refused job asks no policy
+        url = clone_url(args.clone_url)
         placement = decide(args.op, args.subject or str(given.get("name", "")), args.opa, None)
         body = kj_store.submit(str(ROOT), args.op, args.subject, args.by, given, store=args.store, placement=placement)
+        name_remote(body, placement, url, kj_store.resolve_store(ROOT, args.store))
         print(json.dumps(body, sort_keys=True, ensure_ascii=False))
         return 0
     store = kj_store.resolve_store(ROOT, args.store)
@@ -404,10 +467,16 @@ def run(args, parser):
     if args.command == "status":
         if (args.job is None) == (not args.active):
             parser.error("status takes a JOB or --active, one of them")
-        body = kj_follow.active(store) if args.active else with_holder(kj_store.status(str(ROOT), args.job, store=store), store)
+        body = kj_follow.active(store) if args.active else with_reason(with_holder(kj_store.status(str(ROOT), args.job, store=store), store),
+                                                                        kj_store.read_record(store, args.job))
         print(json.dumps(body, sort_keys=True, ensure_ascii=False))
         return 0
     if args.command == "log":
+        kept = server_log(kj_store.read_record(store, args.job), args.tail)
+        if kept is not None and args.tail >= 0:
+            if kept:
+                print("\n".join(kept))
+            return 0
         return kj_follow.tail_of(str(ROOT), store, args.job, args.tail, sys.stdout)
     return kj_follow.cancel(str(ROOT), store, args.job, sys.stdout)
 

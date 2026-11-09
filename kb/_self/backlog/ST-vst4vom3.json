@@ -82,6 +82,57 @@
       "operator": "op-f618a13e",
       "role": "interactive",
       "agent_session": true
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Where does a server run a land job's command, and from what code?",
+      "options": [
+        "in the clone's own tree on the integration main, with a worker worktree of the remote work branch made beside it, as a workstation has",
+        "inside the worktree of the work branch, so the code under test runs the landing"
+      ],
+      "recommendation": "in the clone's own tree on the integration main, with a worker worktree of the remote work branch made beside it, as a workstation has",
+      "do": {
+        "in the clone's own tree on the integration main, with a worker worktree of the remote work branch made beside it, as a workstation has": "ST-vst4vom3",
+        "inside the worktree of the work branch, so the code under test runs the landing": "ST-vst4vom3"
+      },
+      "class": "design",
+      "answer": "in the clone's own tree on the integration main, with a worker worktree of the remote work branch made beside it, as a workstation has",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "Which output ends a job failed as a host condition, and where is it kept?",
+      "options": [
+        "only the seconds line of the test run's refusal; the reason and platform are members of the job record, shown by status",
+        "any refusal line of the test run, counts of ids and files too"
+      ],
+      "recommendation": "only the seconds line of the test run's refusal; the reason and platform are members of the job record, shown by status",
+      "do": {
+        "only the seconds line of the test run's refusal; the reason and platform are members of the job record, shown by status": "ST-vst4vom3",
+        "any refusal line of the test run, counts of ids and files too": "ST-vst4vom3"
+      },
+      "class": "design",
+      "answer": "only the seconds line of the test run's refusal; the reason and platform are members of the job record, shown by status",
+      "by": "agent"
+    },
+    {
+      "id": "g5",
+      "kind": "provisional",
+      "question": "How do the jobs of one remote url share a clone of a server?",
+      "options": [
+        "one job at a time per url, whatever the operation; other urls run in parallel",
+        "jobs of one url run in parallel, each moving the tree as it starts"
+      ],
+      "recommendation": "one job at a time per url, whatever the operation; other urls run in parallel",
+      "do": {
+        "one job at a time per url, whatever the operation; other urls run in parallel": "ST-vst4vom3",
+        "jobs of one url run in parallel, each moving the tree as it starts": "ST-vst4vom3"
+      },
+      "class": "design",
+      "answer": "one job at a time per url, whatever the operation; other urls run in parallel",
+      "by": "agent"
     }
   ],
   "notes": "Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: a test-ceiling refusal ends the job failed with the reason host condition and the central host's platform, never retried with another ceiling",
