@@ -16,6 +16,12 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "a risk of its own fix that a worker names in its report (a stale checkout, a host state) is filed as a draft bug, or run through the review brief, before the orchestrator lands the item",
+      "check": 0
+    }
+  ],
   "touches": [
     "skills/sprint/SKILL.md"
   ],
