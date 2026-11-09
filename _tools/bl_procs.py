@@ -17,7 +17,7 @@ SIGKILL after END_WAIT_S): `end_orphans(worktree)`, which `dispatch` calls once 
 the worker's worktree (the MCP servers its session started), and prints each pid and command name it ended, and `bl_clean`'s
 `tidy --class process --apply` for a process an own record names. The third signaller is `runner watch --pid PID --report
 FILE --stale SECONDS` (below the scan, `cmd_runner_watch`): it waits on one headless runner a manager started and, when
-the report file is older than SECONDS while the process still runs, ends it the same way and exits 0; it exits 0 without
+the report file holds output and is older than SECONDS while the process still runs, ends it the same way and exits 0; it exits 0 without
 a signal when the process ends by itself, and refuses (exit 2, nothing signalled) a pid whose command line does not name
 claude, the one place a command line is read, for that test only. A hook in flight is named with its age and fails
 nothing, and a distill run past both is a stuck one, an orphan. HOOK_GRACE_S is the shorter wait `land` makes. A
@@ -648,7 +648,7 @@ def started(pid):
 
 
 def cmd_runner_watch(bl, a):
-    """Wait on the process A.pid; when it runs on and the file A.report is older than A.stale seconds, end it
+    """Wait on the process A.pid; when it runs on and the file A.report holds output and is older than A.stale seconds, end it
     (`end_pids`) and return 0. Return 0 without a signal when it ends by itself. A pid whose command line does not name
     claude is refused (Rejected, exit 2) before anything is signalled."""
     pid, report, stale = a.pid, Path(a.report), a.stale
@@ -670,7 +670,9 @@ def cmd_runner_watch(bl, a):
             say(f"runner watch: pid {pid} ended by itself; nothing signalled")
             return 0
         try:
-            age = time.time() - report.stat().st_mtime
+            info = report.stat()
+            # an empty file is not written yet: dispatch and its launcher create it empty at the start
+            age = time.time() - info.st_mtime if info.st_size > 0 else None
         except OSError:  # not written yet: the runner is still at work
             age = None
         if age is not None and age > stale:
