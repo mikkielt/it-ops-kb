@@ -274,11 +274,13 @@ ASSIGNED_PLACEHOLDER = re.compile(r"<[^<>\s]*>|\$\{[^}\s]*\}|%\w+%|\*{3}")  # a 
 AUTH_HEADER = re.compile(
     r"""(?i)((?:\[\\*["']Authorization\\*["']\]|\bAuthorization(?:\\*["'])?)[ \t]*[:=][ \t]*(?:\\*["'])?(?:Bearer|Basic)[ \t]+)"""
     r"""((?:[^\s"',;\\]|\\(?!["']))+)""")
-# The password of a URL's user:password@ part; the user stays.
-URL_USERINFO = re.compile(r"""(\b[A-Za-z][A-Za-z0-9+.-]*://[^\s/:@"'<>]*:)([^\s/"'<>]+)(?=@)""")
+# The password of a URL's user:password@ part; the user stays. The user holds no colon; an angle-bracket piece of it
+# (`<user>`, `a<b>`, a lone `<` or `>`) is part of it, so a placeholder-looking user hides no password.
+_URL_USER = r"""(?:<[^<>\s]*>|<(?![^<>\s]*>)|>|[^\s/:@"'<>])*"""
+URL_USERINFO = re.compile(r"""(\b[A-Za-z][A-Za-z0-9+.-]*://""" + _URL_USER + r""":)([^\s/"'<>]+)(?=@)""")
 # A url password that holds an angle bracket (`a<b>cccccc`): URL_USERINFO's password class leaves `<` and `>` out, so it
-# matches none. This shape takes exactly those; the scan reports one that is not a placeholder whole.
-URL_USERINFO_ANGLE = re.compile(r"""(\b[A-Za-z][A-Za-z0-9+.-]*://[^\s/:@"'<>]*:)([^\s/"']*[<>][^\s/"']*)(?=@)""")
+# matches none. This shape takes exactly those; the scan reports one that is not a placeholder whole. `redact` imports it.
+URL_USERINFO_ANGLE = re.compile(r"""(\b[A-Za-z][A-Za-z0-9+.-]*://""" + _URL_USER + r""":)([^\s/"']*[<>][^\s/"']*)(?=@)""")
 # What the leak scan takes of them (`structured_secrets`): the shapes named in STRUCTURED, each only for a value, not a
 # placeholder. A header credential has 12 or more characters; a url password and an unquoted assignment value have one or
 # more; a url password with a `<` or `>` is a hit unless it is one of ASSIGNED_PLACEHOLDER whole, as `redact` reads it. A placeholder is one of ASSIGNED_PLACEHOLDER whole, a value with one of `$ { } < > *` or `...`, a code expression

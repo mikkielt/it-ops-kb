@@ -2,7 +2,7 @@
   "id": "BG-sa4pmxsl",
   "kind": "bug",
   "title": "The leak scan and the query-log redaction pass a real password behind a placeholder-looking user, since the userinfo user class bans angle brackets",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-mut2pmu3",
   "priority": "P1",
   "rank": 0,
@@ -48,6 +48,31 @@
     "kb/_self/tools.md",
     "kb/_self/querylog.md"
   ],
-  "notes": "Found by the SP-mut2pmu3 second review (gap 1 S1 and gap 2 S3, commits b3f18ecce3 and 46ab17012d): https://<user>:realpw@host passes both the scan and redact because the user class bans angle brackets; the whole-placeholder test stays on the password only, as the operator chose for BG-pwhlp2sy g1. Settled in the goal so the worker has no open choice: user part is (?:[^\\s/:@\"'<>]|<[^<>\\s]*>)* in URL_USERINFO and URL_USERINFO_ANGLE; redact.py imports the one definition. The check plants the password at run time (kbcommon, redact, the callers url_holds_credential in kbroot and census already refuse a colon in the user). Run 2026-11-09 22:15: worker finished on branch work/BG-sa4pmxsl (S1 fix, check and repro pass per its report) with gate g1 (class secrets) open: the settled class left a lone bracket (a<b:pw@host) unmatched, so it added lone brackets with a lookahead (recommended; the alternative is the settled class unchanged and a check without that case). Asked the manager at 21:45 (ask Af419c35447), no answer by 22:14; released. To resume: claim, answer g1 on the branch, rebuild the branch on origin/main with the claim first if the rebase conflicts, dispatch --resume to reach returned, land.",
-  "filed_in": "clone-0ea70e5c"
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the url user part admit angle brackets when the planned class leaves a lone bracket unmatched, which the item's own check needs?",
+      "options": [
+        "Add lone < and > to the user part with a lookahead that keeps a closed <...> piece one token",
+        "Use the planned class unchanged"
+      ],
+      "recommendation": "Add lone < and > to the user part with a lookahead that keeps a closed <...> piece one token",
+      "reason": "the planned class alone fails the check's lone-bracket case, and the lookahead keeps matching linear",
+      "do": {
+        "Add lone < and > to the user part with a lookahead that keeps a closed <...> piece one token": "BG-sa4pmxsl",
+        "Use the planned class unchanged": "BG-sa4pmxsl"
+      },
+      "class": "secrets",
+      "answer": "Add lone < and > to the user part with a lookahead that keeps a closed <...> piece one token",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
+  "notes": "Found by the SP-mut2pmu3 second review (gap 1 S1 and gap 2 S3, commits b3f18ecce3 and 46ab17012d): a url whose user part is a placeholder in angle brackets and whose password is real passes both the scan and redact, because the user class bans angle brackets; the whole-placeholder test stays on the password only, as the operator chose for BG-pwhlp2sy g1. The check plants the password at run time. Run 2026-11-09: worker finished with gate g1 (class secrets) open, the manager asked, the operator answered option 1 at 22:17; the branch was rebuilt on origin/main (claim first) and the gate re-added. g1 answered by the operator in the manager terminal 22:17.",
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev3run01",
+  "operator": "op-f618a13e"
 }
