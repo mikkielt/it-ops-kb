@@ -2,7 +2,7 @@
   "id": "ST-iueyyz5f",
   "kind": "story",
   "title": "A paid job is refused without a budget, and a group's daily cap refuses a job that would pass it before it starts",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-p4guu2ip",
   "sprint": "SP-lwkdljxg",
   "priority": "P2",
@@ -116,6 +116,19 @@
   ],
   "notes": "Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: queues nothing",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-61c966d6",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "d23a0c590fb95d54277dce519b407914bab3b8e5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,json,time,tempfile,subprocess,threading,http.server\nclass H(http.server.BaseHTTPRequestHandler):\n    seen=[]; out={}\n    def do_POST(s):\n        n=int(s.headers.get(\"Content-Length\") or 0); H.seen.append((s.path,json.loads(s.rfile.read(n) or b\"{}\")))\n        b=json.dumps(H.out).encode(); s.send_response(200); s.send_header(\"Content-Length\",str(len(b))); s.end_headers(); s.wfile.write(b)\n    def log_message(s,*a): pass\nsrv=http.server.HTTPServer((\"127.0.0.1\",0),H); threading.Thread(target=srv.serve_forever,daemon=True).start()\nOPA=f\"http://127.0.0.1:{srv.server_port}\"\ndec=lambda **k: {\"result\":dict({\"executor\":\"workstation\",\"identity\":\"none\",\"fallback\":None,\"fallback_after_s\":0,\"budget_cap_usd\":None,\"decided_by\":\"default\"},**k)}\nd=tempfile.mkdtemp(); env=dict(os.environ,KB_COORD_STORE=os.path.join(d,\"c.sqlite\"))\nkj=lambda *x,e=None: subprocess.run([sys.executable,\"_tools/kbjob.py\",*x],capture_output=True,text=True,timeout=300,env=e or env)\nH.out=dec(executor=\"server\",budget_cap_usd=5,decided_by=\"group:corp/ops\")\nr0=kj(\"submit\",\"bench\",\"multi-lookup\",\"--no-ensure\",\"--opa\",OPA)\nr1=kj(\"submit\",\"bench\",\"multi-lookup\",\"--budget\",\"3\",\"--no-ensure\",\"--opa\",OPA)\nr2=kj(\"submit\",\"bench\",\"multi-mixed\",\"--budget\",\"3\",\"--no-ensure\",\"--opa\",OPA)\nassert r0.returncode==2 and \"--budget\" in r0.stdout+r0.stderr, r0\nassert r1.returncode==0 and json.loads(r1.stdout)[\"state\"]==\"queued\", r1\nassert r2.returncode==1 and all(x in r2.stdout+r2.stderr for x in (\"5\",\"3\")), r2\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
