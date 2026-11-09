@@ -29,6 +29,13 @@
         "-c",
         "\nimport sys,os,subprocess as s,tempfile\nsys.path.insert(0,'_tools');import kbpublic as k\nd=tempfile.mkdtemp();g=lambda *a:s.run(['git','-C',d,*a],check=True,capture_output=True)\nrev=lambda:s.run(['git','-C',d,'rev-parse','HEAD'],capture_output=True,text=True).stdout.strip()\ng('init','-q')\ndef w(p,t):\n    os.makedirs(os.path.dirname(d+'/'+p),exist_ok=True);open(d+'/'+p,'w').write(t)\ndef cm(m):\n    g('add','-A');g('-c','user.name=t','-c','user.email=t'+chr(64)+'example.com','commit','-qm',m);return rev()\nR='---\\nroot: x\\nid_prefix: X\\nvisibility: internal\\ndescription: x\\n---\\n'\nw('a','x\\n');b0=cm('base')\nw('kb/team/_root.md',R);w('kb/team/a.md','x\\n');cm('team')\nc=k.range_tree_causes(b0,d)\nprint(c)\nsys.exit(0 if c and any('kb/team' in x for x in c) else 1)\n"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('_tools/kg_sync.py',encoding='utf-8').read();i=t.find('range_tree_causes');j=t.find('refused:',i);print(i,j);sys.exit(0 if 0<i<j<i+800 else 1)"
+      ]
     }
   ],
   "clauses": [
@@ -39,6 +46,14 @@
     {
       "clause": "kbpublic.range_tree_causes(up, cwd, rev='HEAD') returns the tree causes of UP..REV as history_refusals gives them",
       "check": 1
+    },
+    {
+      "clause": "sync's gate prints each as refused beside the leak causes, so publish passes the range since refs/kb/published when sync does",
+      "check": 2
+    },
+    {
+      "clause": "sync's gate prints each as refused beside the leak causes, so publish passes the range since refs/kb/published when sync does",
+      "check": 3
     }
   ],
   "touches": [
