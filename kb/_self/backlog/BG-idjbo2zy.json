@@ -2,7 +2,7 @@
   "id": "BG-idjbo2zy",
   "kind": "bug",
   "title": "The sprint skill's plan step 5 says precheck runs only the checks, not a bug's repro or the windowed-detector warning",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-rzwljgxv",
   "priority": "P3",
   "rank": 0,
@@ -32,6 +32,28 @@
     "parked: SP-m3azo2y7 review"
   ],
   "notes": "Run order dependency dropped at 20:10 (landings take about 45 minutes each; the planned chain would not finish before the sprint's worker cutoff). Rebase merges separate hunks of the shared file.",
-  "claimed_by": "claude-ev1run01",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "d0ff40fb5910b6b03a8d539e31ee1ae894414c1d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open(\"skills/sprint/SKILL.md\",encoding=\"utf-8\").read().split(\"## plan\")[1].split(\"## start\")[0];s=t.split(\"\\n5. \")[1].split(\"\\n6. \")[0];sys.exit(0 if \"precheck SP\" in s and \"repro\" in s and \"window\" in s else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('skills/sprint/SKILL.md',encoding='utf-8').read();i=t.index('backlog.py precheck SP');s=t[i:t.index(')',i)];sys.exit(0 if 'repro' in s else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
