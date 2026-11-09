@@ -1,0 +1,21 @@
+{
+  "id": "BG-6ywbtbco",
+  "kind": "bug",
+  "title": "token_words misses a hyphen-prefixed source id joined to text by an underscore, as S-5kvx24wm_old",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bl_land.token_words names the id S-5kvx24wm for the text S-5kvx24wm_old and x_S-5kvx24wm, by splitting on underscores before it builds the hyphen pairs, so done's ledger check sees a ledger row of that id as related. Found by the SP-yriisdti review (S3).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, '_tools'); import bl_land; sys.exit(0 if 'S-5kvx24wm' in bl_land.token_words('S-5kvx24wm_old') else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_land.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
