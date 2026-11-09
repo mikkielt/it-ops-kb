@@ -2,7 +2,7 @@
   "id": "BG-gsaipwnz",
   "kind": "bug",
   "title": "Backlog.save restores a disk answer onto a gate a run rewrote under the same id",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ejeki6bv",
   "priority": "P2",
   "rank": 0,
@@ -25,5 +25,7 @@
     "parked: SP-moxpl354 close"
   ],
   "notes": "Review gap of SP-moxpl354 (S4): no shipped command rewrites a gate under its id today, so the case is an edge. Order: BG-3pqzpd2q edits _tools/bl_base.py too, so it runs after this one.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev5run01",
+  "operator": "op-f618a13e"
 }
