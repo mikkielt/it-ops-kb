@@ -36,7 +36,8 @@
   "touches": [
     "_tools/bl_dispatch.py",
     "agents/worker.md",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "ST-rosm4sdw"
