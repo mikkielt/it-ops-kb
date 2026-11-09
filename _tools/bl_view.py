@@ -158,6 +158,8 @@ def cmd_show(bl, a):
     if bl.items[iid].get("review") and bl.sprint_of(iid):  # the review story lists what the operator confirms
         for i, gid, answer in held_answers(bl, bl.sprint_of(iid)):
             say(f"held answer to confirm: {bl.label(i)} gate {gid}: {answer}")
+        for i, gid, answer in unheld_answers(bl, bl.sprint_of(iid)):
+            say(f"unconfirmed provisional answer: {bl.label(i)} gate {gid}: {answer}")
         for i, gid, answer in agent_session_answers(bl, bl.sprint_of(iid)):
             say(f"re-confirm from a terminal: {bl.label(i)} gate {gid}: {answer} (answered from an agent session)")
     w = waits(bl, iid)
@@ -177,6 +179,13 @@ def held_answers(bl, sid):
     items that carry an agent's answer, which the operator confirms at the sprint's review (`answer SID --confirm-held`)."""
     return [(i, g["id"], g.get("answer")) for i in [sid, *bl.sprint_items(sid)] for g in bl.items[i].get("gates", [])
             if isinstance(g, dict) and g.get("hold") is True and g.get("by") == "agent" and "answer" in g]
+
+
+def unheld_answers(bl, sid):
+    """[(item id, gate id, answer)] of the provisional answers of sprint SID and its items that an agent gave, that the
+    operator has not confirmed (`by` is still `agent`) and that no touch holds: the ones `held_answers` leaves out."""
+    return [(i, g["id"], g.get("answer")) for i in [sid, *bl.sprint_items(sid)] for g in bl.items[i].get("gates", [])
+            if isinstance(g, dict) and g.get("hold") is not True and g.get("by") == "agent" and "answer" in g]
 
 
 def cmd_next(bl, a):
@@ -542,6 +551,11 @@ def cmd_horizon(bl, a):
             lines.append(f"  {len(held)} held answer(s) awaiting the operator, to confirm at the review "
                          f"(python3 _tools/backlog.py answer {sid} --confirm-held --by operator):")
             lines += [f"    {bl.label(i)} gate {gid}: {answer}" for i, gid, answer in held]
+        unheld = unheld_answers(bl, sid)
+        if unheld:
+            lines.append(f"  {len(unheld)} unconfirmed provisional answer(s) of an agent, to confirm before the review is done "
+                         f"(python3 _tools/backlog.py answer ITEM GATE --confirm --by operator):")
+            lines += [f"    {bl.label(i)} gate {gid}: {answer}" for i, gid, answer in unheld]
         sessions = agent_session_answers(bl, sid)
         if sessions:
             lines.append(f"  {len(sessions)} operator-class answer(s) recorded from an agent session, for the operator to "

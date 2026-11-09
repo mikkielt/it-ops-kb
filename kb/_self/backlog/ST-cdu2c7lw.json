@@ -38,6 +38,26 @@
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which provisional answers does the new unheld listing include, and does the hook line count them?",
+      "options": [
+        "by agent and unconfirmed, no hold flag; horizon and show only, hook line unchanged",
+        "same, and the hook line counts them too"
+      ],
+      "recommendation": "by agent and unconfirmed, no hold flag; horizon and show only, hook line unchanged",
+      "do": {
+        "by agent and unconfirmed, no hold flag; horizon and show only, hook line unchanged": "ST-cdu2c7lw",
+        "same, and the hook line counts them too": "ST-cdu2c7lw"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "by agent and unconfirmed, no hold flag; horizon and show only, hook line unchanged",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ep7ck2ab close"
   ],
