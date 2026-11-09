@@ -2,7 +2,7 @@
   "id": "BG-cc5btvxp",
   "kind": "bug",
   "title": "The group gate_checks refusal in kbgit.py sync --push has no planted failure in the push gate's tests",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-y7fe7qqx",
   "sprint": "SP-ga3lbnlk",
   "priority": "P2",
@@ -42,6 +42,30 @@
   ],
   "notes": "Planning 2026-11-09: the check's selector -k gate_checks collects NONE now on purpose: the work adds one test whose name holds gate_checks to _tools/test_sync_e2e.py (a planted failing group gate_checks argv; assert sync --push refuses naming the argv and the layer), within max_ids 120 and the seconds ceiling (make room by merging an existing test, never raise).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-0a3e91bc",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "8b7f98f7cc22be2f790c2671828dcd0aecbabd34",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "_tools/test_sync_e2e.py",
+          "-k",
+          "gate_checks"
+        ],
+        "exit": 0,
+        "sha256": "2ce3c8388222c4e9"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,pathlib; t=pathlib.Path('_tools/test_sync_e2e.py').read_text(encoding='utf-8'); sys.exit(0 if 'gate_checks' in t else 'not yet: test_sync_e2e.py plants no gate_checks failure')"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
