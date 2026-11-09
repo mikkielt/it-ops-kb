@@ -34,6 +34,26 @@
   "depends_on": [
     "BG-vdggaufg"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How strict is the stale-gap line match: which pack and line qualify an open entry as answered?",
+      "options": [
+        "Good pack with no check or route line, and a DOC, CODE or DER line of another article that holds 70% of the question's key words and is no not-stated line",
+        "Any good pack with a DOC, CODE or DER line of another article (38 entries on the kb, mostly loosely related lines)"
+      ],
+      "recommendation": "Good pack with no check or route line, and a DOC, CODE or DER line of another article that holds 70% of the question's key words and is no not-stated line",
+      "do": {
+        "Good pack with no check or route line, and a DOC, CODE or DER line of another article that holds 70% of the question's key words and is no not-stated line": "ST-icvtjx5i",
+        "Any good pack with a DOC, CODE or DER line of another article (38 entries on the kb, mostly loosely related lines)": "ST-icvtjx5i"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "Good pack with no check or route line, and a DOC, CODE or DER line of another article that holds 70% of the question's key words and is no not-stated line",
+      "by": "agent"
+    }
+  ],
   "notes": "2026-11-09 gaps2 sweep: 60/60 open gaps packed good on the kb's own UNK not-stated lines and none was closable from the pack; the audit must skip UNK lines and lines inside the gap's own article that say not stated (see the false-good bug filed the same day). Found 2026-11-09 when 9 of 15 gaps a research run chose were already answered (commit b7e486fe8). The check plants a root with a gap answered in another article, a gap whose pack is good on the article's own UNK not-stated line (the false good of BG-vdggaufg) and an unanswered gap; the planted pack needs filler articles to reach coverage good.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-c41d77ea",
