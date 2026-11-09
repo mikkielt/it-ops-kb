@@ -24,6 +24,27 @@
     "ST-ybksk2f2",
     "ST-y5volitm"
   ],
+  "gates": [
+    {
+      "id": "approval",
+      "kind": "provisional",
+      "question": "Does any answer to a gate naming a cost signal count as approval for the stub, or only an affirmative one?",
+      "options": [
+        "any answer, as the goal words it",
+        "only an answer that is not a refusal"
+      ],
+      "recommendation": "any answer, as the goal words it",
+      "reason": "the goal says an answer for which strict_signals lists a money signal, and no answer text can be parsed reliably",
+      "do": {
+        "any answer, as the goal words it": "BG-cuqu5jy6",
+        "only an answer that is not a refusal": "BG-cuqu5jy6"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "any answer, as the goal words it",
+      "by": "agent"
+    }
+  ],
   "links": [
     "retro: drain 2026-10-27..11-08"
   ],
