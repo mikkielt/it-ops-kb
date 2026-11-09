@@ -1,0 +1,22 @@
+{
+  "id": "ST-lcsxh7ji",
+  "kind": "story",
+  "title": "A planned check for a clause about a descriptor or handle is run once against the base and once against a prototype fix, and reads the resource the clause names",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The sprint skill's plan step runs a check that inspects a descriptor, handle or file by position (the first or last opened) against the base and a prototype fix before the start gate and records which resource it read, so a check that passes before the work is tightened at the plan",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; t = open('skills/sprint/SKILL.md').read(); sys.exit(0 if 'descriptor or handle' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
