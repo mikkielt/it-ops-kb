@@ -2,7 +2,7 @@
   "id": "BG-kcfbcll2",
   "kind": "bug",
   "title": "A review's done names a loaded host for tests.py -n 2, -x or --durations as for a bare whole-suite run",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-yriisdti",
   "priority": "P3",
   "rank": 0,
@@ -47,6 +47,19 @@
   "links": [
     "parked: SP-qlpfcgs2 review"
   ],
-  "claimed_by": "claude-ev2run01",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "c7ed1089e7b0bca48e9bbac7d2d54003ae6594dc",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bl_land;sys.exit(0 if bl_land.is_whole_suite(['python3','_tools/tests.py','-n','2']) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
