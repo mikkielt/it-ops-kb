@@ -7,17 +7,25 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "bench_load's PANE_COMMANDS replays what the pane mod's refresh runs (kbmon.py --once --shared --max-age 55), and a check compares the two, so arm B measures the shared-snapshot saving",
+  "goal": "bench_load's PANE_COMMANDS replays what the pane mod's refresh runs (kbmon.py --once --shared --max-age 55), so arm B measures the shared-snapshot saving",
   "repro": {
     "run": [
       "python3",
       "-c",
-      "import sys\nsys.path.insert(0, '_tools')\nimport bench_load\nassert any('--shared' in c for c in bench_load.PANE_COMMANDS), ('arm B replays kbmon without --shared', bench_load.PANE_COMMANDS)"
+      "import sys; sys.path.insert(0,\"_tools\"); import bench_load; print(bench_load.PANE_COMMANDS); sys.exit(0 if (\"--once\",\"--shared\",\"--max-age\",\"55\") in bench_load.PANE_COMMANDS else 1)"
     ]
   },
+  "touches": [
+    "_tools/bench_load.py",
+    "kb/_self/benchmarks.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-4cq32a53"
+  ],
   "links": [
     "parked: SP-wpttdu7u review"
   ],
-  "notes": "Review gap 2 of SP-wpttdu7u: bench_load.py:33 PANE_COMMANDS = ((\"--once\",), (\"--status\", \"all\")), used at 326 and 590; the mod runs --once --shared --max-age 55 (register.tsx:157). bench_load.py was outside ST-dktdxpc3's touches.",
+  "notes": "Review gap 2 of SP-wpttdu7u: bench_load.py:33 PANE_COMMANDS = ((\"--once\",), (\"--status\", \"all\")), used at 326 and 590; the mod runs --once --shared --max-age 55 (register.tsx:157). bench_load.py was outside ST-dktdxpc3's touches. Premise: the bug's repro fails on the base (origin/main at the planning commit, 2026-11-09); precheck ran it through the landing's check runner. Sprint order: items that share one file are chained with depends_on.",
   "filed_in": "clone-0ea70e5c"
 }

@@ -16,7 +16,10 @@
     ]
   },
   "touches": [
-    "_tools/bench_load.py"
+    "_tools/bench_load.py",
+    "kb/_self/benchmarks.md",
+    "kb/_self/tools.md"
   ],
+  "notes": "Premise: the bug's repro fails on the base (origin/main at the planning commit, 2026-11-09); precheck ran it through the landing's check runner. Sprint order: items that share one file are chained with depends_on.",
   "filed_in": "clone-0ea70e5c"
 }

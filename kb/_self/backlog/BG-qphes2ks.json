@@ -7,20 +7,25 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "bench_repro.compare refuses (Refused, exit 2) when rag.py eval at an instance's end prints no json, as it does for the eval at the start commit, so pick never ranks an instance last on an eval that did not run; a planted fake rag in test_bench.py proves it (no new test id). Found by the SP-75hdeqld review (S3).",
+  "goal": "bench_repro.compare refuses (Refused, exit 2) when rag.py eval at an instance's end prints no json, as it does for the eval at the start commit, so pick never ranks an instance last on an eval that did not run",
   "repro": {
     "run": [
       "python3",
       "-c",
-      "import sys;sys.path.insert(0,'_tools');import inspect,bench_repro as b;l=inspect.getsource(b.compare).splitlines();i=[k for k,x in enumerate(l) if 'evals[n] = eval_rows(' in x];ok=bool(i) and any('raise Refused' in x for x in l[i[0]:i[0]+4]);sys.exit(0 if ok else 1)"
+      "\nimport sys, json, tempfile, pathlib\nsys.path.insert(0,\"_tools\")\nimport bench_repro as b\nt = pathlib.Path(tempfile.mkdtemp()); bare = t/\"bare\"; bare.mkdir(); q = t/\"q.csv\"; q.write_text(\"\")\n(t/b.MANIFEST).write_text(json.dumps({\"rev\": \"a\"*40, \"instances\": [{\"n\": 1, \"bare\": str(bare)}]}))\nb.latest = lambda x: {(1, \"ar\"): {\"bare_before\": \"b\", \"bare_after\": \"c\"}}\nb.read_results = lambda p: []\nb.load_questions = lambda p: []\nb.instance_env = lambda r, n: {}\nb.checkout_path = lambda r, n: t/\"co\"\nb.make_checkout = lambda *a: None\nb.put_at = lambda *a: None\nb.state_of = lambda *a: {}\nb.added_between = lambda *a: {\"articles\": [], \"facts\": [], \"sources\": {}, \"kinds\": {k: 0 for k in b.TAG_KINDS}}\nb.sh_git = lambda *a: \"main\"\nb.error_counts = lambda *a: {}\ncalls = []\nb.eval_rows = lambda *a: {} if not calls.append(1) and len(calls) == 1 else None\ntry:\n    b.compare(root=t, questions_path=q, out=lambda *a: None)\nexcept b.Refused as e:\n    print(\"refused:\", e); sys.exit(0)\nexcept Exception as e:\n    print(\"other:\", type(e).__name__, e); sys.exit(1)\nprint(\"compare did not refuse an end eval with no json\"); sys.exit(1)"
     ]
   },
   "repro_reason": "Running compare needs instance bares and a start commit's checkout; the repro reads whether a refusal follows the end eval call in compare's source, the fix's own test drives the behaviour.",
   "touches": [
     "_tools/bench_repro.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/benchmarks.md"
+  ],
+  "depends_on": [
+    "BG-nek3djiy"
   ],
   "links": [
     "parked: SP-75hdeqld review"
-  ]
+  ],
+  "notes": "Premise: the bug's repro fails on the base (origin/main at the planning commit, 2026-11-09); precheck ran it through the landing's check runner. Sprint order: items that share one file are chained with depends_on."
 }

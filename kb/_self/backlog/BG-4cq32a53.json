@@ -12,12 +12,20 @@
     "run": [
       "python3",
       "-c",
-      "import os, sys\nsys.path.insert(0, '_tools')\nimport bench_load as b\nclass B:\n    window = 0.01\n    live_pids = [os.getppid()]\n    def row(self, *a, **k):\n        pass\nb.live_snapshot = lambda *a: '/nonexistent'\ntry:\n    b.live_rows(B())\nexcept ZeroDivisionError:\n    raise AssertionError('live_rows divides by zero on a short window')"
+      "import os, sys; sys.path.insert(0,\"_tools\"); import bench_load as b\nclass B:\n    window = 0.01\n    live_pids = [os.getppid()]\n    def row(self, *a, **k):\n        pass\nb.live_snapshot = lambda *a: \"/nonexistent\"\ntry:\n    b.live_rows(B())\nexcept ZeroDivisionError:\n    print(\"live_rows divides by zero on a short window\"); sys.exit(1)\nexcept SystemExit as e:\n    sys.exit(0 if e.code == 2 else 1)\nexcept Exception:\n    pass"
     ]
   },
+  "touches": [
+    "_tools/bench_load.py",
+    "kb/_self/benchmarks.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-c3726dir"
+  ],
   "links": [
     "parked: SP-wv3ob5vy review"
   ],
-  "notes": "Review gap 4 of SP-wv3ob5vy: bench_load.py:830 divides by elapsed/60; benchmarks.py accepts any --window above 0.",
+  "notes": "Review gap 4 of SP-wv3ob5vy: bench_load.py:830 divides by elapsed/60; benchmarks.py accepts any --window above 0. Premise: the bug's repro fails on the base (origin/main at the planning commit, 2026-11-09); precheck ran it through the landing's check runner. Sprint order: items that share one file are chained with depends_on.",
   "filed_in": "clone-0ea70e5c"
 }

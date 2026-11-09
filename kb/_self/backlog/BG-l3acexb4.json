@@ -12,13 +12,22 @@
     "run": [
       "python3",
       "-c",
-      "t=open('kb/_self/reports/benchmarks.md',encoding='utf-8').read()\nassert 'intake real' in t, 'no intake-real figure in the report'"
+      "import sys; r=open(\"kb/_self/reports/benchmarks.md\",encoding=\"utf-8\").read(); bad=\"the cost of the intake hook where those checks do run is not measured\" in r; print(\"intake real\" in r, bad); sys.exit(0 if (\"intake real\" in r and not bad) else 1)"
     ]
   },
   "repro_reason": "the gap is report text: the generated report omits rows the csv holds, so its text is the thing to read",
+  "touches": [
+    "kb/_self/reports/benchmarks.md",
+    "README.md",
+    "kb/_self/benchmarks.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-mhlxillg"
+  ],
   "links": [
     "parked: SP-m5m67goe review"
   ],
-  "notes": "Review G3: benchmarks.md:1410 Setup and :1543 bullet; the 2026-10-28 record is in the records table with no figures.",
+  "notes": "Review G3: benchmarks.md:1410 Setup and :1543 bullet; the 2026-10-28 record is in the records table with no figures. Premise: the bug's repro fails on the base (origin/main at the planning commit, 2026-11-09); precheck ran it through the landing's check runner. Sprint order: items that share one file are chained with depends_on.",
   "filed_in": "clone-0ea70e5c"
 }

@@ -12,13 +12,20 @@
     "run": [
       "python3",
       "-c",
-      "t = open('kb/_self/reports/benchmarks.md', encoding='utf-8').read()\nassert '1f6011b' in t, 'the record table does not name the paid record commit'"
+      "import sys; t=open(\"kb/_self/reports/benchmarks.md\",encoding=\"utf-8\").read(); print(\"1f6011b\" in t); sys.exit(0 if \"1f6011b\" in t else 1)"
     ]
   },
   "repro_reason": "the generated report's table text is what misstates the commit; the csv rows themselves are right",
+  "touches": [
+    "kb/_self/reports/benchmarks.md",
+    "README.md",
+    "kb/_self/benchmarks.md",
+    "kb/_self/tools.md",
+    "_tools/bench_report.py"
+  ],
   "links": [
     "parked: SP-wv3ob5vy review"
   ],
-  "notes": "Review gap 3 of SP-wv3ob5vy: benchmarks.md:1417 row '2026-10-28 | 553d9e5 | ... | $0.56'; 648 paid rows name 1f6011b, 3 intake-real rows 553d9e5 (one record date, two commits).",
+  "notes": "Review gap 3 of SP-wv3ob5vy: benchmarks.md:1417 row '2026-10-28 | 553d9e5 | ... | $0.56'; 648 paid rows name 1f6011b, 3 intake-real rows 553d9e5 (one record date, two commits). Premise: the bug's repro fails on the base (origin/main at the planning commit, 2026-11-09); precheck ran it through the landing's check runner. Sprint order: items that share one file are chained with depends_on.",
   "filed_in": "clone-0ea70e5c"
 }

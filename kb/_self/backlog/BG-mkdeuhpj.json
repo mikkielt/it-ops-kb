@@ -12,9 +12,20 @@
     "run": [
       "python3",
       "-c",
-      "import csv,collections,sys; d=collections.defaultdict(set); [d[(r['case'],r['arm'],r['metric'])].add(bool(r['model'])) for r in csv.DictReader(open('kb/_self/reports/benchmarks.csv',encoding='utf-8')) if r['scenario']=='session-load']; bad=[k for k,v in d.items() if len(v)>1]; print(bad[:3]); sys.exit(1 if bad else 0)"
+      "import csv,collections,sys; sys.path.insert(0,\"_tools\"); import bench_report as br; rows=[r for r in csv.DictReader(open(\"kb/_self/reports/benchmarks.csv\",encoding=\"utf-8\"))]; d=collections.defaultdict(set); [d[(r[\"case\"],r[\"arm\"],r[\"metric\"])].add(bool(r[\"model\"])) for r in rows if r[\"scenario\"]==\"session-load\"]; bad=[k for k,v in d.items() if len(v)>1]; fails=[]\nfor c,a,m in bad:\n    ls=br.table(rows,\"session-load\",[m],cases=[c],arms=[a]).splitlines()[2:]\n    if len(ls)<2 and \" -> \" in ls[0]: fails.append((c,a,m))\nprint(len(bad),fails[:3]); sys.exit(1 if fails else 0)"
     ]
   },
   "repro_reason": "the defect shows in the results file itself: a case and arm that hold a replay record and a paid record, which bench_report.table joins; a planted input would only restate that",
+  "touches": [
+    "kb/_self/reports/benchmarks.md",
+    "README.md",
+    "kb/_self/benchmarks.md",
+    "kb/_self/tools.md",
+    "_tools/bench_report.py"
+  ],
+  "depends_on": [
+    "BG-uoqtn67j"
+  ],
+  "notes": "Premise: the bug's repro fails on the base (origin/main at the planning commit, 2026-11-09); precheck ran it through the landing's check runner. Sprint order: items that share one file are chained with depends_on.",
   "filed_in": "clone-0ea70e5c"
 }

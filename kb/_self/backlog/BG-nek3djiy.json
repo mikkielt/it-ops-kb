@@ -7,7 +7,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "bench_repro.overlap_and_conflicts matches two facts in different articles that cite one url only when their code spans (backticked terms) and numbers agree as well as their word share reaching TOKEN_OVERLAP, so two sentences about different options of one page (`--timeout` and `--retries`) are no pair and no conflict; the compare part of test_bench.py proves it (no new test id). Found by the SP-75hdeqld review (S3).",
+  "goal": "bench_repro.overlap_and_conflicts matches two facts in different articles that cite one url only when their code spans (backticked terms) and numbers agree as well as their word share reaching TOKEN_OVERLAP, so two sentences about different options of one page (`--timeout` and `--retries`) are no pair and no conflict",
   "repro": {
     "run": [
       "python3",
@@ -17,9 +17,14 @@
   },
   "touches": [
     "_tools/bench_repro.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/benchmarks.md"
+  ],
+  "depends_on": [
+    "BG-skqyzfeq"
   ],
   "links": [
     "parked: SP-75hdeqld review"
-  ]
+  ],
+  "notes": "Premise: the bug's repro fails on the base (origin/main at the planning commit, 2026-11-09); precheck ran it through the landing's check runner. Sprint order: items that share one file are chained with depends_on."
 }

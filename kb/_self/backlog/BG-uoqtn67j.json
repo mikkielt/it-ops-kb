@@ -7,7 +7,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "kb/_self/reports/benchmarks.md says, beside the 2026-10-23 record, that it measured 20 held-out rows no earlier record held, held-out kind only and one rep, so its held-out, all and effort cells do not compare with the earlier records' rows; or the report generator leaves those deltas out for a record whose row set differs",
+  "goal": "kb/_self/reports/benchmarks.md says, beside the 2026-10-23 record, that it measured 20 held-out rows no earlier record held, held-out kind only and one rep, so its held-out, all and effort cells do not compare with the earlier records' rows (or the report generator leaves those deltas out for a record whose row set differs)",
   "repro": {
     "run": [
       "python3",
@@ -18,9 +18,16 @@
   "repro_reason": "the defect is the report's missing wording beside generated figures; the generator's output is the text read",
   "touches": [
     "kb/_self/reports/benchmarks.md",
-    "_tools/bench_report.py"
+    "_tools/bench_report.py",
+    "README.md",
+    "kb/_self/benchmarks.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-ozzvdojj"
   ],
   "links": [
     "parked: SP-lorofi3i review"
-  ]
+  ],
+  "notes": "Premise: the bug's repro fails on the base (origin/main at the planning commit, 2026-11-09); precheck ran it through the landing's check runner. Sprint order: items that share one file are chained with depends_on."
 }

@@ -12,13 +12,22 @@
     "run": [
       "python3",
       "-c",
-      "t = open('kb/_self/reports/benchmarks.md', encoding='utf-8').read()\nassert 'mean of 3 reps' not in t, 'the report calls median cells a mean'"
+      "import sys; t=open(\"kb/_self/reports/benchmarks.md\",encoding=\"utf-8\").read(); ok=\"mean of 3 reps\" not in t and \"median of 3 reps\" in t; print(ok); sys.exit(0 if ok else 1)"
     ]
   },
   "repro_reason": "the defect is report wording against what the code writes (statistics.median at bench_load.py:1102-1110); the text is the thing that is wrong",
+  "touches": [
+    "kb/_self/reports/benchmarks.md",
+    "README.md",
+    "kb/_self/benchmarks.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-l3acexb4"
+  ],
   "links": [
     "parked: SP-wv3ob5vy review"
   ],
-  "notes": "Review gap 2 of SP-wv3ob5vy: benchmarks.md:1422.",
+  "notes": "Review gap 2 of SP-wv3ob5vy: benchmarks.md:1422. Premise: the bug's repro fails on the base (origin/main at the planning commit, 2026-11-09); precheck ran it through the landing's check runner. Sprint order: items that share one file are chained with depends_on.",
   "filed_in": "clone-0ea70e5c"
 }
