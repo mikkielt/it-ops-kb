@@ -12,12 +12,15 @@
       "run": [
         "python3",
         "-c",
-        "import sys; t = open(\"kb/_self/coordination.md\").read(); i = t.index(\"**Who moves it.**\"); s = t[i:i + 900]; sys.exit(0 if \"SIGTERM\" in s else 1)"
+        "import sys; t = open(\"kb/_self/coordination.md\").read(); i = t.index(\"**Who moves it.**\"); s = t[i:i + 1200]; j = s.index(\"released\"); k = s[:j + 400]; sys.exit(0 if all(w in k for w in (\"refusal\", \"saved\", \"interrupt\", \"SIGTERM\")) else 1)"
       ]
     }
   ],
   "touches": [
     "kb/_self/coordination.md"
+  ],
+  "depends_on": [
+    "BG-iu2uopke"
   ],
   "links": [
     "parked: SP-6aegt3bs close"

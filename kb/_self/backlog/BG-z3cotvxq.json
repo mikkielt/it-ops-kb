@@ -15,8 +15,29 @@
       "import os, subprocess, sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport bl_close\nt = tempfile.mkdtemp()\nsubprocess.run([\"git\", \"init\", \"-q\", t], check=True)\npath = bl_close.landing_lock_path(t)\nreal, n = os.fdopen, [0]\ndef boom(*a, **k):\n    n[0] += 1\n    if n[0] == 2:\n        os.fdopen = real\n        raise KeyboardInterrupt\n    return real(*a, **k)\nos.fdopen = boom\ntry:\n    with bl_close.landing_lock(t, \"ST-aaaaaaaa\"):\n        pass\nexcept BaseException as e:\n    print(\"interrupted by\", type(e).__name__)\nfinally:\n    os.fdopen = real\nprint(\"lock file left behind:\", os.path.exists(path))\nsys.exit(0 if not os.path.exists(path) else 1)\n"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, subprocess, sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport bl_close\nt = tempfile.mkdtemp()\nsubprocess.run([\"git\", \"init\", \"-q\", t], check=True)\nreal_open, real_fdopen = os.open, os.fdopen\nfds, n = [], [0]\ndef spy_open(*a, **k):\n    fd = real_open(*a, **k)\n    fds.append(fd)\n    return fd\ndef boom(*a, **k):\n    n[0] += 1\n    if n[0] == 2:\n        raise KeyboardInterrupt\n    return real_fdopen(*a, **k)\nos.open, os.fdopen = spy_open, boom\ntry:\n    with bl_close.landing_lock(t, \"ST-aaaaaaaa\"):\n        pass\nexcept BaseException as e:\n    print(\"interrupted by\", type(e).__name__)\nfinally:\n    os.open, os.fdopen = real_open, real_fdopen\nlock_fd = fds[0] if fds else -1\ntry:\n    os.fstat(lock_fd)\n    print(\"lock descriptor still open:\", lock_fd)\n    sys.exit(1)\nexcept OSError:\n    print(\"lock descriptor closed\")\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "landing_lock removes the lock file it created on any interrupt, also one that lands between os.open of the lock file and the write of its record",
+      "check": 1
+    },
+    {
+      "clause": "closes the file descriptor",
+      "check": 0
+    }
+  ],
   "touches": [
-    "_tools/bl_close.py"
+    "_tools/bl_close.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ],
   "links": [
     "parked: SP-6aegt3bs review"
