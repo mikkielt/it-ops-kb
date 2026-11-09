@@ -2,7 +2,7 @@
   "id": "BG-joflyipx",
   "kind": "bug",
   "title": "kbmon's cleanup metrics (mon_export.cleanup_points) export only the verdicts remove and keep, so rows with the verdict ask are missing from kbmon.cleanup.leftovers",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-hyfyn22d",
   "priority": "P2",
   "rank": 0,
@@ -42,5 +42,7 @@
   "links": [
     "planned: SP-hyfyn22d"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev4run01",
+  "operator": "op-f618a13e"
 }
