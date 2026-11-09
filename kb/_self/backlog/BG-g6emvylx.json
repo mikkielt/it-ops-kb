@@ -1,0 +1,22 @@
+{
+  "id": "BG-g6emvylx",
+  "kind": "bug",
+  "title": "census.py read counts each confirmed source twice in its census.phase row",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "census.py read's census.phase row counts confirmed once per source read",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import argparse, collections, sys\nsys.path.insert(0, \"_tools\")\nimport census, kbcommon\ncensus.KB = kbcommon.KB\nimport factdiff\nfactdiff.ROOT = kbcommon.root(\"public\")\nt = collections.Counter()\ncensus.cmd_read(argparse.Namespace(date=\"2026-11-09\", ids=[\"S100\", \"S102\"], note=\"n\", dry_run=True), t)\nprint(\"named 2 sources; confirmed tallied\", t[\"confirmed\"])\nsys.exit(0 if t[\"confirmed\"] == 2 else 1)\n"
+    ]
+  },
+  "touches": [
+    "_tools/census.py",
+    "kb/_self/web-sources.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
