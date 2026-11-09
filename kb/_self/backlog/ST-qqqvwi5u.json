@@ -2,7 +2,7 @@
   "id": "ST-qqqvwi5u",
   "kind": "story",
   "title": "The sprint skill's plan step runs a bug's repro against the goal's design choice before the start gate",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-moxpl354",
   "priority": "P2",
   "rank": 0,
@@ -43,6 +43,28 @@
     "parked: SP-osevumx6 close"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-a1b2c3d4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "af14dee6af0fd8460053e2db123955f54113c92e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,pathlib\nt=pathlib.Path('skills/sprint/SKILL.md').read_text(encoding='utf-8')\ns=t.split('## plan',1)[1].split('## start',1)[0].lower()\nmiss=[w for w in ['repro still passes beside the goal'] if w not in s]\nsys.exit('not yet: plan section lacks '+', '.join(miss) if miss else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,pathlib\nt=pathlib.Path('skills/sprint/SKILL.md').read_text(encoding='utf-8')\ns=t.split('## plan',1)[1].split('## start',1)[0].lower()\nmiss=[w for w in ['set --repro', 'refuses a passing'] if w not in s]\nsys.exit('not yet: plan section lacks '+', '.join(miss) if miss else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
