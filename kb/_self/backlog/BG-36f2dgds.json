@@ -1,0 +1,23 @@
+{
+  "id": "BG-36f2dgds",
+  "kind": "bug",
+  "title": "kbpublic.texts drops a path with a newline before git is asked, so a _root.md in such a directory is neither refused nor read as not public by tree_refusals and internal_prefixes",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "texts_marked answers a spec that texts skipped for a newline as unreadable, so tree_refusals refuses and internal_prefixes lists the root as it does for an invalid-UTF-8 _root.md",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.exit(1)"
+    ]
+  },
+  "repro_reason": "needs a git tree with a path holding a newline; the planted input is in the notes",
+  "touches": [
+    "_tools/kbpublic.py",
+    "kb/_self/git.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
