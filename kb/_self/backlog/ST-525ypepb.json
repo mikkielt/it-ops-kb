@@ -1,22 +1,35 @@
 {
   "id": "ST-525ypepb",
   "kind": "story",
-  "title": "A land that stops at the stale step names the docs it needs a Self-Reviewed line for, and the worker brief says to rerun selfdoc.py stale after the rebase onto origin/main",
+  "title": "The worker brief and agents/worker.md say to run selfdoc.py stale --since origin/main again after the rebase onto origin/main",
   "status": "draft",
+  "sprint": "SP-moxpl354",
   "priority": "P2",
   "rank": 0,
-  "goal": "The worker brief and the land stop message tell a worker to run selfdoc.py stale --since origin/main again after rebasing on origin/main, since SP-osevumx6 landings of BG-fwqcimiv and BG-fjptk52z stopped at the stale step on kb/_self/tools.md, which the worker's own pre-rebase run did not list",
+  "goal": "the worker brief tells a worker to run selfdoc.py stale --since origin/main again after the rebase onto origin/main, since SP-osevumx6 landings of BG-fwqcimiv and BG-fjptk52z stopped at the stale step on kb/_self/tools.md, which the worker's own pre-rebase run did not list; agents/worker.md says the same",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "t=open('agents/worker.md',encoding='utf-8').read();import sys;sys.exit(0 if 'after the rebase' in t and 'selfdoc.py stale' in t else 1)"
+        "import subprocess,sys\nout=subprocess.run([sys.executable,'_tools/backlog.py','brief','ST-uh7kxean'],capture_output=True,text=True).stdout\nph='again after the reb' + 'ase onto origin/main'\nok=(ph in out)==True\nprint('brief of ST-uh7kxean has: '+ph if ok else 'brief of ST-uh7kxean: want phrase present: '+ph)\nsys.exit(0 if ok else 1)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,pathlib\nt=pathlib.Path('agents/worker.md').read_text(encoding='utf-8').lower()\nmiss=[w for w in ['after the rebase', 'selfdoc.py stale'] if w not in t]\nsys.exit('not yet: agents/worker.md lacks '+', '.join(miss) if miss else 0)\n"
       ]
     }
   ],
   "touches": [
-    "agents/worker.md"
+    "_tools/bl_dispatch.py",
+    "agents/worker.md",
+    "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "ST-rosm4sdw"
   ],
   "links": [
     "parked: SP-osevumx6 close"
