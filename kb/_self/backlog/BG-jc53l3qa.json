@@ -2,7 +2,7 @@
   "id": "BG-jc53l3qa",
   "kind": "bug",
   "title": "querylog.py check prints no redact note when the only redact-gate problem is 'fetch host is not a public host'",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-osevumx6",
   "priority": "P3",
   "rank": 0,

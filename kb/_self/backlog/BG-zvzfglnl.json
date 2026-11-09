@@ -2,7 +2,7 @@
   "id": "BG-zvzfglnl",
   "kind": "bug",
   "title": "A query-log delivery refused by its sync logs no reason, and kbmon raises REFUSED though another run delivered the rows",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-osevumx6",
   "priority": "P3",
   "rank": 0,

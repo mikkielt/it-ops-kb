@@ -2,7 +2,7 @@
   "id": "BG-vry5r7pe",
   "kind": "bug",
   "title": "A stale feedback.ids lock taken by two writers that both saw it stale can be held by both",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-osevumx6",
   "priority": "P2",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "BG-fwdpzee4",
   "kind": "bug",
   "title": "The leak scan flags a table row whose identifier cell is lower-camel or holds digits (deviceManagementConfigurationPolicy, Win32LobAppAssignmentSettings), because the exemption covers only three capitalised words",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-osevumx6",
   "priority": "P3",
   "rank": 0,

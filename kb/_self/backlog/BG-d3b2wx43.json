@@ -2,7 +2,7 @@
   "id": "BG-d3b2wx43",
   "kind": "bug",
   "title": "kb!: a negation reaches across 'and' or 'but', so 'not correct and wrong PATH:LINE' records no issue",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-osevumx6",
   "priority": "P3",
   "rank": 0,

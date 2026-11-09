@@ -2,7 +2,7 @@
   "id": "BG-jtnkjxsc",
   "kind": "bug",
   "title": "redact._known_load crashes on a deep cache file and loads a wrong-shaped one as a Known of characters",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-osevumx6",
   "priority": "P3",

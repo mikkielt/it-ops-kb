@@ -2,7 +2,7 @@
   "id": "BG-ad2yq7oy",
   "kind": "bug",
   "title": "redact.py's comment says the EC armor line is the only BEGIN line not flagged alone, but the PGP key block line is one too",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-osevumx6",
   "priority": "P3",
   "rank": 0,

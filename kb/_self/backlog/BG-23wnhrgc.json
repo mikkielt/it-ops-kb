@@ -2,7 +2,7 @@
   "id": "BG-23wnhrgc",
   "kind": "bug",
   "title": "kbcommon.url_holds_credential reads a Windows path with an @ in a folder name as a credential url",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-eocmyqdx",
   "sprint": "SP-osevumx6",
   "priority": "P3",

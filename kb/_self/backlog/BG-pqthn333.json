@@ -2,7 +2,7 @@
   "id": "BG-pqthn333",
   "kind": "bug",
   "title": "A coord ask cannot carry a session id: kbask redacts the UUID, so two sessions cannot tell each other how to be addressed",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-osevumx6",
   "priority": "P2",
   "rank": 0,

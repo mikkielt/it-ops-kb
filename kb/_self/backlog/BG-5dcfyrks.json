@@ -2,7 +2,7 @@
   "id": "BG-5dcfyrks",
   "kind": "bug",
   "title": "redact keeps the start of a url password that holds an angle bracket, because the password class of URL_USERINFO excludes < and >",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-osevumx6",
   "priority": "P3",
   "rank": 0,
