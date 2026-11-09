@@ -2,7 +2,7 @@
   "id": "ST-lcg45cer",
   "kind": "story",
   "title": "Research sprint goal: Lock follow-ups: a dead or reused pid's landing ticket never blocks, an interrupted land or claim leaves nothing behind, and a first pass with nothing to wait for ends cleanly",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-6aegt3bs",
   "goal_research": true,
   "priority": "P1",
@@ -23,6 +23,20 @@
   ],
   "notes": "No outside facts: the sprint's goal is the behaviour of this repository's own landing lock, claim and land code; no vendor documentation or kb article is involved, so no kb file changes.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-ef8e3893",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "1d3b62faeb5e8dbb6707034a72b790af5a6e248a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-lcg45cer"
+        ],
+        "exit": 0,
+        "sha256": "4cf30dd62807059c"
+      }
+    ]
+  }
 }
