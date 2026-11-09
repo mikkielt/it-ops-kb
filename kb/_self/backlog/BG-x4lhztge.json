@@ -2,7 +2,7 @@
   "id": "BG-x4lhztge",
   "kind": "bug",
   "title": "search_urls records a PyPI 404 as no answer, asks PyPI with a space-joined query, and drops a PyPI hit as a hub page",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-2cq2hse4",
   "priority": "P3",
   "rank": 0,
@@ -37,6 +37,19 @@
     "parked: SP-vk3wf746 review"
   ],
   "notes": "Found by the SP-vk3wf746 review (S3 factdiff.py:1269, S4 factdiff.py:1283; the PyPI half of that sprint goal's GitHub, arXiv or PyPI clause). One repro reads the joiner, the 404 and the trailing slash together.",
-  "claimed_by": "claude-c41d77ea",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "79ca507bd9623d7fe41bf69a7669102589291814",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json, sys\nsys.path.insert(0, \"_tools\")\nimport factdiff as f, provider as p\nrow = {\"search_api\": \"https://pypi.org/pypi/{q}/json\"}\nurls = []\ndef not_found(u, **k):\n    urls.append(u)\n    return {\"status\": 404, \"body\": b\"\", \"headers\": {}}\np.gated_request = not_found\nf.search_urls(\"presidio analyzer returns entities\", None, row, \"https://pypi.org/project/presidio-analyzer/\")\nunanswered = [r for r in f._unanswered if \"pypi.org\" in r]\nf._searches.clear()\nf._unanswered.clear()\ndef found(u, **k):\n    urls.append(u)\n    return {\"status\": 200, \"body\": json.dumps({\"info\": {\"name\": \"requests\", \"package_url\": \"https://pypi.org/project/requests/\"}, \"releases\": {}}), \"headers\": {}}\np.gated_request = found\nhits = f.search_urls(\"requests sends http\", None, row, \"https://pypi.org/project/old/\")\njoined = any(\"requests-sends-http\" in u for u in urls)\nprint(\"unanswered:\", unanswered, \"hits:\", hits, \"joined with the provider's joiner:\", joined)\nsys.exit(0 if not unanswered and hits and joined else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "badee82d381fb7ea"
+      }
+    ]
+  }
 }
