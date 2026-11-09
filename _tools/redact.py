@@ -87,6 +87,9 @@ SECRETS = [re.compile(f"(?i:{p[4:]})" if p.startswith("(?i)") else p) for p in k
 # redactor and the scan cannot drift apart.
 ASSIGNMENT, ASSIGNED_PLACEHOLDER, AUTH_HEADER, URL_USERINFO = (kbcommon.ASSIGNMENT, kbcommon.ASSIGNED_PLACEHOLDER,
                                                                kbcommon.AUTH_HEADER, kbcommon.URL_USERINFO)
+# A url password that holds an angle bracket (`a<b>cccccc`): URL_USERINFO's password class leaves `<` and `>` out, so it
+# does not match one. This shape takes exactly those, up to the `@`; a password that is a placeholder whole stays.
+URL_USERINFO_ANGLE = re.compile(r"""(\b[A-Za-z][A-Za-z0-9+.-]*://[^\s/:@"'<>]*:)([^\s/"']*[<>][^\s/"']*)(?=@)""")
 # Nine English function words: a bare word of this list after a secret key name or an Authorization scheme is prose ("LAPS
 # password: where stored", "use Authorization: Bearer in Graph"), not a value. No other word is kept, a quoted word
 # is a value, and so is a word of the list inside a URL's user:password@ part.
@@ -364,6 +367,7 @@ def redact(text, k=None, root=None):
     text = ASSIGNMENT.sub(_assigned, text)
     text = AUTH_HEADER.sub(lambda m: _credential(m, True), text)
     text = URL_USERINFO.sub(_credential, text)
+    text = URL_USERINFO_ANGLE.sub(_credential, text)
     text = UNC.sub(lambda m: PLACEHOLDERS["unc"] + _path(m.group(2), k, False), text)
     text = DRIVE.sub(lambda m: m.group(0)[:2] + _path(m.group(1), k, True, own), text)
     text = HOME.sub(lambda m: m.group(0)[:m.start(1) - m.start(0)] + (
