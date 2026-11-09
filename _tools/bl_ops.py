@@ -3,7 +3,7 @@
   ops SP                       print, as text and read only (exit 0, also when the sprint has no row), each ops row that
                                names one of the sprint's items: `land.step` and `land.end` of a landing, `done.refused`
                                with its reasons and `agent.run` (a worker's run: its group is the agent type), oldest
-                               first
+                               first, a `land.end` row after the other rows of its timestamp
 
   landings                     print, as text and read only (exit 0), one line per landing step and one for `land.end`
                                (whole landings) from every ops row of the clone: `n`, `failed` (exit not 0), `median`
@@ -53,6 +53,7 @@ def cmd_ops(bl, a):
     ids = sprint_items(bl, a.id)
     try:
         rows = [r for r in bl_stall.ops_rows(str(bl.root)) if r.get("item") in ids]
+        rows.sort(key=lambda r: (r.get("ts") or "", r.get("event") == "land.end"))  # stable: a land.end row after the rows it shares a timestamp with
     except Exception:  # noqa: BLE001 - an unreadable log is said, never read as no row
         say("ops: the ops rows could not be read")
         return 1
