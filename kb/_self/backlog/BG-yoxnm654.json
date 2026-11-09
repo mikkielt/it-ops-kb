@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "check's read-only-checks and named-test-file warnings: docs say story, task or bug and any code, the code also warns subtasks and reads only _tools/ paths",
   "status": "draft",
+  "sprint": "SP-uz3rhdlq",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",

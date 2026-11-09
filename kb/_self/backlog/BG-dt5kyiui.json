@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kbingest's pattern-row guard accepts overlapping quantifiers split by a fixed atom or over classes outside its probe alphabet, and the file timeout cannot stop one slow line",
   "status": "draft",
+  "sprint": "SP-uz3rhdlq",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

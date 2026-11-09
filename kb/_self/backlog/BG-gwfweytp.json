@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "agents/worker.md still says a worker whose brief names no cap commits 15 turns before the cap, which for a cap of 30 or less is half the cap since the commit-by clamp",
   "status": "draft",
+  "sprint": "SP-uz3rhdlq",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",

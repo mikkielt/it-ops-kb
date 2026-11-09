@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kb/_self/backlog.md says the suite runs the lookup eval over the live kb, which no test does since test_live_kb.py was dropped",
   "status": "draft",
+  "sprint": "SP-uz3rhdlq",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",

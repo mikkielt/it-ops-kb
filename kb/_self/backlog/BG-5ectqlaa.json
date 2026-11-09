@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "backlog.md and the backlog skill say referrers kind=ref is a use in code, but it also lists text hits in docstrings and comments",
   "status": "draft",
+  "sprint": "SP-uz3rhdlq",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

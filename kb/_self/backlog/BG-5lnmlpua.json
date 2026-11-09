@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kbingest where's map digest covers only the mapper module's own file, so a change to a helper module the mapper imports leaves a stale cached map",
   "status": "draft",
+  "sprint": "SP-uz3rhdlq",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

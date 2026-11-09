@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "The item and sprint skills and agents/worker.md do not name the strict signals, the querylog and delete text classes or --kind blocking as reasons a gate is made blocking",
   "status": "draft",
+  "sprint": "SP-uz3rhdlq",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

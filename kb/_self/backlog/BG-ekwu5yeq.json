@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "is_whole_suite counts tests.py --collect-only, --lf, --deselect and --ignore as a whole-suite run",
   "status": "draft",
+  "sprint": "SP-uz3rhdlq",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
