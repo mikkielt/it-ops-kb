@@ -2,7 +2,7 @@
   "id": "ST-upd6ssky",
   "kind": "story",
   "title": "A plan settles the implementation choice of an item whose title or text names a gate-class word, so its worker asks no blocking gate",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-moxpl354",
   "priority": "P3",
   "rank": 0,
@@ -53,6 +53,19 @@
     "parked: SP-pww4aqis close"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-a1b2c3d4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "5fb5dabb8af4c0a24fcba6bdf4f0f4d4c6e3e206",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,pathlib\nt=pathlib.Path('skills/sprint/SKILL.md').read_text(encoding='utf-8')\ns=t.split('## plan',1)[1].split('## start',1)[0].lower()\nmiss=[w for w in ['gate-class word'] if w not in s]\nsys.exit('not yet: plan section lacks '+', '.join(miss) if miss else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
