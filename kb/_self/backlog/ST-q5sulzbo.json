@@ -21,6 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: the goal is about the backlog tool's own code paths and usage text; one kb_pack on the claude -p flags found --max-turns and --max-budget-usd already in public/claude/ci-and-headless.md:46,96, and the enabledPlugins settings key is not in the kb but the item BG-3pqzpd2q takes it from the repro, not new research.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-ev5run01",
   "operator": "op-f618a13e"
