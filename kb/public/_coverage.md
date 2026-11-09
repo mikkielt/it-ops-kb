@@ -164,7 +164,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `claude/plugins` | P2 | complete | `claude/plugins.md`, `claude/plugins.csv` | 18 |
 | `claude/settings-and-scopes` | P2 | partial | `claude/settings-and-scopes.md`, `claude/settings-keys.csv`, `claude/env-vars.csv` | 21 |
 | `claude/skills-and-subagents` | P2 | complete | `claude/skills-and-subagents.md`, `claude/skills-and-subagents.csv` | 11 |
-| `claude/cross-session-messaging` | P3 | complete | `claude/cross-session-messaging.md` | 14 |
+| `claude/cross-session-messaging` | P3 | complete | `claude/cross-session-messaging.md` | 15 |
 | `claude/large-codebases` | P3 | complete | `claude/large-codebases.md` | 7 |
 | `claude/mcp-install-scopes` | P3 | partial | `claude/mcp-install-scopes.md` | 6 |
 | `claude/mcp-tool-search` | P3 | complete | `claude/mcp-tool-search.md` | 5 |
@@ -172,7 +172,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `claude/parallel-sessions` | P3 | partial | `claude/parallel-sessions.md` | 11 |
 | `claude/powershell-tool` | P3 | partial | `claude/powershell-tool.md` | 6 |
 | `claude/statusline` | P3 | complete | `claude/statusline.md` | 3 |
-| `claude/terminal-split-pane` | P3 | partial | `claude/terminal-split-pane.md` | 8 |
+| `claude/terminal-split-pane` | P3 | partial | `claude/terminal-split-pane.md` | 9 |
 | `defender/machine-resource` | P1 | complete | `defender/machine-resource.md`, `defender/machine-properties.csv` | 9 |
 | `defender/mde-onboarding` | P1 | complete | `defender/mde-onboarding.md` | 26 |
 | `defender/permissions-limits` | P1 | complete | `defender/permissions-limits.md` | 6 |

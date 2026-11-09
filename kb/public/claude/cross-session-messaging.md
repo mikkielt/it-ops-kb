@@ -2,8 +2,8 @@
 topic: claude/cross-session-messaging
 priority: P3
 applies_to: "Claude Code v2.1.224+ (macOS, Linux, WSL 2), native Windows per the docs page v2.1.234+; cross-session messaging page and changelog, retrieved 2026-09-30 (Claude Code 2.1.285 current); Remote Control and channels pages read 2026-10-17"
-retrieved_utc: 2026-10-21
-sources: [S-sdxhnx3i, S746, S-3yod3u7q, S-wzatkg4o, S748, S-d3ythwgb, S2057, S2042, S-fk46gdey, S-4jj4dtg4, S-s67nwj2e, S-yhad7wiu, S-m6qlxza7, S-uw2bn2un]
+retrieved_utc: 2026-11-09
+sources: [S-sdxhnx3i, S1862, S746, S-3yod3u7q, S-wzatkg4o, S748, S-d3ythwgb, S2057, S2042, S-fk46gdey, S-4jj4dtg4, S-s67nwj2e, S-yhad7wiu, S-m6qlxza7, S-uw2bn2un]
 status: complete
 ---
 
@@ -185,8 +185,13 @@ and listing.
   and the phone, and messages can be sent from any of them. Claude Code keeps permission prompts and `AskUserQuestion`
   questions open until they are answered, and another kind of dialog it forwards to the remote session (its example is
   the model-choice prompt after a safety refusal) closes after five minutes by default with the dialog's no-action
-  default, adjustable with `dialogExpiry` (v2.1.224+). The page has no sentence that says in so many words that a
-  permission prompt is approved from the phone; see the open gap in `_gaps.md`. [DOC S-yhad7wiu]
+  default, adjustable with `dialogExpiry` (v2.1.224+). The Remote Control page has no sentence of its own that says a
+  permission prompt is approved from the phone; the MCP page has one (next bullet). [DOC S-yhad7wiu]
+- The MCP page says Remote Control, like applications built on the Agent SDK, "normally" lets you approve tool calls
+  with one tap. For a tool whose server sets `_meta["anthropic/requiresUserInteraction"]` to `true`, and for any
+  permission request that only the terminal dialog can render in full (one that carries a safety warning, or an
+  always-allow option the remote surface can't show), Claude Code withholds the one tap and the request is answered in
+  the terminal dialog, not from Remote Control. The page words the approval only; it names no deny tap. [DOC S1862]
 - Not every dialog travels: the Fable usage-credits consent prompt is shown only where the session runs, and when
   nobody there answers before it closes the turn ends without sending the request. Commands that only exist in the
   terminal interface (`/plugin`, `/resume`) work only from the local CLI, while `/model`, `/effort`, `/compact`,

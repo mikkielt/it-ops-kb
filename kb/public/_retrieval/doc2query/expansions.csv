@@ -897,9 +897,6 @@ c259cd820758,How to switch off permission prompt notification hooks in SDK hoste
 9e56932614b5,Notification hook cannot block systemMessage ignored terminalSequence
 9e56932614b5,Can a Notification hook block or change a notification?
 9e56932614b5,"What is a Notification hook for, forwarding alerts to an external service"
-41fe0998d2e6,Remote Control permission prompts AskUserQuestion forwarded dialogs expire dialogExpiry
-41fe0998d2e6,What does Remote Control forward to the phone and how long do forwarded dialogs wait?
-41fe0998d2e6,Can I answer a Claude Code permission prompt from my phone?
 fab8765d7f40,Remote Control not forwarded Fable usage credits consent prompt local-only commands
 fab8765d7f40,Which dialogs and slash commands do not work from the mobile app in Remote Control?
 fab8765d7f40,What stays terminal-only when a session is connected to Remote Control?

@@ -2,8 +2,8 @@
 topic: claude/terminal-split-pane
 priority: P3
 applies_to: "tmux 3.8 manual (tag published 2026-09-09), WezTerm docs and release 20240203-110809-5046fc22, Windows Terminal command-line-arguments page (updated 2025-11-12); read 2026-10-18"
-retrieved_utc: 2026-10-21
-sources: [S-3gv2hqon, S-ul3bejly, S-jrp4n5ie, S-z4bixz66, S-4ingl4hx, S-fsgzj2gz, S-rwjcajd5, S-hkjfrerh]
+retrieved_utc: 2026-11-09
+sources: [S-3gv2hqon, S-snaailv5, S-ul3bejly, S-jrp4n5ie, S-z4bixz66, S-4ingl4hx, S-fsgzj2gz, S-rwjcajd5, S-hkjfrerh]
 status: partial
 ---
 
@@ -33,6 +33,11 @@ zip and a `setup.exe` for Windows and a zip for macOS, each beside a `.sha256` f
 - The 3.8 manual describes `-c start-directory` for `new-window` ("the working directory in which the new window is
   created"), `respawn-pane` and `respawn-window`, but its `split-window` entry lists `-c`, `-e`, `-P` and `-F` in the
   synopsis only and carries no prose for them. [UNK: the 3.8 manual read gives no sentence for `split-window -c`, `-P` or `-F`]
+- The 3.4 manual, an older tag, ends its `split-window` entry with "All other options have the same meaning as for the
+  `new-window` command", and its synopsis lists `-c start-directory`, `-P` and `-F format`; its `new-window` entry says
+  `-c` "specifies the working directory in which the new window is created" and that `-P` prints information about the
+  new window, in a default format that `-F` changes. So on 3.4 `split-window -c`, `-P` and `-F` take those meanings for
+  the new pane; the one `All other options have the same meaning` sentence in the 3.8 manual is under `new-pane`, not `split-window`. [DOC S-snaailv5]
 - The 3.8 manual documents `new-pane`, which creates a floating pane; its options "have the same meaning as for the `split-window`
   command", and `-L` makes it behave like `split-window`. [DOC S-3gv2hqon]
 - tmux 3.8 was published 2026-09-09 as the latest GitHub release at the time of reading; which version a given host ships
