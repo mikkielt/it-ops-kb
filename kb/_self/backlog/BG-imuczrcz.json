@@ -2,7 +2,7 @@
   "id": "BG-imuczrcz",
   "kind": "bug",
   "title": "LEARN_MAP sends intune/ and windows/ pages to repositories that answer 404, so each run makes a failed clone",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-2cq2hse4",
   "priority": "P3",
@@ -47,5 +47,7 @@
   "links": [
     "parked: SP-gavrmuvx review"
   ],
-  "notes": "Operator 2026-10-21 changed ST-wim24u46 gate g1 to 'map only prefixes whose repository answers' after the SP-gavrmuvx review found the 404 entries decide no page (detect wall time 36 min 22 s before, 36 min 25 s after). Premise: the repro fails on 70d82e949."
+  "notes": "Operator 2026-10-21 changed ST-wim24u46 gate g1 to 'map only prefixes whose repository answers' after the SP-gavrmuvx review found the 404 entries decide no page (detect wall time 36 min 22 s before, 36 min 25 s after). Premise: the repro fails on 70d82e949.",
+  "claimed_by": "claude-c41d77ea",
+  "operator": "op-f618a13e"
 }
