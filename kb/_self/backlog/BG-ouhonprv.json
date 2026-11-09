@@ -29,6 +29,28 @@
     "kb/_self/plugin.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does url_holds_credential tell a drive-letter path from an scp password that holds a backslash?",
+      "options": [
+        "Exempt only a leading drive letter and colon before a slash or backslash, and let the password hold a backslash",
+        "Keep banning every backslash and read the password's backslash by another marker"
+      ],
+      "recommendation": "Exempt only a leading drive letter and colon before a slash or backslash, and let the password hold a backslash",
+      "do": {
+        "Exempt only a leading drive letter and colon before a slash or backslash, and let the password hold a backslash": "BG-ouhonprv",
+        "Keep banning every backslash and read the password's backslash by another marker": "BG-ouhonprv"
+      },
+      "class": "secrets",
+      "answer": "Exempt only a leading drive letter and colon before a slash or backslash, and let the password hold a backslash",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "links": [
     "parked: SP-osevumx6 review"
   ],
