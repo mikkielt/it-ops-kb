@@ -495,10 +495,20 @@ def mirror_path(root, remote, kind, data=None):
     return str(base / f"central-{digest}.sqlite")
 
 
+USERINFO = re.compile(r"^([A-Za-z][A-Za-z0-9+.-]*://)[^/?#]*@")  # the `user[:password]@` of a url's authority
+
+
+def bare_url(url):
+    """URL without the user and password part of its authority (`https://host/path` from `https://user:token@host/path`); a url
+    with none, and a scp-like `user@host:path` that has no authority to hold a password, are as they were."""
+    return USERINFO.sub(r"\1", url or "")
+
+
 def remote_url(clone):
-    """The url of the integration remote of the clone at CLONE, empty when it has none."""
+    """The url of the integration remote of the clone at CLONE without any user or password part (a runner's clone carries the job
+    token in its origin url), empty when it has none: the url a job record names and an executor compares."""
     import kbpublic
-    return kbpublic.out(["remote", "get-url", kbpublic.integration_remote(clone)], clone) or ""
+    return bare_url(kbpublic.out(["remote", "get-url", kbpublic.integration_remote(clone)], clone) or "")
 
 
 def placement_of(record):

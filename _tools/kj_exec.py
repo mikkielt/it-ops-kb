@@ -505,7 +505,7 @@ class Home:
         self.base = Path(base)
 
     def dir_of(self, url):
-        return self.base / hashlib.sha256(url.encode("utf-8")).hexdigest()[:12]
+        return self.base / hashlib.sha256(kj_store.bare_url(url).encode("utf-8")).hexdigest()[:12]
 
     def run(self, args, cwd, limit, keep):
         """`git ARGS` in CWD: its last output line when it ends 0, else Unprepared naming the command and the line."""
@@ -542,7 +542,7 @@ class Home:
 
     def prepare(self, record, keep=lambda: None):
         """The directory a job runs in: its url's clone made ready as the class says. Unprepared for a job with no usable url."""
-        url = str(record.get("remote") or "")
+        url = kj_store.bare_url(str(record.get("remote") or ""))  # a credential in a record's url never reaches the clone's argument list
         if not url or url.startswith("-") or any(c.isspace() or ord(c) < 32 for c in url):
             raise Unprepared(f"the job names no usable integration remote url: {url[:60]!r}")
         clone = self.dir_of(url)

@@ -291,10 +291,11 @@ def with_holder(body, store):
 
 
 def clone_url(given):
-    """The url --clone-url gives, as it is: a refusal for one a git clone would read as an option or that holds white space or a control character."""
+    """The url --clone-url gives without any user or password part, so none reaches a job record: a refusal for one a git clone would
+    read as an option or that holds white space or a control character."""
     if given is not None and (not given or given.startswith("-") or any(c.isspace() or ord(c) < 32 for c in given)):
         raise kj_ops.Refusal(f"--clone-url is an integration remote url (no white space, not an option), not {given[:40]!r}")
-    return given
+    return None if given is None else kj_store.bare_url(given)
 
 
 def name_remote(body, placement, url, store):
