@@ -1,0 +1,21 @@
+{
+  "id": "BG-nilc5rgz",
+  "kind": "bug",
+  "title": "SP-mut2pmu3 changed which fixture files the leak scan reads for secrets only but SCAN_FORM was not bumped, so a cached publish verdict keeps the old secrets-only reading",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbpublic.SCAN_FORM is bumped so a cached verdict of a commit that wrote files under _tools/fixtures is recomputed",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kbpublic as k;print('SCAN_FORM',k.SCAN_FORM);sys.exit(0 if k.SCAN_FORM>=9 else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/kbpublic.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
