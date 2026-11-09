@@ -1517,7 +1517,8 @@ def iso_date(value):
 
 
 def _page_head(text, ctype, path=""):
-    """(title, site, meta) of a page text: an HTML page's og:title (or <title>) and og:site_name (else application-name); a Markdown file's
+    """(title, site, meta) of a page text: an HTML page's og:title (or <title>) and og:site_name (the application-name meta is no site name: it names a
+    web application only); a Markdown file's
     front matter title, else its first `# ` heading. A file is Markdown only by its `path` (MARKDOWN_EXT): any other text
     (a source code file, where `# ` opens a comment line that can hold an author's address) gives no title."""
     if "html" in (ctype or "") or text.lstrip()[:15].lower().startswith(("<!doctype html", "<html")):
@@ -1531,7 +1532,7 @@ def _page_head(text, ctype, path=""):
             m = re.search(rf'"{re.escape(k)}"\s*:\s*"([^"]+)"', text)
             if m:
                 meta.setdefault(k.lower(), m.group(1))
-        return (meta.get("og:title") or meta.get("citation_title") or " ".join(head.title.split())), meta.get("og:site_name") or meta.get("application-name", ""), meta
+        return (meta.get("og:title") or meta.get("citation_title") or " ".join(head.title.split())), meta.get("og:site_name", ""), meta
     if not path.lower().endswith(MARKDOWN_EXT):
         return "", "", {}
     fm = front_matter(text)
@@ -1554,7 +1555,7 @@ def read_page(url, rows=None):
     {title, organisation, organisation_from, version, evidence, note}. `title`: the page's og:title, else its
     citation_title (an arXiv abstract page), else its <title> (a Markdown file's front matter title or first heading), with a ` | SITE` suffix cut when SITE is the page's
     og:site_name or the registry's organisation, and otherwise kept whole. `organisation`: the organisation cell of the
-    row serving the url (`organisation_from` `registry`), else the page's og:site_name or application-name (`page`), never a part of the
+    row serving the url (`organisation_from` `registry`), else the page's og:site_name (`page`; never application-name, which names a web application only), never a part of the
     title or heading; "" when neither names one. `version`: `<key> <YYYY-MM-DD>` of the first of PAGE_DATE_KEYS the page carries, "" when it has none.
     A field not found is "" and `note` says why the page was not read (no answer)."""
     row = for_url(url, rows) or {}
