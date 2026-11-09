@@ -30,6 +30,20 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "a gate answer written to an item file after a command loaded the item is kept when that command saves it, so a worker's done or set no longer wipes an answer the orchestrator committed on its branch while the checks ran",
+      "check": 0
+    },
+    {
+      "clause": "an answer the command itself cleared stays cleared",
+      "check": 1
+    },
+    {
+      "clause": "kb/_self/backlog.md says an answer committed on a worker branch survives the worker's later item writes",
+      "check": 2
+    }
+  ],
   "touches": [
     "_tools/bl_base.py",
     "kb/_self/backlog.md"
