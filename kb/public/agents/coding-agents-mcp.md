@@ -3,7 +3,7 @@ topic: agents/coding-agents-mcp
 priority: P2
 applies_to: "GitHub Copilot coding agent (2026-09); VS Code MCP support (2026-09); OpenAI Agents SDK (Python, mcp>=1.19.0,<3); OpenAI Responses API remote MCP tool; Codex CLI config.toml (2026-09)"
 retrieved_utc: 2026-10-21
-sources: [S-udcaydkb, S-y4l4chtg, S-caxeb7wx, S-shpwh3m7, S-r4egujgz, S-b5ptbcql, S-2q2hcluk, S-4fmcb5i2, S-zqlgscwv]
+sources: [S-udcaydkb, S-y4l4chtg, S-caxeb7wx, S-shpwh3m7, S-r4egujgz, S-b5ptbcql, S-jdsamvo4, S-4fmcb5i2, S-zqlgscwv]
 status: complete
 ---
 
@@ -39,7 +39,7 @@ Responses API instead expose `require_approval` as an explicit opt-in control pe
 - OpenAI Responses API: no config file — the MCP server is one entry in the request's `tools` array with
   `"type": "mcp"`. [DOC S-r4egujgz]
 - Codex CLI: `~/.codex/config.toml` by default; a project can scope its own servers in `.codex/config.toml`
-  for trusted projects. Each server is a `[mcp_servers.<name>]` TOML table. [DOC S-2q2hcluk, S-b5ptbcql]
+  for trusted projects. Each server is a `[mcp_servers.<name>]` TOML table. [DOC S-jdsamvo4, S-b5ptbcql]
 
 ### Transport support and fields
 - Copilot coding agent: `type` is `"local"`, `"stdio"`, `"http"`, or `"sse"`. Local/stdio servers take
@@ -68,7 +68,7 @@ Responses API instead expose `require_approval` as an explicit opt-in control pe
   `enabled_tools`, `disabled_tools`, `scopes`, and a nested `[mcp_servers.<name>.oauth]` table
   (`client_id`, `callback_url`, `callback_port`). [DOC S-b5ptbcql]
 - Codex supports two transports overall: stdio (local process) and streamable HTTP (remote, bearer-token or
-  OAuth); SSE is not listed as a Codex transport in the vendor sample. [DOC S-2q2hcluk]
+  OAuth); SSE is not listed as a Codex transport in the vendor sample. [DOC S-jdsamvo4]
 
 ### Auth / secrets
 - Copilot coding agent: only Agents secrets and variables **named with a `COPILOT_MCP_`
@@ -87,7 +87,7 @@ Responses API instead expose `require_approval` as an explicit opt-in control pe
   streamable-HTTP servers use `bearer_token_env_var` (a bearer token read from a named env var),
   `http_headers`/`env_http_headers` for custom headers, `http_headers_helper` (a helper command producing
   headers dynamically), or a full `[mcp_servers.<name>.oauth]` block (`client_id`, `callback_url`,
-  `callback_port`) plus the `codex mcp login <server-name>` command to run the OAuth flow. [DOC S-b5ptbcql, S-2q2hcluk, S-4fmcb5i2, S-zqlgscwv]
+  `callback_port`) plus the `codex mcp login <server-name>` command to run the OAuth flow. [DOC S-b5ptbcql, S-jdsamvo4, S-4fmcb5i2, S-zqlgscwv]
 
 ### Tool allowlist / approval / trust
 - Copilot coding agent: the `tools` array is the allowlist (`["*"]` for all); the docs state plainly that

@@ -1244,16 +1244,12 @@ fee8b50a17f0,agents/coding-agent-codebase-context.md,S-4owuypm5,located,Search >
 fee8b50a17f0,agents/coding-agent-codebase-context.md,S-v2sqknkh,unlocated:no-match,,,,,2026-10-21
 1272332f9187,agents/coding-agents-mcp.md,S-caxeb7wx,unlocated:no-match,,,,,2026-10-21
 1272332f9187,agents/coding-agents-mcp.md,S-y4l4chtg,located,Add MCP servers in VS Code > Choose a configuration destination,compatibility;deprecat;label;level;mcpserver;profil;top;top-level,e3936ecbf766fb49,Workspace .vscode/mcp.json or user-profile mcp.json. These destinations remain available for compatibility and are labeled deprecated in the guided flow. Portable files use a top-level mcpServers,2026-10-21
-236aa9a63257,agents/coding-agents-mcp.md,S-2q2hcluk,unlocated:no-match,,,,,2026-10-10
+13acd3c7ea8a,agents/coding-agents-mcp.md,S-jdsamvo4,unlocated:no-match,,,,,2026-11-09
 2b0a291aef7b,agents/coding-agents-mcp.md,S-4fmcb5i2,unlocated:no-match,,,,,2026-10-10
 2b0a291aef7b,agents/coding-agents-mcp.md,S-zqlgscwv,unlocated:no-match,,,,,2026-10-10
 2e8185c5c336,agents/coding-agents-mcp.md,S-r4egujgz,unlocated:no-match,,,,,2026-10-10
 369e200f30ee,agents/coding-agents-mcp.md,S-b5ptbcql,unlocated:no-match,,,,,2026-10-10
 37bb21a58be1,agents/coding-agents-mcp.md,S-caxeb7wx,located,MCP configuration reference > Configuration file,vscod;mcp.json;json;input;code;mcp;server,e1f05c8dd92a8056,"VS Code forwards servers from .vscode/mcp.json to the Agent Host, except servers that require interactive input, such as ${input:...} variables.",2026-10-10
-39930466223a,agents/coding-agents-mcp.md,S-2q2hcluk,unlocated:no-match,,,,,2026-10-10
-39930466223a,agents/coding-agents-mcp.md,S-4fmcb5i2,unlocated:no-match,,,,,2026-10-10
-39930466223a,agents/coding-agents-mcp.md,S-b5ptbcql,unlocated:no-match,,,,,2026-10-10
-39930466223a,agents/coding-agents-mcp.md,S-zqlgscwv,unlocated:no-match,,,,,2026-10-10
 40c734d32679,agents/coding-agents-mcp.md,S-caxeb7wx,unlocated:no-match,,,,,2026-10-10
 4212a866e222,agents/coding-agents-mcp.md,S-caxeb7wx,unlocated:no-match,,,,,2026-10-10
 5a6ded60bd1c,agents/coding-agents-mcp.md,S-r4egujgz,located,MCP servers > Quickstart,array;one;request;api;server;tool;mcp,bf453cc749f18059,"The API will return new items in the output array of the model response. If the model decides to use an MCP server, it will",2026-10-10
@@ -1263,17 +1259,21 @@ fee8b50a17f0,agents/coding-agent-codebase-context.md,S-v2sqknkh,unlocated:no-mat
 7dc09fa61e0d,agents/coding-agents-mcp.md,S-udcaydkb,located,Configure MCP servers for your repository > Introduction,level;set;cloud;json;agent;configuration;git;hub,a6a6408d131e82b0,You enter the JSON configuration directly into the settings for the repository on GitHub.com. This repository-level MCP configuration is shared by Copilot cloud agent and,2026-10-10
 7fa2e0612c9c,agents/coding-agents-mcp.md,S-udcaydkb,located,Configure MCP servers for your repository > Writing a JSON configuration for MCP servers,annotations.readonlyhint;hint;readonlyhint;respons;annotation;list;true;read,337715fda093fb5c,"For Copilot code review, each tool in the MCP server's tools/list response must set annotations.readOnlyHint to true to allow Copilot to use it.",2026-10-10
 8186c6610524,agents/coding-agents-mcp.md,S-shpwh3m7,unlocated:no-match,,,,,2026-10-10
-835b726d21d1,agents/coding-agents-mcp.md,S-2q2hcluk,located,Model Context Protocol > Connect Codex to an MCP server,project;trust;cli;scop;config.toml;toml;config;default,63e594f0b2565820,"By default this is ~/.codex/config.toml, but you can also scope MCP servers to a project with .codex/config.toml (trusted projects only). The ChatGPT desktop app, Codex",2026-11-09
-835b726d21d1,agents/coding-agents-mcp.md,S-b5ptbcql,unlocated:no-match,,,,,2026-10-10
 86cfa1e672d4,agents/coding-agents-mcp.md,S-shpwh3m7,unlocated:no-match,,,,,2026-10-10
 893a9873ca12,agents/coding-agents-mcp.md,S-caxeb7wx,unlocated:no-match,,,,,2026-10-21
 93da3a95fafe,agents/coding-agents-mcp.md,S-shpwh3m7,located,Prefix local MCP tool names with their server name.,every;cach;call;list;agent;tool;server;mcp,2c9cd8fe08d44739,Caching Every agent run calls listtools() on each MCP server.,2026-10-10
 a104d364f205,agents/coding-agents-mcp.md,S-b5ptbcql,unlocated:no-match,,,,,2026-10-10
+a32cd4e4f308,agents/coding-agents-mcp.md,S-4fmcb5i2,unlocated:no-match,,,,,2026-11-09
+a32cd4e4f308,agents/coding-agents-mcp.md,S-b5ptbcql,unlocated:no-match,,,,,2026-11-09
+a32cd4e4f308,agents/coding-agents-mcp.md,S-jdsamvo4,unlocated:no-match,,,,,2026-11-09
+a32cd4e4f308,agents/coding-agents-mcp.md,S-zqlgscwv,unlocated:no-match,,,,,2026-11-09
 aea7d642dace,agents/coding-agents-mcp.md,S-shpwh3m7,unlocated:no-match,,,,,2026-10-10
 b83da5e1bafc,agents/coding-agents-mcp.md,S-shpwh3m7,unlocated:no-match,,,,,2026-10-10
 d40eb6517346,agents/coding-agents-mcp.md,S-r4egujgz,located,MCP servers,restrict;allow;remot;call;requir;approval;tool;mcp,12e3eaa510bc8dd2,"These tool calls can either be allowed automatically, or restricted with explicit approval required by you as the developer. Remote MCP servers can be any",2026-10-10
 e288ba716de2,agents/coding-agents-mcp.md,S-udcaydkb,located,Configure MCP servers for your repository > Writing a JSON configuration for MCP servers,array;stdio;sse;http;local;type;agent;tool,a9bb865b0c0270d1,"You can also enable all tools by including in the array. type (string): Copilot cloud agent accepts ""local"", ""stdio"", ""http"", or ""sse"".",2026-10-10
 ebda62a43d28,agents/coding-agents-mcp.md,S-r4egujgz,located,MCP servers > Authentication,visibl;every;must;field;object;authorization;token;api,6b696b20c9adbaf7,"To prevent the leakage of sensitive tokens, the Responses API does not store the value you provide in the authorization field. This value will also",2026-10-10
+f09b67df1705,agents/coding-agents-mcp.md,S-b5ptbcql,unlocated:no-match,,,,,2026-11-09
+f09b67df1705,agents/coding-agents-mcp.md,S-jdsamvo4,located,Model Context Protocol > Connect Codex to an MCP server,project;trust;cli;config.toml;scop;toml;config;default,63e594f0b2565820,"By default this is ~/.codex/config.toml, but you can also scope MCP servers to a project with .codex/config.toml (trusted projects only). The ChatGPT desktop app, Codex",2026-11-09
 feccc02b2107,agents/coding-agents-mcp.md,S-b5ptbcql,unlocated:no-match,,,,,2026-10-10
 2375753ba2f4,agents/content-safety-limits.csv,S-547mfaj7,unlocated:no-match,,,,,2026-10-10
 2375753ba2f4,agents/content-safety-limits.csv,S-plv2ekwg,unlocated:no-match,,,,,2026-10-21
