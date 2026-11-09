@@ -34,7 +34,8 @@
   "touches": [
     "_tools/kbjob.py",
     "_tools/kj_place.py",
-    "kb/_self/coordination.md"
+    "kb/_self/coordination.md",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "ST-vxwngvv7",
