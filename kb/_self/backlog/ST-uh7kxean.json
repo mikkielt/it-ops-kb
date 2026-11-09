@@ -2,7 +2,7 @@
   "id": "ST-uh7kxean",
   "kind": "story",
   "title": "The sprint skill's plan step asks every leak-scan or redaction exemption for a check that plants a real-secret-shaped value beside it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-moxpl354",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,7 @@
   "links": [
     "parked: SP-osevumx6 close"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-a1b2c3d4",
+  "operator": "op-f618a13e"
 }
