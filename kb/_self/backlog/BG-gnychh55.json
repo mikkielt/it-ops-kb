@@ -24,7 +24,84 @@
     "kb/_self/coordination.md",
     "kb/_self/git.md",
     "kb/_self/tools.md",
-    "kb/_self/runners.md"
+    "kb/_self/runners.md",
+    "kb/_self/backlog/ST-kcdeil4w.json"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which operator does the executor's second policy question name for a queued job of a central queue?",
+      "options": [
+        "the operator the queue's queued event names",
+        "the operator member of the job's own record"
+      ],
+      "recommendation": "the operator the queue's queued event names",
+      "reason": "the server wrote it from the submitter's key, the record's member is the client's word",
+      "do": {
+        "the operator the queue's queued event names": "BG-gnychh55",
+        "the operator member of the job's own record": "BG-gnychh55"
+      },
+      "class": "design",
+      "answer": "the operator the queue's queued event names",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Where does the executor take the policy url and the roots of its second policy question from?",
+      "options": [
+        "its own KB_OPA_URL and its own clone's roots, with no new serve option",
+        "a new serve option naming the policy url"
+      ],
+      "recommendation": "its own KB_OPA_URL and its own clone's roots, with no new serve option",
+      "reason": "the extension surface and the serve command stay as they are",
+      "do": {
+        "its own KB_OPA_URL and its own clone's roots, with no new serve option": "BG-gnychh55",
+        "a new serve option naming the policy url": "BG-gnychh55"
+      },
+      "class": "design",
+      "answer": "its own KB_OPA_URL and its own clone's roots, with no new serve option",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Which members of a recorded placement must equal the decision, and where do the offline fallback and its delay come from?",
+      "options": [
+        "the four the goal names; the fallback and its delay are taken from the decision",
+        "every member of the decision except its reason"
+      ],
+      "recommendation": "the four the goal names; the fallback and its delay are taken from the decision",
+      "reason": "a record then cannot choose its own fallback, and a change of reason words never holds a job back",
+      "do": {
+        "the four the goal names; the fallback and its delay are taken from the decision": "BG-gnychh55",
+        "every member of the decision except its reason": "BG-gnychh55"
+      },
+      "class": "design",
+      "answer": "the four the goal names; the fallback and its delay are taken from the decision",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "blocking",
+      "question": "Is the planted-record check committed as a test, or run and reported?",
+      "options": [
+        "run in the scratch directory and reported, no committed test: a test file is outside the item's touches",
+        "a committed test file"
+      ],
+      "recommendation": "run in the scratch directory and reported, no committed test: a test file is outside the item's touches",
+      "do": {
+        "run in the scratch directory and reported, no committed test: a test file is outside the item's touches": "BG-gnychh55",
+        "a committed test file": "BG-gnychh55"
+      },
+      "class": "design",
+      "answer": "run in the scratch directory and reported, no committed test: a test file is outside the item's touches",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
   ],
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-432be86e",
