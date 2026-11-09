@@ -15,6 +15,25 @@
       "import sys,os,subprocess as s,tempfile;sys.path.insert(0,'_tools');import kbpublic as k;d=tempfile.mkdtemp();g=lambda *a:s.run(['git','-C',d,*a],check=True,capture_output=True);g('init','-q');os.makedirs(d+'/kb/team');open(d+'/kb/team/_root.md','wb').write(b'---\\nroot: team\\nid_prefix: T\\nvisibility: internal\\ndescription: x\\xb3\\n---\\n');open(d+'/kb/team/a.md','w').write('x\\n');g('add','-A');g('-c','user.name=t','-c','user.email=t'+chr(64)+'example.com','commit','-qm','t');assert k.tree_refusals('HEAD',k.tree_files('HEAD',d),d),'a _root.md that is not UTF-8 passes publish tree refusal'"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport sys,os,subprocess as s,tempfile\nsys.path.insert(0,'_tools');import kbpublic as k\nd=tempfile.mkdtemp();g=lambda *a:s.run(['git','-C',d,*a],check=True,capture_output=True)\nrev=lambda:s.run(['git','-C',d,'rev-parse','HEAD'],capture_output=True,text=True).stdout.strip()\ng('init','-q')\ndef w(p,t):\n    os.makedirs(os.path.dirname(d+'/'+p),exist_ok=True);open(d+'/'+p,'wb').write(t)\ndef cm(m):\n    g('add','-A');g('-c','user.name=t','-c','user.email=t'+chr(64)+'example.com','commit','-qm',m);return rev()\nw('a',b'x\\n');b0=cm('base')\nw('kb/team/_root.md',b'---\\nroot: team\\nid_prefix: T\\nvisibility: public\\ndescription: x\\xb3\\n---\\n');w('kb/team/a.md',b'x\\n');cm('team')\nf=k.tree_files('HEAD',d)\nt=k.tree_refusals('HEAD',f,d);h=k.history_refusals('HEAD',b0,f,d,projected=False)[0];p=k.internal_prefixes('HEAD',f,d)\nprint(t,h,p)\nsys.exit(0 if t and h and 'kb/team/' in p and any('read' in x for x in t) else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "An unreadable _root.md or pointer counts as not public in tree_refusals, history_refusals and internal_prefixes",
+      "check": 0
+    },
+    {
+      "clause": "the tree cause says it could not be read",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kbpublic.py",
     "kb/_self/git.md"
