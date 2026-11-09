@@ -42,7 +42,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "any answer, as the goal words it",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [

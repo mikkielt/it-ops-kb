@@ -52,7 +52,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "Compare each transcript's last write with the process start and leave out earlier ones",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
