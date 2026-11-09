@@ -2,7 +2,7 @@
   "id": "BG-ozzvdojj",
   "kind": "bug",
   "title": "benchmarks.md says the paid record's cells are the mean of 3 reps, but the rows are medians",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-bpjqqauu",
   "priority": "P2",
   "rank": 0,
@@ -29,5 +29,7 @@
     "parked: SP-wv3ob5vy review"
   ],
   "notes": "Review gap 2 of SP-wv3ob5vy: benchmarks.md:1422. Premise: the bug's repro fails on the base (origin/main at the planning commit, 2026-11-09); precheck ran it through the landing's check runner. Sprint order: items that share one file are chained with depends_on.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-bdc0a493",
+  "operator": "op-f618a13e"
 }
