@@ -161,18 +161,19 @@ async function refresh($: EngineInterface): Promise<void> {
     if (alerts === lastAlerts) {
       return
     }
-    lastAlerts = alerts
 
     const receipt = JSON.parse(await kbmon($, ['--receipt'], width)) as { line: string; fingerprint: string }
     const before = await read($, fingerprint)
-    if (before === receipt.fingerprint) {
-      return
+    if (before !== receipt.fingerprint) {
+      await $.session.append({ message: { type: 'user', content: [{ type: 'text', text: receipt.line }] } })
+      await update($, fingerprint, () => receipt.fingerprint)
+      if (before !== null) {
+        $.ui.toast(receipt.line)
+      }
     }
-    await update($, fingerprint, () => receipt.fingerprint)
-    await $.session.append({ message: { type: 'user', content: [{ type: 'text', text: receipt.line }] } })
-    if (before !== null) {
-      $.ui.toast(receipt.line)
-    }
+    // The alert rows count as seen only now: a --receipt run that failed (no output, bad JSON, timeout) or an append
+    // that threw leaves them unseen, so the next refresh asks again.
+    lastAlerts = alerts
   } catch (error) {
     await update($, view, () => ({ text: `kbmon: ${String(error)}`, columns: width }) as KbmonView)
   } finally {
