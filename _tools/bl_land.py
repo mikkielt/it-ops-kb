@@ -2132,6 +2132,7 @@ def land_locked(bl, a):
                     f"(reading {remote}/main every {WAIT_POLL} s until the merge request has merged) run "
                     f"backlog.py land {iid} with --wait-merge SECONDS above 0, else run backlog.py land {iid} again "
                     "once it has merged")
+            ops_mark("scope")  # a stop below is the row of step scope, not of the rebase before it
             stray =out_of_scope(lroot, item_commits(lroot, family), own_globs(scope(bl, iid)))
             if stray:  # done's scope rule, read before the merge request opens rather than after it merged
                 raise land_stop("scope", f"{bl.label(iid)}'s commits change files outside its touches, so done would "
