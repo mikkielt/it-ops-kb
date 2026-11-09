@@ -21,6 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: the sprint goal states bugs of the backlog tool's own code and its _self docs; it asks no question the kb or the live docs answer, so no kb fact or gap entry is written.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-6b037793",
   "operator": "op-f618a13e"
