@@ -2,7 +2,7 @@
   "id": "BG-g6usmwjt",
   "kind": "bug",
   "title": "gate remove --by operator in an agent session removes a ceiling-class gate, which answer refuses there whatever --by says",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-pww4aqis",
   "priority": "P3",
   "rank": 0,
@@ -29,5 +29,7 @@
     "parked: SP-lmpjclxz review"
   ],
   "notes": "Order: same file bl_items.py as BG-s7smga3g and same test_authority.py as BG-a65lzrjf. Premise reproduces on origin/main (precheck 2026-11-09). Review gap G8 of SP-lmpjclxz. Same fix as the draft story ST-jiz53bwh (gate remove of a ceiling-class gate): the story is left to the operator to merge or drop after this lands; its check names an existing test selection.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-6b037793",
+  "operator": "op-f618a13e"
 }
