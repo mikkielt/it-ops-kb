@@ -1,0 +1,26 @@
+{
+  "id": "ST-n6dma3jp",
+  "kind": "story",
+  "title": "The usage text of backlog.py says start commits the item files without --commit, as the code now does",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the claim, done, new, start and close usage paragraph of backlog.py says start commits its item files by default and --commit only matters to the others",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,pathlib\nt=pathlib.Path('_tools/backlog.py').read_text(encoding='utf-8').lower()\nmiss=[w for w in ['start commits'] if w not in t]\nsys.exit('not yet: _tools/backlog.py lacks '+', '.join(miss) if miss else 0)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py"
+  ],
+  "links": [
+    "parked: SP-moxpl354 close"
+  ],
+  "notes": "Seen by the worker of ST-h2bxcrcd in SP-moxpl354: the usage text at the --commit paragraph still reads start takes --commit.",
+  "filed_in": "clone-0ea70e5c"
+}
