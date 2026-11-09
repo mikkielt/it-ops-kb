@@ -132,13 +132,35 @@ def on_integration_main(root, iid, missing=True):
         return False
 
 
-def drift_of(state, status, alive, claimed, on_main=True, done_on_main=False):
+def deleted_done(root, iid):
+    """Whether the item file of IID, which this tree no longer holds, read `done` when a commit on HEAD deleted it (a sprint
+    `close` deletes a finished sprint's items): the state its done commit shows. False when no commit deleted it, git cannot
+    say, or its last content was not done."""
+    rel = f"{rel_dir()}/{iid}.json"
+    p = subprocess.run(["git", "-C", str(root), "log", "-1", "--diff-filter=D", "--format=%H", "--", rel],
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
+    sha = p.stdout.strip()
+    if p.returncode or not sha:
+        return False
+    p = subprocess.run(["git", "-C", str(root), "show", f"{sha}^:{rel}"], capture_output=True, text=True, encoding="utf-8",
+                       errors="replace")
+    try:
+        return p.returncode == 0 and json.loads(p.stdout).get("status") == "done"
+    except (ValueError, AttributeError):
+        return False
+
+
+def drift_of(state, status, alive, claimed, on_main=True, done_on_main=False, gone_done=False):
     """(the state git shows, why) for a run key that contradicts git, else None. ON_MAIN: the item's done commit is on the
     integration main; a done item whose commit is not has no drift of the claim kinds either: `land` moves its key once it is.
     DONE_ON_MAIN: the item file reads done on the integration main as last fetched; a `landed` key over a file that is not
-    done here is left alone then, since a checkout that has not pulled the landing is behind, not the key wrong."""
+    done here is left alone then, since a checkout that has not pulled the landing is behind, not the key wrong.
+    GONE_DONE: no item file is left and the commit that deleted it shows it done (`deleted_done`): the state git shows is
+    `landed`, never `released`, which would claim the item was let go undone."""
     if status == "done" and state != "landed" and on_main:
         return "landed", f"the item file is done and the run state is {state}"
+    if status is None and gone_done and state not in ("landed", NONE):
+        return "landed", f"the item file was deleted as done and the run state is {state}"
     if state == "landed" and status not in (None, "done") and not done_on_main:
         return NONE, f"the run state is landed and the item file is {status}, not done"
     if state == NONE:
@@ -177,8 +199,9 @@ def collect(bl, states, scope):
             claimed = claimed_elsewhere(trees, ledgers, owned, iid)
         on_main = status != "done" or state == "landed" or on_integration_main(bl.root, iid)
         behind = state == "landed" and status not in (None, "done") and on_integration_main(bl.root, iid, missing=False)
+        gone = it is None and state not in ("landed", NONE) and deleted_done(bl.root, iid)
         rows.append({"id": iid, "state": state, "status": status, "gates": branch_gates(bl.root, iid) if it else None,
-                     "pid": pid, "alive": alive, "drift": drift_of(state, status, alive, claimed, on_main, behind)})
+                     "pid": pid, "alive": alive, "drift": drift_of(state, status, alive, claimed, on_main, behind, gone)})
     return rows
 
 

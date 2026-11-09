@@ -29,7 +29,31 @@
     "_tools/bl_land.py",
     "_tools/bl_runs.py",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/coordination.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does done end an in-place item at run state landed, and how does reconcile tell a deleted item was done?",
+      "options": [
+        "done moves a key at claimed to landed; reconcile reads the deleting commit's parent",
+        "done moves every item's key to landed, reconcile reads the close commit message"
+      ],
+      "recommendation": "done moves a key at claimed to landed; reconcile reads the deleting commit's parent",
+      "reason": "a land's own landing key is left to land, and the parent's item file is the done commit's own record",
+      "do": {
+        "done moves a key at claimed to landed; reconcile reads the deleting commit's parent": "BG-wcgmj4zu",
+        "done moves every item's key to landed, reconcile reads the close commit message": "BG-wcgmj4zu"
+      },
+      "class": "agents-rule",
+      "answer": "done moves a key at claimed to landed; reconcile reads the deleting commit's parent",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
   ],
   "links": [
     "parked: SP-7ba3r4ec close"

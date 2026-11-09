@@ -687,9 +687,12 @@ def cmd_done(bl, a):
     it.pop("claimed_by", None)
     bl.save(it)
     say(f"done {bl.label(iid)} at {at[:10]}" + ("" if a.commit else f"; commit this with the trailer KB-Work: {iid}"))
-    # the run key stays where it is: `landed` means the done commit is on the integration main, which `land` finds
-    # (verify) and moves it for, a key still at `claimed` too (no worker started: the orchestrator finished the item itself)
     commit_written(bl, a, "done", iid)
+    # a key still at `claimed` is an item finished in its own checkout, with no worker and no landing (a review or research
+    # story): nothing lands it later, so it ends `landed` here. A key `land` holds (`landing`) is moved by land, once verify
+    # has found the done commit on the integration main; any other state is left to `runs --reconcile`.
+    if run_state(iid) == "claimed":
+        move_run(iid, "landed", "done")
     return 0
 
 
