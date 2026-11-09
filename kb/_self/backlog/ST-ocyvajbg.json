@@ -2,7 +2,7 @@
   "id": "ST-ocyvajbg",
   "kind": "story",
   "title": "Plan step runs referrers on every symbol a bug's repro calls, so a repro that needs a shared function changed has its callers in touches before the start",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-moxpl354",
   "priority": "P3",
   "rank": 0,
@@ -37,5 +37,7 @@
     "parked: SP-bpjqqauu close"
   ],
   "notes": "The referrers check passes before the work on purpose: it runs the command form the rule text gives (referrers with a plain symbol name), so the rule's own command is proven to exit 0; the plan-section check beside it fails until the text is written.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-a1b2c3d4",
+  "operator": "op-f618a13e"
 }
