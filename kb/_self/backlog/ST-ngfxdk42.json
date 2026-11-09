@@ -1,27 +1,40 @@
 {
   "id": "ST-ngfxdk42",
   "kind": "story",
-  "title": "land's landing lock is taken by whichever waiter polls first, so a waiter can starve until its 30 min bound refuses it and the orchestrator reruns it by hand",
+  "title": "The clone's landing lock goes to its waiters in the order they asked, and a waiter that died holds nobody up",
   "status": "draft",
-  "priority": "P2",
+  "sprint": "SP-mc4dzsfe",
+  "priority": "P1",
   "rank": 0,
-  "goal": "waiters of the clone's landing lock take it in the order they asked (a ticket or queue file beside the lock), so a land that has waited longest is next and a sprint's landings do not end refused at step landing-lock while younger waiters pass them",
+  "goal": "waiters of the clone's landing lock take it in the order they asked, so the landing that has waited longest is next and none ends refused at step landing lock while younger waiters pass it; a ticket of a process that died is skipped, so a dead waiter holds nobody up",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import sys; src = open(\"_tools/bl_close.py\", encoding=\"utf-8\").read(); sys.exit(0 if \"ticket\" in src or \"queue\" in src.lower() else 1)"
+        "import os, subprocess, sys, tempfile, time\nCHILD = \"\"\"\nimport os, sys, time\nsys.path.insert(0, \"_tools\")\nimport bl_close\nroot, item, order, release = sys.argv[1:5]\nprint(\"ready\", flush=True)\nwith bl_close.landing_lock(root, item):\n    with open(order, \"a\") as f:\n        f.write(item + chr(10))\n    while release != \"-\" and not os.path.exists(release):\n        time.sleep(0.05)\n\"\"\"\nT = tempfile.mkdtemp()\nroot = os.path.join(T, \"r\")\nsubprocess.run([\"git\", \"init\", \"-q\", root], check=True)\norder, release = os.path.join(T, \"order\"), os.path.join(T, \"release\")\nenv = dict(os.environ, KB_HOST_LOCK_POLL=\"0.05\")\ndef start(item, hold):\n    p = subprocess.Popen([sys.executable, \"-c\", CHILD, root, item, order, release if hold else \"-\"], env=env,\n                         stdout=subprocess.PIPE, text=True)\n    p.stdout.readline()\n    return p\ndef lines():\n    return open(order).read().split() if os.path.exists(order) else []\nholder = start(\"H\", True)\nt0 = time.time()\nwhile lines() != [\"H\"] and time.time() - t0 < 30:\n    time.sleep(0.05)\nwaiters = []\nfor n in range(1, 5):\n    waiters.append(start(\"W%d\" % n, False))\n    time.sleep(0.4)\n    if n == 2:\n        waiters[-1].kill()\nopen(release, \"w\").close()\nfor p in [holder] + waiters:\n    try:\n        p.wait(timeout=60)\n    except subprocess.TimeoutExpired:\n        p.kill()\ngot = lines()\nprint(\"landing lock taken in the order\", got)\nsys.exit(0 if got == [\"H\", \"W1\", \"W3\", \"W4\"] else 1)"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "waiters of the clone's landing lock take it in the order they asked, so the landing that has waited longest is next and none ends refused at step landing lock while younger waiters pass it",
+      "check": 0
+    },
+    {
+      "clause": "a ticket of a process that died is skipped, so a dead waiter holds nobody up",
+      "check": 0
     }
   ],
   "touches": [
     "_tools/bl_close.py",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/git.md"
   ],
   "links": [
     "parked: SP-zobzdhwi close"
   ],
+  "notes": "Folded in from ST-73as4hrd (a duplicate, dropped): landings of several sessions on one clone take the landing lock in the order they asked, so a land does not end at step landing-lock after its 30 minute wait (BG-o4rrijqe and BG-mhlxillg each lost 30 minutes while a later landing of another sprint took the lock first). Where the lock lives: bl_close.landing_lock (O_EXCL file kb-landing.lock in the git common directory, polled every KB_HOST_LOCK_POLL s); the queue goes there, with a ticket record per waiter (pid, start, item) in a directory beside the lock, a waiter taking the lock only when its ticket is the oldest of a live process, and a ticket whose pid is gone removed. The check plants it: a holder and four waiters as subprocesses, the second waiter killed with SIGKILL while queued, the lock released, and the order the waiters took it read (expected H, W1, W3, W4; on the base it was H, W4, W2, W1, W3). One planted failure per gate, no test id: the landing lock is critical but the suite ceiling is 29 s and 120 ids, so this sprint adds no test. Night baseline (2026-11-08 18:00 to 2026-11-09 13:00 CET): 13 land runs of 10 items refused at step landing lock after 1807 to 1811 s.",
   "filed_in": "clone-0ea70e5c"
 }
