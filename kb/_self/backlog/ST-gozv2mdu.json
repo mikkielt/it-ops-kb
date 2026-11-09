@@ -2,7 +2,7 @@
   "id": "ST-gozv2mdu",
   "kind": "story",
   "title": "Review sprint: Leak scan, redaction and query-log capture hold on the layouts reviews found",
-  "status": "doing",
+  "status": "todo",
   "sprint": "SP-osevumx6",
   "review": true,
   "priority": "P1",
@@ -38,7 +38,6 @@
       ]
     }
   ],
-  "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-cdcea91c",
-  "operator": "op-f618a13e"
+  "notes": "Review run 2026-11-09: fresh reviewer found 3 S2 leak-scan gaps (fixed in this sprint) and 3 lower ones (parked). All provisional answers confirmed on the operator's delegation. done refused only on the held-out answer-rate check (false_good=9, max 8, caused by the new articles of d270ae793, not by this sprint); left open for the operator's re-label decision.",
+  "filed_in": "clone-0ea70e5c"
 }
