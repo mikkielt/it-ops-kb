@@ -447,7 +447,9 @@ class Backlog:
     def keep_disk_answers(self, item):
         """A gate field written to the item's file after this run loaded it (an answer the orchestrator committed on a
         worker's branch while `done` ran its checks) is added to `item` before it is saved, so the save does not wipe
-        it. Only a key the loaded copy lacked and `item` lacks is added: one the run itself removed stays removed."""
+        it. A key the loaded copy lacked and `item` lacks is added, and a key `item` still holds as loaded takes the
+        disk value when that differs (`by` agent to operator): one the run itself removed or changed stays as the run
+        left it."""
         path, loaded = self.dir / f"{item['id']}.json", self.raw.get(item["id"])
         if loaded is None or not path.is_file():
             return
@@ -467,6 +469,8 @@ class Backlog:
                 continue
             for k, v in dg.items():
                 if k not in old and k not in mine:
+                    mine[k] = v
+                elif k in old and k in mine and mine[k] == old[k] and v != old[k]:
                     mine[k] = v
 
     def save(self, item):
