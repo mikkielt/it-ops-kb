@@ -2,7 +2,7 @@
   "id": "ST-j2eeme66",
   "kind": "story",
   "title": "Planning a claim or lock race fix plants the race on the same key as well as on a neighbour key",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-mc4dzsfe",
   "priority": "P3",
   "rank": 0,
@@ -30,5 +30,7 @@
   "links": [
     "parked: SP-6jfnx5i3 close"
   ],
-  "notes": "SP-6jfnx5i3 retrospective: BG-m7rrbdnm's repro planted another session's claim of a different item while the claim waited, and the fix re-read only the ledger ids' files; the review found the same-item race (both claims succeed), filed as S1 BG-4jtidln5 and fixed in the sprint. This sprint's claim and lock items plant the same key and a different key themselves (the FIFO check kills a waiter between two others). The check reads only the plan section of the skill."
+  "notes": "SP-6jfnx5i3 retrospective: BG-m7rrbdnm's repro planted another session's claim of a different item while the claim waited, and the fix re-read only the ledger ids' files; the review found the same-item race (both claims succeed), filed as S1 BG-4jtidln5 and fixed in the sprint. This sprint's claim and lock items plant the same key and a different key themselves (the FIFO check kills a waiter between two others). The check reads only the plan section of the skill.",
+  "claimed_by": "claude-4bf1b2c2",
+  "operator": "op-f618a13e"
 }
