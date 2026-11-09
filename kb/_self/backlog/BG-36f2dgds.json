@@ -19,5 +19,9 @@
     "_tools/kbpublic.py",
     "kb/_self/git.md"
   ],
+  "links": [
+    "parked: SP-mut2pmu3 review"
+  ],
+  "notes": "SP-mut2pmu3 review gap 3 (S3). kbpublic.py texts() skips specs holding a newline (:437-466) and texts_marked marks only invalid UTF-8; used by blobs_marked in tree_refusals (:540) and internal_prefixes (:687). Planted: kb/public/_root.md public plus kb/<name with a newline>/_root.md saying visibility: internal; tree_refusals gives no cause for it. history_refusals catches it only for the commit that wrote it, by blob sha. Fix: answer a skipped spec as None in texts_marked.",
   "filed_in": "clone-0ea70e5c"
 }
