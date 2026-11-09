@@ -45,12 +45,51 @@
   "touches": [
     "_tools/kj_store.py",
     "_tools/kbjob.py",
-    "kb/_self/coordination.md"
+    "kb/_self/coordination.md",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "ST-zom563hs",
     "ST-nwwcf3kk",
     "ST-liejtnnc"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does a submit tell two checks apart, since the check's name is an option and the idempotence key names only clone, operation and subject?",
+      "options": [
+        "key a check by its name",
+        "leave the key as it is"
+      ],
+      "recommendation": "key a check by its name",
+      "reason": "otherwise a submit of tests-changed joins a live backlog-check job and returns its placement and result",
+      "do": {
+        "key a check by its name": "ST-nmrcazp2",
+        "leave the key as it is": "ST-nmrcazp2"
+      },
+      "class": "design",
+      "answer": "key a check by its name",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "What does the job record's placement hold beyond the seven decision fields, and when is the policy asked?",
+      "options": [
+        "the decision plus the submitting host, asked on every submit",
+        "the seven fields only, asked only when no live job exists"
+      ],
+      "recommendation": "the decision plus the submitting host, asked on every submit",
+      "reason": "placement_of and the workstation executor read host, and asking first keeps the order the goal names",
+      "do": {
+        "the decision plus the submitting host, asked on every submit": "ST-nmrcazp2",
+        "the seven fields only, asked only when no live job exists": "ST-nmrcazp2"
+      },
+      "class": "design",
+      "answer": "the decision plus the submitting host, asked on every submit",
+      "by": "agent"
+    }
   ],
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-61c966d6",
