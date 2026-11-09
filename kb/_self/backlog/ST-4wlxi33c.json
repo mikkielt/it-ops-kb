@@ -28,6 +28,29 @@
   "depends_on": [
     "ST-ocyvajbg"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does the helper rule sit in the plan section of skills/sprint/SKILL.md?",
+      "options": [
+        "inline in step 2 after the bug-repro referrers sentence",
+        "a new numbered step after step 2"
+      ],
+      "recommendation": "inline in step 2 after the bug-repro referrers sentence",
+      "reason": "since step 2 already holds the touches planning rules and the goal names step 2",
+      "do": {
+        "inline in step 2 after the bug-repro referrers sentence": "ST-4wlxi33c",
+        "a new numbered step after step 2": "ST-4wlxi33c"
+      },
+      "class": "agents-rule",
+      "answer": "inline in step 2 after the bug-repro referrers sentence",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "links": [
     "parked: SP-ep7ck2ab close"
   ],
