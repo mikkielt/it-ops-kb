@@ -2,7 +2,7 @@
   "id": "ST-s4xjlw6o",
   "kind": "story",
   "title": "Review sprint: Groups extend it-ops-kb from their own repository through a versioned extension API",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ep7ck2ab",
   "review": true,
   "priority": "P1",
@@ -38,5 +38,7 @@
       ]
     }
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-a796fc75",
+  "operator": "op-f618a13e"
 }
