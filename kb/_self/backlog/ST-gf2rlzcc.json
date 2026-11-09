@@ -2,7 +2,7 @@
   "id": "ST-gf2rlzcc",
   "kind": "story",
   "title": "A central coord service holds the job queue of every clone, and each executor, workstation, server or CI, takes only the jobs placed on its own kind",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-tmw3tokk",
   "sprint": "SP-lwkdljxg",
   "priority": "P3",
@@ -68,5 +68,7 @@
     }
   ],
   "notes": "Design: the central service is a coord serve (POST /v1/run with {argv}, bearer token per operator, one key file each, group scopes, plain-http refusal beyond loopback: kb/_self/coordination.md), so a thin client needs no new network surface: submit, follow and status are coord operations on job/ID keys. Scope set by the operator's answer to gate g1 (2026-11-08): central executors, a server kbjob.py serve and GitLab CI jobs, may run every operation, landings and worker sessions included, wherever the job's placement puts it. This story is the queue and the executor kinds only; the placement decision (OPA policy, overrides, CODEOWNERS), identities, worker branches on the integration remote, the server's clones, CI triggering, cost caps and records are the stories of EP-p4guu2ip, so a job record here carries a placement that defaults to the workstation. Authority: a workstation executor runs a job only when the job's operator equals the operator of its own key file and its host is its own; the operation table stays closed (ST-nwwcf3kk); no job answers a gate. Complement stance: no Agent Mail or Beads piece does this (kb public/agents/coordination-tools.md:54), so nothing is rebuilt; coord serve is what is extended. Related: EP-fxrzbuza only where it also extends coord serve. Planning 2026-11-08: no check reads these goal clauses yet; the worker adds a planted check for each or the review reads them: each job runs in the clone whose integration remote url equals the one the job names (no such clone leaves the job queued with the reason) and every move is posted back to the central store, so a job placed on another kind, host or operator stays queued | the central store keeps states and events only, the output log stays with the executor and log JOB names the host that has it",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-61c966d6",
+  "operator": "op-f618a13e"
 }
