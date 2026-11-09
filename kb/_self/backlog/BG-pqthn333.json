@@ -55,7 +55,11 @@
         "Look up each GUID of an ask or answer text (at most 8) as the lease session/ID with coord get; redact.redact takes the live ones as keep": "BG-pqthn333",
         "Pass every GUID of an ask text through unchanged": "BG-pqthn333"
       },
-      "class": "querylog"
+      "class": "querylog",
+      "answer": "Look up each GUID of an ask or answer text (at most 8) as the lease session/ID with coord get; redact.redact takes the live ones as keep",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     },
     {
       "id": "g2",
