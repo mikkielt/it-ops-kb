@@ -708,20 +708,37 @@ def selector_gate(out):
 GROUP_CHECK_TIMEOUT_S = 600  # a settings layer's gate check gets this long, KB_GATE_CHECK_TIMEOUT_S overrides it
 
 
+def gate_check_entries(root):
+    """`(argv, layer)` for each `gate_checks` entry of the settings layers of ROOT in layer order: group, clone, each kb
+    root's `kb/NAME/settings.json` by name (layer `root NAME`), user. `kbsettings.layered` takes one kb root, so the
+    layers before and after the kb roots come from a read with none and each kb root's entries from a read with it.
+    Raises `kbsettings.SettingsError` for a file that cannot be read."""
+    root = Path(root)
+    listed, layers = kbsettings.layered(root, "gate_checks")
+    kb_dir = root / "kb"
+    names = sorted(d.name for d in kb_dir.iterdir() if (d / "settings.json").is_file()) if kb_dir.is_dir() else []
+    mine = {name: [(argv, "root " + name) for argv, layer in zip(*kbsettings.layered(root, "gate_checks", name))
+                   if layer == "root"] for name in names}
+    before = [(a, l) for a, l in zip(listed, layers) if l != "user"]
+    after = [(a, l) for a, l in zip(listed, layers) if l == "user"]
+    return before + [e for name in names for e in mine[name]] + after
+
+
 def group_gate(root):
     """The failures of the group's gate checks, as strings; empty when every check passes or none is set. Each argv of
-    the `gate_checks` lists of the settings layers (group, clone, kb root, user: `kbsettings.layered`, in layer order)
-    runs without a shell from ROOT, the repository root, with a timeout of its own (GROUP_CHECK_TIMEOUT_S). A failure
-    names the argv, the layer that lists it and the exit code (`timed out` or `not started` for the rest, a malformed
-    entry or an unreadable settings file too), then the last line of its output."""
+    the `gate_checks` lists of the settings layers (group, clone, each kb root by name, user: `kbsettings.layered`, in
+    layer order) runs without a shell from ROOT, the repository root, with a timeout of its own (GROUP_CHECK_TIMEOUT_S).
+    A failure names the argv, the layer that lists it (`root NAME` for a kb root's) and the exit code (`timed out` or
+    `not started` for the rest, a malformed entry or an unreadable settings file too), then the last line of its
+    output."""
     root = Path(root)
     try:
-        listed, layers = kbsettings.layered(root, "gate_checks")
+        entries = gate_check_entries(root)
     except kbsettings.SettingsError as exc:
         return [f"gate_checks: the settings cannot be read: {exc}"]
     limit = env_number("KB_GATE_CHECK_TIMEOUT_S", GROUP_CHECK_TIMEOUT_S) or GROUP_CHECK_TIMEOUT_S
     failures = []
-    for layer, argv in zip(layers, listed):
+    for argv, layer in entries:
         if not (isinstance(argv, list) and argv and all(isinstance(x, str) and x for x in argv)):
             failures.append(f"gate_checks entry {json.dumps(argv)} of the {layer} layer must be a non-empty list "
                             "of strings")
