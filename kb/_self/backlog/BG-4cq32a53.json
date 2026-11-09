@@ -40,7 +40,9 @@
       },
       "class": "design",
       "answer": "divide per-minute figures by at least one LIVE_TICK_S and write the rows",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
