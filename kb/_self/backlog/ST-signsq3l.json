@@ -2,7 +2,7 @@
   "id": "ST-signsq3l",
   "kind": "story",
   "title": "Research sprint goal: Lock interrupt windows close: no empty lock file, no stale ticket ordering, no leftover SIGTERM handler or claimed state, and coordination.md names who moves a refused state",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-luspfajx",
   "goal_research": true,
   "priority": "P1",
@@ -23,6 +23,20 @@
   ],
   "notes": "No outside facts: the goal's open questions are about the clone's own lock and claim code and coordination.md, which the six items' repros and checks read; no kb article or source row is needed.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-luspfajx",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "0f083f99280a63841d248d153c4bd272d027dec2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-signsq3l"
+        ],
+        "exit": 0,
+        "sha256": "c99ea7f0d5701ca2"
+      }
+    ]
+  }
 }
