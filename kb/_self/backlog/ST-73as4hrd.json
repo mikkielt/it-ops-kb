@@ -1,0 +1,22 @@
+{
+  "id": "ST-73as4hrd",
+  "kind": "story",
+  "title": "A land waiting for the landing lock queues behind the earlier waiter instead of timing out after 30 minutes while a later landing takes the lock",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Landings of several sessions on one clone take the landing lock in the order they asked, so a land does not end at step landing-lock after its 30 minute wait (BG-o4rrijqe and BG-mhlxillg each lost 30 minutes, while a later landing of another sprint took the lock first)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; t=open(\"_tools/bl_land.py\",encoding=\"utf-8\").read(); ok=\"queue\" in t and \"ticket\" in t; print(ok); sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
