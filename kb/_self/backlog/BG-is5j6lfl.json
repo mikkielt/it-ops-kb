@@ -23,6 +23,27 @@
   "depends_on": [
     "BG-3ji4fsfo"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the multi run research estimate price a research agent whose model has recorded multi runs?",
+      "options": [
+        "the mean cost of the model's recorded multi research agents, else the repro mean scaled by the input price ratio",
+        "the repro mean scaled by a per-model factor fitted to the multi records",
+        "the repro mean scaled by the input price ratio only"
+      ],
+      "recommendation": "the mean cost of the model's recorded multi research agents, else the repro mean scaled by the input price ratio",
+      "do": {
+        "the mean cost of the model's recorded multi research agents, else the repro mean scaled by the input price ratio": "BG-is5j6lfl",
+        "the repro mean scaled by a per-model factor fitted to the multi records": "BG-is5j6lfl",
+        "the repro mean scaled by the input price ratio only": "BG-is5j6lfl"
+      },
+      "class": "design",
+      "answer": "the mean cost of the model's recorded multi research agents, else the repro mean scaled by the input price ratio",
+      "by": "agent"
+    }
+  ],
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-ev4run01",
   "operator": "op-f618a13e"

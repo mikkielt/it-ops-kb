@@ -61,6 +61,8 @@ OPERATOR = "operator"  # who the harness answers a gate as
 PACK_BUDGET = 1200  # kb_pack's default budget in tokens; its limits are the next two
 PACK_LIMITS = (200, 6000)
 LOOKUP_LIMITS = {"max_turns": 40, "usd": 3.0}  # the turns and dollars one lookup agent's session may use
+MULTI_KB_ARMS = ("concurrent", "sequential")  # the first word of the arm label of a recorded multi run's kb agents (not `bare` twins or `delta` rows)
+MULTI_RESEARCH_COST = re.compile(r"research-\d+/cost")  # the metric of one research agent's cost in a recorded multi run
 CODE_ITEM_USD = 1.0  # what one code item costs on RECORDED_MODEL: about the mean of the usage rows of a worker's session
 RECORDED_MODEL = "claude-sonnet-5-5"  # the model the recorded repro rows and the code figure were taken on
 DEFAULT_USAGE = {"input_tokens": 120, "output_tokens": 30000, "cache_creation_input_tokens": 150000, "cache_read_input_tokens": 6000000,
@@ -641,8 +643,10 @@ def price_ratio(mid):
 
 def recorded_means(rows):
     """What the recorded rows give the estimate: {model id: (mean cost of one question, runs, session shape)} of the
-    pool's kb arms at their default effort (the session shape's where a model has it), and the mean cost and wall seconds of
-    the `repro` rows of an area, a stopped area counted at its zero. `rows` are the results file's."""
+    pool's kb arms at their default effort (the session shape's where a model has it), the mean cost and wall seconds of
+    the `repro` rows of an area, a stopped area counted at its zero, and {model id: (mean cost of one research agent, runs)}
+    of the research agents of the recorded `multi` runs (`concurrent` and `sequential` arms, not the bare twins or the
+    `delta` rows). `rows` are the results file's."""
     pool = {}
     for shape in (False, True):
         for r in rows:
@@ -656,7 +660,13 @@ def recorded_means(rows):
         if n and (shape or mid not in out):
             out[mid] = (tot / n, int(n), shape)
     repro = {m: [float(r["value"]) for r in rows if r["scenario"] == "repro" and r["metric"] == m] for m in ("cost", "wall_s")}
-    return {"pool": out, "repro": {m: sum(v) / len(v) for m, v in repro.items() if v}, "repro_runs": len(repro["cost"])}
+    agents = {}
+    for r in rows:
+        if (r["scenario"] == "multi" and r["case"].startswith("research") and r["arm"].split(" ")[0] in MULTI_KB_ARMS
+                and MULTI_RESEARCH_COST.fullmatch(r["metric"]) and r["value"] != ""):
+            agents.setdefault(r["model"], []).append(float(r["value"]))
+    return {"pool": out, "repro": {m: sum(v) / len(v) for m, v in repro.items() if v}, "repro_runs": len(repro["cost"]),
+            "multi_research": {m: (sum(v) / len(v), len(v)) for m, v in agents.items()}}
 
 
 def recorded_usage(rows, mid):
@@ -758,11 +768,15 @@ def agent_plan(agent, scenario, n, root, knobs, models, means, questions, briefs
         plan["argv"] = session_argv(model, d["max_turns"], d["area_usd"], mcp)
         plan["prompt"] = bench_repro.area_prompt(brief)
         cost = means["repro"].get("cost")
-        if cost is None:
+        if mid in means["multi_research"]:  # the model's own recorded research agents: a model that takes more turns costs more than its price ratio says
+            plan["usd"], runs = means["multi_research"][mid]
+            plan["basis"] = f"the mean cost of {runs} recorded multi research agents of {mid} (${plan['usd']:.2f}, a stopped one at its cap)"
+        elif cost is None:
             raise Refused("no recorded repro rows: the estimate of a research agent reads them")
-        plan["usd"] = cost * price_ratio(mid)
-        plan["basis"] = (f"the mean cost of {means['repro_runs']} recorded repro area runs (${cost:.2f}, a stopped one at its zero)"
-                         + (f" x {price_ratio(mid):.3g} (the input price ratio)" if mid != RECORDED_MODEL else ""))
+        else:
+            plan["usd"] = cost * price_ratio(mid)
+            plan["basis"] = (f"the mean cost of {means['repro_runs']} recorded repro area runs (${cost:.2f}, a stopped one at its zero)"
+                             + (f" x {price_ratio(mid):.3g} (the input price ratio)" if mid != RECORDED_MODEL else ""))
         plan["wall"] = means["repro"].get("wall_s") if mid == RECORDED_MODEL else None
         plan["what"] = f"area {agent['inputs'][0]}"
         plan["area"] = agent["inputs"][0]
