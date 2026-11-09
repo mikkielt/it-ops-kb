@@ -13,6 +13,9 @@
   kbext.py verify --root WS [--kb-root NAME] [--timeout S]          call each extender the settings layers name with its
                                                                     point's samples in a child process and check the shape
                                                                     of the answer: one line each, exit 1 when one fails
+  kbext.py guards --root WS [--kb-root NAME]                        print each shipped guard a group's extender replaces
+                                                                    (point, module, layer) and the leak shapes it added,
+                                                                    or one line saying the shipped guards run; exit 0
   kbext.py init-team DIR --group NAME --upstream URL [--ref TAG]    write a group's overlay repository into DIR (below)
   kbext.py rehearse --team DIR (--upstream URL --from TAG --to TAG | --plant [--break]) [--fork]
                                                                     dry-run the group's move from one upstream ext tag to
@@ -69,6 +72,14 @@ upstream from the running checkout's tracked `_tools` (what kbgit.py, kbroot.py 
 tagged `ext-v` and `API_VERSION` and the next minor; with `--break` the second removes the `ranker` point, which `verify`
 reports by name.
 
+`leak_shapes(root, kb_root=None)` reads `leak.shapes` of the settings layers (a list of objects with `kind` and `pattern`, each
+layer's own) for `kbcommon.leak_hits`, which refuses them with its shipped shapes. A shape that is no object of exactly
+those keys, whose kind is not lower-case letters, digits and single hyphens or is one of the shipped kinds (`SHIPPED_KINDS`)
+or starts `private-`, whose pattern does not compile or matches the empty string, raises ExtensionError naming `leak.shapes`,
+the layer and its file. `replaced_guards` and `guard_lines` name each shipped guard (`GUARDS`: `leak_scan` stands in for
+`kbpublic.file_hits`) that an extender replaces, from the settings and entry points alone, importing nothing. `guards`
+prints those lines and exits 0, or 2 with the refusal of `leak_shapes` or of a bad `extensions` setting.
+
 `lint` is the gate on the API's compatibility. A repository with no tag `ext-vMAJOR.MINOR.PATCH` prints one line and exits 0.
 Otherwise it reads `API_VERSION` and `SURFACE` of `_tools/kbext.py` at the newest such tag (`git show`) and of the working
 tree with `ast`, never importing either file, and exits 1 with one line per problem: an entry removed or with a changed
@@ -79,13 +90,13 @@ entry calls when it is used.
 Answers: how a group's extender for an extension point is found, loaded and checked against the API version
 Answers: which extension points and settings keys are the public extension API, and its version
 Answers: whether a change removes or changes a public extension entry without a major API version, a deprecation and a changelog entry
+Answers: which shipped guards a group's extender replaces in this clone and which leak shapes the group added
 Answers: whether each extender a group configured still loads and answers its point's sample inputs in the shape the API promises
 Answers: how to start a group's overlay repository that pins it-ops-kb by an ext tag and holds the group's plugin and extenders
 Answers: whether a group's overlay and fork take the next upstream ext tag with no conflict, no shipped file edited and every extender verified
-Use: python3 _tools/kbext.py resolve|call POINT --root WS | surface [--json] | lint [--root REPO] | verify --root WS | init-team DIR --group NAME --upstream URL | rehearse --team DIR --plant|--upstream URL --from TAG --to TAG
+Use: python3 _tools/kbext.py resolve|call POINT --root WS | surface [--json] | lint [--root REPO] | verify --root WS | guards --root WS | init-team DIR --group NAME --upstream URL | rehearse --team DIR --plant|--upstream URL --from TAG --to TAG
 """
 import argparse, ast, collections, importlib, json, os, re, shutil, subprocess, sys, tempfile
-from importlib import metadata
 from pathlib import Path
 
 import kbsettings
@@ -370,6 +381,7 @@ def _add_paths(root, kb_root):
 
 def _entry_point(point):
     """(spec, distribution) of the one entry point of group it_ops_kb.POINT, or None; two raise ExtensionError."""
+    from importlib import metadata  # imported here: a tool that only reads shapes pays nothing for it
     found = sorted(metadata.entry_points(group=f"{GROUP}.{point}"), key=lambda e: (e.dist.name, e.name))
     if not found:
         return None
@@ -466,6 +478,129 @@ def configured(point, root, kb_root=None):
     if not POINT_RE.fullmatch(str(point)):
         raise ExtensionError(f"point {point!r}: a name of lower-case letters, digits and underscores is expected")
     return _named(root, kb_root, "extensions", point) is not None or _entry_point(point) is not None
+
+
+# What a group may replace of the shipped guards: extension point -> the shipped function it stands in for.
+GUARDS = {"leak_scan": "kbpublic.file_hits"}
+SHIPPED_KINDS = ("secret", "home", "ip", "email", "guid")  # the kinds of the shipped leak scan; a group shape takes none of them
+LEAK_KIND_RE = re.compile(r"[a-z][a-z0-9]*(-[a-z0-9]+)*")
+_CACHE = {}
+
+
+def _stat(path):
+    try:
+        st = os.stat(path)
+    except OSError:
+        return None
+    return st.st_mtime_ns, st.st_size
+
+
+def _cached(kind, root, kb_root, make):
+    """MAKE(layers) for the settings layers of ROOT, kept for the process until one of the files that took part (or could
+    have: the four fixed paths and the group file the environment names) changes, so a scan that asks once per line reads
+    no file again. A SettingsError is raised as ExtensionError and never kept."""
+    root = Path(root)
+    key = (kind, str(root), kb_root, os.environ.get(kbsettings.GROUP_ENV))
+    held = _CACHE.get(key)
+    if held and all(_stat(p) == s for p, s in held[0]):
+        return held[1]
+    extra = [root / "settings.json", root / ".it-ops-kb" / "settings.json", root / "_private" / "settings.json"]
+    if os.environ.get(kbsettings.GROUP_ENV):
+        extra.append(Path(os.environ[kbsettings.GROUP_ENV]))
+    before = {p: _stat(p) for p in extra}
+    try:
+        layers = kbsettings.layer_files(root, kb_root)
+    except kbsettings.SettingsError as e:
+        raise ExtensionError(str(e))
+    for _, path, _ in layers:
+        before.setdefault(path, _stat(path))
+    value = make(layers)
+    _CACHE[key] = (list(before.items()), value)
+    return value
+
+
+def leak_shapes(root, kb_root=None):
+    """[(kind, compiled pattern, layer)] of the `leak.shapes` of every settings layer of ROOT (group, clone, kb root, user),
+    each layer's in file order: a group's own shapes, added to those the shipped leak scan refuses (`kbcommon.leak_hits`).
+    A shape is an object with `kind` (lower-case letters, digits and single hyphens, none of SHIPPED_KINDS and not
+    `private-...`) and `pattern` (a regular expression that compiles and does not match the empty string). Anything else
+    raises ExtensionError, one line naming `leak.shapes`, the layer, its file and the shape."""
+    root = Path(root)
+
+    def make(layers):
+        found = []
+        for layer, path, data in layers:
+            body = data.get("leak", {})
+            where = f"leak.shapes in the {layer} layer ({kbsettings.shown_path(path, root)})"
+            if not isinstance(body, dict):
+                raise ExtensionError(f"{where}: key leak must be an object")
+            shapes = body.get("shapes", [])
+            if not isinstance(shapes, list):
+                raise ExtensionError(f"{where}: must be a list of objects with kind and pattern")
+            for i, shape in enumerate(shapes, 1):
+                at = f"{where}: shape {i}"
+                if not isinstance(shape, dict) or set(shape) != {"kind", "pattern"}:
+                    raise ExtensionError(f"{at} must be an object with exactly kind and pattern")
+                kind, pattern = shape["kind"], shape["pattern"]
+                if not isinstance(kind, str) or not LEAK_KIND_RE.fullmatch(kind) or kind in SHIPPED_KINDS \
+                        or kind.startswith("private-"):
+                    raise ExtensionError(f"{at}: kind {kind!r} must be lower-case letters, digits and single hyphens, "
+                                         f"none of {', '.join(SHIPPED_KINDS)} and not private-...")
+                if not isinstance(pattern, str) or not pattern:
+                    raise ExtensionError(f"{at} ({kind}): pattern must be a non-empty string")
+                try:
+                    rx = re.compile(pattern)
+                except re.error as e:
+                    raise ExtensionError(f"{at} ({kind}): the pattern does not compile: {e}")
+                if rx.search(""):
+                    raise ExtensionError(f"{at} ({kind}): the pattern matches the empty string")
+                found.append((kind, rx, layer))
+        return found
+    return _cached("leak_shapes", root, kb_root, make)
+
+
+def leak_scan(root, kb_root=None):
+    """The callable of extension point `leak_scan` for the clone ROOT (a group's `file_hits(path, text, allow, pinned=())`),
+    or None when none is named and the shipped scan runs. It is loaded as `resolve` loads it and kept for the process
+    until a settings file changes; a named one that cannot be loaded or is no callable raises ExtensionError."""
+    def make(_):
+        if not configured("leak_scan", root, kb_root):
+            return None
+        found = resolve("leak_scan", root, kb_root)
+        if not callable(found["extender"]):
+            raise ExtensionError(f"{found['where']}: {found['spec']} is not callable")
+        return found["extender"]
+    return _cached("leak_scan", root, kb_root, make)
+
+
+def replaced_guards(root, kb_root=None):
+    """[{point, spec, module, layer, file, replaces}] for each shipped guard (GUARDS) that a group's extender replaces in the
+    clone ROOT, in GUARDS' order; empty when the shipped guards all run. It reads the settings and the entry points and
+    imports nothing, so a group's code never runs to answer it. Raises ExtensionError for a refused setting."""
+    out = []
+    for point, replaces in GUARDS.items():
+        if configured(point, root, kb_root):
+            specs, layer, file = _find(point, root, kb_root, False)
+            out.append({"point": point, "spec": specs[0], "module": specs[0].partition(":")[0], "layer": layer,
+                        "file": file, "replaces": replaces})
+    return out
+
+
+def guard_lines(root, kb_root=None):
+    """The lines `kbext.py guards` prints for ROOT: each replaced guard with its module and layer, the paths that run the
+    shipped guards anyway, and the leak shapes a group added; `shipped guards run: ...` alone when nothing is replaced."""
+    replaced = replaced_guards(root, kb_root)
+    lines = [f"replaced  {g['point']}  {g['spec']}  module {g['module']}, layer {g['layer']} ({g['file']}): runs in place of "
+             f"{g['replaces']} in this clone" for g in replaced]
+    if replaced:
+        lines.append("still shipped: kbgit.py contribute and kbgit.py publish run the shipped leak scan; the shared "
+                     "repository's own gate loads no group extender")
+    else:
+        lines.append("shipped guards run: no extension point replaces one in this clone")
+    count = collections.Counter(layer for _, _, layer in leak_shapes(root, kb_root))
+    if count:
+        lines.append("leak.shapes added: " + ", ".join(f"{n} in the {layer} layer" for layer, n in count.items()))
+    return lines
 
 
 def call(point, root, args, kb_root=None):
@@ -972,6 +1107,9 @@ def main(argv=None):
                                                          "commits tagged ext-v<API_VERSION> and the next minor")
     sp.add_argument("--break", action="store_true", dest="broken", help="with --plant: the second commit removes the "
                                                                          "ranker point, keeping its API version a minor")
+    sp = sub.add_parser("guards", help="print each shipped guard a group's extender replaces and the leak shapes it added")
+    sp.add_argument("--root", required=True, help="the workspace directory (holds settings.json)")
+    sp.add_argument("--kb-root", help="a kb root's name: kb/NAME/settings.json is a layer too")
     sp = sub.add_parser("verify", help="call each configured extender with its point's samples and check the answers")
     sp.add_argument("--root", required=True, help="the workspace directory (holds settings.json)")
     sp.add_argument("--kb-root", help="a kb root's name: kb/NAME/settings.json is a layer too")
@@ -1007,6 +1145,13 @@ def main(argv=None):
         code, lines = rehearse(args.upstream, args.from_tag, args.to_tag, args.team, args.fork, args.plant, args.broken)
         print("\n".join(lines), file=sys.stderr if code == 2 else sys.stdout)
         return code
+    if args.cmd == "guards":
+        try:
+            print("\n".join(guard_lines(args.root, args.kb_root)))
+        except ExtensionError as e:
+            print(f"kbext: {' '.join(str(e).split())}", file=sys.stderr)
+            return 2
+        return 0
     if args.cmd == "verify":
         if Path(args.root).exists() and not Path(args.root).is_dir():
             ap.error(f"--root {args.root}: not a directory")

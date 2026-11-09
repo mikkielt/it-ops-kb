@@ -31,7 +31,8 @@
   kbmon.py --status [TOPIC]    print a short plain-words answer (at most 25 lines) for TOPIC: sessions, cost, querylog, coord,
                                sprints, load or all (the default), from one snapshot of the panels the topic needs; with
                                --json an object of schema 1, topic, taken, lines and facts; a claim's holder is never named;
-                               it calls no model and writes no file, and exits 0 also when the snapshot has an alert
+                               it calls no model and writes no file, and exits 0 also when the snapshot has an alert; the `all` answer names each
+                               shipped guard a group's extender replaces (kbext.py guards) on the lines after `needs you`
   kbmon.py --status sprints [--detail]
                                one row for each sprint, the active one first (a short name of at most 40 characters, its
                                state, done of total, the percentage and the ETA, at most 100 characters), the sprints
@@ -78,6 +79,7 @@ import sys
 import time
 from pathlib import Path
 
+import kbext
 import mon_base
 import mon_events
 import mon_export
@@ -319,11 +321,31 @@ def live(a, names, out):
     return code
 
 
+def guard_lines(root):
+    """The lines that name each shipped guard a group's extender replaces in the clone ROOT, which the `all` status answer
+    puts right after its `needs you` line so a replaced guard is never missed: `guard replaced: POINT from MODULE (layer
+    LAYER)`, with the paths that still run the shipped guards; one line when the settings are refused; none when the
+    shipped guards run. They come from the settings and entry points (`kbext.replaced_guards`), which run no group code."""
+    try:
+        found = kbext.replaced_guards(root)
+    except kbext.ExtensionError as e:
+        return [f"guard settings refused: {' '.join(str(e).split())}"]
+    return [f"guard replaced: {g['point']} from {g['module']} (layer {g['layer']}) runs in place of {g['replaces']}; "
+            f"kbgit.py contribute and publish still run the shipped scan" for g in found]
+
+
 def status(a, out):
     """The status answer for the topic of `--status`: the panels it needs in one snapshot, as lines or, with `--json`, as an
     object. Exit 0: an alert is the answer's content, not a failure of the command."""
     snap = take(a, mon_status.panels(a.status))
     found = mon_status.answer(snap, a.status, a.root.resolve(), a.detail)
+    if a.status == "all":
+        replaced = guard_lines(a.root.resolve())
+        if replaced:
+            lines = mon_view.scrub({"lines": replaced})["lines"] + found["lines"][1:]
+            found["lines"] = found["lines"][:1] + lines[:mon_status.MAX_LINES - 1]
+            if len(lines) > mon_status.MAX_LINES - 1:
+                found["lines"][-1] = f"+{len(lines) - mon_status.MAX_LINES + 2} more lines"
     out.write((json.dumps(found, ensure_ascii=False, indent=1) if a.json else "\n".join(found["lines"])) + "\n")
     out.flush()
     return 0

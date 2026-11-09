@@ -125,6 +125,67 @@
       "operator": "op-f618a13e",
       "role": "interactive",
       "agent_session": true
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "When a group's leak.shapes holds a shape that cannot be used (does not compile, matches the empty string, has a kind that is a shipped kind or private-..., or is not an object of exactly kind and pattern), what does a scan that reads the shapes do?",
+      "options": [
+        "refuse with kbext.ExtensionError, naming the layer",
+        "skip the shape and scan with the rest"
+      ],
+      "recommendation": "refuse with kbext.ExtensionError, naming the layer",
+      "reason": "a guard never runs on shapes it cannot trust",
+      "do": {
+        "refuse with kbext.ExtensionError, naming the layer": "ST-qtypcthx",
+        "skip the shape and scan with the rest": "ST-qtypcthx"
+      },
+      "class": "push",
+      "hold": true,
+      "answer": "refuse with kbext.ExtensionError, naming the layer",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "Which paths run the shipped leak scan even where a group replaced it with extension point leak_scan, beyond the contribute path the gate names?",
+      "options": [
+        "contribute and publish",
+        "contribute only"
+      ],
+      "recommendation": "contribute and publish",
+      "reason": "both hand content to everyone else, and publish's verdict cache is keyed apart from a replacing scan's",
+      "do": {
+        "contribute and publish": "ST-qtypcthx",
+        "contribute only": "ST-qtypcthx"
+      },
+      "class": "push",
+      "answer": "contribute and publish",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    },
+    {
+      "id": "g4",
+      "kind": "blocking",
+      "question": "Where does kbmon --status all take its guard lines, and which settings layers do leak.shapes read in a scan?",
+      "options": [
+        "kbmon.py status adds the lines after needs you from kbext.replaced_guards, and the group, clone and user layers are read",
+        "mon_status.answer adds the lines, and a kb root layer is read too"
+      ],
+      "recommendation": "kbmon.py status adds the lines after needs you from kbext.replaced_guards, and the group, clone and user layers are read",
+      "reason": "mon_status.answer stays a function of the snapshot, and a scan names no kb root",
+      "do": {
+        "kbmon.py status adds the lines after needs you from kbext.replaced_guards, and the group, clone and user layers are read": "ST-qtypcthx",
+        "mon_status.answer adds the lines, and a kb root layer is read too": "ST-qtypcthx"
+      },
+      "class": "push",
+      "answer": "kbmon.py status adds the lines after needs you from kbext.replaced_guards, and the group, clone and user layers are read",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "notes": "Shared files with SP-lwkdljxg (kbcommon.py, kbpublic.py, bl_land.py, map.csv): agreed with its manager on 2026-11-08 that the first claim lands first and the other rebases; its items reach these files late. SP-uh5h46fm (mon_coord.py, mon_status.py) was asked the same and has not answered: the same rule applies.",

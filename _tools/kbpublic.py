@@ -588,8 +588,8 @@ def root_of(path, table):
         d = root_dir(d)
 
 
-def file_hits(path, text, allow, pinned=(), root=None):
-    """[(kind, value)] of the leak scan of the file PATH with TEXT, as the tracked-file scan reads a file: urls are
+def shipped_file_hits(path, text, allow, pinned=(), root=None):
+    """[(kind, value)] of the shipped leak scan of the file PATH with TEXT, as the tracked-file scan reads a file: urls are
     stripped except for secrets and the registry's private names (an internal root's qualified path, id, pointer host
     and path, read in each url and after each `/` of it); vendor exports, snapshots (`/artifacts/`, `/_snapshots/`) and
     the pinned artifacts PINNED lists are scanned for secrets only, the plain shapes (no structured secret: a header
@@ -608,6 +608,35 @@ def file_hits(path, text, allow, pinned=(), root=None):
             for piece in [url, *(url[i + 1:] for i, c in enumerate(url) if c == "/")]:
                 hits += [h for h in kbcommon.private_hits(piece) if h[1].lower() not in allow.get(h[0], ()) and h not in hits]
     return [h for h in hits if h[0] == "secret" or not vendored]
+
+
+def replaced_scan():
+    """The function of extension point `leak_scan` (`file_hits(path, text, allow, pinned=())`) that a group's settings or
+    entry point name for this clone, or None when the shipped scan runs (`kbext.configured`). A named one that cannot be
+    loaded raises kbext.ExtensionError: a group's replacement that fails never falls back to the shipped scan silently,
+    nor passes."""
+    import kbext, kbcommon
+    return kbext.leak_scan(kbcommon.HOME)
+
+
+def file_hits(path, text, allow, pinned=(), root=None, shipped=False):
+    """[(kind, value)] of the leak scan of the file PATH with TEXT: the group's extender of point `leak_scan` when this clone
+    names one, called with PATH, TEXT, ALLOW and PINNED (its signature has no ROOT), else `shipped_file_hits`. SHIPPED
+    always runs the shipped scan: the paths that leave the group (`kbgit.py publish`, `kbgit.py contribute`) pass it. A
+    hit the extender answers is a (kind, value) pair; an extender that raises or answers anything else raises
+    kbext.ExtensionError naming it, since a guard that cannot answer must not pass the file."""
+    scan = None if shipped else replaced_scan()
+    if scan is None:
+        return shipped_file_hits(path, text, allow, pinned, root)
+    import kbext
+    try:
+        got = scan(path, text, allow, pinned)
+        return [(str(kind), str(value)) for kind, value in got]
+    except kbext.ExtensionError:
+        raise
+    except Exception as e:
+        raise kbext.ExtensionError(f"point leak_scan: the extender raised or answered no list of (kind, value) pairs for a "
+                                   f"file: {type(e).__name__}: {e}")
 
 
 def internal_prefixes(rev, files, cwd):
@@ -648,14 +677,24 @@ def tree_hits(rev, paths, cwd):
     return out
 
 
-def scan_form():
+def scan_form(shipped=False):
     """The leak scan's form as a cache key: SCAN_FORM, a digest of the registry's private patterns and a digest of
     kbcommon.SECRETS (both kbcommon's), so a private name the registry gains or loses, or a secret shape that changes,
-    reads no verdict or value cached before it."""
+    reads no verdict or value cached before it. The shapes a group's settings add (`kbcommon.group_shapes`) and, unless
+    SHIPPED, the extender that replaces the scan (its name and the digest of its module's file) are part of it."""
     import kbcommon
     pats = "\0".join(f"{kind}\0{rx.pattern}" for kind, rx in kbcommon._private_patterns())
+    pats += "\0".join(f"{kind}\0{rx.pattern}" for kind, rx, _ in kbcommon.group_shapes())
     secrets = hashlib.sha256(kbcommon.secrets_rx().encode("utf-8")).hexdigest()[:12]
-    return f"{SCAN_FORM}-{hashlib.sha256(pats.encode('utf-8')).hexdigest()[:12]}-{secrets}"
+    form = f"{SCAN_FORM}-{hashlib.sha256(pats.encode('utf-8')).hexdigest()[:12]}-{secrets}"
+    scan = None if shipped else replaced_scan()
+    if scan is not None:
+        try:
+            body = Path(sys.modules[scan.__module__].__file__).read_bytes()
+        except (KeyError, AttributeError, OSError, TypeError):
+            body = repr(scan).encode("utf-8")
+        form += "-x" + hashlib.sha256(scan.__module__.encode("utf-8") + b"\0" + body).hexdigest()[:12]
+    return form
 
 
 def cache_load(cwd, name):
@@ -690,18 +729,18 @@ def hit_key(hit):
     return hashlib.sha256("\0".join(hit).encode("utf-8")).hexdigest()
 
 
-def public_values(tip, cwd, projected=True):
+def public_values(tip, cwd, projected=True, shipped=False):
     """{hit_key} of every leak-scan hit (file_hits without an allowlist) in any file of the public tip TIP's tree: the
     values the public home already holds, whichever file holds them. PROJECTED False: TIP is a commit not yet projected
     (the sync gate's upstream), so the files the projection removes (kept_off: the query log's store, a `_logs.csv`) are
     left out, as the public home never holds them. Scanned once per tip, scan rule and mode and cached in
     CACHE_DIR/public-<projected|raw>-<scan_form()>-<tip>.json, so a change to what the scan flags or to the registry's
-    private names reads none of an older rule's values, and the sync gate reads none that publish's scan filled; empty
-    without a tip. Raises RuntimeError on a git error."""
+    private names reads none of an older rule's values, and the sync gate reads none that publish's scan filled; SHIPPED
+    scans with the shipped scan whatever a group replaced; empty without a tip. Raises RuntimeError on a git error."""
     if not tip:
         return set()
     mode = "projected" if projected else "raw"
-    name = f"public-{mode}-{scan_form()}-{tip}.json"
+    name = f"public-{mode}-{scan_form(shipped)}-{tip}.json"
     got = cache_load(cwd, name)
     if isinstance(got, list) and all(isinstance(x, str) for x in got):
         return set(got)
@@ -710,7 +749,7 @@ def public_values(tip, cwd, projected=True):
         raise RuntimeError(f"git ls-tree {tip[:12]} failed")
     table = root_placeholders(tip, files, cwd)  # a name a root lists is no value its files hold
     files = [x for x in files if projected or not kept_off(x)]
-    res = {hit_key(h) for x, text in blobs(tip, files, cwd).items() for h in file_hits(x, text, {}, root=root_of(x, table))}
+    res = {hit_key(h) for x, text in blobs(tip, files, cwd).items() for h in file_hits(x, text, {}, root=root_of(x, table), shipped=shipped)}
     cache_save(cwd, name, sorted(res), f"public-{mode}-")
     return res
 
@@ -748,23 +787,23 @@ class LongRange(Exception):
         self.n = n
 
 
-def leak_verdicts(written, proj, tip, final, cwd, pinned=frozenset(), projected=True, secret_only=(), roots=None):
+def leak_verdicts(written, proj, tip, final, cwd, pinned=frozenset(), projected=True, secret_only=(), roots=None, shipped=False):
     """{commit: [(path, kinds)]} of the leak check of WRITTEN [(commit, old blob, new blob, path)], the files the
     commits write: a hit in the lines a commit adds that the public tip holds in no file the projection keeps (public_values; with PROJECTED False the tip's files it removes hold nothing), and neither
     the parent's nor TIP's version of the file holds, allowing FINAL (PROJ's allowlist) and the commit's own, and reading PINNED (pinned_paths) and the files under a prefix of SECRET_ONLY (the
     directory of an internal root or pointer, as tree_hits reads them) for secrets only. ROOTS (root_placeholders of PROJ's
-    tree) gives each file the user names its nearest enclosing root lists. A commit with no hit is left out."""
+    tree) gives each file the user names its nearest enclosing root lists. SHIPPED reads every file with the shipped scan. A commit with no hit is left out."""
     # scan only the lines a commit adds (the new version's lines its parent's version lacks), a chunk of writes at a
     # time; the whole versions are read only for the files whose added lines hit
     memo = []
 
     def hits_in(x, text, allow):  # the files of an internal root or pointer are read for secrets only, as tree_hits does
-        got = file_hits(x, text, allow, pinned, root_of(x, roots or {}))
+        got = file_hits(x, text, allow, pinned, root_of(x, roots or {}), shipped=shipped)
         return [h for h in got if h[0] == "secret"] if x.startswith(secret_only) else got
 
     def public():  # scanned on first use: a range with no hit never reads the tip's whole tree
         if not memo:
-            memo.append(public_values(tip, cwd, projected))
+            memo.append(public_values(tip, cwd, projected, shipped))
         return memo[0]
 
     pairs, added = list(dict.fromkeys((old, new, x) for c, old, new, x in written)), {}
@@ -811,9 +850,10 @@ def kept_off(path):
     return any(path == p or path.startswith(f"{p}/") for p in PRIVATE) or path.rsplit("/", 1)[-1] in PRIVATE_NAMES
 
 
-def history_refusals(proj, tip, files, cwd, sources=None, bound=None, projected=True):
+def history_refusals(proj, tip, files, cwd, sources=None, bound=None, projected=True, shipped=False):
     """(tree causes, leak causes, paths named) of the commits publish would push: TIP..PROJ, all of PROJ's history when
-    TIP is None; FILES are the paths of PROJ's tree. A cause names the source commit (SOURCES: {projected sha: source
+    TIP is None; FILES are the paths of PROJ's tree. SHIPPED (publish's) scans with the shipped leak scan even where a
+    group's extender replaces it (the sync gate's `range_leaks` does not). A cause names the source commit (SOURCES: {projected sha: source
     sha}, from project()) and the projected one when they differ. Each commit is checked by what it adds or changes
     against its (first) parent, so a later commit that deletes a path or a value does not hide it:
       tree  a path under a `_private` or `_cache` directory, or a path under a root that is internal (its `_root.md`
@@ -838,7 +878,7 @@ def history_refusals(proj, tip, files, cwd, sources=None, bound=None, projected=
     pinned = pinned_paths(proj, files, cwd)
     table = root_placeholders(proj, files, cwd)
     listed = "\0".join(f"{d}\0{','.join(names)}" for d, names in sorted(table.items()) if names)
-    inputs = "\0".join([f"scan-form {scan_form()}", f"projected {projected}", final, *sorted(pinned), f"placeholders {listed}"])
+    inputs = "\0".join([f"scan-form {scan_form(shipped)}", f"projected {projected}", final, *sorted(pinned), f"placeholders {listed}"])
     vname = f"verdicts-{tip or 'none'}-{hashlib.sha256(inputs.encode('utf-8')).hexdigest()[:16]}.json"
     got = cache_load(cwd, vname)
     verdicts = {c: v for c, v in (got.items() if isinstance(got, dict) else ())
@@ -905,7 +945,7 @@ def history_refusals(proj, tip, files, cwd, sources=None, bound=None, projected=
                     f"({says[r]}), e.g. {xs[0]}")
     if todo:
         found = leak_verdicts([w for w in written if w[0] in todo and (projected or not kept_off(w[3]))],
-                              proj, tip, parse_allowlist(final), cwd, pinned, projected, tuple(sorted(secret_only)), table)
+                              proj, tip, parse_allowlist(final), cwd, pinned, projected, tuple(sorted(secret_only)), table, shipped)
         verdicts.update({c: found.get(c, []) for c in todo})
         cache_save(cwd, vname, verdicts, "verdicts-")
     leak = [f"commit {name(c)}: {x} has a leak-scan hit ({', '.join(kinds)})" for c, _ in changes for x, kinds in verdicts[c]]
@@ -1060,7 +1100,7 @@ def cmd_publish(a, cwd):
         print(f"refused: git ls-tree {proj[:12]} failed")
         return 2
     try:
-        tree, leak, named = history_refusals(proj, tip, files, cwd, sources, HOOK_BOUND if getattr(a, "hook", False) else None)
+        tree, leak, named = history_refusals(proj, tip, files, cwd, sources, HOOK_BOUND if getattr(a, "hook", False) else None, shipped=True)
         leak += message_refusals(proj, tip, allowlist(proj, cwd), cwd, sources)
     except LongRange as exc:
         print(f"publish by hand: {exc.n} commits to check (python3 _tools/kbgit.py publish)")
