@@ -961,3 +961,7 @@ New-SafeLinksRule,defender/safe-links
 Set-SafeLinksPolicy,defender/safe-links
 safelinks.protection.outlook.com,defender/safe-links
 UrlClickEvents,defender/safe-links
+New-AppRetentionCompliancePolicy,security/purview-teams-retention
+New-AppRetentionComplianceRule,security/purview-teams-retention
+Set-AppRetentionCompliancePolicy,security/purview-teams-retention
+SubstrateHolds,security/purview-teams-retention

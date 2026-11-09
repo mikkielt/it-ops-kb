@@ -409,6 +409,7 @@ security/linux-nftables,P3,partial,security/linux-nftables.md,5
 security/linux-patching-and-pins,P3,partial,security/linux-patching-and-pins.md,11
 security/linux-sshd-hardening,P3,complete,security/linux-sshd-hardening.md,3
 security/linux-time-sync,P3,complete,security/linux-time-sync.md,4
+security/purview-teams-retention,P3,partial,security/purview-teams-retention.md,6
 security/zsh-completion-system,P3,partial,security/zsh-completion-system.md,4
 security/zsh-expansion-globbing-arrays,P3,complete,security/zsh-expansion-globbing-arrays.md,5
 security/zsh-options-emulation-bash-differences,P3,complete,security/zsh-options-emulation-bash-differences.md,4

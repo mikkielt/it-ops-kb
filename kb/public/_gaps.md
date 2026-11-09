@@ -2624,3 +2624,8 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## windows/wake-on-lan
 
 - **The BIOS/UEFI menu name and path that enables wake from LAN on non-Surface laptops (Dell, HP, Lenovo).** Looked 2026-11-09 with the Microsoft Learn search and the Windows, Configuration Manager, Intune DFCI and Surface pages (S-jnot3jwd, S-nf2pxtta, S-ma44wwsm, S-sz3xwsns): they say the BIOS may need enabling and that the setting depends on the manufacturer, without naming one. Needs each vendor's own BIOS documentation (topic: windows/wake-on-lan)
+
+## security/purview-teams-retention
+
+- **Which licence plans carry the "more than 30 days" retention or deletion period limit for Teams retention policies.** Looked 2026-11-09 at the Purview service description (S-w2ery36y), fetched as text and through the search chunks: it says the period must be more than 30 days "for the plans that are underlined", but the underlining is not in the text Learn returns. Needs the rendered page or the licensing guidance PDF (topic: security/purview-teams-retention)
+- **The roles needed to create and edit Teams retention policies.** Looked 2026-11-09 at the Teams retention, create-retention-policies and retention pages (S-vorhqnuy, S-h2xchig6, S-aueazq6o): each defers to the permissions section of "Get started with data lifecycle management", which was not read. Needs that page (topic: security/purview-teams-retention)

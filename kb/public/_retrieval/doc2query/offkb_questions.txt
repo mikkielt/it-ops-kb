@@ -52,7 +52,6 @@ file server backup schedule
 user photo size limit
 network printer deployment
 lock screen image size
-meeting recording retention
 how long are deleted emails kept
 what is the maximum mailbox size
 how do I reset a forgotten password
