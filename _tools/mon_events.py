@@ -40,6 +40,7 @@ LIST_KEPT = 4  # items of a list attribute that are kept
 MAX_ATTRS = 16
 STEP_SLACK_NS = 1_000_000_000  # a step this much older than its landing's start is another landing's
 NOT_ATTRS = ("id", "ts", "surface", "v", "event")
+ID_LIST_FIELDS = ("item", "topic", "touch")  # coord fields whose comma-separated value is a list of ids
 EPOCH = datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)
 
 
@@ -102,9 +103,11 @@ def row_key(row):
     return span_id(row.get("id") or json.dumps(row, sort_keys=True, default=str))[:8]
 
 
-def id_list(values):
-    """VALUES with each string of comma-separated parts (a coord `item`, `topic` or `touch` list) as the list of its parts."""
-    return {k: [x.strip() for x in v.split(",")] if isinstance(v, str) and "," in v else v for k, v in values.items()}
+def id_list(values, fields=ID_LIST_FIELDS):
+    """VALUES with each string of comma-separated parts of the coord fields in FIELDS (`item`, `topic` and `touch` by default)
+    as the list of its parts; a string of any other field stays one string, so free text with a comma is not split."""
+    return {k: [x.strip() for x in v.split(",")] if k in fields and isinstance(v, str) and "," in v else v
+            for k, v in values.items()}
 
 
 def status(row):
@@ -192,7 +195,7 @@ def run_span(name, first, last, end, trace, parent, extra):
     out = {"name": name, "id": run_span_id(name, extra["item"], first), "trace": trace, "start": first["ns"], "end": last["ns"],
            "status": "error" if last["state"] in ("failed", "refused") else "ok",
            "attributes": attributes({**extra, "state": last["state"], "exit": last["fields"].get("exit"),
-                                     **id_list({"gates": last["fields"].get("gates")})})}
+                                     **id_list({"gates": last["fields"].get("gates")}, ("gates",))})}
     if parent:
         out["parent"] = parent
     return out, end
