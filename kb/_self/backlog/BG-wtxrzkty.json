@@ -8,7 +8,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S4",
-  "goal": "skills/item/SKILL.md names check-trailers and its refusal only for a project whose push is the kb's sync (land_push names kbgit.py), and says what a host's own push checks otherwise",
+  "goal": "skills/item/SKILL.md names check-trailers and its refusal only for a project whose push is the kb's sync (land_push names kbgit.py), saying what a host's own push checks otherwise",
   "repro": {
     "run": [
       "python3",
