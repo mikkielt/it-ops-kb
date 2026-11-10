@@ -1,0 +1,25 @@
+{
+  "id": "BG-4pcdj3qj",
+  "kind": "bug",
+  "title": "Two answers Conclusions say more than their cited facts: the stores Conclusion keeps both stores choose (the end) after the Graphiti line stopped holding it, and the held-message Conclusion cites a live-docs line for plan mode that no cited source holds",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The Conclusion of QK-stores-changing-facts-mark-fact-was no longer says both stores choose the end as an exclusive bound, and the Conclusion of QK-listagents-sendmessage-two-sessions-held names plan mode as bypassing only with the live-docs source named in it, as the entries' cited facts hold",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "t=open(\"kb/public/_answers.md\",encoding=\"utf-8\").read();import sys;sys.exit(1 if \"both stores choose (the end)\" in t else 0)"
+    ]
+  },
+  "repro_reason": "The second half (plan mode sourced) is wording that a text check cannot run; the repro reads the first half, found by the SP-enhaglcw review",
+  "touches": [
+    "kb/public/_answers.md"
+  ],
+  "links": [
+    "parked: SP-enhaglcw review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

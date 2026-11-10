@@ -1,0 +1,25 @@
+{
+  "id": "BG-gsjla53c",
+  "kind": "bug",
+  "title": "bl_precheck.unanswered_questions says several numbers after a lead-in for any unread piece that holds a number and a dot anywhere, such as section 2. then stop",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bl_precheck.unanswered_questions words the skip line as several numbers after a lead-in only for a piece with a colon lead-in before two or more numbers, and as not a question for any other unread piece",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,io,contextlib;sys.path.insert(0,\"_tools\");import bl_precheck as b;BL=type(\"BL\",(),{\"root\":\".\",\"label\":lambda s,i:i});buf=io.StringIO();contextlib.redirect_stdout(buf).__enter__();b.unanswered_questions(BL(),{\"goal\":\"We keep section 2. then stop\"});sys.stdout=sys.__stdout__;o=buf.getvalue();print(repr(o));sys.exit(1 if \"several numbers\" in o else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_precheck.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-enhaglcw review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

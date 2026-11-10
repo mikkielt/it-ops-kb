@@ -1,0 +1,26 @@
+{
+  "id": "BG-lqk7x7wf",
+  "kind": "bug",
+  "title": "bl_authority.strict_signals blanks a run of bare words in the question and every option whenever the question holds which words or what words, so a spend ask worded as a word list loses its money signal",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bl_authority.strict_signals blanks a quoted word list only in a gate whose question names a pattern, regex or cue, so a gate that asks the agent to spend or pay in a comma list keeps its money signal",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import bl_authority as a;s=a.strict_signals({\"question\":\"Which words may the agent say before we spend, pay, bill the account?\",\"options\":[\"yes\",\"no\"]});print(s);sys.exit(0 if any(k==\"money\" for k,_ in s) else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_authority.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-enhaglcw review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

@@ -1,0 +1,26 @@
+{
+  "id": "BG-ih4ypanp",
+  "kind": "bug",
+  "title": "web-sources.md says the first detect reports a hashed github.com row as changed with signal hash, but detect_source gives signal version when the page's version is read, and extending.md does not say a package beside a non-package mapper is in its digest",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/_self/web-sources.md names the signal detect reports for such a row as detect_source gives it (version when the page's version is read, hash otherwise) and kb/_self/extending.md says a package directory beside a non-package mapper is in the map digest",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "t=open(\"kb/_self/web-sources.md\",encoding=\"utf-8\").read();import sys;sys.exit(1 if \"(signal \" + chr(96) + \"hash\" + chr(96) + \", or \" + chr(96) + \"replaced\" + chr(96) in t else 0)"
+    ]
+  },
+  "repro_reason": "Premise from the SP-enhaglcw review, read at factdiff.py detect_source, not rerun; the extending.md half is wording a text check cannot run",
+  "touches": [
+    "kb/_self/web-sources.md",
+    "kb/_self/extending.md"
+  ],
+  "links": [
+    "parked: SP-enhaglcw review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

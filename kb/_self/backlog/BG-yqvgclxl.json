@@ -1,0 +1,25 @@
+{
+  "id": "BG-yqvgclxl",
+  "kind": "bug",
+  "title": "bl_authority.block_reasons treats a bare rule-file option name as outside the touches although a touch holds that file in its directory (a touch _tools/backlog.py and an option backlog.py)",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bl_authority.block_reasons keeps the bare option name of a rule-guarding file inside the touches when a touch names that file under any directory, and outside them only when no touch ends in that name",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import bl_authority as a;r=a.block_reasons({\"touches\":[\"_tools/backlog.py\"],\"title\":\"x\"},{\"id\":\"g1\",\"kind\":\"provisional\",\"question\":\"Which form?\",\"options\":[\"backlog.py\",\"b\"]},False);print(r);sys.exit(1 if r else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_authority.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-enhaglcw review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
