@@ -675,10 +675,27 @@ def worker_env(oid, iid=None, sprint=None, traceparent=None):
 STUB_DIR_NAME = "stub-bin"  # under the item's scratch directory: the first PATH directory of a worker with no approved spend
 
 
+REFUSAL_WORDS = ("no", "refuse", "decline", "deny", "reject", "cancel")  # first word of an option that answers a gate by saying no
+
+
+def gate_approves_spend(g):
+    """Whether the gate G approves spend: its answer equals one of its options, that option's first word is no refusal
+    (`REFUSAL_WORDS`, any case), and its question alone (not its options or other fields) names a money signal
+    (`bl_authority.strict_signals`)."""
+    if not isinstance(g, dict) or not g.get("answer"):
+        return False
+    answer = g["answer"]
+    if not any(isinstance(o, str) and o == answer for o in g.get("options") or []):
+        return False
+    first = re.match(r"[A-Za-z]+", answer.lstrip())
+    if first and first.group(0).lower() in REFUSAL_WORDS:
+        return False
+    return any(kind == "money" for kind, _ in bl_authority.strict_signals({"question": g.get("question", "")}))
+
+
 def money_approved(it):
-    """Whether the item IT carries a gate with an answer whose words name a money signal (`bl_authority.strict_signals`)."""
-    return any(isinstance(g, dict) and g.get("answer") and any(kind == "money" for kind, _ in bl_authority.strict_signals(g))
-               for g in it.get("gates") or [])
+    """Whether the item IT carries a gate that approves spend (`gate_approves_spend`)."""
+    return any(gate_approves_spend(g) for g in it.get("gates") or [])
 
 
 def paid_stub(iid):
