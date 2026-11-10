@@ -18,7 +18,8 @@
   "touches": [
     "_tools/install_7z.py",
     "kb/_self/maintaining.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
   ],
   "links": [
     "parked: SP-iir3d2tu review"

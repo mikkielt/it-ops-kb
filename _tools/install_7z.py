@@ -152,8 +152,11 @@ def install_tar(archive, dest):
 
 
 def install_exe(installer, dest):
-    """Run the verified Windows installer silently into the folder of `dest` (7-Zip's `/S` and `/D=`, the last argument)."""
-    p = subprocess.run([str(installer), "/S", "/D=" + str(dest.parent)], capture_output=True, timeout=300)
+    """Run the verified Windows installer silently into the folder of `dest` (7-Zip's `/S` and `/D=`, the last argument).
+    One command-line string, no shell: NSIS reads everything after `/D=` as the folder and takes no quote there, so a
+    list's quoting of a folder with a space would break it; only the installer path is quoted."""
+    command = subprocess.list2cmdline([str(installer), "/S"]) + " /D=" + str(dest.parent)
+    p = subprocess.run(command, capture_output=True, timeout=300)
     if p.returncode or not dest.is_file():
         raise ValueError("the installer exited %s and left no %s" % (p.returncode, dest.name))
 
