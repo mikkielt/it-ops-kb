@@ -2126,7 +2126,7 @@ class GroupMapper(Mapper):
 
     def __init__(self, language, spec, func, suffixes, commit, source=""):
         self.language, self.name, self.spec, self.func, self.commit = language, f"{GROUP_POINT} {spec}", spec, func, commit
-        self.source = source  # a digest of the module's file: what a change to the mapper's code changes
+        self.source = source  # a digest of the module's file and the modules loaded beside it: what a change to the mapper's code changes
         self.suffixes = tuple(s.lower() for s in suffixes)
         self.before = []  # the mappers ahead of this one in the run: a file one of them maps is theirs
 
@@ -2179,10 +2179,27 @@ def load_group_mapper(language, spec, commit, root):
 
 
 def module_digest(module):
-    """The sha256 of the file MODULE was loaded from (a package: its `__init__`), or "" when it has none or it is unreadable."""
+    """The sha256 of the files MODULE's code came from, or "" when it has no readable file: its own file (a package: its
+    `__init__`) and every module loaded in this process from the same directory (a package: from under its directory),
+    so a change to a helper module the mapper imports from its own directory changes the digest too."""
     try:
-        return hashlib.sha256(Path(module.__file__).read_bytes()).hexdigest()
-    except (AttributeError, TypeError, OSError):
+        own = Path(module.__file__).resolve()
+        files = {own}
+        is_package = own.stem == "__init__"
+        home = own.parent
+        for other in list(sys.modules.values()):
+            try:
+                path = Path(other.__file__).resolve()
+            except (AttributeError, TypeError, OSError, ValueError):
+                continue
+            if path.suffix == ".py" and (home in path.parents if is_package else path.parent == home):
+                files.add(path)
+        blob = hashlib.sha256()
+        for path in sorted(files):
+            blob.update(hashlib.sha256(path.read_bytes()).digest())
+            blob.update(path.name.encode("utf-8"))
+        return blob.hexdigest()
+    except (AttributeError, TypeError, OSError, ValueError):
         return ""
 
 

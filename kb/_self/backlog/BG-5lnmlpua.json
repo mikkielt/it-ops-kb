@@ -21,7 +21,31 @@
     ".claude/skills/kb-ingest/SKILL.md",
     "AGENTS.md",
     "kb/_self/maintaining.md",
-    "kb/_self/plugin.md"
+    "kb/_self/plugin.md",
+    "kb/_self/extending.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which files does a group mapper's module digest cover besides the mapper's own file?",
+      "options": [
+        "modules loaded in the process from the mapper's directory (a package: under its directory)",
+        "every .py file in the mapper's directory"
+      ],
+      "recommendation": "modules loaded in the process from the mapper's directory (a package: under its directory)",
+      "reason": "rebuilds only for files the mapper really imports, not for unrelated files beside it",
+      "do": {
+        "modules loaded in the process from the mapper's directory (a package: under its directory)": "BG-5lnmlpua",
+        "every .py file in the mapper's directory": "BG-5lnmlpua"
+      },
+      "class": "agents-rule",
+      "answer": "modules loaded in the process from the mapper's directory (a package: under its directory)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
   ],
   "links": [
     "parked: SP-ga3lbnlk review"
