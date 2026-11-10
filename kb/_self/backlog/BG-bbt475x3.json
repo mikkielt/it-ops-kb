@@ -42,6 +42,27 @@
   "depends_on": [
     "BG-qa7v3soy"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does unrecorded_gate_lines tell a gate not recorded from the word not elsewhere in a line?",
+      "options": [
+        "not directly before recorded, only yet/been/be/ever/actually/properly between",
+        "keep not ... recorded within a clause, cut at a comma or colon"
+      ],
+      "recommendation": "not directly before recorded, only yet/been/be/ever/actually/properly between",
+      "reason": "a plain phrase test needs no clause parsing and still matches was not recorded, has not been recorded and gates not recorded",
+      "do": {
+        "not directly before recorded, only yet/been/be/ever/actually/properly between": "BG-bbt475x3",
+        "keep not ... recorded within a clause, cut at a comma or colon": "BG-bbt475x3"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "not directly before recorded, only yet/been/be/ever/actually/properly between",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-rzwljgxv close"
   ],
