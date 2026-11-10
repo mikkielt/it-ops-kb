@@ -23,6 +23,26 @@
   "depends_on": [
     "BG-hzbxfzut"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How narrowly does strict_signals read a quoted cue list as no signal?",
+      "options": [
+        "Only lists of three or more bare words one comma apart, in a gate whose question asks which words or a word list",
+        "Any money word beside a comma in a gate that mentions a pattern"
+      ],
+      "recommendation": "Only lists of three or more bare words one comma apart, in a gate whose question asks which words or a word list",
+      "do": {
+        "Only lists of three or more bare words one comma apart, in a gate whose question asks which words or a word list": "BG-p2c7xxyi",
+        "Any money word beside a comma in a gate that mentions a pattern": "BG-p2c7xxyi"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "Only lists of three or more bare words one comma apart, in a gate whose question asks which words or a word list",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-cb5bp3sz close"
   ],
