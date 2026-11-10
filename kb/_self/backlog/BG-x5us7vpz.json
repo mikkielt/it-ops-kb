@@ -2,7 +2,7 @@
   "id": "BG-x5us7vpz",
   "kind": "bug",
   "title": "goal_questions leaves the first numbered piece unread when a lead-in precedes it, and researched's no-question message omits numbered pieces it skipped",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-cb5bp3sz",
   "priority": "P3",
   "rank": 0,
@@ -85,6 +85,46 @@
     "parked: SP-ia6xayiy review"
   ],
   "notes": "Found by the SP-ia6xayiy review (S3, from BG-zwf3rs5y). The check that reads two numbered questions with no lead-in passes before the work and pins behaviour that must stay. Planned into SP-cb5bp3sz on 2026-11-10; the draft's touches, checks and clause mapping were completed then.",
-  "claimed_by": "claude-n1run001",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "6ba485d1429ae1a8fa4177e35f4b4468219b69ab",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,io,contextlib;sys.path.insert(0,'_tools')\nimport bl_precheck as b\nclass BL:\n    root='.'\n    def label(s,i): return i\nbuf=io.StringIO()\nwith contextlib.redirect_stdout(buf):\n    b.unanswered_questions(BL(),{'goal':'Questions: 1. a 2. b'})\nprint(repr(buf.getvalue()))\nsys.exit(0 if 'skip:' in buf.getvalue() else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "664891869cecfa28"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bl_precheck as b;q=b.goal_questions('(1) does X work? (2) does Y work?');print(q);sys.exit(0 if q==['does X work?','does Y work?'] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "32a11dc88c9a6161"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('kb/_self/tools.md',encoding='utf-8').read();i=t.find('skip:');print(i);sys.exit(0 if i>=0 and 'only when the goal names a question' in t[i-400:i+400] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "d5e8365c1c67bb18"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bl_precheck as b;q=b.goal_questions('Answer these: 1. does X work; 2. does Y work');print(q);sys.exit(0 if len(q)==2 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "046f314da4c421a3"
+      }
+    ]
+  }
 }
