@@ -349,7 +349,7 @@ def s_freshness(b):
     pool = [r for r in bench_pool.load_pool(HOME) if r["expected_route"] == "good"]
     rows = bench_pool.sample_rows(pool, sample, seed)
     if not rows:
-        raise Skip("no answerable rows in the pool: python3 _tools/benchmarks.py pool build")
+        raise Skip("no answerable rows in the pool: python3 _tools/benchmarks.py pool build --ask (--dry-run first lists the rows)")
     doc = {(u["path"], u["line"]) for u in kbfacts.units() if "DOC" in kbfacts.kinds_of(u["tags"])}
     srcs = kbfacts.source_rows()
     import provider

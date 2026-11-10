@@ -21,6 +21,26 @@
     "kb/_self/benchmarks.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the no-pool Skip hint in bench_retrieval.py s_freshness name the pool build?",
+      "options": [
+        "pool build --ask, with --dry-run first named",
+        "pool build --dry-run only"
+      ],
+      "recommendation": "pool build --ask, with --dry-run first named",
+      "reason": "ask is what writes rows, --dry-run lists them without cost",
+      "do": {
+        "pool build --ask, with --dry-run first named": "BG-4ffhited",
+        "pool build --dry-run only": "BG-4ffhited"
+      },
+      "class": "design",
+      "answer": "pool build --ask, with --dry-run first named",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-honlhzdc review"
   ],
