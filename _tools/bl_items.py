@@ -452,6 +452,11 @@ def cmd_release(bl, a):
     bl.save(it)
     say(f"released {bl.label(iid)}")
     move_run(iid, "released", "release")
+    if getattr(a, "commit", False):
+        commit_written(bl, a, "release", iid)
+    else:
+        say(f"the item file of {iid} is modified and uncommitted: a begin of an item whose touches overlap the released "
+            "claim waits for it to be committed and pushed (release --commit commits it)")
     return 0
 
 
