@@ -23,6 +23,26 @@
   "depends_on": [
     "BG-vumz2vhc"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does brief_flog rank two detect logs that tie on rows naming them?",
+      "options": [
+        "run number from the name (unnumbered 1, -N is N), then name",
+        "keep name order"
+      ],
+      "recommendation": "run number from the name (unnumbered 1, -N is N), then name",
+      "reason": "the later run wins, -10 after -2",
+      "do": {
+        "run number from the name (unnumbered 1, -N is N), then name": "BG-vzoo4z7g",
+        "keep name order": "BG-vzoo4z7g"
+      },
+      "class": "design",
+      "answer": "run number from the name (unnumbered 1, -N is N), then name",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-cb5bp3sz review"
   ],

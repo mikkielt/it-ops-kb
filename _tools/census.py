@@ -1488,6 +1488,15 @@ def evidence_logs(rows):
     return sorted({m for r in rows for m in FACTDIFF_REVIEW.findall(r["evidence"])})
 
 
+DETECT_RUN = re.compile(r"factdiff-\d{4}-\d{2}-\d{2}(?:-(\d+))?\.csv$")
+
+
+def detect_run_number(name):
+    """The run of a detect log name: 1 for factdiff-<date>.csv, N for factdiff-<date>-N.csv, 0 for any other name."""
+    m = DETECT_RUN.match(name)
+    return (int(m.group(1)) if m.group(1) else 1) if m else 0
+
+
 def factdiff_log_rows(rows, log, given=None):
     """The rows of the fact diff log the census used: `given`, else the logs the evidence of `rows` names
     (`factdiff.py review NAME`) beside `log`, else _census/factdiff-<date of log>.csv beside it; [] when none exists."""
@@ -1499,12 +1508,12 @@ def factdiff_log_rows(rows, log, given=None):
 
 def brief_flog(rows, log, date):
     """The detect log the brief's `factdiff.py dead` command names: the one the evidence of `rows` names beside `log`
-    (the one named by most rows, the last by name on a tie), else _census/factdiff-<date>.csv."""
+    (the one named by most rows, the one of the later run on a tie), else _census/factdiff-<date>.csv."""
     names = evidence_logs(rows)
     if not names:
         return census_path(f"factdiff-{date}.csv")
     count = {n: sum(n in FACTDIFF_REVIEW.findall(r["evidence"]) for r in rows) for n in names}
-    best = max(names, key=lambda n: (count[n], n))
+    best = max(names, key=lambda n: (count[n], detect_run_number(n), n))
     here = os.path.dirname(os.path.abspath(log))
     return os.path.relpath(os.path.join(here, best), kbcommon.HOME).replace(os.sep, "/")
 
