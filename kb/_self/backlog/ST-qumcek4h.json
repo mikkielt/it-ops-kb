@@ -2,7 +2,7 @@
   "id": "ST-qumcek4h",
   "kind": "story",
   "title": "Research sprint goal: Census, research and provider tools read and count right",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-cb5bp3sz",
   "goal_research": true,
   "priority": "P1",
@@ -23,6 +23,20 @@
   ],
   "notes": "No outside facts: the sprint goal names no open question; its items are bugs in census, research and provider tools and in docs, each settled from the code and its repro.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-n1run001",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "495af54d9618abe291aaa358cc6abe4e8db04b31",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-qumcek4h"
+        ],
+        "exit": 0,
+        "sha256": "88976eeac86d1331"
+      }
+    ]
+  }
 }
