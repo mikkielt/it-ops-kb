@@ -1,0 +1,25 @@
+{
+  "id": "BG-ovj4sdua",
+  "kind": "bug",
+  "title": "The coord hook reads announce.to_other_sessions from an invalid settings.json by the first such key in the text, so an unrelated earlier key outside coordination.announce beats the real false and the intent is posted",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "the coord hook's fallback read of announce.to_other_sessions from an invalid settings.json takes the key under coordination.announce, not the first such key anywhere in the file",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "\nimport importlib.util,tempfile,os,sys\ns=importlib.util.spec_from_file_location(\"ch\",\".claude/hooks/coord_hook.py\");m=importlib.util.module_from_spec(s);s.loader.exec_module(m)\nd=tempfile.mkdtemp()\nopen(os.path.join(d,\"settings.json\"),\"w\").write(\"{\\\"other\\\": {\\\"to_other_sessions\\\": true}, \\\"coordination\\\": {\\\"announce\\\": {\\\"to_other_sessions\\\": false,},},}\")\nsys.exit(0 if m.settings(d)[0][\"to_other_sessions\"] is False else 1)\n"
+    ]
+  },
+  "touches": [
+    ".claude/hooks/coord_hook.py",
+    "kb/_self/coordination.md"
+  ],
+  "links": [
+    "parked: SP-wjrxikw6 review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

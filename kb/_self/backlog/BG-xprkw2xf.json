@@ -1,0 +1,26 @@
+{
+  "id": "BG-xprkw2xf",
+  "kind": "bug",
+  "title": "kg_sync.PLAIN_ROOT_NAME copies kbsettings' plain-name pattern, so a name layered accepts but the copy skips drops that root's gate_checks silently",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "group_gate decides a kb directory name is plain by the one pattern kbsettings.layered uses, held in a single public name",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "\nimport sys\nsys.path.insert(0,\"_tools\")\nimport kg_sync\nsys.exit(1 if hasattr(kg_sync,\"PLAIN_ROOT_NAME\") else 0)\n"
+    ]
+  },
+  "repro_reason": "a duplicated pattern drifts only when one copy changes; the check reads that the copy exists",
+  "touches": [
+    "_tools/kg_sync.py",
+    "_tools/kbsettings.py"
+  ],
+  "links": [
+    "parked: SP-wjrxikw6 review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
