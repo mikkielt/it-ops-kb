@@ -60,6 +60,27 @@
   "depends_on": [
     "BG-ax6e6rzc"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does goal_questions read a lead-in ending in a colon before several numbered pieces with no question mark, as 'Questions: 1. a 2. b'?",
+      "options": [
+        "Leave it unread on a skip line",
+        "Read it as one question"
+      ],
+      "recommendation": "Leave it unread on a skip line",
+      "reason": "the goal's own example needs a skip line, and glued pieces are no single question",
+      "do": {
+        "Leave it unread on a skip line": "BG-x5us7vpz",
+        "Read it as one question": "BG-x5us7vpz"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "Leave it unread on a skip line",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ia6xayiy review"
   ],

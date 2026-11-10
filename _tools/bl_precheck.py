@@ -78,7 +78,9 @@ def goal_questions(goal, skipped=None):
     item ..., and what does it print?`) and left unread at a `; `, which ends a clause, or at the goal's end: SKIPPED,
     when a list, takes each such piece, so a caller says what it did not read. A sentence that leads in the first
     numbered piece (the text before it, ending in `.` or `!`, as `Answer with the kb tools first. (1) How ...?`) is
-    dropped, so question 1 holds the piece's own words; a `?` sentence before the number is a question of its own, and
+    dropped, so question 1 holds the piece's own words; a lead-in ending in `: ` before the one number of a piece
+    (`Answer these: 1. does X work; 2. does Y work`) is split off as the `?` branch does, and a lead-in before
+    several numbers (`Questions: 1. a 2. b`) leaves the text unread; a `?` sentence before the number is a question of its own, and
     a number inside a question (`Does it support (1) a or (2) b?`) leads nothing. A numbered piece that has no `?`
     before a `; ` is one question with the text after the `; ` when that text does not start a numbered piece and
     ends in a `?`: `(2) May a path hold = and ; so a pair rides in it?`. A goal with no such sentence (the default
@@ -96,6 +98,14 @@ def goal_questions(goal, skipped=None):
             piece = rest.strip()
         return piece
 
+    def numbered(text):
+        """True when TEXT starts a numbered piece, or a lead-in ending in `: ` precedes the one number it holds
+        (`Answer these: 1. does X work`); several numbers after a lead-in are glued pieces, left unread."""
+        if NUMBERED_PIECE.match(text):
+            return True
+        lead = re.match(r"[^:]*:\s+(?=" + NUMBERED_PIECE.pattern + ")", text)
+        return bool(lead) and len(NUMBERED_PIECE.findall(text[lead.end():])) == 1
+
     def without_lead_in(text):
         first = NUMBERED_PIECE.search(text)
         if first and first.start() and re.search(r"[.!]\s*$", text[:first.start()]):
@@ -112,13 +122,13 @@ def goal_questions(goal, skipped=None):
         if n + 2 < len(parts):
             semicolon = parts[n + 1].startswith(";")
             # a numbered piece cut at a `; ` inside its own question: the next part ends that question
-            joins = semicolon and NUMBERED_PIECE.match(tail) and not NUMBERED_PIECE.match(parts[n + 2]) \
+            joins = semicolon and numbered(tail) and not NUMBERED_PIECE.match(parts[n + 2]) \
                 and re.match(r"[^?]*\?(\s|$)", parts[n + 2])
             if not semicolon or joins:
                 cur = tail + " " if joins and parts[n].endswith(" ") else tail  # the space before a `;` stays
                 continue
         cur = ""
-        if NUMBERED_PIECE.match(tail) and question(tail):
+        if numbered(tail) and question(tail):
             out.append(question(tail))
         elif tail and skipped is not None:
             skipped.append(tail)
@@ -184,10 +194,10 @@ def unanswered_questions(bl, it):
         return [], "coverage not read: --root names another clone, whose kb this process does not read"
     unread = []
     questions = goal_questions(it.get("goal"), unread)
-    if not questions:
-        return [], "coverage not read: the goal names no question (a sentence ending in `?` or a numbered piece)"
     for piece in unread:
         say(f"  skip: not read as a question (no `?`, not numbered): {piece}")
+    if not questions:
+        return [], "coverage not read: the goal names no question (a sentence ending in `?` or a numbered piece)"
     roots = research_roots(it)
     left = []
     for q in questions:
