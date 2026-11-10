@@ -2,7 +2,7 @@
   "id": "BG-kb2n6c54",
   "kind": "bug",
   "title": "A bench worker's claude gets two --settings flags when worker_plugins_off is set, since bench_multi's wrapper appends its own after claude_argv's",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-u5zhszow",
   "priority": "P3",
   "rank": 0,
@@ -60,6 +60,28 @@
   ],
   "notes": "Review gap (S3) of SP-ejeki6bv, fresh-context reviewer: BG-3pqzpd2q's claude_argv adds --settings whenever worker_plugins_off is non-empty, and clones of this repo (the bench's clones) carry that setting; bench_multi.WRAPPER appends --settings MULTI_SETTINGS after the argv. Whether claude keeps the first or last --settings, or merges them, is not checked here.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-n7run001",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "22a2e1ec8ad670bbf185cf53f0ab715cbc04feca",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport sys,os,json,subprocess,tempfile\nsys.path.insert(0,\"_tools\")\nimport bench_multi as b\nd=tempfile.mkdtemp();fake=os.path.join(d,\"fakebin\");os.makedirs(fake)\nf=os.path.join(fake,\"claude\");open(f,\"w\").write(\"#!\"+sys.executable+\"\\nimport sys,json\\nprint(json.dumps(sys.argv[1:]))\\n\");os.chmod(f,0o755)\nb.write_wrapper(d)\nw=os.path.join(d,b.BIN,\"claude\")\nenv=dict(os.environ,PATH=fake+os.pathsep+os.environ[\"PATH\"],MULTI_SETTINGS=json.dumps({\"disableAllHooks\":True}),MULTI_MCP_CONFIG=\"m.json\",MULTI_MAX_USD=\"1\")\nr=subprocess.run([sys.executable,w,\"-p\",\"--settings\",json.dumps({\"enabledPlugins\":{\"p@x\":False}})],env=env,capture_output=True,text=True)\na=json.loads(r.stdout);v=[json.loads(a[i+1]) for i,x in enumerate(a) if x==\"--settings\"]\nprint(len(v),v)\nsys.exit(0 if len(v)==1 and v[0].get(\"enabledPlugins\")=={\"p@x\":False} and v[0].get(\"disableAllHooks\") is True else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "a356e95c9759415b"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0, '_tools'); import bl_base, bl_dispatch, bench_multi; bl = bl_base.Backlog(bl_base.ROOT); iid = next(iter(bl.items)); n = bl_dispatch.claude_argv(bl, iid).count('--settings') + bench_multi.WRAPPER.count('\"--settings\"'); print('--settings flags a bench worker claude gets:', n); sys.exit(0 if n <= 1 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "8bd485d544cced3a"
+      }
+    ]
+  }
 }
