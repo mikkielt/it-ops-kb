@@ -2,7 +2,7 @@
   "id": "BG-cp2l3wrw",
   "kind": "bug",
   "title": "kb_mcp.py --register-local --project on a missing directory says the claude CLI is not installed",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-wjrxikw6",
   "priority": "P3",
   "rank": 0,
@@ -25,5 +25,7 @@
   "links": [
     "parked: SP-3trnelzv review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-a1b2c3d4",
+  "operator": "op-f618a13e"
 }
