@@ -2,7 +2,7 @@
   "id": "BG-5cdf56a6",
   "kind": "bug",
   "title": "perfcheck names_successor still lets a dropped test excuse itself by its module stem or a call form of its name",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-u5zhszow",
   "priority": "P3",
   "rank": 0,
@@ -50,6 +50,37 @@
     "parked: SP-yzs3bj6f review"
   ],
   "notes": "Found by the SP-yzs3bj6f review of BG-fiwxnug3. Planned 2026-11-10 in SP-u5zhszow; no sibling sprint holds _tools/perfcheck.py now (SP-3nqlr7b5's items do not touch it); the premise reproduces on origin/main: names_successor returns True for the stem form. Check 2 (a removed module's name still counts) passes before the work: it pins behaviour that must stay.",
-  "claimed_by": "claude-n7run001",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "fa0de6c58ce2c052d8254fb42a5e2025ccb1925a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import perfcheck as p;i=[\"_tools/test_audit.py::test_x\"];ph=\"live-module calls went with \";bad=[t for t in (\"`test_audit`\",\"`test_x()`\",\"`test_x `\",\"` test_x`\") if p.names_successor(ph+t,i,\".\",\"\")];print(bad);sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import perfcheck as p;i=[\"_tools/test_audit.py::test_x\"];ph=\"live-module calls went with \";got=[p.names_successor(ph+\"`autopilot.py`\",i,\".\",\"\"),p.names_successor(ph+\"`test_audit` and `autopilot.py`\",i,\".\",\"\")];print(got);sys.exit(0 if all(got) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "d72c373df05f3aae"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,tempfile; sys.path.insert(0,'_tools'); import perfcheck; d=tempfile.mkdtemp(); r=perfcheck.names_successor('live-module calls went with `test_audit`', ['_tools/test_audit.py::test_x'], d, ''); print(r); sys.exit(1 if r else 0)"
+        ],
+        "exit": 0,
+        "sha256": "7fc755fadc1b31a6"
+      }
+    ]
+  }
 }
