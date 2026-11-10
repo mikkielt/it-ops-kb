@@ -244,3 +244,7 @@ email hugo@python.org                       # python.org's published sigstore id
 home  C:\Users\jan        # placeholder Windows path with the folder jan in a backlog filing example (decoded)
 home  C:\\Users\\jan      # the same placeholder path, JSON-escaped once
 home  C:\\\\Users\\\\jan  # the same placeholder path, JSON-escaped twice
+
+# planted url-password test values in backlog item files that kbgit.py publish refused (BG-gnplq4hg)
+secret  https://jan:a<b>cccccc  # planted test value of the leak-scan item BG-pwhlp2sy, not a credential
+secret  https://<user>:realpw   # planted test value of the leak-scan item BG-sa4pmxsl, not a credential
