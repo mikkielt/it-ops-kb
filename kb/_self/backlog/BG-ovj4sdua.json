@@ -2,7 +2,7 @@
   "id": "BG-ovj4sdua",
   "kind": "bug",
   "title": "The coord hook reads announce.to_other_sessions from an invalid settings.json by the first such key in the text, so an unrelated earlier key outside coordination.announce beats the real false and the intent is posted",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-u5zhszow",
   "priority": "P3",
   "rank": 0,
@@ -24,5 +24,7 @@
   "links": [
     "parked: SP-wjrxikw6 review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-n7run001",
+  "operator": "op-f618a13e"
 }
