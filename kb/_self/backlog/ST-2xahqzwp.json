@@ -2,7 +2,7 @@
   "id": "ST-2xahqzwp",
   "kind": "story",
   "title": "Research sprint goal: Publish, sync, hooks and extensions follow-ups: gitlinks and merge commits classed right, newline paths and contribute scans checked, the scan form bumped, uninstall reads its result, team-clone promises kept or reworded, settings and extension loading robust",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-wjrxikw6",
   "goal_research": true,
   "priority": "P1",
@@ -23,6 +23,20 @@
   ],
   "notes": "No outside facts: every item of this sprint changes this repository's own tools or docs and each repro runs on a planted input, so no vendor documentation is needed.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-a1b2c3d4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "31e2d0295c9551e5f1cd38b5478c140d655593f5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-2xahqzwp"
+        ],
+        "exit": 0,
+        "sha256": "da799a1997f3b95a"
+      }
+    ]
+  }
 }
