@@ -1276,7 +1276,6 @@ def cmd_read(a, tally):
         rows[sid] = {"id": sid, "url": r["url"], "kind": c["kind"], "repo": c["repo"], "pin": c["pin"], "path": c["path"],
                      "retrieved_utc": r["retrieved_utc"], "http_status": "", "bucket": "NEEDS-READING", "evidence": "read by hand",
                      "proof": "", "note": "", "used_in": r.get("used_in", ""), "outcome": "confirmed", "outcome_note": note}
-    tally["confirmed"] += len(set(a.ids))
     if not a.dry_run:
         os.makedirs(os.path.dirname(path), exist_ok=True)
         write_log(path, list(rows.values()))
