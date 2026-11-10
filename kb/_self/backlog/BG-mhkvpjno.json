@@ -1,0 +1,18 @@
+{
+  "id": "BG-mhkvpjno",
+  "kind": "bug",
+  "title": "kbext.configured answers False for an extension point whose entry point sits in a distribution under an extension_paths directory, so a shipped tool falls back to its default silently",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kbext.configured is true for an it_ops_kb.POINT entry point whose distribution sits under a directory of extension_paths, as kbext.load finds it",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "\nimport json,sys,tempfile,pathlib\nsys.path.insert(0,\"_tools\")\nT=pathlib.Path(tempfile.mkdtemp())\nsite=T/\"site\"; (site/\"gx-0.1.dist-info\").mkdir(parents=True)\n(site/\"gx-0.1.dist-info\"/\"METADATA\").write_text(\"Metadata-Version: 2.1\\nName: gx\\nVersion: 0.1\\n\")\n(site/\"gx-0.1.dist-info\"/\"entry_points.txt\").write_text(\"[it_ops_kb.ranker]\\ngx = gcmds\\n\")\n(T/\"ws\").mkdir()\n(T/\"ws\"/\"settings.json\").write_text(json.dumps({\"extension_paths\":[str(site)]}))\nimport kbext\nsys.exit(0 if kbext.configured(\"ranker\", T/\"ws\") else \"not yet: configured misses an entry point under extension_paths\")\n"
+    ]
+  },
+  "filed_in": "clone-0ea70e5c"
+}
