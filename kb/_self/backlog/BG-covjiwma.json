@@ -2,7 +2,7 @@
   "id": "BG-covjiwma",
   "kind": "bug",
   "title": "provider.read_licence gives CC BY-SA to a gitlab-org/gitlab doc/ path with a double-encoded .. segment",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-cb5bp3sz",
   "priority": "P2",
   "rank": 0,
@@ -33,5 +33,7 @@
     "parked: SP-c6tr77jl review"
   ],
   "notes": "Planned into SP-cb5bp3sz on 2026-11-10; the draft's touches, checks and clause mapping were completed then.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-n1run001",
+  "operator": "op-f618a13e"
 }
