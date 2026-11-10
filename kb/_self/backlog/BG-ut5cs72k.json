@@ -2,7 +2,7 @@
   "id": "BG-ut5cs72k",
   "kind": "bug",
   "title": "fact-validity-windows.md states Graphiti's created_at and expired_at beyond what the pinned code says",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-cb5bp3sz",
   "priority": "P3",
   "rank": 0,
@@ -54,5 +54,7 @@
     "parked: SP-vlfcgmbu review"
   ],
   "notes": "Found by the SP-vlfcgmbu review (gap 5). The doc2query stale check passes before the work and pins that reworded facts leave no stale expansion rows. Planned into SP-cb5bp3sz on 2026-11-10; the draft's touches, checks and clause mapping were completed then.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-n1run001",
+  "operator": "op-f618a13e"
 }
