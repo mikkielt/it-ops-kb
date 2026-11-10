@@ -21,14 +21,14 @@
       "run": [
         "python3",
         "-c",
-        "import sys,tempfile,types,subprocess,pathlib,os\\ntry:\\n    sys.path.insert(0,\"_tools\");import bl_dispatch as d\\n    r=pathlib.Path(tempfile.mkdtemp());subprocess.run([\"git\",\"init\",\"-q\",str(r)],check=True)\\n    bl=types.SimpleNamespace(root=r,items={\"BG-aaaaaaaa\":{}})\\n    env=d.guard_spend(bl,\"BG-aaaaaaaa\",{\"PATH\":\"/usr/bin\"},platform=\"win32\")\\n    s=pathlib.Path(env[\"PATH\"].split(os.pathsep)[0]);t=(s/\"claude.cmd\").read_text()\\n    ok=t.startswith(\"@echo off\") and \"exit /b 2\" in t and \"BG-aaaaaaaa\" in t and s.name==d.STUB_DIR_NAME\\nexcept Exception as e:\\n    print(type(e).__name__,e);ok=False\\nprint(ok);sys.exit(0 if ok else 1)"
+        "import sys, tempfile, types, subprocess, pathlib, os\ntry:\n    sys.path.insert(0, \"_tools\"); import bl_dispatch as d\n    r = pathlib.Path(tempfile.mkdtemp()); subprocess.run([\"git\", \"init\", \"-q\", str(r)], check=True)\n    bl = types.SimpleNamespace(root=r, items={\"BG-aaaaaaaa\": {}})\n    env = d.guard_spend(bl, \"BG-aaaaaaaa\", {\"PATH\": \"/usr/bin\"}, platform=\"win32\")\n    s = pathlib.Path(env[\"PATH\"].split(os.pathsep)[0]); t = (s / \"claude.cmd\").read_text()\n    ok = t.startswith(\"@echo off\") and \"exit /b 2\" in t and \"BG-aaaaaaaa\" in t and s.name == d.STUB_DIR_NAME\nexcept Exception as e:\n    print(type(e).__name__, e); ok = False\nprint(ok); sys.exit(0 if ok else 1)\n"
       ]
     },
     {
       "run": [
         "python3",
         "-c",
-        "import sys,tempfile,types,subprocess,pathlib,os\\ntry:\\n    sys.path.insert(0,\"_tools\");import bl_dispatch as d\\n    r=pathlib.Path(tempfile.mkdtemp());subprocess.run([\"git\",\"init\",\"-q\",str(r)],check=True)\\n    bl=types.SimpleNamespace(root=r,items={\"BG-aaaaaaaa\":{}})\\n    env=d.guard_spend(bl,\"BG-aaaaaaaa\",{\"PATH\":\"/usr/bin\"},platform=\"linux\")\\n    s=pathlib.Path(env[\"PATH\"].split(os.pathsep)[0]);t=(s/\"claude\").read_text()\\n    ok=t.startswith(\"#!/bin/sh\") and \"exit 2\" in t and not (s/\"claude.cmd\").exists() and os.access(s/\"claude\",os.X_OK)\\n    p=subprocess.run([str(s/\"claude\")],capture_output=True,text=True);ok=ok and p.returncode==2 and \"BG-aaaaaaaa\" in p.stderr\\nexcept Exception as e:\\n    print(type(e).__name__,e);ok=False\\nprint(ok);sys.exit(0 if ok else 1)"
+        "import sys, tempfile, types, subprocess, pathlib, os\ntry:\n    sys.path.insert(0, \"_tools\"); import bl_dispatch as d\n    r = pathlib.Path(tempfile.mkdtemp()); subprocess.run([\"git\", \"init\", \"-q\", str(r)], check=True)\n    bl = types.SimpleNamespace(root=r, items={\"BG-aaaaaaaa\": {}})\n    env = d.guard_spend(bl, \"BG-aaaaaaaa\", {\"PATH\": \"/usr/bin\"}, platform=\"linux\")\n    s = pathlib.Path(env[\"PATH\"].split(os.pathsep)[0]); t = (s / \"claude\").read_text()\n    ok = t.startswith(\"#!/bin/sh\") and \"exit 2\" in t and not (s / \"claude.cmd\").exists() and os.access(s / \"claude\", os.X_OK)\n    p = subprocess.run([str(s / \"claude\")], capture_output=True, text=True); ok = ok and p.returncode == 2 and \"BG-aaaaaaaa\" in p.stderr\nexcept Exception as e:\n    print(type(e).__name__, e); ok = False\nprint(ok); sys.exit(0 if ok else 1)\n"
       ]
     }
   ],
