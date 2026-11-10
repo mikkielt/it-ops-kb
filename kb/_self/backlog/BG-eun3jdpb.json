@@ -12,7 +12,7 @@
     "run": [
       "python3",
       "-c",
-      "import sys;sys.path.insert(0,\"_tools\");import fetch;p=fetch._PageText();p.feed(\"<main><p class=VisuallyHidden>hid<p>keep one<p>keep two</main><div>after</div>\");t=p.text();print(repr(t));sys.exit(0 if \"keep one\" in t and \"after\" in t else 1)"
+      "import sys;sys.path.insert(0,\"_tools\");import fetch;p=fetch._PageText();p.feed(\"<main><p class=VisuallyHidden>hid<p>keep one<p>keep two</main><div>after</div>\");t=p.text();print(repr(t));sys.exit(0 if \"keep one\" in t and \"keep two\" in t and \"hid\" not in t else 1)"
     ]
   },
   "checks": [
@@ -42,6 +42,29 @@
     "_tools/fetch.py",
     "kb/_self/web-sources.md",
     "kb/_self/tools.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "The repro and the last goal clause expect the text of a div after </main> (after) in the page text, but _PageText.text() returns only what sits inside <main> when the page has one (documented in web-sources.md), so no fix of the hidden-element skip can show it. How is the clause met?",
+      "options": [
+        "Keep the main-only rule and correct the repro and goal clause to expect keep one and keep two only",
+        "Change text() to add the content after </main> to the text of a page with a main"
+      ],
+      "recommendation": "Keep the main-only rule and correct the repro and goal clause to expect keep one and keep two only",
+      "reason": "the main-only text is documented and relied on, and the fix shows keep one, keep two, and a div inside main after the hidden p",
+      "do": {
+        "Keep the main-only rule and correct the repro and goal clause to expect keep one and keep two only": "BG-eun3jdpb",
+        "Change text() to add the content after </main> to the text of a page with a main": "BG-eun3jdpb"
+      },
+      "class": "design",
+      "answer": "Keep the main-only rule and correct the repro and goal clause to expect keep one and keep two only",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
   ],
   "links": [
     "parked: SP-c6tr77jl review"
