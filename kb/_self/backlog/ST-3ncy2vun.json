@@ -1,0 +1,27 @@
+{
+  "id": "ST-3ncy2vun",
+  "kind": "story",
+  "title": "A blocking gate answered by the orchestrator that corrects the item's repro lets the repro be replaced by a command that passes on the fixed tree",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "set --repro accepts, in a worker's worktree, a command that passes now when the item has an answered gate whose answer corrects the repro (the worker's own fix makes the corrected command pass), so a worker does not stop with a repro that asserts what the answer dropped and the orchestrator does not rebuild the item on a detached base checkout",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "set",
+        "--help"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-cb5bp3sz close"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

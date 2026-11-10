@@ -1,0 +1,25 @@
+{
+  "id": "BG-p2c7xxyi",
+  "kind": "bug",
+  "title": "A gate that asks which words a regex reads as a paying cue is made blocking with strict money, since its option text lists the word paid",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bl_authority.strict_signals reads no money signal in a gate whose text quotes paid, spend or a dollar word as a word list for a pattern (a word-list choice of a regex), so a worker's design gate is not made blocking and the item lands unattended",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_authority as a;g={'question':'Which words does PRICE_ASK read as a paying cue and as a requirement cue?','options':['paying: pay, paid, spend, charge, bill; requirement: required, minimum','a wider or narrower word list'],'recommendation':'paying: pay, paid, spend'};s=a.strict_signals(g);print(s);sys.exit(1 if any(k=='money' for k,_ in s) else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_authority.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-cb5bp3sz close"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
