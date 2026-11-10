@@ -2,7 +2,7 @@
   "id": "BG-vvgrgspb",
   "kind": "bug",
   "title": "An answers entry says a cross-session message is held only by an explicit hold or a bypass default",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-enhaglcw",
   "priority": "P3",
   "rank": 0,
@@ -27,6 +27,19 @@
   ],
   "notes": "Planning 2026-11-10: sibling sprints (kb/public/**, _answers.md) edit other entries of kb/public/_answers.md; this item edits only its own QK entry, so it proceeds and the landing rebase merges; rerun the landing after a rebase conflict, never overwrite a sibling's entry.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-86c7e088",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "2cb64921cf02b5de461d24ce9b12a261306b25fe",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,sys;t=open(\"kb/public/_answers.md\").read();i=t.find(\"QK-listagents-sendmessage-two-sessions-held\");b=t[i:t.find(chr(10)+\"## \",i+10)];c=[l for l in b.splitlines() if l.startswith(\"- Conclusion\")];print(c[:1]);sys.exit(0 if c and all(re.search(w,c[0]) for w in (\"invalid\",\"plan mode\",\"stricter\")) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e37a3c588060db10"
+      }
+    ]
+  }
 }
