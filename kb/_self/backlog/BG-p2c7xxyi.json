@@ -19,6 +19,9 @@
     "_tools/bl_authority.py",
     "kb/_self/backlog.md"
   ],
+  "depends_on": [
+    "BG-hzbxfzut"
+  ],
   "links": [
     "parked: SP-cb5bp3sz close"
   ],
