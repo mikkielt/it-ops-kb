@@ -21,6 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: every clause of the goal is a fix to this repository's own tools, skills and docs (gate class reading, tests.run_scope, kbingest digests, census, web-sources and answers wording); the kb tools and the code answer them, no official page is involved.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-86c7e088",
   "operator": "op-f618a13e"
