@@ -1,0 +1,25 @@
+{
+  "id": "BG-ez2rosfh",
+  "kind": "bug",
+  "title": "researched's skip line says no question mark and not numbered for a numbered piece goal_questions leaves unread after a colon lead-in",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "bl_precheck.unanswered_questions words the skip line for a numbered piece left unread (as 'Questions: 1. a 2. b') without 'not numbered'",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,io,contextlib;sys.path.insert(0,'_tools')\nimport bl_precheck as b\nclass BL:\n    root='.'\n    def label(s,i): return i\nbuf=io.StringIO()\nwith contextlib.redirect_stdout(buf):\n    b.unanswered_questions(BL(),{'goal':'Questions: 1. a 2. b'})\nprint(repr(buf.getvalue()))\nsys.exit(0 if 'skip:' in buf.getvalue() and 'not numbered' not in buf.getvalue() else 1)\n"
+    ]
+  },
+  "touches": [
+    "_tools/bl_precheck.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-cb5bp3sz review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

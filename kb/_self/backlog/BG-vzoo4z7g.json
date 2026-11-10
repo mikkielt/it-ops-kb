@@ -1,0 +1,25 @@
+{
+  "id": "BG-vzoo4z7g",
+  "kind": "bug",
+  "title": "census.brief_flog breaks a tie of the detect logs the evidence names by name order, which puts factdiff-DATE.csv after factdiff-DATE-2.csv and -10 before -2",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "census.brief_flog picks, on a tie of rows naming two detect logs, the log of the later run (the higher number, the unnumbered log being the first) and not the one that sorts last by name",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,os;sys.path.insert(0,'_tools');import census,kbcommon;census.KB=kbcommon.KB;e=lambda *n:{'evidence':' '.join('factdiff.py review '+x for x in n)};rows=[e('factdiff-2026-11-01-2.csv'),e('factdiff-2026-11-01.csv')];r=census.brief_flog(rows,'kb/public/_census/2026-11-01.csv','2026-11-01');print(r);sys.exit(0 if r.endswith('factdiff-2026-11-01-2.csv') else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/census.py",
+    "kb/_self/web-sources.md"
+  ],
+  "links": [
+    "parked: SP-cb5bp3sz review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

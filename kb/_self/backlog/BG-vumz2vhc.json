@@ -1,0 +1,26 @@
+{
+  "id": "BG-vumz2vhc",
+  "kind": "bug",
+  "title": "web-sources.md says the first detect after the reducer change is not read as a source change, but detect_source returns changed for a github.com row that holds a doc_sha256 and no version",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/_self/web-sources.md names that factdiff detect reports the first run after the reducer's tooltip skip as changed for a github.com row with a doc_sha256 and no version, or detect re-baselines such a row once, so the doc no longer says the first detect is not read as a source change",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('kb/_self/web-sources.md',encoding='utf-8').read();sys.exit(1 if 'the first `detect` after it is not read as a source change' in t else 0)"
+    ]
+  },
+  "repro_reason": "the defect is a documented claim about factdiff.detect_source's verdict on a hashed github.com row; the reviewer ran detect_source on a planted row and got changed, and the repro reads the sentence that says otherwise",
+  "touches": [
+    "kb/_self/web-sources.md",
+    "_tools/factdiff.py"
+  ],
+  "links": [
+    "parked: SP-cb5bp3sz review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
