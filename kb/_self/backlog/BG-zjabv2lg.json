@@ -2,7 +2,7 @@
   "id": "BG-zjabv2lg",
   "kind": "bug",
   "title": "rag.py audit --stale-gaps lists gaps answered by lines that hold the pack's known words and not the question's",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-cb5bp3sz",
   "priority": "P2",
   "rank": 0,
@@ -46,6 +46,19 @@
   ],
   "notes": "Planned into SP-cb5bp3sz on 2026-11-10; the draft's touches, checks and clause mapping were completed then.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-n1run001",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "a7878faeccb1b6c7a512eb08fe4bbbde022d73b5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess, sys\nr = subprocess.run([sys.executable, \"_tools/rag.py\", \"audit\", \"--stale-gaps\"], capture_output=True, text=True)\nhit = \"Dev Drive with Defender performance mode\" in r.stdout\nprint(\"exit\", r.returncode, \"lists the Dev Drive timing gap as answered:\", hit)\nsys.exit(1 if hit else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "b608c7f678d14bd1"
+      }
+    ]
+  }
 }
