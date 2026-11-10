@@ -2,7 +2,7 @@
   "id": "BG-yoxnm654",
   "kind": "bug",
   "title": "check's read-only-checks and named-test-file warnings: docs say story, task or bug and any code, the code also warns subtasks and reads only _tools/ paths",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-uz3rhdlq",
   "priority": "P3",
   "rank": 0,
@@ -47,6 +47,28 @@
     "parked: SP-4jfepy6u review"
   ],
   "notes": "Found in the SP-4jfepy6u review: backlog.md says story, task or bug; the sprint skill says touches that name code. tools.md holds no such sentence today, so only backlog.md and the sprint skill change. Planned in SP-uz3rhdlq: repro/checks fail on the base, touches and order set.",
-  "claimed_by": "claude-n4run01",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "a5f6878867259120f1fc7a08162f9c0d93863291",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open(\"skills/sprint/SKILL.md\",encoding=\"utf-8\").read();sys.exit(1 if \"whose touches name code has at least one check\" in t else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open(\"kb/_self/backlog.md\",encoding=\"utf-8\").read();sys.exit(1 if \"story, task or bug of a planned sprint whose\" in t else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
