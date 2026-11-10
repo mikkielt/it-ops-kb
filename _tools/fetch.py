@@ -155,7 +155,8 @@ class _PageText(html.parser.HTMLParser):
     an ancestor has role=navigation (an element's reach ends where it ends, an omitted end tag of p or li
     included); any other aside is site navigation or an on-this-page list and is skipped. An element with role=tooltip
     or a class token that holds `VisuallyHidden` (Primer's screen-reader heading and duplicated counts, as on a GitHub
-    repository page) is skipped with all it holds, nested elements of its own name included."""
+    repository page) is skipped with all it holds, nested elements of its own name included, up to where the element ends (a `p`, `li`,
+    `dt` or `dd` whose end tag is left out ends at the start tag that implies it)."""
     SKIP = {"script", "style", "noscript", "svg", "template", "head", "nav", "footer", "button", "form", "aside"}
     VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"}
     ENCLOSING = {"html", "body", "main", "article", "section", "div", "header", "footer", "aside", "nav", "ul", "ol",
@@ -175,7 +176,7 @@ class _PageText(html.parser.HTMLParser):
         super().__init__(convert_charrefs=True)
         self.skip = self.main = self.article = 0
         self.asides = []  # per open <aside>: True when it was skipped
-        self.hidden = None  # [tag, depth] of the open role=tooltip or visually hidden element being skipped
+        self.hidden = []  # open elements from the role=tooltip or visually hidden element being skipped (first) down
         self.navstack = []  # open elements from the outermost one with role=navigation (first) down; empty outside it
         self.headings = headings
         self.all, self.in_main, self.saw_main = [], [], False
@@ -184,12 +185,17 @@ class _PageText(html.parser.HTMLParser):
         a = dict(attrs)
         navrole = "navigation" in (a.get("role") or "").lower().split()
         if self.hidden:
-            self.hidden[1] += tag == self.hidden[0]
+            self._implied_end(self.hidden, tag)
+            if not self.hidden:
+                self.skip -= 1
+        if self.hidden:
+            if tag not in self.VOID:
+                self.hidden.append(tag)
         elif tag not in self.VOID and self._is_hidden(a):
-            self.hidden = [tag, 1]
+            self.hidden = [tag]
             self.skip += 1
         if self.navstack:
-            self._nav_implied_end(tag)
+            self._implied_end(self.navstack, tag)
         if self.navstack:
             if tag not in self.VOID:
                 self.navstack.append(tag)
@@ -219,10 +225,12 @@ class _PageText(html.parser.HTMLParser):
                 or "visuallyhidden" in (a.get("class") or "").lower())
 
     def handle_endtag(self, tag):
-        if self.hidden and tag == self.hidden[0]:
-            self.hidden[1] -= 1
-            if not self.hidden[1]:
-                self.hidden = None
+        if self.hidden:
+            if tag in self.hidden:
+                del self.hidden[len(self.hidden) - 1 - self.hidden[::-1].index(tag):]
+            elif tag in self.ENCLOSING:  # the end tag of an ancestor of the hidden element
+                self.hidden = []
+            if not self.hidden:
                 self.skip -= 1
         if self.navstack:
             if tag in self.navstack:
@@ -241,17 +249,18 @@ class _PageText(html.parser.HTMLParser):
         if tag in self.BLOCK:
             self._emit("\n")
 
-    def _nav_implied_end(self, tag):
-        """Pops the open elements inside a role=navigation element that the start tag `tag` ends by HTML's own rules
-        (an end tag the parser lets the author leave out: p, li, dt, dd), so its reach ends where its element does."""
+    def _implied_end(self, stack, tag):
+        """Pops from `stack` (the open elements of a role=navigation or a hidden element, outermost first) the ones
+        the start tag `tag` ends by HTML's own rules (an end tag the parser lets the author leave out: p, li, dt, dd),
+        so the reach of the element ends where it does."""
         for closed, closers, scope in self.IMPLIED:
             if tag not in closers:
                 continue
-            for i in range(len(self.navstack) - 1, -1, -1):
-                if self.navstack[i] == closed:
-                    del self.navstack[i:]
+            for i in range(len(stack) - 1, -1, -1):
+                if stack[i] == closed:
+                    del stack[i:]
                     break
-                if self.navstack[i] in scope:
+                if stack[i] in scope:
                     break
 
     def handle_data(self, data):
