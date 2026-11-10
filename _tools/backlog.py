@@ -258,8 +258,8 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           refusal, and fetches, writes and starts nothing (held claims are read from the
                                           integration main as last fetched). Exit 1 when any item was refused or a
                                           claim, the push or a dispatch failed, 2 for bad arguments
-  backlog.py dispatch ID [--dry-run] [--detach] [--model NAME] [--max-turns N] [--known TEST=BUG]...
-                                          [--known-suite TEXT=BUG]... [--probe TEXT]
+  backlog.py dispatch ID [--dry-run] [--detach] [--model NAME] [--max-turns N] [--max-budget-usd USD]
+                                          [--known TEST=BUG]... [--known-suite TEXT=BUG]... [--probe TEXT]
                                           start the item's headless worker: make its worktree
                                           (<worktree_dir>/agent-ID on work/ID from this checkout's HEAD) and the
                                           scratch directory (`scratch_dir` + /ID/ under the clone's top), write the
@@ -280,13 +280,15 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           returns at once (exit 0; the pid ends when the worker has exited): run
                                           that wait, then read the log's last line. --dry-run
                                           prints the worktree, scratch, brief path and argv and makes, writes and
-                                          starts nothing; --model names another model than sonnet only when given
+                                          starts nothing; --model names another model than sonnet only when given;
+                                          --max-budget-usd sets the worker's spend cap (`claude -p
+                                          --max-budget-usd`), else KB_WORKER_BUDGET_USD, else none
                                           dispatch --resume ID --message FILE [--detach] [--dry-run] [--model NAME]
-                                          [--max-turns N] sends the worker session of the item's last dispatch back
-                                          (`claude -p --resume`, in the item's worktree, the same environment and
-                                          caps) with the text of FILE on stdin instead of a new brief; --known,
-                                          --known-suite and --probe are refused; the run state moves as a dispatch
-                                          moves it
+                                          [--max-turns N] [--max-budget-usd USD] sends the worker session of the
+                                          item's last dispatch back (`claude -p --resume`, in the item's worktree,
+                                          the same environment and caps) with the text of FILE on stdin instead of
+                                          a new brief; --known, --known-suite and --probe are refused; the run
+                                          state moves as a dispatch moves it
   backlog.py report ID                      a returned worker's outcome in one call, read only: the session's
                                           SCRATCH/result.json (subtype, num_turns, total_cost_usd, session_id), a
                                           warning line for each line of its result text that says a gate was not
