@@ -2,7 +2,7 @@
   "id": "BG-dqkap5mv",
   "kind": "bug",
   "title": "kb/_self/backlog.md says the suite runs the lookup eval over the live kb, which no test does since test_live_kb.py was dropped",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-uz3rhdlq",
   "priority": "P3",
   "rank": 0,
@@ -42,5 +42,7 @@
     "parked: SP-sgfucsn6 review"
   ],
   "notes": "Review gap of SP-sgfucsn6 (S4), found by the sprint reviewer in ST-qwipu6df landing. Premise ran on today base: backlog.md line 216 says the suite runs the lookup eval; no test file under _tools runs rag.py eval and the live-kb test file is gone. Planned in SP-uz3rhdlq: repro/checks fail on the base, touches and order set.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-n4run01",
+  "operator": "op-f618a13e"
 }
