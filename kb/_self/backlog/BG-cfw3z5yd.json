@@ -2,7 +2,7 @@
   "id": "BG-cfw3z5yd",
   "kind": "bug",
   "title": "selfcheck's host line over both load limits is still cut when an old host lock is reported beside it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3nqlr7b5",
   "priority": "P3",
   "rank": 0,
@@ -22,5 +22,7 @@
   ],
   "links": [
     "parked: SP-tsb23kev review"
-  ]
+  ],
+  "claimed_by": "claude-n3run001",
+  "operator": "op-f618a13e"
 }
