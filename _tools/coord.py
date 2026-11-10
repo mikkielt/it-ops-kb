@@ -31,10 +31,11 @@
   coord.py import-reservations FILE|-                read JSON lines of holder, paths (globs), expires_in (seconds) and source
                                                      and lease each path as reservation/SOURCE/HOLDER/PATH until it expires;
                                                      `digest` lists one that meets a key (local store only; exit 2 writes none)
-  coord.py wait --since N --timeout S [--kind KIND] [--item IDS] [--pid PID ...]
+  coord.py wait --since N --timeout S [--kind KIND] [--item IDS] [--state STATES] [--pid PID ...]
                                                      print the events after sequence N, blocking until one arrives or
                                                      S seconds pass; --kind keeps one kind, --item the events whose
-                                                     item field is one of IDS (comma-separated); --pid (repeatable,
+                                                     item field is one of IDS (comma-separated), --state those whose
+                                                     state field is one of STATES (comma-separated); --pid (repeatable,
                                                      local store only) also ends the wait when that process has ended
   coord.py dedup QUESTION [--holder NAME] [--topic PATH] [--token T] [--ttl S] [--code REPO:PATH[#SYMBOL] ...]
                                                      claim the question's lack terms (and each --code target) that no
@@ -860,6 +861,7 @@ def wait(args, _clock):
     gets Revoked, not an event."""
     recheck = getattr(args, "recheck", None)
     kind, items = getattr(args, "kind", None), getattr(args, "item", None)
+    states = getattr(args, "state", None)
     pids = getattr(args, "pid", None) or []
     ended = []
     deadline = time.monotonic() + args.timeout
@@ -877,6 +879,8 @@ def wait(args, _clock):
                     rows = [r for r in rows if r["kind"] == kind]
                 if items is not None:
                     rows = [r for r in rows if items & event_ids(json.loads(r["fields"]))]
+                if states is not None:
+                    rows = [r for r in rows if json.loads(r["fields"]).get("state") in states]
             ended = [p for p in pids if not process_runs(p)]
             if rows or ended or time.monotonic() >= deadline:
                 break
@@ -1266,6 +1270,15 @@ def item_ids(text):
     return set(ids)
 
 
+def state_names(text):
+    """A --state list as a set of states: comma-separated, each one an event of some kind may carry."""
+    known = set(STATES) | set(JOB_STATES) | set(BLOCKED_STATES) | set(ANSWER_STATES)
+    names = text.split(",")
+    if not all(n in known for n in names):
+        raise argparse.ArgumentTypeError("must be a comma-separated list of states: " + ", ".join(sorted(known)))
+    return set(names)
+
+
 def process_id(text):
     value = int(text)
     if value < 1 or value > SQLITE_MAX_INT:
@@ -1348,6 +1361,8 @@ def build_parser(parser_class=argparse.ArgumentParser, remote=False):
     p.add_argument("--kind", type=kind_name, help="return only events of this kind; others do not end the wait")
     p.add_argument("--item", type=item_ids, metavar="IDS", help="return only events whose item field is one of these ids "
                    "(comma-separated); others do not end the wait")
+    p.add_argument("--state", type=state_names, metavar="STATES", help="return only events whose state field is one of these "
+                   "states (comma-separated); an event of another state does not end the wait")
     if not remote:
         p.add_argument("--pid", type=process_id, action="append", metavar="PID", help="also return as soon as this process has "
                        "ended (repeatable; not through --url)")
