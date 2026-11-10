@@ -21,6 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: the sprint goal names no open question; its items are bugs in census, research and provider tools and in docs, each settled from the code and its repro.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-n1run001",
   "operator": "op-f618a13e"
