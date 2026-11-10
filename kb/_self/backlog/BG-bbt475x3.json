@@ -2,7 +2,7 @@
   "id": "BG-bbt475x3",
   "kind": "bug",
   "title": "report warns that a gate was not recorded for a worker line that says no gates recorded",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-o3ag6hca",
   "priority": "P2",
   "rank": 0,

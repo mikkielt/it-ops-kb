@@ -2,7 +2,7 @@
   "id": "BG-nefcdzma",
   "kind": "bug",
   "title": "the kbtools entry for backlog.py set cuts the list of options a batch refuses after --notes and runs into the next fragment",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-o3ag6hca",
   "priority": "P3",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "BG-qpjpqr6d",
   "kind": "bug",
   "title": "install_7z.py passes the NSIS /D= folder as a quoted argument, which fails for a Windows user folder with a space",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-o3ag6hca",
   "priority": "P2",
   "rank": 0,

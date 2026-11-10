@@ -2,7 +2,7 @@
   "id": "BG-4jbl3jzh",
   "kind": "bug",
   "title": "ql_report.conflict_mrs picks the list's fields by the url's forge, not the forge setting bl_forge.read_list now aims at",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-o3ag6hca",
   "priority": "P3",
   "rank": 0,

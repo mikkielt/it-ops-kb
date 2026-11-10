@@ -2,7 +2,7 @@
   "id": "BG-erzhc222",
   "kind": "bug",
   "title": "release leaves the item file modified and uncommitted, so begin of an item whose touches overlap the released claim still refuses until a hand set --commit and sync push",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-o3ag6hca",
   "priority": "P3",
   "rank": 0,

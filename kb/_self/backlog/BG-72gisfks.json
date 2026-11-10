@@ -2,7 +2,7 @@
   "id": "BG-72gisfks",
   "kind": "bug",
   "title": "committed_calls keeps the newest call rows by git grep path order, which is not strictly chronological",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-o3ag6hca",
   "priority": "P3",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "BG-qa7v3soy",
   "kind": "bug",
   "title": "The stub claude of a dispatched worker is an extensionless /bin/sh script, so on Windows the real claude stays reachable with no warning",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-o3ag6hca",
   "priority": "P2",
   "rank": 0,
