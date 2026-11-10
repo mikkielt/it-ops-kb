@@ -21,6 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: the sprint's goal clauses name this repository's own tools (kbmon, coord, bench, check.py), whose behaviour the items' repros and the _self docs already hold; the kb's public articles and live docs add nothing to them.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-n3run001",
   "operator": "op-f618a13e"
