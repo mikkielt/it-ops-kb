@@ -2,7 +2,7 @@
   "id": "BG-6f5lhcik",
   "kind": "bug",
   "title": "coord.py wait on an item's progress returns at each non-final move (working, landing), so a wait for a landing wakes the orchestrator once per intermediate state",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3nqlr7b5",
   "priority": "P2",
   "rank": 0,
@@ -45,6 +45,28 @@
   ],
   "notes": "Planned 2026-11-10: the --state option goes into coord.py's CLI; the kb MCP coord_wait tool (_tools/kb_mcp.py, a sibling sprint's file) is left as it is and is a follow-up if the operator wants it there. Order: after BG-jholkwow (same file).",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-n3run001",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "d336d831d17fe46327c9748ebc3784fc4fa603e8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess,sys,tempfile;st=os.path.join(tempfile.mkdtemp(),'c.sqlite');c=lambda *a:subprocess.run([sys.executable,'_tools/coord.py',*a,'--store',st],capture_output=True,text=True);[c('post','--kind','progress','--field','item=BG-aaaaaaaa','--field','state='+s) for s in ('working','landing','landed')];r=c('wait','--since','0','--timeout','0','--kind','progress','--item','BG-aaaaaaaa','--state','landed,refused');print(r.returncode,r.stdout[-300:],r.stderr[-200:]);ev=json.loads(r.stdout)['events'] if r.returncode==0 else [];sys.exit(0 if [e['fields']['state'] for e in ev]==['landed'] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "8f4c9dc5f540b013"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;o=subprocess.run([sys.executable,\"_tools/coord.py\",\"wait\",\"--help\"],capture_output=True,text=True).stdout;sys.exit(0 if \"--state\" in o else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
