@@ -904,8 +904,8 @@ def stale_gaps(prefix=None, root=None):
     question, no routing) is `good` with no `check:` or route line, and prints a DOC, CODE or DER line (ANSWER_KINDS) in
     another article than the topics the entry names (`explicit`, `Tried ... (topic: x/y)`) that does not say the fact
     is not stated (NOT_STATED, NOT_FOUND): an UNK line, or a line of the entry's own article that says the fact is not stated,
-    is the kb recording that it lacks the fact, so it never makes an entry stale; the line holds ANSWER_SHARE of the
-    question's key words. `answers` is each such line:
+    is the kb recording that it lacks the fact, so it never makes an entry stale; the line's text without its tag bracket holds ANSWER_SHARE of the
+    question's own key words (key_terms of it, the words the kb lacks too). `answers` is each such line:
     {path, line, kind, text}. `prefix` and `root` keep the entries an article under the prefix (or a section of its
     domain) is linked to, in that root."""
     tfiles = topic_files()
@@ -924,6 +924,7 @@ def stale_gaps(prefix=None, root=None):
         res = pack(question, 1200, None, 4, "concise", False, er)
         if res["verdict"] != "good" or res["route"] or "\ncheck:" in res["text"]:
             continue
+        own = set(key_terms(question))  # the question's own key words, the unknown ones too, not the pack's known ones
         answers = []
         for p in res["printed"]:
             path = p["path"]
@@ -934,8 +935,8 @@ def stale_gaps(prefix=None, root=None):
                                                          else csv_units(path, read(path) or ""))}
             u = units_of[path].get(p["line"])
             kinds = [k for k in kinds_of(u["tags"]) if k in ANSWER_KINDS] if u else []
-            held = set(key_terms(u["text"])) & set(res["known"]) if u else set()
-            if kinds and len(held) >= ANSWER_SHARE * len(res["known"]) and not (NOT_STATED.search(u["text"]) or NOT_FOUND.search(u["text"])):
+            held = set(key_terms(TAG.sub("", u["text"]))) & own if u else set()
+            if kinds and len(held) >= ANSWER_SHARE * len(own) and not (NOT_STATED.search(u["text"]) or NOT_FOUND.search(u["text"])):
                 answers.append({"path": path, "line": p["line"], "kind": kinds[0], "text": u["text"]})
         if answers:
             out.append({"file": e["file"], "line": e["line"], "section": e["section"], "question": question,
