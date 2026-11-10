@@ -2,7 +2,7 @@
   "id": "BG-n3jpx6u3",
   "kind": "bug",
   "title": "kblane.commit_paths drops an entry when either mode is a gitlink, so a plain file that replaces a kb gitlink (or the reverse) is left out and the commit counts as content",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-wjrxikw6",
   "priority": "P3",
   "rank": 0,
@@ -24,5 +24,7 @@
     "parked: SP-mut2pmu3 review"
   ],
   "notes": "SP-mut2pmu3 review gap 5 (S3). kblane.py:100-103 tests _GITLINK in modes, so either mode being 160000 drops the entry. Planted: a commit that turns the gitlink kb/team into a regular file kb/team gives commit_paths -> [] (content), where a regular kb/README.md is code. Fix: drop only when old and new are each 000000 or 160000. Planned in SP-wjrxikw6 2026-11-10: touches, order and repro checked against the base.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-a1b2c3d4",
+  "operator": "op-f618a13e"
 }
