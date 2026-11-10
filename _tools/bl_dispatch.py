@@ -698,23 +698,28 @@ def money_approved(it):
     return any(gate_approves_spend(g) for g in it.get("gates") or [])
 
 
-def paid_stub(iid):
-    """The text of the stub `claude` of the item IID: a /bin/sh script that says on stderr what the worker lacks and exits 2."""
+def paid_stub(iid, platform=None):
+    """The text of the stub `claude` of the item IID on PLATFORM (default `sys.platform`): on `win32` a `claude.cmd` batch
+    file, elsewhere a /bin/sh script; either says on stderr what the worker lacks and exits 2."""
     msg = f"claude: {iid} has no answered gate naming money, which a call of claude (a paid session) needs; no call was made"
+    if (platform or sys.platform) == "win32":
+        return f"@echo off\necho {msg} 1>&2\nexit /b 2\n"
     return f"#!/bin/sh\nprintf '%s\\n' {shlex.quote(msg)} >&2\nexit 2\n"
 
 
-def guard_spend(bl, iid, env):
+def guard_spend(bl, iid, env, platform=None):
     """ENV (a worker's environment, `worker_env`) with, for an item with no money gate answered (`money_approved`), the
-    directory `STUB_DIR_NAME` of its scratch directory first on PATH, holding a stub `claude` written now (`paid_stub`), so
-    a child call of `claude` by name stops there; an item with one gets ENV as it is. The session itself is started by the
-    absolute path `claude_argv` gives, which needs no PATH."""
+    directory `STUB_DIR_NAME` of its scratch directory first on PATH, holding a stub `claude` written now (`paid_stub`: a
+    `claude.cmd` on PLATFORM `win32`, default `sys.platform`, else the extensionless /bin/sh `claude`), so a child call of
+    `claude` by name stops there; an item with one gets ENV as it is. The session itself is started by the absolute path
+    `claude_argv` gives, which needs no PATH."""
     if money_approved(bl.items[iid]):
         return env
     stub = scratch_path(bl.root, iid) / STUB_DIR_NAME
     stub.mkdir(parents=True, exist_ok=True)
-    write_text(stub / "claude", paid_stub(iid))
-    (stub / "claude").chmod(0o755)
+    name = "claude.cmd" if (platform or sys.platform) == "win32" else "claude"
+    write_text(stub / name, paid_stub(iid, platform))
+    (stub / name).chmod(0o755)
     env["PATH"] = str(stub) + os.pathsep + env.get("PATH", "")
     return env
 
