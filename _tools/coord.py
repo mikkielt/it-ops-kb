@@ -332,6 +332,12 @@ def ensure_schema(con):
         con.execute("ALTER TABLE entries ADD COLUMN budget REAL")
 
 
+def entry_columns(con):
+    """The columns of `entries`, empty where the store has no such table: a read command asks, and writes nothing, so it leaves a
+    store an older release made, or an empty file, byte for byte as it found it."""
+    return {r[1] for r in con.execute("PRAGMA table_info(entries)")}
+
+
 def row_json(row):
     out = {k: row[k] for k in row.keys()}
     if out.get("expires") is not None:
@@ -495,8 +501,8 @@ def get(args, clock):
     con = connect(args.store)
     now = clock()
     try:
-        con.execute(SCHEMA)
-        row = con.execute(f"SELECT {PUBLIC} FROM entries WHERE key = :key AND {LIVE}", {"key": args.key, "now": now}).fetchone()
+        row = con.execute(f"SELECT {PUBLIC} FROM entries WHERE key = :key AND {LIVE}", {"key": args.key, "now": now}).fetchone() \
+            if entry_columns(con) else None
     finally:
         con.close()
     if row is None:
@@ -587,9 +593,10 @@ def listing(args, clock):
     con = connect(args.store)
     now = clock()
     try:
-        ensure_schema(con)
-        rows = con.execute(f"SELECT {PUBLIC}, CASE WHEN expires > :now THEN budget END AS budget FROM entries "
-                           f"WHERE {LIVE} ORDER BY key", {"now": now}).fetchall()
+        columns = entry_columns(con)
+        budget = "CASE WHEN expires > :now THEN budget END" if "budget" in columns else "NULL"
+        rows = con.execute(f"SELECT {PUBLIC}, {budget} AS budget FROM entries WHERE {LIVE} ORDER BY key", {"now": now}).fetchall() \
+            if columns else []
     finally:
         con.close()
     if getattr(args, "by_operator", False):
@@ -870,9 +877,13 @@ def wait(args, _clock):
     con = connect(args.store)
     keys = hold_wait(args, items) if kind == "progress" and items and not recheck and args.timeout > 0 else []
     try:
-        con.execute(EVENTS_SCHEMA)
         while True:
-            rows = con.execute("SELECT * FROM events WHERE seq > ? ORDER BY seq", (scanned,)).fetchall()
+            try:
+                rows = con.execute("SELECT * FROM events WHERE seq > ? ORDER BY seq", (scanned,)).fetchall()
+            except sqlite3.OperationalError as e:
+                if "no such table" not in str(e):
+                    raise
+                rows = []  # no event has been posted: the table is the writer's to make
             if rows:
                 scanned = rows[-1]["seq"]
                 if kind is not None:
@@ -919,9 +930,12 @@ def live_state(args, clock):
     con = connect(args.store)
     now = clock()
     try:
-        ensure_schema(con)
-        claims = con.execute("SELECT key, holder, ttl, expires, budget FROM entries WHERE holder IS NOT NULL AND expires > ?", (now,)).fetchall()
-        events = con.execute("SELECT seq, fields, kind, at FROM events WHERE kind IN ('intent', 'progress') ORDER BY seq").fetchall()
+        columns = entry_columns(con)
+        claims = con.execute(f"SELECT key, holder, ttl, expires, {'budget' if 'budget' in columns else 'NULL AS budget'} FROM entries "
+                             "WHERE holder IS NOT NULL AND expires > ?", (now,)).fetchall() if columns else []
+        has_events = con.execute("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'events'").fetchone()
+        events = con.execute("SELECT seq, fields, kind, at FROM events WHERE kind IN ('intent', 'progress') ORDER BY seq").fetchall() \
+            if has_events else []
     finally:
         con.close()
     state = {}
