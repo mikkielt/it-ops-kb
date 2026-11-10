@@ -2,7 +2,7 @@
   "id": "BG-fol7jkye",
   "kind": "bug",
   "title": "goal_questions strips a number such as (2) or '2.' from inside a question, not only from its start",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-cb5bp3sz",
   "priority": "P3",
   "rank": 0,
@@ -42,5 +42,7 @@
   "links": [
     "parked: SP-ia6xayiy review"
   ],
-  "notes": "Planner 2026-11-10: a check of this item that already exits 0 on the base pins behaviour that must stay (the positives and re-export, a numbered list read as before, a valid date and note accepted, the id command still running, a memo kept for a live source, an explicitly closed hidden element); the repro and the other checks fail until the work. Planned into SP-cb5bp3sz on 2026-11-10; the draft's touches, checks and clause mapping were completed then."
+  "notes": "Planner 2026-11-10: a check of this item that already exits 0 on the base pins behaviour that must stay (the positives and re-export, a numbered list read as before, a valid date and note accepted, the id command still running, a memo kept for a live source, an explicitly closed hidden element); the repro and the other checks fail until the work. Planned into SP-cb5bp3sz on 2026-11-10; the draft's touches, checks and clause mapping were completed then.",
+  "claimed_by": "claude-n1run001",
+  "operator": "op-f618a13e"
 }
