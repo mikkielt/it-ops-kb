@@ -50,15 +50,21 @@ def served_names() -> set[str]:
 
 
 def rule_exprs(text: str) -> list[str]:
-    """The `expr:` values of a Prometheus rules file, one string each: a plain value or a `|` / `>` block."""
+    """The `expr:` values of a Prometheus rules file, one string each: a plain value, a single- or double-quoted YAML
+    value (unquoted to the expression) or a `|` / `>` block."""
     lines = text.splitlines()
     exprs = []
     for i, line in enumerate(lines):
         match = re.match(r"^(\s*)(?:-\s+)?expr:\s*(.*)$", line)
         if not match:
             continue
-        value = re.sub(r"\s#.*$", "", match.group(2)).strip()
-        if value[:1] in ("|", ">"):
+        value = match.group(2).strip()
+        quoted = re.match(r"'((?:[^']|'')*)'|\"((?:[^\"\\]|\\.)*)\"", value)
+        if quoted:
+            value = quoted.group(1).replace("''", "'") if quoted.group(1) is not None else re.sub(r"\\([\"\\])", r"\1", quoted.group(2))
+        else:
+            value = re.sub(r"\s#.*$", "", value).strip()
+        if not quoted and value[:1] in ("|", ">"):
             block = []
             for follow in lines[i + 1:]:
                 if follow.strip() and len(follow) - len(follow.lstrip()) <= len(match.group(1)):
@@ -70,10 +76,12 @@ def rule_exprs(text: str) -> list[str]:
 
 
 def rule_names(exprs: list[str]) -> list[str]:
-    """The kbmon_ metric names the expressions use, sorted and without repeats; a quoted label value is not a name."""
+    """The kbmon_ metric names the expressions use, sorted and without repeats: a name in a `__name__="kbmon_x"` matcher
+    counts, a quoted label value does not, and a recording-rule name with a colon (`kbmon_x:rate5m`) is no served metric."""
     names = set()
     for expr in exprs:
-        names.update(re.findall(r"\bkbmon_\w+", re.sub(r'"[^"]*"|\'[^\']*\'', "", expr)))
+        names.update(m[0] or m[1] for m in re.findall(r"__name__\s*=\s*(?:\"(kbmon_\w+)\"|'(kbmon_\w+)')", expr))
+        names.update(re.findall(r"(?<![\w:])kbmon_\w+(?![\w:])", re.sub(r'"[^"]*"|\'[^\']*\'', "", expr)))
     return sorted(names)
 
 

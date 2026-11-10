@@ -62,6 +62,26 @@
     "otel/kbmon_otel.py",
     "kb/_self/monitoring.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does --check-rules treat a recording-rule name with a colon (kbmon_x:rate5m) and a __name__ matcher with a regex (=~)?",
+      "options": [
+        "Skip colon names, read only the exact __name__=\"kbmon_x\" matcher",
+        "Also read colon names and =~ regex matchers"
+      ],
+      "recommendation": "Skip colon names, read only the exact __name__=\"kbmon_x\" matcher",
+      "reason": "a colon name is defined by a record rule and never served, and a regex matcher cannot be reduced to one name",
+      "do": {
+        "Skip colon names, read only the exact __name__=\"kbmon_x\" matcher": "BG-7nfpe3s6",
+        "Also read colon names and =~ regex matchers": "BG-7nfpe3s6"
+      },
+      "class": "design",
+      "answer": "Skip colon names, read only the exact __name__=\"kbmon_x\" matcher",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-4f4m3noq review"
   ],
