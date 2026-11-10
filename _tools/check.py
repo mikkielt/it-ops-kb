@@ -567,10 +567,11 @@ def doc_tail(text, end, depth):
 FSTRING_PREFIX = re.compile(r"(?:^|\W)(?:rf|fr|f)\Z", re.I)  # what may stand before an f-string's quote
 
 
-def fstring_end(text, i, q, spec=False):
+def fstring_end(text, i, q, spec=False, found=None):
     """Where an f-string whose opening quote `q` ends before `i` ends, read as Python 3.12 does: a replacement
     field may hold the quote (`f"{d["a"]}"`), a string, a comment and nested fields in its format spec. The index
-    past the closing quote; with `spec` the index of the `}` that ends the format spec; None when it does not end."""
+    past the closing quote; with `spec` the index of the `}` that ends the format spec; None when it does not end.
+    A comment in a field is appended to the list `found`, as `code_comment_lines` records an event."""
     while i < len(text):
         c = text[i]
         if c == "\\":
@@ -578,7 +579,7 @@ def fstring_end(text, i, q, spec=False):
         elif c == "{" and not spec and text.startswith("{{", i):
             i += 2
         elif c == "{":
-            i = field_end(text, i + 1, q)
+            i = field_end(text, i + 1, q, found)
             if i is None:
                 return None
         elif c == "}" and spec:
@@ -592,9 +593,9 @@ def fstring_end(text, i, q, spec=False):
     return None
 
 
-def field_end(text, i, q):
+def field_end(text, i, q, found=None):
     """The index past the `}` that ends the replacement field of an f-string, from `i` just past its `{`; None
-    when it does not end."""
+    when it does not end. A comment in it is appended to `found` (`fstring_end`)."""
     depth = 0
     while i < len(text):
         c = text[i]
@@ -606,25 +607,29 @@ def field_end(text, i, q):
                 return i
             depth -= 1
         elif c in "\"'":
-            i = string_end(text, i - 1)
+            i = string_end(text, i - 1, found)
             if i is None:
                 return None
         elif c == "#":
-            i = text.find("\n", i)
-            if i < 0:
+            end = text.find("\n", i)
+            if end < 0:
                 return None
+            if found is not None:
+                found.append([i - 1, end, False, None])
+            i = end
         elif c == ":" and depth == 0:
-            i = fstring_end(text, i, q, True)
+            i = fstring_end(text, i, q, True, found)
             if i is None:
                 return None
     return None
 
 
-def string_end(text, start):
-    """The index past the string literal whose opening quote is at `start`; None when it does not end."""
+def string_end(text, start, found=None):
+    """The index past the string literal whose opening quote is at `start`; None when it does not end. The
+    comments of an f-string's fields go to `found` (`fstring_end`)."""
     q = text[start] * 3 if text.startswith(text[start] * 3, start) else text[start]
     if FSTRING_PREFIX.search(text, max(0, start - 3), start):
-        return fstring_end(text, start + len(q), q)
+        return fstring_end(text, start + len(q), q, False, found)
     body = STRING_BODY[q].match(text, start + len(q))
     return None if body is None else body.end()
 
@@ -653,7 +658,7 @@ def code_comment_lines(path):
             events.append([start, end, False, None])
             pos = end
         elif c in "\"'":
-            end = string_end(text, start)
+            end = string_end(text, start, events)
             if end is None:
                 return []
             opened = None if doc_from is None else doc_open(text, doc_from, start)
@@ -680,7 +685,7 @@ def code_comment_lines(path):
                     events.append([h.start(), end, False, None])
                     pos = end
                 elif c in "\"'":
-                    pos = string_end(text, h.start())
+                    pos = string_end(text, h.start(), events)
                     if pos is None:
                         return []
                 elif c in "([{":
@@ -692,6 +697,7 @@ def code_comment_lines(path):
             doc_from, join_from = pos, None
         m = find(text, pos)
     lines, res, number, at = text.split("\n"), {}, 1, 0
+    events.sort(key=lambda e: e[0])  # a comment in an f-string's field is found before the string's own event
     for start, end, doc, tail in events:
         number += text.count("\n", at, start)
         at = start
