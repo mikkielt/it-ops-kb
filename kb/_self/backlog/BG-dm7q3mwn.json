@@ -2,7 +2,7 @@
   "id": "BG-dm7q3mwn",
   "kind": "bug",
   "title": "upstream-import keeps only the first line of a fenced multi-line premise in its Premise: notes line",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-u5zhszow",
   "priority": "P3",
   "rank": 0,

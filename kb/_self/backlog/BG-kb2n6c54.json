@@ -2,7 +2,7 @@
   "id": "BG-kb2n6c54",
   "kind": "bug",
   "title": "A bench worker's claude gets two --settings flags when worker_plugins_off is set, since bench_multi's wrapper appends its own after claude_argv's",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-u5zhszow",
   "priority": "P3",
   "rank": 0,

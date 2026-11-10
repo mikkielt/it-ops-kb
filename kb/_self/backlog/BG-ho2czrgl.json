@@ -2,7 +2,7 @@
   "id": "BG-ho2czrgl",
   "kind": "bug",
   "title": "gate_approves_spend counts a refusing answer worded Not approved, Do not spend, Never or Abort as approval, since only the first words no, refuse, decline, deny, reject and cancel are refusals",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-u5zhszow",
   "priority": "P2",
   "rank": 0,
