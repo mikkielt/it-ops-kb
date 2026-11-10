@@ -2,7 +2,7 @@
   "id": "BG-2gltgypz",
   "kind": "bug",
   "title": "The reducer change of BG-hfakjbdf moves the doc hash of every github.com page row once, and web-sources.md says nothing of the one false change",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-cb5bp3sz",
   "priority": "P2",
   "rank": 0,
@@ -24,6 +24,19 @@
   ],
   "notes": "Planner settled the draft's open choice: document the one-time change, no re-baseline of _fetch_state.csv (a shared content file other sessions plan). BG-eun3jdpb's fix changes the reduced text of the same pages again, so the worker words the sentence for both. Planned into SP-cb5bp3sz on 2026-11-10; the draft's touches, checks and clause mapping were completed then.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-n1run001",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "1c62474a15f2226897a9196d0c90daabf88e0a11",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;L=[l.lower() for l in open('kb/_self/web-sources.md',encoding='utf-8') if 'role=tooltip' in l];print(len(L));sys.exit(0 if any('doc_sha256' in l and 'once' in l and 'github.com' in l for l in L) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "4355a46b19d348dc"
+      }
+    ]
+  }
 }
