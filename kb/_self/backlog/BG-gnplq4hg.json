@@ -2,7 +2,8 @@
   "id": "BG-gnplq4hg",
   "kind": "bug",
   "title": "Publish refuses three unpublished commits whose backlog item files hold planted test passwords that the stricter url-password scan now flags, so nothing reaches the public home",
-  "status": "draft",
+  "status": "doing",
+  "sprint": "SP-wjrxikw6",
   "priority": "P1",
   "rank": 0,
   "severity": "S2",
@@ -17,5 +18,7 @@
   "touches": [
     "_tools/tests_allowlist.txt"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-d86593cd",
+  "operator": "op-f618a13e"
 }
