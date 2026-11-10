@@ -7,7 +7,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "bl_land.is_whole_suite agrees with tests.run_scope: an option after which tests.py still runs in mode full (reordering or deselecting) counts as a whole-suite run, and the doc names only the options that select or skip nothing of the run's report",
+  "goal": "bl_land.is_whole_suite agrees with tests.run_scope: an option after which tests.py still runs in mode full (reordering or deselecting) counts as a whole-suite run, with the doc line that names bl_land.NARROWING_OPTIONS listing only the options that select or skip nothing of the run's report",
   "repro": {
     "run": [
       "python3",
@@ -15,6 +15,15 @@
       "import sys;sys.path.insert(0,\"_tools\");import tests,bl_land;bad=[a for a in (\"--deselect=x\",\"--ff\",\"--lf\",\"--ignore=x\",\"--nf\") if tests.run_scope([a],False,False)==\"full\" and not bl_land.is_whole_suite([\"python3\",\"_tools/tests.py\",a])];print(bad);sys.exit(1 if bad else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,\"_tools\");import bl_land;t=open(\"kb/_self/backlog.md\",encoding=\"utf-8\").read();l=[x for x in t.splitlines() if \"bl_land.NARROWING_OPTIONS\" in x];n=sorted(bl_land.NARROWING_OPTIONS);bad=[o for o in (\"--ff\",\"--nf\",\"--lf\",\"--deselect\",\"--ignore\") if o in n and not all(o in x for x in l)];print(l and n,bad);sys.exit(1 if (not l or any(o in n for o in (\"--ff\",\"--nf\",\"--lf\")) and any(\"\" in x for x in l)) else 0)"
+      ]
+    }
+  ],
   "touches": [
     "_tools/bl_land.py",
     "kb/_self/backlog.md",
