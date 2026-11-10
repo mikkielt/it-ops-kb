@@ -2,7 +2,7 @@
   "id": "BG-fdxeot43",
   "kind": "bug",
   "title": "A gate naming the usage field as the API writes it (usage.cache_read_input_tokens) is still classed secrets, since the glue rule keeps a dotted prefix",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-uz3rhdlq",
   "priority": "P3",
   "rank": 0,
@@ -37,6 +37,28 @@
   ],
   "notes": "Review gap 2 of SP-pww4aqis (probed 2026-11-09 on origin/main): GLUED_BEFORE in bl_authority.py treats the usage. prefix as a possible credential name, so SNAKE_TOKEN_IDENT keeps the identifier; fails closed (a blocking gate for the operator). usage[\"cache_read_input_tokens\"] is design. The docs (tools.md, backlog.md) say the glue rule keeps vault-read_token but not that usage.<field> keeps the class. Same file as BG-6vy5sy74 and BG-zmwnp3hh, which landed. Choices settled in the plan so the worker asks none: edit the existing glue rule in bl_authority.py in place (a usage. or response.usage. prefix no longer counts as a possible credential name), no new helper, no new class; one sentence each in backlog.md and tools.md says usage.<field> keeps the class its other words give. Planned in SP-uz3rhdlq: repro/checks fail on the base, touches and order set.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-n4run01",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "ac83a5b3412e5bd49892298f644c47a6e4a833f6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,\"_tools\"); import bl_authority as b; f=lambda q: b.class_reasons({\"touches\":[]},{\"id\":\"g1\",\"question\":q,\"options\":[\"one\",\"two\"]})[0]; r=[f(\"Why does response.usage.cache_creation_input_tokens differ?\"),f(\"Why does usage.count_tokens differ?\"),f(\"Where is vault.read_token kept?\"),f(\"Where is registration-def_token kept?\")]; print(r); sys.exit(0 if r[0]!=\"secrets\" and r[1]!=\"secrets\" and r[2]==\"secrets\" and r[3]==\"secrets\" else 1)"
+        ],
+        "exit": 0,
+        "sha256": "bccc658fe78f8bd1"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,\"_tools\"); import bl_authority as b; c=b.class_reasons({\"touches\":[]},{\"id\":\"g1\",\"question\":\"Why does usage.cache_read_input_tokens differ?\",\"options\":[\"one\",\"two\"]})[0]; print(\"class\",c); sys.exit(0 if c==\"design\" else 1)"
+        ],
+        "exit": 0,
+        "sha256": "c4c05c7c9830a928"
+      }
+    ]
+  }
 }
