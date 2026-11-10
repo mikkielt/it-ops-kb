@@ -1,0 +1,22 @@
+{
+  "id": "BG-ho2czrgl",
+  "kind": "bug",
+  "title": "gate_approves_spend counts a refusing answer worded Not approved, Do not spend, Never or Abort as approval, since only the first words no, refuse, decline, deny, reject and cancel are refusals",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bl_dispatch.gate_approves_spend treats an option that opens with a negation or refusal (not, do not, don't, never, abort, as well as no, refuse, decline, deny, reject, cancel) as a refusal, so the paid-session stub stays for such an answer",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import bl_dispatch as d;g=lambda a:{\"question\":\"Approve spend?\",\"options\":[\"yes\",a],\"answer\":a};bad=[a for a in (\"Do not spend\",\"Not approved\",\"Never\",\"Abort\") if d.gate_approves_spend(g(a))];print(bad);sys.exit(1 if bad else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "kb/_self/backlog.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
