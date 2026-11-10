@@ -2,7 +2,7 @@
   "id": "BG-rwviux2q",
   "kind": "bug",
   "title": "The docs map sends a kbingest.py change to tools.md and the kb-ingest skill but not to extending.md, which states the group mapper digest, so BG-5lnmlpua's plan missed it and its worker stopped for touches",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-enhaglcw",
   "priority": "P3",
   "rank": 0,
@@ -27,6 +27,19 @@
     "parked: SP-uz3rhdlq close"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-86c7e088",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "1eb4ec5179c16470f881a6fd41568d271344cc52",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open(\"kb/_self/map.csv\",encoding=\"utf-8\").read().splitlines();sys.exit(0 if \"kb/_self/extending.md,_tools/kbingest.py\" in t else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
