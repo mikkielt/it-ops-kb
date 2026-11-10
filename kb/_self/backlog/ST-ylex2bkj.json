@@ -2,7 +2,7 @@
   "id": "ST-ylex2bkj",
   "kind": "story",
   "title": "Research sprint goal: kbmon, coord, bench and check scans are exact",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3nqlr7b5",
   "goal_research": true,
   "priority": "P1",
@@ -23,6 +23,20 @@
   ],
   "notes": "No outside facts: the sprint's goal clauses name this repository's own tools (kbmon, coord, bench, check.py), whose behaviour the items' repros and the _self docs already hold; the kb's public articles and live docs add nothing to them.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-n3run001",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "5c1af3857e6a9689d2598708aa9c81ab769cf24a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-ylex2bkj"
+        ],
+        "exit": 0,
+        "sha256": "15f3dc3417c921d6"
+      }
+    ]
+  }
 }
