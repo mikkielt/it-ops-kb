@@ -29,6 +29,29 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Does -m count as a whole-suite run in bl_land.is_whole_suite, as tests.run_scope gives mode full for it, or does it stay a narrowing option?",
+      "options": [
+        "-m counts as whole",
+        "-m stays narrowing"
+      ],
+      "recommendation": "-m counts as whole",
+      "reason": "run_scope gives mode full and tests.py holds the run to its seconds ceiling, as for the other deselecting options",
+      "do": {
+        "-m counts as whole": "BG-fqy42zbx",
+        "-m stays narrowing": "BG-fqy42zbx"
+      },
+      "class": "agents-rule",
+      "answer": "-m counts as whole",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "links": [
     "parked: SP-uz3rhdlq review"
   ],
