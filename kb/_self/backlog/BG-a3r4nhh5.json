@@ -2,7 +2,7 @@
   "id": "BG-a3r4nhh5",
   "kind": "bug",
   "title": "load_group_commands reads the it_ops_kb.backlog_commands entry point before extension_paths are on sys.path, so a distribution installed under an extension_paths directory is missed",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-wjrxikw6",
   "priority": "P2",
   "rank": 0,
@@ -27,5 +27,7 @@
     "parked: SP-ga3lbnlk review"
   ],
   "notes": "Planned in SP-wjrxikw6 2026-11-10: touches, order and repro checked against the base.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-a1b2c3d4",
+  "operator": "op-f618a13e"
 }
