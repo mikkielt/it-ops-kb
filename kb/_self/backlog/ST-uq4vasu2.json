@@ -21,6 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: every item of the sprint fixes this repository's own tools, docstrings and usage text; no Microsoft, Claude Code or MCP product fact is open, so no kb/public article, source row or gap entry is written (proceed with the other session that holds kb/public/**; this story edits none of it).",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-n7run001",
   "operator": "op-f618a13e"
