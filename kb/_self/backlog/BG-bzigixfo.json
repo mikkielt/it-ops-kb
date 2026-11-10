@@ -2,7 +2,7 @@
   "id": "BG-bzigixfo",
   "kind": "bug",
   "title": "bl_authority's bare-name bypass also clears the bare name of a rule-guarding file (settings.json, tests.py, backlog.py) when a touch of another directory ends in that name",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-enhaglcw",
   "priority": "P3",
   "rank": 0,
@@ -24,6 +24,19 @@
     "parked: SP-uz3rhdlq review"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-86c7e088",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "91055e93ffe4e5059d166cd7165202e356597f16",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import bl_authority as a;r=a.block_reasons({\"touches\":[\"kb/x/settings.json\"],\"title\":\"x\"},{\"id\":\"g1\",\"kind\":\"provisional\",\"question\":\"Which form?\",\"options\":[\"settings.json\",\"b\"]},False);print(r);sys.exit(0 if r else 1)"
+        ],
+        "exit": 0,
+        "sha256": "416b37feb277209b"
+      }
+    ]
+  }
 }
