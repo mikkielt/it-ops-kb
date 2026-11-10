@@ -35,6 +35,26 @@
   "depends_on": [
     "BG-ho2czrgl"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the bench_multi claude wrapper combine the argv's --settings value with MULTI_SETTINGS, and what if a value is neither JSON nor a readable file?",
+      "options": [
+        "Recursive merge of objects, MULTI_SETTINGS keys win; an unreadable value is passed through untouched",
+        "Shallow merge by top-level key, MULTI_SETTINGS keys win; an unreadable value is dropped"
+      ],
+      "recommendation": "Recursive merge of objects, MULTI_SETTINGS keys win; an unreadable value is passed through untouched",
+      "do": {
+        "Recursive merge of objects, MULTI_SETTINGS keys win; an unreadable value is passed through untouched": "BG-kb2n6c54",
+        "Shallow merge by top-level key, MULTI_SETTINGS keys win; an unreadable value is dropped": "BG-kb2n6c54"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "Recursive merge of objects, MULTI_SETTINGS keys win; an unreadable value is passed through untouched",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ejeki6bv review"
   ],

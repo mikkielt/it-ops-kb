@@ -1063,16 +1063,50 @@ def run(scenario, root=None, dry_run=False, knobs=None, out=print):
 
 STEP_TIMEOUT = 7200  # seconds one operator command (claim, answer, land) may take
 WRAPPER = """#!{python}
-import os, sys
+import json, os, sys
 here = os.path.dirname(os.path.abspath(__file__))
+
+
+def load(text):
+    try:
+        value = json.loads(text)
+    except ValueError:
+        try:
+            with open(text, encoding='utf-8') as f:
+                value = json.load(f)
+        except (OSError, ValueError):
+            return None
+    return value if isinstance(value, dict) else None
+
+
+def merge(base, over):
+    out = dict(base)
+    for key, value in over.items():
+        out[key] = merge(out[key], value) if isinstance(value, dict) and isinstance(out.get(key), dict) else value
+    return out
+
+
+settings, rest, argv, i = load(os.environ['MULTI_SETTINGS']) or dict(), [], sys.argv[1:], 0
+held = dict()
+while i < len(argv):
+    flag, value = (argv[i], argv[i + 1] if i + 1 < len(argv) else None) if argv[i] == '--settings' else (None, None)
+    if flag is None and argv[i].startswith('--settings='):
+        flag, value = '--settings', argv[i][len('--settings='):]
+    own = load(value) if value is not None else None
+    if flag and own is not None:
+        held = merge(held, own)
+        i += 1 if argv[i] != '--settings' else 2
+    else:
+        rest.append(argv[i])
+        i += 1
 for d in os.environ.get("PATH", "").split(os.pathsep):
     found = os.path.join(d, "claude")
     if d and os.path.abspath(d) != here and os.path.isfile(found) and os.access(found, os.X_OK):
-        extra = ["--settings", os.environ["MULTI_SETTINGS"], "--mcp-config", os.environ["MULTI_MCP_CONFIG"], "--strict-mcp-config",
+        extra = ['--settings', json.dumps(merge(held, settings)), "--mcp-config", os.environ["MULTI_MCP_CONFIG"], "--strict-mcp-config",
                  "--max-budget-usd", os.environ["MULTI_MAX_USD"]]
-        os.execv(found, [found, *sys.argv[1:], *extra])
+        os.execv(found, [found, *rest, *extra])
 sys.exit("claude is not on PATH")
-"""  # DIR/bin/claude: the claude `dispatch` starts, with the run's session settings, the agent's mcp-config and the dollar cap added
+"""  # DIR/bin/claude: the claude `dispatch` starts, with the run's session settings (merged into the argv's own --settings value, the run's keys winning), the agent's mcp-config and the dollar cap added
 
 
 REPLAY_WRAPPER = """#!{python}
