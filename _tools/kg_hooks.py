@@ -80,11 +80,11 @@ def new_lanes(spec):
                 return None
             res += lanes
             continue
-        paths = git("diff-tree", "-r", "--no-renames", "--name-only", "-z", "--no-commit-id", "-c", sha)
-        if paths is None:
+        raw = git("diff-tree", "-r", "--no-renames", "--raw", "-z", "--no-commit-id", "-c", sha)
+        if raw is None:
             res.append((short, kblane.CODE, ["(merge unreadable)"]))
             continue
-        lane, code = kblane.paths_lane([x for x in paths.split("\0") if x])
+        lane, code = kblane.paths_lane(kblane.raw_names(raw))
         res.append((short, lane, code))
     return res
 

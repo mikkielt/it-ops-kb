@@ -82,6 +82,23 @@ def _git(repo, *args):
     return p.stdout.decode("utf-8", "replace")
 
 
+def raw_names(out):
+    """Sorted paths of `git diff-tree -r --no-renames --raw -z` output, a combined `-c` merge diff too (N colons, then
+    N+1 modes): a submodule root's gitlink is left out."""
+    fields = out.split("\0")
+    names = []
+    for i in range(0, len(fields) - 1, 2):  # ":oldmode newmode oldsha newsha status", then the path
+        head = fields[i].split()
+        modes = head[:len(head[0]) - len(head[0].lstrip(":")) + 1]
+        modes[0] = modes[0].lstrip(":")
+        if _GITLINK in modes and all(m in (_GITLINK, _ABSENT) for m in modes) and _ROOT_LINK.fullmatch(fields[i + 1]):
+            # a submodule root's gitlink is the root's own commit, not a change of this repository's files; an entry
+            # that turns a gitlink into a file (or the reverse) has a mode that is neither, so it stays
+            continue
+        names.append(fields[i + 1])
+    return sorted(names)
+
+
 def commit_paths(repo, sha):
     """Paths a commit changes against its first parent (the empty tree for a root commit); None when git fails."""
     parents = (_git(repo, "rev-list", "--parents", "-n", "1", sha) or "").split()[1:]
@@ -94,16 +111,7 @@ def commit_paths(repo, sha):
     out = _git(repo, "diff-tree", "-r", "--no-renames", "--raw", "-z", base, sha)
     if out is None:
         return None
-    fields = out.split("\0")
-    names = []
-    for i in range(0, len(fields) - 1, 2):  # ":oldmode newmode oldsha newsha status", then the path
-        modes = fields[i].lstrip(":").split()[:2]
-        if _GITLINK in modes and all(m in (_GITLINK, _ABSENT) for m in modes) and _ROOT_LINK.fullmatch(fields[i + 1]):
-            # a submodule root's gitlink is the root's own commit, not a change of this repository's files; an entry
-            # that turns a gitlink into a file (or the reverse) has a mode that is neither, so it stays
-            continue
-        names.append(fields[i + 1])
-    names.sort()
+    names = raw_names(out)
     if ATTRS in names:
         # cat-file, not show: `git show REV:PATH` checks its argument as a file name ("Filename too long" on Windows)
         old, new = _git(repo, "cat-file", "blob", f"{base}:{ATTRS}"), _git(repo, "cat-file", "blob", f"{sha}:{ATTRS}")
