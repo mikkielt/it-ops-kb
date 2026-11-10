@@ -39,7 +39,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "regex over the file text for the first \"to_other_sessions\": true|false",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [

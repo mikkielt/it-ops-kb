@@ -39,7 +39,9 @@
       "class": "push",
       "hold": true,
       "answer": "skip it silently, kg_sync keeping its own PLAIN_ROOT_NAME pattern",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
