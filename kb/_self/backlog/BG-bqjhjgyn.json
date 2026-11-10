@@ -29,6 +29,23 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does block_reasons match an option's bare file name against the touches?",
+      "options": [
+        "Compare the lower-case file name with the base name of each touch, for a word with no slash only",
+        "Widen option_paths so every bare name is read as a path under the touch's directory"
+      ],
+      "recommendation": "Compare the lower-case file name with the base name of each touch, for a word with no slash only",
+      "do": {
+        "Compare the lower-case file name with the base name of each touch, for a word with no slash only": "BG-bqjhjgyn",
+        "Widen option_paths so every bare name is read as a path under the touch's directory": "BG-bqjhjgyn"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "parked: SP-c6tr77jl close"
   ],

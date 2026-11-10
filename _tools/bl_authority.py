@@ -536,6 +536,8 @@ def block_reasons(item, gate, kind=True):
     for word in option_paths(gate.get("options", []) or []):
         if names_rule_text(word):
             why.append(f"option names rule text '{word}'")
+        elif "/" not in word and any(posixpath.basename(norm(t)) == word.lower() for t in touches if t.strip()):
+            continue  # a bare doc file name that a touch of the item ends in
         elif not any(touch_names(t, word) for t in touches):
             why.append(f"option names '{word}', outside the touches")
     title = str(item.get("title") or "")
