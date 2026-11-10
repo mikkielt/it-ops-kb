@@ -20,7 +20,7 @@
       "run": [
         "python3",
         "-c",
-        "import json,subprocess,sys\\nout=subprocess.run([sys.executable,\"_tools/kbtools.py\",\"--json\",\"backlog.py set several ids\"],capture_output=True,text=True).stdout\\ne=next(e for e in json.loads(out)[\"entries\"] if e[\"tool\"]==\"backlog.py set\")\\nb=\" \".join(e[\"answers\"])\\ni=b.find(\"a batch refuses\")\\nseg=b[i:i+400]\\nok=i>=0 and all(x in seg for x in (\"--title\",\"--goal\",\"--notes\",\"--repro\",\"--repro-reason\",\"--parent\",\"--clause\",\"--check\"))\\nprint(ok);sys.exit(0 if ok else 1)\\n"
+        "import json, subprocess, sys\nout = subprocess.run([sys.executable, \"_tools/kbtools.py\", \"--json\", \"backlog.py set several ids\"], capture_output=True, text=True).stdout\ne = next(e for e in json.loads(out)[\"entries\"] if e[\"tool\"] == \"backlog.py set\")\nb = \" \".join(e[\"answers\"])\ni = b.find(\"a batch refuses\")\nseg = b[i:i + 400]\nok = i >= 0 and all(x in seg for x in (\"--title\", \"--goal\", \"--notes\", \"--repro\", \"--repro-reason\", \"--parent\", \"--clause\", \"--check\"))\nprint(ok); sys.exit(0 if ok else 1)\n"
       ]
     }
   ],

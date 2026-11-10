@@ -102,8 +102,8 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                  [--add-repos-if-needed NAME]... [--external TRACKER=ID]...
                  [--add-external TRACKER=ID]... [--clause CLAUSE=N]... [--add-clause CLAUSE=N]... [--clear FIELD]...
                                           change an item after new, or several at once with more than one ID (a
-                                          batch refuses the options naming one item: --title, --goal, --notes,
-                                          --repro, --repro-reason, --parent, --clause, --check, exit 2); each
+                                          batch refuses the options naming one item: --title, --goal, --notes, --repro,
+                                          plus --repro-reason, --parent, --clause and --check, exit 2); each
                                           list option replaces its list, and its
                                           --add-<option> twin appends what is missing to it, so a second run changes
                                           nothing (--add-notes appends the text unless the notes hold it); a call
