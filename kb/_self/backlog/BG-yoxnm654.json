@@ -2,7 +2,7 @@
   "id": "BG-yoxnm654",
   "kind": "bug",
   "title": "check's read-only-checks and named-test-file warnings: docs say story, task or bug and any code, the code also warns subtasks and reads only _tools/ paths",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-uz3rhdlq",
   "priority": "P3",
   "rank": 0,
@@ -46,5 +46,7 @@
   "links": [
     "parked: SP-4jfepy6u review"
   ],
-  "notes": "Found in the SP-4jfepy6u review: backlog.md says story, task or bug; the sprint skill says touches that name code. tools.md holds no such sentence today, so only backlog.md and the sprint skill change. Planned in SP-uz3rhdlq: repro/checks fail on the base, touches and order set."
+  "notes": "Found in the SP-4jfepy6u review: backlog.md says story, task or bug; the sprint skill says touches that name code. tools.md holds no such sentence today, so only backlog.md and the sprint skill change. Planned in SP-uz3rhdlq: repro/checks fail on the base, touches and order set.",
+  "claimed_by": "claude-n4run01",
+  "operator": "op-f618a13e"
 }
