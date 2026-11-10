@@ -2,7 +2,7 @@
   "id": "BG-3anea3z7",
   "kind": "bug",
   "title": "group_gate refuses the whole gate when one kb/<dir>/settings.json has a directory name that is not a plain name",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-wjrxikw6",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,7 @@
     "parked: SP-ga3lbnlk review"
   ],
   "notes": "Planned in SP-wjrxikw6 2026-11-10: touches, order and repro checked against the base.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-a1b2c3d4",
+  "operator": "op-f618a13e"
 }
