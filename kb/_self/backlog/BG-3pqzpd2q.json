@@ -2,7 +2,7 @@
   "id": "BG-3pqzpd2q",
   "kind": "bug",
   "title": "dispatch starts a worker's claude -p with no --settings, so its plugins' MCP servers run unless the orchestrator's PATH wrapper turns them off",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ejeki6bv",
   "priority": "P3",
   "rank": 0,
@@ -52,5 +52,7 @@
     "retro: drain 2026-10-27..11-08"
   ],
   "notes": "Retro finding of the drain: headless workers must run with the gitkraken plugin off (its gk mcp children orphan in the worker's worktree and block land at step branch); the orchestrator did it with a wrapper named claude first on PATH, kept in a temporary directory that vanished between sessions, so one worker started without it. Premise (reproduces: the repro): claude_argv (bl_dispatch.py) builds the argv with no --settings. The key a plugin takes in enabledPlugins is gitkraken@synced on this host; a committed backlog.json setting is chosen over an environment variable like KB_WORKER_BUDGET_USD because the wrapper failed as a missing out-of-repo file; the setting's default is none, so a host project is unchanged. claude_argv serves new, resumed and begun dispatches, and agent_bench.py and kb_ask.py call it too: keep its signature compatible. The repro plants a root whose backlog.json names the setting and a fake claude that logs its argv.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev5run01",
+  "operator": "op-f618a13e"
 }
