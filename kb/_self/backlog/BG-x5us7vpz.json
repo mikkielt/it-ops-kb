@@ -2,7 +2,7 @@
   "id": "BG-x5us7vpz",
   "kind": "bug",
   "title": "goal_questions leaves the first numbered piece unread when a lead-in precedes it, and researched's no-question message omits numbered pieces it skipped",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-cb5bp3sz",
   "priority": "P3",
   "rank": 0,
@@ -63,5 +63,7 @@
   "links": [
     "parked: SP-ia6xayiy review"
   ],
-  "notes": "Found by the SP-ia6xayiy review (S3, from BG-zwf3rs5y). The check that reads two numbered questions with no lead-in passes before the work and pins behaviour that must stay. Planned into SP-cb5bp3sz on 2026-11-10; the draft's touches, checks and clause mapping were completed then."
+  "notes": "Found by the SP-ia6xayiy review (S3, from BG-zwf3rs5y). The check that reads two numbered questions with no lead-in passes before the work and pins behaviour that must stay. Planned into SP-cb5bp3sz on 2026-11-10; the draft's touches, checks and clause mapping were completed then.",
+  "claimed_by": "claude-n1run001",
+  "operator": "op-f618a13e"
 }
