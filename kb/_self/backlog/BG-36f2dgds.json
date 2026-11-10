@@ -2,7 +2,7 @@
   "id": "BG-36f2dgds",
   "kind": "bug",
   "title": "kbpublic.texts drops a path with a newline before git is asked, so a _root.md in such a directory is neither refused nor read as not public by tree_refusals and internal_prefixes",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-wjrxikw6",
   "priority": "P3",
   "rank": 0,

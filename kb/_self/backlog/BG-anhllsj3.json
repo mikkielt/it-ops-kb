@@ -2,7 +2,7 @@
   "id": "BG-anhllsj3",
   "kind": "bug",
   "title": "kg_hooks.hook_commit_msg comment says the stray-line warnings let the commit go through, which refuse_commit_msg no longer does",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-wjrxikw6",
   "priority": "P2",
   "rank": 0,

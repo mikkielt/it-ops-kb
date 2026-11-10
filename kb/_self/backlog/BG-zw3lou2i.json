@@ -2,7 +2,7 @@
   "id": "BG-zw3lou2i",
   "kind": "bug",
   "title": "kbgit.py install-hooks --uninstall prints core.hooksPath unset without reading whether git config --unset succeeded",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-wjrxikw6",
   "priority": "P3",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "ST-2xahqzwp",
   "kind": "story",
   "title": "Research sprint goal: Publish, sync, hooks and extensions follow-ups: gitlinks and merge commits classed right, newline paths and contribute scans checked, the scan form bumped, uninstall reads its result, team-clone promises kept or reworded, settings and extension loading robust",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-wjrxikw6",
   "goal_research": true,
   "priority": "P1",
