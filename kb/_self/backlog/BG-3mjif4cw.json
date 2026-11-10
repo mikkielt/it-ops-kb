@@ -2,12 +2,12 @@
   "id": "BG-3mjif4cw",
   "kind": "bug",
   "title": "The _self eval row EV-gate-classes-only-operator-answers no longer checks any gate class name",
-  "status": "doing",
+  "status": "todo",
   "sprint": "SP-uz3rhdlq",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
-  "goal": "The row EV-gate-classes-only-operator-answers of kb/_self/_retrieval/lookup_eval.csv expects words that name the operator classes (agents-rule among them) and rag.py eval --root _self still passes it",
+  "goal": "The row EV-gate-classes-only-operator-answers of kb/_self/_retrieval/lookup_eval.csv expects the phrase 'touches class push or agents-rule is held' (the only phrase naming agents-rule that the pack prints in full) and rag.py eval --root _self still passes it",
   "repro": {
     "run": [
       "python3",
@@ -22,8 +22,6 @@
   "links": [
     "parked: SP-lmpjclxz review"
   ],
-  "notes": "Review gap G10 of SP-lmpjclxz and the changed answer to ST-xl4w2pmg g3. The landing's eval step runs rag.py eval, so the pass is read there. Planned in SP-uz3rhdlq: repro/checks fail on the base, touches and order set.",
-  "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-n4run01",
-  "operator": "op-f618a13e"
+  "notes": "Review gap G10 of SP-lmpjclxz and the changed answer to ST-xl4w2pmg g3. The landing's eval step runs rag.py eval, so the pass is read there. Planned in SP-uz3rhdlq: repro/checks fail on the base, touches and order set. Choice settled in the plan, no gate for the worker: the expected phrase is the one above because the pack cuts line 147 of backlog.md after the delete list; the repro needs agents-rule in the row.",
+  "filed_in": "clone-0ea70e5c"
 }
