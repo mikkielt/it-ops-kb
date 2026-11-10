@@ -2,7 +2,7 @@
   "id": "BG-kh3qswp3",
   "kind": "bug",
   "title": "kg_contrib.added_hits calls shipped_file_hits without the file's root, so a placeholder a public root lists passes publish but is left out by contribute as a leak-scan hit",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-wjrxikw6",
   "priority": "P3",
   "rank": 0,
@@ -24,5 +24,7 @@
     "parked: SP-mut2pmu3 review"
   ],
   "notes": "SP-mut2pmu3 review gap 9 (S3, outside the sprint's commits). kg_contrib.py:98 (added_hits) calls shipped_file_hits(x, added, allow, pinned) with no root, so the placeholders a public root lists never pass in contribute, while publish (tree_hits, leak_verdicts via root_of) lets them pass: a commit that adds a listed placeholder home path to a public root is left out by contribute as a hit (home) and would publish. Fails closed. This is the S4 half BG-ff6fhfoo left out. Fix: pass root_of(x, kbpublic.root_placeholders(head, files, KB)). Planned in SP-wjrxikw6 2026-11-10: touches, order and repro checked against the base.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-a1b2c3d4",
+  "operator": "op-f618a13e"
 }
