@@ -2,7 +2,7 @@
   "id": "BG-n2uz7tyc",
   "kind": "bug",
   "title": "extending.md says a lazy import inside a group mapper's function is not covered by its map digest, but a long-lived process covers it once the mapper has run",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-enhaglcw",
   "priority": "P3",
   "rank": 0,
@@ -26,6 +26,19 @@
     "parked: SP-uz3rhdlq review"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-86c7e088",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "8e1eb77d48ee6032dd9115af01999caaa70800ed",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "t=open(\"kb/_self/extending.md\",encoding=\"utf-8\").read();import sys;sys.exit(0 if \"only after the mapper has run\" in t else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
