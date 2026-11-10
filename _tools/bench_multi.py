@@ -47,7 +47,7 @@ ASK_WAIT = 10  # seconds an agent that is asked waits for the ask, after its own
 ASK_ANSWER = "{agent} holds {what} and finishes it; leave it to {agent}."  # the text an asked agent answers with
 SPEC_KEYS = ("title", "goal", "touches", "check", "gate")  # the keys of a code agent's input, an item spec in json
 ITEM_DIR = "kb/_self/backlog"  # where setup writes a planted item: bl_base's item_dir of this project
-TOOL_SETS = {"kb": ["mcp__kb"], "files": ["Read", "Grep", "Glob"]}  # --tools: the lookup agent's tools
+TOOL_SETS = {"kb": [], "files": ["Read", "Grep", "Glob"]}  # --tools: the lookup agent's built-in tools (claude's --tools list; the kb arm has only the kb server's)
 CODE_IDS = frozenset(r["id"] for r in bench_pool.CODE_ROWS)  # the ids of the code questions, which a `code-lookups` agent's input names
 CODE_NO_FILES = ("Read", "Grep", "Glob", "Bash")  # what a kb lookup agent of code questions may not use: its answers come from the kb's tools
 MANAGERS = ("code", "session")  # --manager: this tool starts the agents, or a model session does
@@ -724,13 +724,14 @@ def lookup_prompt(questions, tools, budget, code=False):
 
 def session_argv(model, max_turns, usd, mcp, tools=None, code=False):
     """The argv of one agent's session: bench_repro.session_argv's (the two plugins off, the agent's own mcp-config), at effort
-    high; with `tools` ("kb" or "files"), the lookup agent's: no effort flag and its allowed tools; for `code` questions the
-    kb arm also has no file tool (`CODE_NO_FILES`), so it answers from the maps alone."""
+    high; with `tools` ("kb" or "files"), the lookup agent's: no effort flag and its built-in tools as claude's `--tools` list
+    (`--allowedTools` is no limit under bypassPermissions; the kb arm's `--tools ""` leaves it the kb server's tools only); for
+    `code` questions the kb arm also lists the file tools in `--disallowedTools` (`CODE_NO_FILES`), so it answers from the maps alone."""
     argv = bench_repro.session_argv(model, bench_repro.DEFAULTS["effort"], max_turns, usd, mcp)
     if tools:
         i = argv.index("--effort")
         del argv[i:i + 2]  # the lookup agent runs at the model's default effort, as the pool cells its estimate reads do
-        argv += ["--allowedTools", *TOOL_SETS[tools]]
+        argv += ["--tools", ",".join(TOOL_SETS[tools])]
         if tools == "files":
             argv += ["--disallowedTools", "mcp__kb"]
         elif code:
