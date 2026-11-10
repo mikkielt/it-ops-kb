@@ -2,7 +2,7 @@
   "id": "BG-hzbxfzut",
   "kind": "bug",
   "title": "A gate whose option text only lists gate class names in backticks (secrets, push, delete) is classed by those words, so BG-3mjif4cw's wording question was made blocking as secrets",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-enhaglcw",
   "priority": "P3",
   "rank": 0,
@@ -49,6 +49,19 @@
     "parked: SP-uz3rhdlq close"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-86c7e088",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "23113514134fc0e771ae6874af8e2c01cbde10e4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,\"_tools\"); import bl_authority as b; g={\"id\":\"g1\",\"question\":\"Which phrase does the eval row expect?\",\"options\":[\"touches class `push` or `agents-rule` is held\",\"give class `ceiling`, `secrets`, `push`, `agents-rule`, `querylog` or `delete`\"]}; c=b.class_reasons({\"touches\":[\"kb/_self/_retrieval/lookup_eval.csv\"],\"title\":\"an eval row\"},g)[0]; print(c); sys.exit(1 if c in (\"secrets\",\"delete\",\"push\",\"ceiling\") else 0)"
+        ],
+        "exit": 0,
+        "sha256": "f52c370da768f628"
+      }
+    ]
+  }
 }
