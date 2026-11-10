@@ -91,8 +91,11 @@ def goal_questions(goal, skipped=None):
     def question(piece):
         piece = piece.strip()
         numbered_first = bool(NUMBERED_PIECE.match(piece))  # the number leads the text: the words before `: ` are the question's own
-        piece = NUMBERED_PIECE.sub("", piece, count=1)
+        piece = NUMBERED_PIECE.sub("", piece, count=1) if numbered_first else piece
         lead, sep, rest = piece.partition(": ")
+        if sep:  # a number that follows a lead-in ends it (`Answer these: 1. does X work`); one deeper in the text is the question's own
+            rest = NUMBERED_PIECE.sub("", rest, count=1) if NUMBERED_PIECE.match(rest) else rest
+            piece = lead + sep + rest
         own = numbered_first and lead.split()[:1] and lead.split()[0].lower() in QUESTION_WORDS
         if sep and rest.strip() and len(lead.split()) <= QUESTION_LEAD_WORDS and not own:
             piece = rest.strip()

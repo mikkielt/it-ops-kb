@@ -39,6 +39,27 @@
   "depends_on": [
     "BG-x5us7vpz"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does goal_questions leave a number off only at a piece's start?",
+      "options": [
+        "Match the number at the piece start, and again at the start of the text after a first ': ' lead-in",
+        "Anchor NUMBERED_PIECE itself with ^ and leave a number after a lead-in unstripped"
+      ],
+      "recommendation": "Match the number at the piece start, and again at the start of the text after a first ': ' lead-in",
+      "reason": "keeps 'Answer these: 1. does X work' and a long lead-in joined to its question reading as before",
+      "do": {
+        "Match the number at the piece start, and again at the start of the text after a first ': ' lead-in": "BG-fol7jkye",
+        "Anchor NUMBERED_PIECE itself with ^ and leave a number after a lead-in unstripped": "BG-fol7jkye"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "Match the number at the piece start, and again at the start of the text after a first ': ' lead-in",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ia6xayiy review"
   ],
