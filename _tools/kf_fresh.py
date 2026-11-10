@@ -17,7 +17,7 @@ from datetime import date
 import kbcommon, kbid
 import kbfacts  # keep_pack reads pack_store() through the facade, so a caller that replaces it redirects the packs
 from kbfacts import (
-    ID, ROOT_LEDGERS, TOOLS, bare, fact_key, git_out, index_dir, kb_files, read, remove_file, root_files,
+    ID, ROOT_LEDGERS, TOOLS, bare, fact_key, git_out, index_dir, kb_files, prune_memos, read, remove_file, root_files,
     source_rows
 )
 
@@ -108,9 +108,11 @@ def _ledger_index(path, column):
         tmp = None
         try:
             os.makedirs(d, exist_ok=True)
+            if not os.path.exists(memo):  # a new memo: the ones of a source that is gone go
+                prune_memos(d, "ledger", memo)
             fd, tmp = tempfile.mkstemp(prefix=".ledger-", suffix=".tmp", dir=d)
             with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as f:
-                json.dump({"sig": sig, "head": head, "at": where}, f)
+                json.dump({"src": os.path.abspath(path), "sig": sig, "head": head, "at": where}, f)
             os.replace(tmp, memo)
             tmp = None
         except OSError:
