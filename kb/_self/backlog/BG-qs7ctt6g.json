@@ -2,7 +2,7 @@
   "id": "BG-qs7ctt6g",
   "kind": "bug",
   "title": "The delete class's new removal pattern misses a removal of kb content worded with another determiner or adjective, so a gate asking to remove kb content is no longer made blocking",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-uz3rhdlq",
   "priority": "P1",
   "rank": 0,
@@ -33,5 +33,7 @@
     "BG-jw2cqoxa"
   ],
   "notes": "Found by the SP-uz3rhdlq review of BG-jw2cqoxa (reviewer gap, S3 as filed; fixed in the sprint as S2 because a delete-class guard failing open lets an agent go on without the operator). Choices settled in the goal: up to four words between, a flag/option/switch word in between stops the match; edit the pattern in place, one sentence each in backlog.md and tools.md.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-n4run01",
+  "operator": "op-f618a13e"
 }
