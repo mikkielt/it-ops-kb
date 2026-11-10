@@ -2,7 +2,7 @@
   "id": "BG-gsaipwnz",
   "kind": "bug",
   "title": "Backlog.save restores a disk answer onto a gate a run rewrote under the same id",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ejeki6bv",
   "priority": "P2",
   "rank": 0,
@@ -47,6 +47,19 @@
   ],
   "notes": "Review gap of SP-moxpl354 (S4): no shipped command rewrites a gate under its id today, so the case is an edge. Order: BG-3pqzpd2q edits _tools/bl_base.py too, so it runs after this one.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-ev5run01",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "1fcd9f15f580afabfe65eb09c47d21c5d5489290",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys, json, pathlib, tempfile\nsys.path.insert(0, '_tools')\nimport bl_base\nr = pathlib.Path(tempfile.mkdtemp()); d = r / bl_base.rel_dir(); d.mkdir(parents=True)\nf = d / 'BG-aaaaaaaa.json'\ngate = {\"id\": \"g1\", \"kind\": \"provisional\", \"question\": \"old question\", \"options\": [\"a\", \"b\"], \"recommendation\": \"a\"}\nf.write_text(bl_base.canonical({\"id\": \"BG-aaaaaaaa\", \"kind\": \"bug\", \"title\": \"t\", \"status\": \"todo\", \"gates\": [gate]}), encoding='utf-8')\nbl = bl_base.Backlog(r); it = bl.items['BG-aaaaaaaa']\ndisk = json.loads(f.read_text(encoding='utf-8')); disk['gates'][0].update(answer='a', by='operator')\nf.write_text(bl_base.canonical(disk), encoding='utf-8')\nit['gates'][0]['question'] = 'new question'; it['gates'][0]['options'] = ['x', 'y']; it['gates'][0]['recommendation'] = 'x'\nbl.save(it)\ng = json.loads(f.read_text(encoding='utf-8'))['gates'][0]\nok = 'answer' not in g\nprint('reworded gate kept clean' if ok else 'old answer restored onto the reworded gate', g)\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "a9c16fb6409898b6"
+      }
+    ]
+  }
 }
