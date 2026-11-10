@@ -2,7 +2,7 @@
   "id": "BG-32pflgn4",
   "kind": "bug",
   "title": "bl_authority's backticked-class-name blanking also drops the only push or delete word of a gate that asks the operator to push or delete in backticks, so that gate is classed design and an agent answers it",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-enhaglcw",
   "priority": "P2",
   "rank": 0,
@@ -47,6 +47,19 @@
     }
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-86c7e088",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "87990ddb071d5d27f8343712a598df4a8eac2fb2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import bl_authority as b;t=chr(96);g={\"id\":\"g1\",\"question\":\"Should the worker \" + t + \"push\" + t + \" the branch to the main branch?\",\"options\":[\"yes\",\"no\"]};c=b.class_reasons({\"touches\":[],\"title\":\"x\"},g)[0];print(c);sys.exit(1 if c==\"design\" else 0)"
+        ],
+        "exit": 0,
+        "sha256": "bf61b40cbe244d02"
+      }
+    ]
+  }
 }
