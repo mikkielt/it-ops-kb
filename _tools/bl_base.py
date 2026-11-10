@@ -92,7 +92,8 @@ def _type_problem(kind, v):
     if kind == "forge":
         return None if v in ("", "gitlab", "github") else '"gitlab", "github" or "" (the project has no forge)'
     if kind == "path":
-        ok = isinstance(v, str) and v != "" and not v.startswith("/") and ".." not in v.split("/")
+        ok = (isinstance(v, str) and v != "" and "\\" not in v and not v.startswith("/")
+              and re.match(r"[A-Za-z]:", v) is None and ".." not in v.split("/"))
         return None if ok else "a non-empty path with forward slashes, relative to the root, with no `..`"
     if kind == "optpath":
         return None if v == "" or _type_problem("path", v) is None else \
