@@ -2068,7 +2068,11 @@ def register_local(project=None, dry_run=False, coord_tools=None):
     directory above the clone that sessions start in (a VS Code workspace), the servers are registered for that
     directory instead. `dry_run` prints the commands and runs none. `coord_tools` "off" registers `kb` with
     KB_COORD_TOOLS=0 in its env, "on" with none; either one given replaces a `kb` server already registered, so the
-    choice is recorded. Returns the exit code."""
+    choice is recorded. Returns the exit code, 2 (nothing run) for a `project` that is not a directory, which `claude`
+    could not start in."""
+    if project and not Path(project).is_dir():
+        print(f"kb_mcp: --project {project} is not a directory: nothing registered", file=sys.stderr)
+        return 2
     with open(DOCS_MCP, encoding="utf-8") as f:
         servers = {"kb": {"command": sys.executable, "args": [str(SCRIPT)]}, **json.load(f)["mcpServers"]}
     if coord_tools == "off":
