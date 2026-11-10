@@ -1,0 +1,23 @@
+{
+  "id": "BG-nkpqtyu2",
+  "kind": "bug",
+  "title": "precheck calls a check whose output holds only a SyntaxError a failing premise, since python prints no Traceback header for one, so a check with a literal backslash n in its python -c text passed the plan and was refused at land",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bl_precheck tells a check whose output holds a SyntaxError (or any line starting with SyntaxError:, IndentationError: or TabError:) from a failing premise, saying the check is broken, as it does for a Traceback",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open(\"_tools/bl_precheck.py\",encoding=\"utf-8\").read();sys.exit(0 if \"SyntaxError\" in t else 1)"
+    ]
+  },
+  "repro_reason": "precheck runs a sprint's checks through backlog.py with no hook to plant an output; only the source can be read cheaply",
+  "touches": [
+    "_tools/bl_precheck.py",
+    "kb/_self/backlog.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
