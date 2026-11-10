@@ -52,7 +52,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "Recursive merge of objects, MULTI_SETTINGS keys win; an unreadable value is passed through untouched",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
