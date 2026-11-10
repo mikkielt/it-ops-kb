@@ -9,7 +9,7 @@
   "touches": [
     "_tools/bl_land.py",
     "kb/_self/backlog.md",
-    ".claude/skills/kb-sprint/SKILL.md"
+    "skills/sprint/SKILL.md"
   ],
   "filed_in": "clone-0ea70e5c"
 }
