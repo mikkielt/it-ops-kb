@@ -1358,13 +1358,22 @@ def _spdx_reuse(spdx):
     return "quote" if NO_REUSE.search(spdx) else "copy"
 
 
+def _unquote_fully(path):
+    """`path` percent-decoded until it no longer changes, so a `..` encoded twice or more shows as the segment it is."""
+    while True:
+        decoded = urllib.parse.unquote(path)
+        if decoded == path:
+            return path
+        path = decoded
+
+
 def _repo_licence(u):
     got = _repository_of(u)
     if got is None:
         return _unread("repository", "not a file or the front page of a GitHub or GitLab repository")
     forge, slug, api = got
-    doc = GITLAB_DOC_FILE.match(urllib.parse.unquote(u.path)) if forge == "GitLab" and slug == "gitlab-org/gitlab" else None
-    if doc and ".." not in (doc.group("rest") or "").split("/"):  # a `..` segment, plain or percent-encoded, leaves doc/ for the code
+    doc = GITLAB_DOC_FILE.match(_unquote_fully(u.path)) if forge == "GitLab" and slug == "gitlab-org/gitlab" else None
+    if doc and ".." not in (doc.group("rest") or "").split("/"):  # a `..` segment, plain or encoded once or more, leaves doc/ for the code
         # the repository's LICENSE puts everything under doc/ under CC BY-SA 4.0, not the MIT the API reports for the project
         return _found("repository", "CC BY-SA 4.0 (doc/, per gitlab-org/gitlab LICENSE; code MIT)", "copy",
                       f"https://gitlab.com/gitlab-org/gitlab/-/raw/{doc.group('ref')}/LICENSE")
