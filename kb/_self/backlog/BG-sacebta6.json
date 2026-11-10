@@ -50,6 +50,27 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does gate_approves_spend compare the answer with the options?",
+      "options": [
+        "exact string equality",
+        "case-insensitive after stripping"
+      ],
+      "recommendation": "exact string equality",
+      "reason": "backlog.py answer records an option's own text, so an answer that differs is no option",
+      "do": {
+        "exact string equality": "BG-sacebta6",
+        "case-insensitive after stripping": "BG-sacebta6"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "exact string equality",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-rzwljgxv review"
   ],
