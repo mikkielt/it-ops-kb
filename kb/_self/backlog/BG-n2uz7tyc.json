@@ -1,0 +1,25 @@
+{
+  "id": "BG-n2uz7tyc",
+  "kind": "bug",
+  "title": "extending.md says a lazy import inside a group mapper's function is not covered by its map digest, but a long-lived process covers it once the mapper has run",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "extending.md says the digest covers a module the process has loaded from the mapper's directory, so a lazy import is covered only after the mapper has run in that process",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "t=open(\"kb/_self/extending.md\",encoding=\"utf-8\").read();import sys;sys.exit(0 if \"only after the mapper has run\" in t else 1)"
+    ]
+  },
+  "repro_reason": "the defect is a doc sentence that is exact only for a fresh process; the code is right and a rebuild is harmless",
+  "touches": [
+    "kb/_self/extending.md"
+  ],
+  "links": [
+    "parked: SP-uz3rhdlq review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

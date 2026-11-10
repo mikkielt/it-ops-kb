@@ -1,0 +1,26 @@
+{
+  "id": "BG-ydofjzud",
+  "kind": "bug",
+  "title": "bl_items.cmd_referrers's docstring still says kind=ref is a file the code map has using the term in code, the wording the sprint corrected in backlog.md and the backlog skill",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "the cmd_referrers docstring says kind=ref also lists a text hit in a mapped source file, as referrer_rows does",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import bl_items;d=bl_items.cmd_referrers.__doc__ or \"\";print(\"using it in code\" in d);sys.exit(1 if \"using it in code\" in d else 0)"
+    ]
+  },
+  "repro_reason": "the defect is a docstring's wording; the repro reads it through the module, the behaviour is right",
+  "touches": [
+    "_tools/bl_items.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-uz3rhdlq review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "BG-bzigixfo",
+  "kind": "bug",
+  "title": "bl_authority's bare-name bypass also clears the bare name of a rule-guarding file (settings.json, tests.py, backlog.py) when a touch of another directory ends in that name",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "block_reasons keeps the outside-the-touches reason for a bare option name that is one of RULE_FILES, whatever a touch ends in",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import bl_authority as a;r=a.block_reasons({\"touches\":[\"kb/x/settings.json\"],\"title\":\"x\"},{\"id\":\"g1\",\"kind\":\"provisional\",\"question\":\"Which form?\",\"options\":[\"settings.json\",\"b\"]},False);print(r);sys.exit(0 if r else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_authority.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-uz3rhdlq review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

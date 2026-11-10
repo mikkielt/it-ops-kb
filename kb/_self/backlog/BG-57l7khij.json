@@ -1,0 +1,26 @@
+{
+  "id": "BG-57l7khij",
+  "kind": "bug",
+  "title": "kbingest.module_digest skips a package a non-package group mapper imports from its own directory, so a change to that package leaves a stale cached map",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbingest.module_digest of a mapper module that is no package also covers the modules of a package imported from the mapper's directory, so a change to helpers/__init__.py moves the digest",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "\nimport sys,tempfile,pathlib,importlib\nsys.path.insert(0,\"_tools\")\nimport kbingest\nd=pathlib.Path(tempfile.mkdtemp())\n(d/\"helpers\").mkdir()\n(d/\"helpers\"/\"__init__.py\").write_text(\"X = 1\\n\")\n(d/\"rvmapper.py\").write_text(\"import helpers\\n\")\nsys.path.insert(0,str(d))\nm=importlib.import_module(\"rvmapper\")\na=kbingest.module_digest(m)\n(d/\"helpers\"/\"__init__.py\").write_text(\"X = 2\\n\")\nb=kbingest.module_digest(m)\nsys.exit(0 if a!=b else 1)\n"
+    ]
+  },
+  "touches": [
+    "_tools/kbingest.py",
+    "kb/_self/extending.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-uz3rhdlq review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

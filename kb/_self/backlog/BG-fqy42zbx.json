@@ -1,0 +1,26 @@
+{
+  "id": "BG-fqy42zbx",
+  "kind": "bug",
+  "title": "bl_land.is_whole_suite lets --ff, --nf, --deselect, --ignore and --lf through as no whole-suite run although tests.run_scope calls them full and holds them to the seconds ceiling",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bl_land.is_whole_suite agrees with tests.run_scope: an option after which tests.py still runs in mode full (reordering or deselecting) counts as a whole-suite run, and the doc names only the options that select or skip nothing of the run's report",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import tests,bl_land;bad=[a for a in (\"--deselect=x\",\"--ff\",\"--lf\",\"--ignore=x\",\"--nf\") if tests.run_scope([a],False,False)==\"full\" and not bl_land.is_whole_suite([\"python3\",\"_tools/tests.py\",a])];print(bad);sys.exit(1 if bad else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-uz3rhdlq review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
