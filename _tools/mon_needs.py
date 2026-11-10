@@ -28,7 +28,8 @@ nothing at load, `mon_sessions` (its age text) and `mon_status` (`short_name`) w
                   the coord panel when the snapshot holds it in state `timeout` or `error` (a snapshot without it, or with
                   no coord store, has no asks to read)
   line(snap)      `needs you: ` and the entries joined with `; ` (at most SHOWN of a kind, then `+N more KINDs`), `nothing`
-                  when there are none, then `; not read: PANELS` for the panels `unread` names
+                  when there are none and every panel was read, ending in `not read: PANELS` for the panels `unread` names (the
+                  only part of a line with no entry, so a panel not read is never `nothing`)
 
 The list reads only the panels' data, so a saved snapshot gives the same line. It calls no model and writes no file.
 """
@@ -232,6 +233,7 @@ def line(snap):
     for kind in KINDS:
         of = [e["text"] for e in found if e["kind"] == kind]
         parts += of[:SHOWN] + ([f"+{len(of) - SHOWN} more {MANY[kind]}"] if len(of) > SHOWN else [])
-    text = HEAD + ("; ".join(parts) or "nothing")
     missing = unread(snap)
-    return text + (f"; not read: {', '.join(missing)}" if missing else "")
+    if missing:  # never `nothing` of a source not read: the list ends in the panels it lacks, alone when it has no entry
+        parts.append(f"not read: {', '.join(missing)}")
+    return HEAD + ("; ".join(parts) or "nothing")
