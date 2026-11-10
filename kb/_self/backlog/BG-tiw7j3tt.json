@@ -2,7 +2,7 @@
   "id": "BG-tiw7j3tt",
   "kind": "bug",
   "title": "_answers.md QK-stores-changing-facts-mark-fact-was says Graphiti's created_at and expired_at mark when the store knew, beyond what the pinned edges.py holds",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-enhaglcw",
   "priority": "P2",
   "rank": 0,
@@ -24,6 +24,19 @@
   ],
   "notes": "Found while fixing BG-ut5cs72k: same claim as its fact line 28, in the answer at kb/public/_answers.md:4542; touches to plan: kb/public/_answers.md. Planning 2026-11-10: sibling sprints (kb/public/**, _answers.md) edit other entries of kb/public/_answers.md; this item edits only its own QK entry, so it proceeds and the landing rebase merges; rerun the landing after a rebase conflict, never overwrite a sibling's entry.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-86c7e088",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "a41b1c0fcde9edf76dbbe2ff6bb411a9268c1c7a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;n=open('kb/public/_answers.md',encoding='utf-8').read().count('for when the store knew');print(n);sys.exit(1 if n else 0)"
+        ],
+        "exit": 0,
+        "sha256": "9a271f2a916b0b6e"
+      }
+    ]
+  }
 }
