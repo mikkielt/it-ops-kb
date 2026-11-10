@@ -12,7 +12,7 @@
     "run": [
       "python3",
       "-c",
-      "import sys;sys.path.insert(0,\"_tools\");import fetch;p=fetch._PageText();p.feed(\"<main><p class=VisuallyHidden>hid<p>keep one<p>keep two</main><div>after</div>\");t=p.text();print(repr(t));sys.exit(0 if \"keep one\" in t and \"after\" in t else 1)"
+      "import sys;sys.path.insert(0,\"_tools\");import fetch;p=fetch._PageText();p.feed(\"<main><p class=VisuallyHidden>hid<p>keep one<p>keep two</main><div>after</div>\");t=p.text();print(repr(t));sys.exit(0 if \"keep one\" in t and \"keep two\" in t and \"hid\" not in t else 1)"
     ]
   },
   "checks": [
