@@ -2,7 +2,7 @@
   "id": "BG-qpjpqr6d",
   "kind": "bug",
   "title": "install_7z.py passes the NSIS /D= folder as a quoted argument, which fails for a Windows user folder with a space",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-o3ag6hca",
   "priority": "P2",
   "rank": 0,
@@ -26,6 +26,19 @@
   ],
   "notes": "Review G3 of SP-iir3d2tu (plausible, Windows only, not run): install_7z.py:156 runs subprocess.run([installer, '/S', '/D=' + dest.parent]); NSIS documents /D= as unquoted and last. Premise run on origin/main at planning (2026-11-10): the repro or first check fails there on the behaviour named in the goal; not fixed by an earlier commit.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-5a0b1c2d",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "d5e97bf4f57425646b425c6604d8b2896fc59ec2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib, sys, tempfile, types\nsys.path.insert(0, \"_tools\")\nimport install_7z as m\nroot = pathlib.Path(tempfile.mkdtemp()) / \"Jan Kowalski\" / \"7-Zip\"\nroot.mkdir(parents=True)\ndest, seen = root / \"7z.exe\", []\ndef fake(cmd, **kw):\n    seen.append((cmd, kw))\n    dest.write_text(\"x\")\n    return types.SimpleNamespace(returncode=0)\nm.subprocess.run = fake\ntry:\n    m.install_exe(pathlib.Path(\"C:/Temp/7z-setup.exe\"), dest)\n    cmd, kw = seen[0]\n    tail = \"/D=\" + str(root)\n    ok = isinstance(cmd, str) and cmd.endswith(\" \" + tail) and '/D=\"' not in cmd and cmd.count(\"/D=\") == 1 and \" /S \" in cmd and not kw.get(\"shell\")\nexcept Exception as e:\n    print(type(e).__name__, e); ok = False\nprint(seen[0][0] if seen else None, ok)\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "496e694e83bf4ae7"
+      }
+    ]
+  }
 }
