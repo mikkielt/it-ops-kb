@@ -2,7 +2,7 @@
   "id": "BG-dm7q3mwn",
   "kind": "bug",
   "title": "upstream-import keeps only the first line of a fenced multi-line premise in its Premise: notes line",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-u5zhszow",
   "priority": "P3",
   "rank": 0,
@@ -25,5 +25,7 @@
     "parked: SP-3trnelzv work"
   ],
   "notes": "Left out of SP-uz3rhdlq: its fix lands in _tools/bl_upstream.py, which the planned sprint SP-wjrxikw6 holds; plan it after that sprint.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-n7run001",
+  "operator": "op-f618a13e"
 }
