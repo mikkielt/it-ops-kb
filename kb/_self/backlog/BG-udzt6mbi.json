@@ -2,7 +2,7 @@
   "id": "BG-udzt6mbi",
   "kind": "bug",
   "title": "bl_authority.command_words puts the option text of a gate's do dict back into the text strict_signals and class_reasons read, so the word-list and backticked-class-name blanking never applies to a gate that carries do",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-enhaglcw",
   "priority": "P1",
   "rank": 0,
@@ -20,5 +20,7 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-86c7e088",
+  "operator": "op-f618a13e"
 }
