@@ -361,8 +361,10 @@ def _named(root, kb_root, name, key):
     return merged[key], layer, kbsettings.shown_path(path, root)
 
 
-def _add_paths(root, kb_root):
-    """Put the extension_paths directories of every settings layer on sys.path, each relative to the file naming it."""
+def add_paths(root, kb_root=None):
+    """Put the extension_paths directories of every settings layer on sys.path, each relative to the file naming it
+    (`bl_cli.load_group_commands` calls it before it looks for an entry point, which a distribution under such a directory
+    has)."""
     try:
         listed, layers = kbsettings.layered(root, "extension_paths", kb_root)
         homes = {layer: kbsettings.layer_path(root, layer, kb_root) for layer in set(layers)}
@@ -395,7 +397,7 @@ def _find(point, root, kb_root, many):
     list of them a setting may hold; raises ExtensionError when none is named or the setting is malformed."""
     if not POINT_RE.fullmatch(str(point)):
         raise ExtensionError(f"point {point!r}: a name of lower-case letters, digits and underscores is expected")
-    _add_paths(root, kb_root)
+    add_paths(root, kb_root)
     setting = _named(root, kb_root, "extensions", point)
     if setting is not None:
         value, layer, file = setting
@@ -465,7 +467,7 @@ def load_spec(point, spec, root, kb_root=None):
         raise ExtensionError(f"point {point!r}: a name of lower-case letters, digits and underscores is expected")
     if not isinstance(spec, str) or not spec:
         raise ExtensionError(f"point {point}: extensions.{point} must name module:attr or a module name")
-    _add_paths(root, kb_root)
+    add_paths(root, kb_root)
     return _import(point, spec, "settings", f"extensions.{point}")
 
 
@@ -749,7 +751,7 @@ def probe(point, spec, layer, file, root, kb_root=None):
         return False, (f"point {point}: module {spec.partition(':')[0]}, layer {layer} ({file}): "
                        f"not an extension point of kbext.SURFACE")
     try:
-        _add_paths(root, kb_root)
+        add_paths(root, kb_root)
         spec = spec if point != "ingest_mappers" or ":" in spec else spec + ":mapper"
         if point == "backlog_commands":  # backlog.py imports it with the shipped commands registered: so does the probe
             import backlog  # noqa: F401 - registers every shipped command

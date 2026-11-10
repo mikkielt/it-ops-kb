@@ -305,6 +305,7 @@ def load_group_commands(root):
     try:
         layers = kbsettings.layer_files(root)
         merged, source = kbsettings.layered(root, "extensions")
+        paths = kbsettings.layered(root, "extension_paths")[0]
     except kbsettings.SettingsError as e:
         _note(f"group commands not loaded: {e}")
         return []
@@ -312,6 +313,13 @@ def load_group_commands(root):
         layer = source["backlog_commands"]
     else:
         from importlib import metadata  # kbext is imported only when a group installed an entry point of this point
+        if paths:  # a distribution may sit under one of these directories: they are on sys.path before the look
+            import kbext
+            try:
+                kbext.add_paths(root)
+            except kbext.ExtensionError as e:
+                _note(f"group commands not loaded: {e}")
+                return []
         if not metadata.entry_points(group="it_ops_kb.backlog_commands"):
             return []
         layer = "entry point"
