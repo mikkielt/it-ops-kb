@@ -2,7 +2,7 @@
   "id": "BG-jholkwow",
   "kind": "bug",
   "title": "coord.py digest labels a two-item intent state=done when asked by its touch or topic key and only one item is done",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3nqlr7b5",
   "priority": "P3",
   "rank": 0,
@@ -25,6 +25,19 @@
     "parked: SP-n7f53pgv review"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-n3run001",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "bb70e7571d6d4398fa88e244784f6187ff593c8f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,sys,tempfile,types,shutil\nsys.path.insert(0,'_tools');import coord\nbad=[]\nfor intent,key in ((dict(item='BG-aaaaaaaa,BG-bbbbbbbb',touch='_tools/x.py'),'_tools/x.py'),(dict(item='BG-aaaaaaaa,BG-bbbbbbbb',topic='public/x/y'),'public/x/y')):\n    D=tempfile.mkdtemp();st=os.path.join(D,'c.sqlite');t=[1000.0];clock=lambda:t[0]\n    A=lambda **k:types.SimpleNamespace(store=st,**k)\n    def post(kind,**f):\n        t[0]+=1;return coord.run(A(command='post',kind=kind,field=[f'{a}={b}' for a,b in f.items()]),clock)[0]\n    coord.run(A(command='claim',key='session/s1',ttl=21600,holder='s1',budget=None),clock)\n    post('intent',session='s1',**intent);post('progress',item='BG-aaaaaaaa',state='done')\n    out=repr(coord.run(A(command='digest',key=[key],lines=10),clock)[0]);print(key,'->',out)\n    if 'state=done' in out: bad.append(key)\n    shutil.rmtree(D,ignore_errors=True)\nsys.exit(1 if bad else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "9de5f7e45eb859e4"
+      }
+    ]
+  }
 }
