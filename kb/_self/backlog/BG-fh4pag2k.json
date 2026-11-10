@@ -2,7 +2,7 @@
   "id": "BG-fh4pag2k",
   "kind": "bug",
   "title": "The usage text of backlog.py leaves --max-budget-usd off both dispatch entries, though the parser takes it for a new dispatch and for --resume",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ejeki6bv",
   "priority": "P3",
   "rank": 0,
@@ -27,5 +27,7 @@
     "parked: SP-f2o3aqm2 review"
   ],
   "notes": "Review gap (S4) of SP-f2o3aqm2, fresh-context reviewer 2026-10-24; parked, no fitness test or user report names it. Order: BG-3kjhj5uw edits the same dispatch usage paragraph of _tools/backlog.py, so this one runs after it.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-ev5run01",
+  "operator": "op-f618a13e"
 }
