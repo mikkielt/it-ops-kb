@@ -2,7 +2,7 @@
   "id": "BG-3mjif4cw",
   "kind": "bug",
   "title": "The _self eval row EV-gate-classes-only-operator-answers no longer checks any gate class name",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-uz3rhdlq",
   "priority": "P3",
   "rank": 0,
@@ -24,6 +24,19 @@
   ],
   "notes": "Review gap G10 of SP-lmpjclxz and the changed answer to ST-xl4w2pmg g3. The landing's eval step runs rag.py eval, so the pass is read there. Planned in SP-uz3rhdlq: repro/checks fail on the base, touches and order set. Choice settled in the plan, no gate for the worker: the expected phrase is the one above because the pack cuts line 147 of backlog.md after the delete list; the repro needs agents-rule in the row.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-n4run01",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "26da2a23b5762d560b978a833e89a3b4a477491c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv,sys; rows=[r for r in csv.reader(open(\"kb/_self/_retrieval/lookup_eval.csv\",encoding=\"utf-8\")) if r and r[0]==\"EV-gate-classes-only-operator-answers\"]; sys.exit(\"the row checks no class name\" if rows and \"agents-rule\" not in \",\".join(rows[0]) else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
