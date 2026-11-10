@@ -2,7 +2,7 @@
   "id": "BG-fh4pag2k",
   "kind": "bug",
   "title": "The usage text of backlog.py leaves --max-budget-usd off both dispatch entries, though the parser takes it for a new dispatch and for --resume",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ejeki6bv",
   "priority": "P3",
   "rank": 0,
@@ -28,6 +28,19 @@
   ],
   "notes": "Review gap (S4) of SP-f2o3aqm2, fresh-context reviewer 2026-10-24; parked, no fitness test or user report names it. Order: BG-3kjhj5uw edits the same dispatch usage paragraph of _tools/backlog.py, so this one runs after it.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-ev5run01",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "8077bc5fd56437cdbc61412f140258d57623b944",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re, sys\nsys.path.insert(0, \"_tools\")\nimport backlog\ndoc = backlog.__doc__ or \"\"\nentries = re.findall(r\"\\n  backlog\\.py dispatch .*?(?=\\n  backlog\\.py )\", doc, re.S)\nmissing = [e.split(\"\\n\")[1].strip()[:60] for e in entries if \"--max-budget-usd\" not in e]\nprint(\"dispatch usage entries without --max-budget-usd:\", missing or \"none\")\nsys.exit(1 if missing else 0)"
+        ],
+        "exit": 0,
+        "sha256": "1efc76e38b8bb4ad"
+      }
+    ]
+  }
 }
