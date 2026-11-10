@@ -2,7 +2,7 @@
   "id": "BG-ax6e6rzc",
   "kind": "bug",
   "title": "researched reads a goal's lead-in sentence into question 1 and cuts a question at a semicolon inside it",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-cb5bp3sz",
   "priority": "P2",
   "rank": 0,
@@ -74,6 +74,37 @@
     "parked: SP-g4mwrwsv close"
   ],
   "notes": "ST-vyb5q5gp (2026-10-18): its goal's first piece 'Answer with the kb tools first ... article. (1) When does SQLite BEGIN IMMEDIATE ...?' was read whole by researched, lead-in included; the pack went weak although python/stdlib-sqlite3-csv answers it, because the lead-in's hyphenated names stdlib-sqlite3-csv and shared-state counted as key words (the first, with a digit, as a named word that had to sit in a tagged fact). The worker had to put both names into the article's facts for researched to pass. ST-n5gxcl3n (2026-10-18): same defect. Its goal's lead-in 'Answer with the kb tools first and the live docs for the gaps, ..., extending claude/otel-monitoring and logs/otel-collector-otlp-pipeline or a new OpenTelemetry Python SDK article.' ends in a period, so researched read question 1 whole: pack weak (18 of 29 key words), kb lacks: live, docs, gaps, written, gap, entries, kb-research, extending, new, article, provide; the same article gave good for the other seven questions. Planned into SP-cb5bp3sz on 2026-11-10; the draft's touches, checks and clause mapping were completed then.",
-  "claimed_by": "claude-n1run001",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "611faccc32e16b5d3d8b02f493746b166f29ba32",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bl_precheck as b;q=b.goal_questions('Answer with the kb tools first. (1) How does X work? (2) Does Y work?');print(q);sys.exit(0 if q==['How does X work?','Does Y work?'] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "681e523751a3ab5f"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bl_precheck as b;q=b.goal_questions('(1) May a path hold = and ; so a pair rides in it? (2) Does Y work?');print(q);sys.exit(0 if len(q)==2 and q[0].endswith('in it?') and q[1]=='Does Y work?' else 1)"
+        ],
+        "exit": 0,
+        "sha256": "3002b3545fa675e1"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bl_precheck as b;q=b.goal_questions('Answer with the kb tools first. (1) How does X work (RFC 1)? (2) May a path hold = and ; so a pair rides in it?');print(q);sys.exit(0 if len(q)==2 and not q[0].startswith('Answer') and q[1].startswith('May') and q[1].endswith('in it?') else 1)"
+        ],
+        "exit": 0,
+        "sha256": "7d18e8440e8369b3"
+      }
+    ]
+  }
 }
