@@ -1,0 +1,25 @@
+{
+  "id": "ST-fxtyyrvq",
+  "kind": "story",
+  "title": "The worker brief says to name every mapped doc that selfdoc stale lists after the rebase in Self-Reviewed, so land does not stop at stale for a doc the item's touches already hold",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "agents/worker.md tells a worker to rerun selfdoc.py stale --since origin/main after its last rebase on origin/main and name each doc it lists and read in Self-Reviewed, since BG-a3r4nhh5 of SP-wjrxikw6 stopped at land step stale for kb/_self/backlog.md after a rebase",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport sys\nt=open(\"agents/worker.md\",encoding=\"utf-8\").read()\nsys.exit(0 if \"after your last rebase\" in t else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "agents/worker.md"
+  ],
+  "links": [
+    "parked: SP-wjrxikw6 close"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "ST-x4lbauf3",
+  "kind": "story",
+  "title": "The run step tells the orchestrator to run stage-back for a returned item whose report says 'Orchestrator to do: stage-back', before its land",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the run step of the kb-sprint skill, in step 4.1 before the land, names a worker report line that asks for stage-back and says to run it before land, since a land of an item whose staged copy was never copied back stops at done with its repro failing (BG-d3zzxcdc in SP-wjrxikw6)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport sys\nt=open(\".claude/skills/kb-sprint/SKILL.md\",encoding=\"utf-8\").read()\ni=t.index(\"4. When the wait shows an item\")\nsys.exit(0 if \"Orchestrator to do\" in t[i:i+3000] else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-wjrxikw6 close"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
