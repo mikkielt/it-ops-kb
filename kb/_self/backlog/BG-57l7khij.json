@@ -18,7 +18,8 @@
   "touches": [
     "_tools/kbingest.py",
     "kb/_self/extending.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    ".claude/skills/kb-ingest/SKILL.md"
   ],
   "links": [
     "parked: SP-uz3rhdlq review"
