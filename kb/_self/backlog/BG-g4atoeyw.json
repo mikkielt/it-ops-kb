@@ -2,7 +2,7 @@
   "id": "BG-g4atoeyw",
   "kind": "bug",
   "title": "The item and sprint skills and agents/worker.md do not name the strict signals, the querylog and delete text classes or --kind blocking as reasons a gate is made blocking",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-uz3rhdlq",
   "priority": "P3",
   "rank": 0,
@@ -31,5 +31,7 @@
     "parked: SP-lmpjclxz review"
   ],
   "notes": "Review gap G7 of SP-lmpjclxz. Choices settled here so the worker asks none: one sentence per file, wording lifted from backlog.md's gate-class paragraph, no new rule. Planned in SP-uz3rhdlq: repro/checks fail on the base, touches and order set.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-n4run01",
+  "operator": "op-f618a13e"
 }
