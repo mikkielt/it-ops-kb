@@ -2,7 +2,7 @@
   "id": "BG-ovj4sdua",
   "kind": "bug",
   "title": "The coord hook reads announce.to_other_sessions from an invalid settings.json by the first such key in the text, so an unrelated earlier key outside coordination.announce beats the real false and the intent is posted",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-u5zhszow",
   "priority": "P3",
   "rank": 0,
@@ -25,6 +25,19 @@
     "parked: SP-wjrxikw6 review"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-n7run001",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "2d139c0c2abb667e9c65dce637ab7f7a40d77685",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport importlib.util,tempfile,os,sys\ns=importlib.util.spec_from_file_location(\"ch\",\".claude/hooks/coord_hook.py\");m=importlib.util.module_from_spec(s);s.loader.exec_module(m)\nd=tempfile.mkdtemp()\nopen(os.path.join(d,\"settings.json\"),\"w\").write(\"{\\\"other\\\": {\\\"to_other_sessions\\\": true}, \\\"coordination\\\": {\\\"announce\\\": {\\\"to_other_sessions\\\": false,},},}\")\nsys.exit(0 if m.settings(d)[0][\"to_other_sessions\"] is False else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
