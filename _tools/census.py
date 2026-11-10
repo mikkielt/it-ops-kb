@@ -1477,13 +1477,30 @@ QUEUE_HOSTS = 15  # the hosts the summary's queue block names, most characters f
 FACTDIFF_REVIEW = re.compile(r"factdiff\.py review (factdiff-[\w.-]+\.csv)")
 
 
+def evidence_logs(rows):
+    """The names of the fact diff logs the evidence of `rows` names (`factdiff.py review NAME`), sorted."""
+    return sorted({m for r in rows for m in FACTDIFF_REVIEW.findall(r["evidence"])})
+
+
 def factdiff_log_rows(rows, log, given=None):
     """The rows of the fact diff log the census used: `given`, else the logs the evidence of `rows` names
     (`factdiff.py review NAME`) beside `log`, else _census/factdiff-<date of log>.csv beside it; [] when none exists."""
     here = os.path.dirname(os.path.abspath(log))
-    paths = ([given] if given else [os.path.join(here, n) for n in sorted({m for r in rows for m in FACTDIFF_REVIEW.findall(r["evidence"])})]
+    paths = ([given] if given else [os.path.join(here, n) for n in evidence_logs(rows)]
              or [os.path.join(here, f"factdiff-{ql_capture.phase_date(path=log)}.csv")])
     return [r for p in paths if os.path.isfile(p) for r in factdiff.read_log(p)]
+
+
+def brief_flog(rows, log, date):
+    """The detect log the brief's `factdiff.py dead` command names: the one the evidence of `rows` names beside `log`
+    (the one named by most rows, the last by name on a tie), else _census/factdiff-<date>.csv."""
+    names = evidence_logs(rows)
+    if not names:
+        return census_path(f"factdiff-{date}.csv")
+    count = {n: sum(n in FACTDIFF_REVIEW.findall(r["evidence"]) for r in rows) for n in names}
+    best = max(names, key=lambda n: (count[n], n))
+    here = os.path.dirname(os.path.abspath(log))
+    return os.path.relpath(os.path.join(here, best), kbcommon.HOME).replace(os.sep, "/")
 
 
 def phase2_rows(rows):
@@ -2119,7 +2136,7 @@ def phase2_context(rows, log, flog=None, group=None):
         "id": r["id"], "facts": 0, "items": 0, "partial": 0, "cached": True, "mode": "applied", "chars": 0}) for r, files in ms]
         for g, ms in owned.items()}
     date = ql_capture.phase_date(path=log)
-    flog_rel = os.path.relpath(os.path.abspath(flog), kbcommon.HOME).replace(os.sep, "/") if flog else census_path(f"factdiff-{date}.csv")
+    flog_rel = os.path.relpath(os.path.abspath(flog), kbcommon.HOME).replace(os.sep, "/") if flog else brief_flog(rows, log, date)
     return {"date": date, "root": root, "groups": names, "members": dict(sorted(members.items())), "items": items, "judged": judged, "flog": flog_rel,
             "log": os.path.relpath(os.path.abspath(log), kbcommon.HOME).replace(os.sep, "/"),
             "providers": provider.providers(factdiff.ROOT)}
