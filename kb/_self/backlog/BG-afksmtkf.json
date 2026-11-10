@@ -2,7 +2,7 @@
   "id": "BG-afksmtkf",
   "kind": "bug",
   "title": "The kb-sprint run step has no route for an item that waits on or overlaps another session's item, so the orchestrator asks the operator instead of settling it through coord",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-enhaglcw",
   "priority": "P2",
   "rank": 0,
@@ -38,5 +38,7 @@
     "kb/_self/coordination.md"
   ],
   "notes": "Found 2026-10-28 running SP-lmpjclxz: ST-xl4w2pmg depended on ST-qqpcgqe7 (session s-0e0c2d, returned with two open gates); the orchestrator put wait-or-drop to the operator with AskUserQuestion, and the operator asked why coord was not used. precheck had printed the route at planning (kbask.py coordinate ST-xl4w2pmg OTHER STRATEGY, from _tools/bl_precheck.py:515), and an ask to s-0e0c2d (A92f312cef4) was sent but never followed by a coordinate event. The run section of skills/sprint/SKILL.md names kbask.py ask only for steering one's own workers.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-86c7e088",
+  "operator": "op-f618a13e"
 }
