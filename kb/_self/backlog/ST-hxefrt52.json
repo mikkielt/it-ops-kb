@@ -2,7 +2,7 @@
   "id": "ST-hxefrt52",
   "kind": "story",
   "title": "Review sprint: Worker, dispatch and housekeeping follow-ups: the paid-session stub lifts only for an approved money gate and works on Windows, report and usage text read workers right, release commits its item file, the path setting stays in the clone, tidy and call-row order scale and sort right, forge reads keep their deadline and fields, the 7-Zip installer handles a folder with a space",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-o3ag6hca",
   "review": true,
   "priority": "P1",
@@ -38,5 +38,44 @@
       ]
     }
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "evidence": {
+    "commit": "3898f934f44675753e7a3af1ae701df4019f6fc3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "b475d55be4151c29"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "9679607fd03979d8"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval",
+          "--file",
+          "kb/public/_retrieval/lookup_heldout.csv",
+          "--root",
+          "public",
+          "--min",
+          "86",
+          "--max-false-good",
+          "8"
+        ],
+        "exit": 0,
+        "sha256": "25fd675ab31d3178"
+      }
+    ]
+  }
 }
