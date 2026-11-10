@@ -2,7 +2,7 @@
   "id": "BG-jw2cqoxa",
   "kind": "bug",
   "title": "The delete class matches removed or removal of a flag anywhere before the word content, kb or history in the same question, so a design question is made blocking",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-uz3rhdlq",
   "priority": "P3",
   "rank": 0,
@@ -36,5 +36,7 @@
     "parked: SP-pww4aqis review"
   ],
   "notes": "Review gap 4 of SP-pww4aqis (probed 2026-11-09 on origin/main): the delete pattern \\bremov(?:e|es|ed|ing|al) .*(?:kb|content|history) widened by BG-a65lzrjf matches the new endings anywhere before kb, content or history; fails closed (a blocking gate for the operator). Same file as BG-a65lzrjf, which landed. Choices settled in the plan so the worker asks none: narrow the existing delete pattern in bl_authority.py in place (the removal word must govern kb, content or history, not a flag before it), no new helper, no new class; one sentence each in backlog.md and tools.md. Planned in SP-uz3rhdlq: repro/checks fail on the base, touches and order set.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-n4run01",
+  "operator": "op-f618a13e"
 }
