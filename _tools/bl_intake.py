@@ -58,9 +58,9 @@ name) and, in the functions that read a pipeline, `ql_base` (the command runner)
 needs them; it is below backlog.py, which passes its own `run` to the readers.
 """
 import atexit
-import collections
 import datetime
 import hashlib
+import heapq
 import json
 import os
 import re
@@ -1037,13 +1037,15 @@ INSTEAD = {  # the section-sized command to use instead of a class read again an
 
 def committed_calls(root, budget=None):
     """([(ISO week, class or tool group)] of the call.tool rows of the ops sidecars at HEAD, the newest `budget`
-    (default REPEAT_ROWS_MAX) of them in `git grep`'s path order, which is chronological, and how many older ones were
-    left out). The repeats detector judges the latest closed week, the newest rows, so a budget never cuts them.
-    `git grep` reads HEAD's tree: a working tree edit changes nothing, and no spool is read."""
+    (default REPEAT_ROWS_MAX) of them by their `ts`, oldest first (rows of one `ts` keep the order `git grep` read
+    them in), and how many older ones were left out). `git grep`'s path order is not chronological, so the rows are
+    ranked by `ts`, never by where a sidecar sits. The repeats detector judges the latest closed week, the newest rows,
+    so a budget never cuts them. `git grep` reads HEAD's tree: a working tree edit changes nothing, and no spool is
+    read."""
     budget = REPEAT_ROWS_MAX if budget is None else budget
     p = subprocess.run(["git", "grep", "-I", "-h", "-e", '"call.tool"', "HEAD", "--", f"{STORE_REL}/ops/"], cwd=root,
                        capture_output=True, text=True, encoding="utf-8", errors="replace")
-    out, total = collections.deque(maxlen=max(budget, 0)), 0
+    keep, total = [], 0  # a min-heap of (ts, read order, week, key): the oldest kept row on top, evicted first
     for line in p.stdout.splitlines():
         _, sep, text = line.partition(".jsonl:")
         try:
@@ -1058,9 +1060,13 @@ def committed_calls(root, budget=None):
             continue
         key = rec.get("class") or rec.get("tool")
         if isinstance(key, str) and key:
-            out.append((f"{y}-W{w:02d}", key))
             total += 1
-    return list(out), total - len(out)
+            row = (rec["ts"], total, f"{y}-W{w:02d}", key)
+            if len(keep) < budget:
+                heapq.heappush(keep, row)
+            elif keep and row > keep[0]:
+                heapq.heapreplace(keep, row)
+    return [(week, key) for _, _, week, key in sorted(keep)], total - len(keep)
 
 
 @detector("repeats")  # called by name through DETECTORS["repeats"] in collect, never as repeats_detector
