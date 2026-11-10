@@ -58,7 +58,12 @@
         "Keep the main-only rule and correct the repro and goal clause to expect keep one and keep two only": "BG-eun3jdpb",
         "Change text() to add the content after </main> to the text of a page with a main": "BG-eun3jdpb"
       },
-      "class": "design"
+      "class": "design",
+      "answer": "Keep the main-only rule and correct the repro and goal clause to expect keep one and keep two only",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "links": [
