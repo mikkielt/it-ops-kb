@@ -2,7 +2,7 @@
   "id": "BG-p2c7xxyi",
   "kind": "bug",
   "title": "A gate that asks which words a regex reads as a paying cue is made blocking with strict money, since its option text lists the word paid",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-enhaglcw",
   "priority": "P3",
   "rank": 0,
@@ -47,6 +47,19 @@
     "parked: SP-cb5bp3sz close"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-86c7e088",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "8bd48afaf605a36ecafbb9caf25a498cbf4ad13e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bl_authority as a;g={'question':'Which words does PRICE_ASK read as a paying cue and as a requirement cue?','options':['paying: pay, paid, spend, charge, bill; requirement: required, minimum','a wider or narrower word list'],'recommendation':'paying: pay, paid, spend'};s=a.strict_signals(g);print(s);sys.exit(1 if any(k=='money' for k,_ in s) else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      }
+    ]
+  }
 }
