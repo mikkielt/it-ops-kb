@@ -345,11 +345,17 @@ def without_class_names(text):
 
 
 def command_words(gate):
-    """The words of a gate's `do` and `host_check` commands (argv lists, or a string)."""
+    """The words of a gate's `do` and `host_check` commands (argv lists, or a string). A `do` dict maps each option's
+    text to the argv or item id it runs: its values are read, never its keys, which are option text the question and
+    option readers already see (and blank by their word-list and class-name rules)."""
     out = []
     for key in ("do", "host_check"):
         v = gate.get(key)
-        out += [str(x) for x in v] if isinstance(v, (list, tuple)) else [str(v)] if v else []
+        if isinstance(v, dict):
+            for x in v.values():
+                out += [str(y) for y in x] if isinstance(x, (list, tuple)) else [str(x)] if x else []
+        else:
+            out += [str(x) for x in v] if isinstance(v, (list, tuple)) else [str(v)] if v else []
     return " ".join(out)
 
 
