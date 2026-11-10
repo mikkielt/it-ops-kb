@@ -55,7 +55,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "A paragraph under step 2, dropping with set ITEM --depends KEEP",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "notes": "Found 2026-10-28 running SP-lmpjclxz: ST-xl4w2pmg depended on ST-qqpcgqe7 (session s-0e0c2d, returned with two open gates); the orchestrator put wait-or-drop to the operator with AskUserQuestion, and the operator asked why coord was not used. precheck had printed the route at planning (kbask.py coordinate ST-xl4w2pmg OTHER STRATEGY, from _tools/bl_precheck.py:515), and an ask to s-0e0c2d (A92f312cef4) was sent but never followed by a coordinate event. The run section of skills/sprint/SKILL.md names kbask.py ask only for steering one's own workers.",
