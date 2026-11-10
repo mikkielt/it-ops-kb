@@ -2,7 +2,7 @@
   "id": "BG-nefcdzma",
   "kind": "bug",
   "title": "the kbtools entry for backlog.py set cuts the list of options a batch refuses after --notes and runs into the next fragment",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-o3ag6hca",
   "priority": "P3",
   "rank": 0,
@@ -41,6 +41,28 @@
   ],
   "notes": "Found by the SP-lhpvwh6l review (S4): the usage block in backlog.py is right, but the kbtools excerpt reads 'a batch refuses the options naming one item: --title, --goal, --notes, list option replaces its list...'. The reviewer did not locate the cut in kbtools.py (subcommand_blocks and the description join): keep the continuation lines whole, or put the refused-options sentence on lines the excerpt keeps. Sibling of the landed ST-c5ibk7sj. Premise run on origin/main at planning (2026-11-10): the repro or first check fails there on the behaviour named in the goal; not fixed by an earlier commit. The change is in the facade's own usage block (the docstring of _tools/backlog.py), so no bl_*.py module is touched; the check warning about the facade is expected.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-5a0b1c2d",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "aefb4df138001a697d2796f39e5dbb99ff3420b2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json, subprocess, sys\nout = subprocess.run([sys.executable, \"_tools/kbtools.py\", \"--json\", \"backlog.py set several ids\"], capture_output=True, text=True).stdout\ne = next(e for e in json.loads(out)[\"entries\"] if e[\"tool\"] == \"backlog.py set\")\nb = \" \".join(e[\"answers\"])\ni = b.find(\"a batch refuses\")\nseg = b[i:i + 400]\nok = i >= 0 and all(x in seg for x in (\"--title\", \"--goal\", \"--notes\", \"--repro\", \"--repro-reason\", \"--parent\", \"--clause\", \"--check\"))\nprint(ok); sys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "a9ac0c3ac83c40e1"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,subprocess,sys\nout=subprocess.run([sys.executable,\"_tools/kbtools.py\",\"--json\",\"backlog.py set several ids\"],capture_output=True,text=True).stdout\nb=\" \".join(next(e for e in json.loads(out)[\"entries\"] if e[\"tool\"]==\"backlog.py set\")[\"answers\"])\ni=b.find(\"a batch refuses\"); print(b[i:i+140])\nsys.exit(0 if all(x in b for x in (\"--repro-reason\",\"--parent\",\"--clause\",\"--check\")) else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "a641ee68b55957d6"
+      }
+    ]
+  }
 }
