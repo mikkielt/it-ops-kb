@@ -2,7 +2,7 @@
   "id": "BG-afksmtkf",
   "kind": "bug",
   "title": "The kb-sprint run step has no route for an item that waits on or overlaps another session's item, so the orchestrator asks the operator instead of settling it through coord",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-enhaglcw",
   "priority": "P2",
   "rank": 0,
@@ -60,6 +60,37 @@
   ],
   "notes": "Found 2026-10-28 running SP-lmpjclxz: ST-xl4w2pmg depended on ST-qqpcgqe7 (session s-0e0c2d, returned with two open gates); the orchestrator put wait-or-drop to the operator with AskUserQuestion, and the operator asked why coord was not used. precheck had printed the route at planning (kbask.py coordinate ST-xl4w2pmg OTHER STRATEGY, from _tools/bl_precheck.py:515), and an ask to s-0e0c2d (A92f312cef4) was sent but never followed by a coordinate event. The run section of skills/sprint/SKILL.md names kbask.py ask only for steering one's own workers.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-86c7e088",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "6685eef153a133b68b3c51578d84515e6e4e074c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open(\"skills/sprint/SKILL.md\",encoding=\"utf-8\").read();r=t.split(\"## run\")[1].split(\"## review\")[0];m=[w for w in (\"strategy.working\",\"strategy.landing\",\"strategy.decide\",\"kbask.py coordinate\",\"--add-depends\") if w not in r];print(m);sys.exit(1 if m else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;d=[open(p,encoding=\"utf-8\").read() for p in (\"kb/_self/backlog.md\",\"kb/_self/coordination.md\")];m=[i for i,x in enumerate(d) if \"kbask.py coordinate\" not in x or \"strategy.decide\" not in x];print(m);sys.exit(1 if m else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; t=open(\"skills/sprint/SKILL.md\", encoding=\"utf-8\").read(); r=t.split(\"## run\")[1].split(\"## review\")[0]; sys.exit(0 if \"kbask.py coordinate\" in r else \"the run section names no coord route for a cross-session dependency or overlap\")"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
