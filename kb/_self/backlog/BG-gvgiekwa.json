@@ -2,7 +2,7 @@
   "id": "BG-gvgiekwa",
   "kind": "bug",
   "title": "PaidBench.__init__ puts a failing claude shim on PATH around Bench.__init__, which no longer starts claude, and its docstring says Bench reads the version there",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3nqlr7b5",
   "priority": "P2",
   "rank": 0,
@@ -44,6 +44,28 @@
     "parked: SP-bpjqqauu review"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-n3run001",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "afdf2e5d845b78e4dd306670e0bfceef22242aa2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,\"_tools\"); import bench_load; d=bench_load.PaidBench.__doc__ or \"\"; print(d); sys.exit(0 if \"benchmarks.main\" in d and \"fails at once\" not in d else 1)"
+        ],
+        "exit": 0,
+        "sha256": "5c13954de25f066c"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,tempfile; sys.path.insert(0,\"_tools\"); import bench_load; bench_load.Bench.__init__=lambda self,*a,**k: None; n=[]; o=bench_load.shim_dir; bench_load.shim_dir=lambda d: (n.append(1), o(d))[1]; bench_load.PaidBench(tempfile.mkdtemp(),1); sys.exit(1 if n else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
