@@ -4,7 +4,8 @@ alerts (stdlib only; imports `mon_needs`, which imports nothing at load).
   receipt(snap)    {"line": str, "fingerprint": str} from a scrubbed snapshot (`mon_view.scrub`)
 
 The line is at most MAX_LINE characters and unchanged by `redact.redact`. It names up to NAMED alert messages, how many more
-there are and the command that prints the state of the first alert's panel (with no alert it says so), and ends with the
+there are and the command that prints the state of the first alert's panel (with no alert it names the alert panels it read,
+`ok` in the snapshot, not the ones requested, or says `no alert panel read`), and ends with the
 count of `mon_needs.entries` and the command that prints the `needs you` line; with a panel that count reads unread, `unknown
 (not read: PANELS)` takes the count's place.
 The fingerprint is the hash of the sorted kinds and ids of the alerts only, so it moves when an alert appears, goes or changes
@@ -72,7 +73,8 @@ def line(alerts, names, tail):
     a part that says which alert panels were read."""
     import redact
     if not alerts:
-        return redact.redact(clip("kbmon: no alert on " + ", ".join(n for n in names if n in ALERT_PANELS), MAX_LINE - len(tail)) + tail)
+        head = "kbmon: no alert on " + ", ".join(names) if names else "kbmon: no alert panel read"
+        return redact.redact(clip(head, MAX_LINE - len(tail)) + tail)
     first = alerts[0] if isinstance(alerts[0], dict) else {}
     panel = one_line(first.get("panel") or (names[0] if names else "host"))
     budget = MAX_LINE - len(tail)
@@ -85,4 +87,6 @@ def line(alerts, names, tail):
 
 def receipt(snap, names=DEFAULT_PANELS):
     alerts = [a for a in snap.get("alerts") or []]
-    return {"line": line(alerts, names, needs_tail(snap)), "fingerprint": fingerprint(alerts)}
+    panels = snap.get("panels") or {}
+    read = tuple(n for n in names if n in ALERT_PANELS and isinstance(panels.get(n), dict) and panels[n].get("state") == "ok")
+    return {"line": line(alerts, read, needs_tail(snap)), "fingerprint": fingerprint(alerts)}
