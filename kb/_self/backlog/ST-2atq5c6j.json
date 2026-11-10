@@ -2,7 +2,7 @@
   "id": "ST-2atq5c6j",
   "kind": "story",
   "title": "Review sprint: Claim and dispatch follow-ups: claim restores its SIGTERM handler, a reworded gate gets no old answer, workers start with named plugins off, and the dispatch usage text names the real turn caps and --max-budget-usd",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-ejeki6bv",
   "review": true,
   "priority": "P1",
@@ -38,5 +38,44 @@
       ]
     }
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "evidence": {
+    "commit": "eec5a0a1322fd505a1efb961dbaa3e7cb249fb27",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "0e538ebeafc1ea9f"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "8a3af41345585993"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval",
+          "--file",
+          "kb/public/_retrieval/lookup_heldout.csv",
+          "--root",
+          "public",
+          "--min",
+          "86",
+          "--max-false-good",
+          "8"
+        ],
+        "exit": 0,
+        "sha256": "25fd675ab31d3178"
+      }
+    ]
+  }
 }
