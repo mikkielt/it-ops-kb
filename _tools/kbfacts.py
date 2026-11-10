@@ -1327,7 +1327,7 @@ def _flag_reports(store, files):
         pass
     if not isinstance(known, dict):
         known = {}
-    kept, seen, reps = {}, set(), []
+    kept, seen, reps = {"src": str(store)}, set(), []
     for month, name, mtime, size in files:
         key = month + "/" + name
         got = known.get(key)
@@ -1354,6 +1354,8 @@ def _flag_reports(store, files):
         tmp = None
         try:
             os.makedirs(os.path.dirname(cache), exist_ok=True)
+            if not os.path.exists(cache):  # a new memo: the ones of a store that is gone go
+                prune_memos(os.path.dirname(cache), "flags", cache)
             fd, tmp = tempfile.mkstemp(prefix=".flags-", suffix=".tmp", dir=os.path.dirname(cache))
             with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as f:
                 json.dump(kept, f)
@@ -2226,6 +2228,32 @@ def index_dir():
         if not _writable(where):
             where = os.path.join(tempfile.gettempdir(), "it-ops-kb-" + hashlib.sha1(home.encode()).hexdigest()[:8])
     return where
+
+
+_MEMO_SRC = re.compile(r'"src": ("(?:[^"\\]|\\.)*")')
+
+
+def prune_memos(d, prefix, keep):
+    """Remove the memo files `prefix`-*.json of the index directory `d` whose source path (the first key `src` of the
+    file) no longer exists, or that name none (written before it did), but never `keep`; called when a memo file
+    is first written, so a shared index directory holds one memo per source that still exists. Best effort."""
+    try:
+        names = os.listdir(d)
+    except OSError:
+        return
+    for name in names:
+        path = os.path.join(d, name)
+        if not (name.startswith(prefix + "-") and name.endswith(".json")) or path == keep:
+            continue
+        try:
+            with open(path, encoding="utf-8") as f:
+                head = f.read(4096)
+            m = _MEMO_SRC.match(head, head.find('"src": ')) if '"src": ' in head else None
+            if m and os.path.exists(json.loads(m.group(1))):
+                continue
+        except (OSError, ValueError):
+            continue
+        remove_file(path)
 
 
 def _writable(d):

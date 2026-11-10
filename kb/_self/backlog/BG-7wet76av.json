@@ -41,6 +41,26 @@
     "kb/_self/content-rules.md",
     "kb/_self/token-efficiency.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "When does a memo write prune, and what of a memo with no recorded source path?",
+      "options": [
+        "prune on a memo's first write, drop a memo that names no source",
+        "prune on every write, keep a memo that names no source"
+      ],
+      "recommendation": "prune on a memo's first write, drop a memo that names no source",
+      "reason": "growth only happens at a first write, a write of an existing memo stays as cheap as before, and the 197 old memos (which name no source) are cleaned at once and rebuilt on use",
+      "do": {
+        "prune on a memo's first write, drop a memo that names no source": "BG-7wet76av",
+        "prune on every write, keep a memo that names no source": "BG-7wet76av"
+      },
+      "class": "design",
+      "answer": "prune on a memo's first write, drop a memo that names no source",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-wpttdu7u review"
   ],
