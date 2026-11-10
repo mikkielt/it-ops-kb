@@ -3,18 +3,28 @@
   "kind": "bug",
   "title": "committed_calls keeps the newest call rows by git grep path order, which is not strictly chronological",
   "status": "draft",
-  "sprint": "SP-f2etj7dg",
+  "sprint": "SP-o3ag6hca",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
-  "goal": "Found by the SP-yzs3bj6f review of BG-4tvqk5tp: committed_calls (_tools/bl_intake.py) keeps the last REPEAT_ROWS_MAX rows in git grep path order; 5 of 130 ops sidecars start before the previous file's newest row, so once the rows pass the budget a late-written sidecar holding old-week rows can evict rows of the latest closed ISO week the repeats detector judges. The rows kept are the newest by their week or timestamp (or only the judged week is read), whatever the sidecars' path order, and the notes still count what was left out.",
+  "goal": "bl_intake.committed_calls keeps the newest REPEAT_ROWS_MAX call.tool rows by their ts, whatever order git grep reads the ops sidecars in (a late-written sidecar holding old-week rows no longer evicts the rows of the latest closed ISO week), returns them oldest first, and counts the rows it left out as before",
   "repro": {
     "run": [
       "python3",
       "-c",
-      "import sys,tempfile,subprocess,os,pathlib;sys.path.insert(0,'_tools');import bl_intake as b;d=tempfile.mkdtemp();o=pathlib.Path(d,b.STORE_REL,'ops');o.mkdir(parents=True);(o/'a.jsonl').write_text('{event:call.tool,ts:2026-10-01T00:00:00Z,class:new}\\n');(o/'b.jsonl').write_text('{event:call.tool,ts:2026-09-01T00:00:00Z,class:old}\\n');g=lambda *a:subprocess.run(['git','-c','user.name=t','-c','user.email=t@example.com',*a],cwd=d,capture_output=True);g('init','-q');g('add','.');g('commit','-qm','x');r,over=b.committed_calls(d,budget=1);print(r,over);sys.exit(0 if r and r[0][1]=='new' else 1)"
+      "import sys, tempfile, subprocess, pathlib, json\nsys.path.insert(0, \"_tools\")\nimport bl_intake as b\nd = tempfile.mkdtemp()\no = pathlib.Path(d, b.STORE_REL, \"ops\"); o.mkdir(parents=True)\ndef row(ts, cls): return json.dumps({\"event\": \"call.tool\", \"ts\": ts, \"class\": cls}) + \"\\n\"\n(o / \"a.jsonl\").write_text(row(\"2026-10-01T00:00:00Z\", \"new\") + row(\"2026-10-02T00:00:00Z\", \"new2\"))\n(o / \"b.jsonl\").write_text(row(\"2026-09-01T00:00:00Z\", \"old\"))\ndef g(*a): return subprocess.run([\"git\", \"-c\", \"user.name=t\", \"-c\", \"user.email=t@example.com\", *a], cwd=d, capture_output=True)\ng(\"init\", \"-q\"); g(\"add\", \".\"); g(\"commit\", \"-qm\", \"x\")\nrows, over = b.committed_calls(d, budget=2)\nprint(rows, over)\nsys.exit(0 if [k for _, k in rows] == [\"new\", \"new2\"] and over == 1 else 1)\n"
     ]
   },
+  "clauses": [
+    {
+      "clause": "bl_intake.committed_calls keeps the newest REPEAT_ROWS_MAX call.tool rows by their ts, whatever order git grep reads the ops sidecars in (a late-written sidecar holding old-week rows no longer evicts the rows of the latest closed ISO week), returns them oldest first",
+      "check": 0
+    },
+    {
+      "clause": "counts the rows it left out as before",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/bl_intake.py",
     "kb/_self/backlog.md",
@@ -23,5 +33,6 @@
   ],
   "links": [
     "parked: SP-yzs3bj6f review"
-  ]
+  ],
+  "notes": "Premise run on origin/main at planning (2026-11-10): the repro or first check fails there on the behaviour named in the goal; not fixed by an earlier commit."
 }

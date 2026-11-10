@@ -3,11 +3,11 @@
   "kind": "bug",
   "title": "The stub claude of a dispatched worker is an extensionless /bin/sh script, so on Windows the real claude stays reachable with no warning",
   "status": "draft",
-  "sprint": "SP-f2etj7dg",
+  "sprint": "SP-o3ag6hca",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "dispatch's paid-session guard on win32 writes a claude.cmd stub (or refuses to start a worker it cannot guard) beside the /bin/sh one",
+  "goal": "bl_dispatch.paid_stub(iid, platform=None) and guard_spend(bl, iid, env, platform=None) take the platform (default sys.platform): on win32 guard_spend writes a claude.cmd stub into the stub-bin directory (@echo off, the message on stderr, exit /b 2) and puts that directory first on PATH, and on any other platform it writes the extensionless /bin/sh claude as it does today, so a worker on Windows meets the stub when it calls claude by name",
   "repro": {
     "run": [
       "python3",
@@ -16,12 +16,43 @@
     ]
   },
   "repro_reason": "the behaviour is Windows-only and this host cannot run it: only the source can be read",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,tempfile,types,subprocess,pathlib,os\\ntry:\\n    sys.path.insert(0,\"_tools\");import bl_dispatch as d\\n    r=pathlib.Path(tempfile.mkdtemp());subprocess.run([\"git\",\"init\",\"-q\",str(r)],check=True)\\n    bl=types.SimpleNamespace(root=r,items={\"BG-aaaaaaaa\":{}})\\n    env=d.guard_spend(bl,\"BG-aaaaaaaa\",{\"PATH\":\"/usr/bin\"},platform=\"win32\")\\n    s=pathlib.Path(env[\"PATH\"].split(os.pathsep)[0]);t=(s/\"claude.cmd\").read_text()\\n    ok=t.startswith(\"@echo off\") and \"exit /b 2\" in t and \"BG-aaaaaaaa\" in t and s.name==d.STUB_DIR_NAME\\nexcept Exception as e:\\n    print(type(e).__name__,e);ok=False\\nprint(ok);sys.exit(0 if ok else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,tempfile,types,subprocess,pathlib,os\\ntry:\\n    sys.path.insert(0,\"_tools\");import bl_dispatch as d\\n    r=pathlib.Path(tempfile.mkdtemp());subprocess.run([\"git\",\"init\",\"-q\",str(r)],check=True)\\n    bl=types.SimpleNamespace(root=r,items={\"BG-aaaaaaaa\":{}})\\n    env=d.guard_spend(bl,\"BG-aaaaaaaa\",{\"PATH\":\"/usr/bin\"},platform=\"linux\")\\n    s=pathlib.Path(env[\"PATH\"].split(os.pathsep)[0]);t=(s/\"claude\").read_text()\\n    ok=t.startswith(\"#!/bin/sh\") and \"exit 2\" in t and not (s/\"claude.cmd\").exists() and os.access(s/\"claude\",os.X_OK)\\n    p=subprocess.run([str(s/\"claude\")],capture_output=True,text=True);ok=ok and p.returncode==2 and \"BG-aaaaaaaa\" in p.stderr\\nexcept Exception as e:\\n    print(type(e).__name__,e);ok=False\\nprint(ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "bl_dispatch.paid_stub(iid, platform=None) and guard_spend(bl, iid, env, platform=None) take the platform (default sys.platform): on win32 guard_spend writes a claude.cmd stub into the stub-bin directory (@echo off, the message on stderr, exit /b 2) and puts that directory first on PATH",
+      "check": 0
+    },
+    {
+      "clause": "on any other platform it writes the extensionless /bin/sh claude as it does today, so a worker on Windows meets the stub when it calls claude by name",
+      "check": 1
+    }
+  ],
   "touches": [
     "_tools/bl_dispatch.py",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-sacebta6"
   ],
   "links": [
     "parked: SP-rzwljgxv review"
   ],
+  "notes": "Premise run on origin/main at planning (2026-11-10): the repro or first check fails there on the behaviour named in the goal; not fixed by an earlier commit.",
   "filed_in": "clone-0ea70e5c"
 }

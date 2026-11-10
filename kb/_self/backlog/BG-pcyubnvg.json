@@ -3,7 +3,6 @@
   "kind": "bug",
   "title": "bl_dispatch.worker_traceparent's docstring and backlog.md's dispatch paragraph say the worker's trace is its sprint's, but mon_events.worker_ids gives the run's own trace",
   "status": "draft",
-  "sprint": "SP-f2etj7dg",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",
@@ -20,6 +19,6 @@
     "kb/_self/backlog.md",
     "_tools/mon_events.py"
   ],
-  "notes": "Seen 2026-10-24 by BG-z7fvy7bw: kb/_self/backlog.md line 345 (dispatch paragraph) still says the run's kb.worker span has 'its sprint's trace for a sprint's item'; monitoring.md line 77 says the kb.item keeps the trace of its run and the kb.sprint span is its parent.",
+  "notes": "Seen 2026-10-24 by BG-z7fvy7bw: kb/_self/backlog.md line 345 (dispatch paragraph) still says the run's kb.worker span has 'its sprint's trace for a sprint's item'; monitoring.md line 77 says the kb.item keeps the trace of its run and the kb.sprint span is its parent. Left out of SP-o3ag6hca on 2026-11-10: its touches name _tools/mon_events.py, which the mon_* sprint SP-3nqlr7b5 owns.",
   "filed_in": "clone-0ea70e5c"
 }

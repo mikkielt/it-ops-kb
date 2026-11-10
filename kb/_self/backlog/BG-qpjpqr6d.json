@@ -3,22 +3,26 @@
   "kind": "bug",
   "title": "install_7z.py passes the NSIS /D= folder as a quoted argument, which fails for a Windows user folder with a space",
   "status": "draft",
-  "sprint": "SP-f2etj7dg",
+  "sprint": "SP-o3ag6hca",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",
-  "goal": "install_7z.py runs the 7-Zip installer with /D=PATH unquoted and last on the command line, so a per-user folder that holds a space installs where it should",
+  "goal": "install_7z.install_exe runs the 7-Zip installer as one command-line string, the installer path quoted by subprocess.list2cmdline and then /S and /D=PATH unquoted and last (NSIS reads everything after /D= as the folder), without a shell, so a per-user folder that holds a space installs where it should",
   "repro": {
     "run": [
       "python3",
       "-c",
-      "t = open('_tools/install_7z.py', encoding='utf-8').read()\nassert '\"/D=\" + str(dest.parent)]' not in t, 'the /D= folder is passed as one list argument, which Windows quotes when it holds a space'"
+      "import pathlib, sys, tempfile, types\nsys.path.insert(0, \"_tools\")\nimport install_7z as m\nroot = pathlib.Path(tempfile.mkdtemp()) / \"Jan Kowalski\" / \"7-Zip\"\nroot.mkdir(parents=True)\ndest, seen = root / \"7z.exe\", []\ndef fake(cmd, **kw):\n    seen.append((cmd, kw))\n    dest.write_text(\"x\")\n    return types.SimpleNamespace(returncode=0)\nm.subprocess.run = fake\ntry:\n    m.install_exe(pathlib.Path(\"C:/Temp/7z-setup.exe\"), dest)\n    cmd, kw = seen[0]\n    tail = \"/D=\" + str(root)\n    ok = isinstance(cmd, str) and cmd.endswith(\" \" + tail) and '/D=\"' not in cmd and cmd.count(\"/D=\") == 1 and \" /S \" in cmd and not kw.get(\"shell\")\nexcept Exception as e:\n    print(type(e).__name__, e); ok = False\nprint(seen[0][0] if seen else None, ok)\nsys.exit(0 if ok else 1)\n"
     ]
   },
-  "repro_reason": "the defect is how the Windows command line is built; this macOS host cannot run the NSIS installer, so the argument construction is what is read",
+  "touches": [
+    "_tools/install_7z.py",
+    "kb/_self/maintaining.md",
+    "kb/_self/tools.md"
+  ],
   "links": [
     "parked: SP-iir3d2tu review"
   ],
-  "notes": "Review G3 of SP-iir3d2tu (plausible, Windows only, not run): install_7z.py:156 runs subprocess.run([installer, '/S', '/D=' + dest.parent]); NSIS documents /D= as unquoted and last.",
+  "notes": "Review G3 of SP-iir3d2tu (plausible, Windows only, not run): install_7z.py:156 runs subprocess.run([installer, '/S', '/D=' + dest.parent]); NSIS documents /D= as unquoted and last. Premise run on origin/main at planning (2026-11-10): the repro or first check fails there on the behaviour named in the goal; not fixed by an earlier commit.",
   "filed_in": "clone-0ea70e5c"
 }

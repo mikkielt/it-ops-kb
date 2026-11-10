@@ -3,11 +3,11 @@
   "kind": "bug",
   "title": "report warns that a gate was not recorded for a worker line that says no gates recorded",
   "status": "draft",
-  "sprint": "SP-f2etj7dg",
+  "sprint": "SP-o3ag6hca",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",
-  "goal": "bl_dispatch.unrecorded_gate_lines returns no line for a result line that says no gates recorded or that no gate was needed",
+  "goal": "bl_dispatch.unrecorded_gate_lines returns no line for a result line that says no gates were recorded, that no gate was needed or that a gate was recorded, and still returns a line that says a gate was not recorded",
   "repro": {
     "run": [
       "python3",
@@ -15,11 +15,36 @@
       "import sys;sys.path.insert(0,\"_tools\");import bl_dispatch as d;got=d.unrecorded_gate_lines(\"**Not done:** no staging-copy changes, no bug filed, no gates recorded.\");print(got);sys.exit(1 if got else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,\"_tools\");import bl_dispatch as d;f=d.unrecorded_gate_lines;ok=not f(\"**Not done:** no staging-copy changes, no bug filed, no gates recorded.\") and not f(\"No gate was needed, none recorded.\") and not f(\"Not done: no bug, no gate recorded.\") and f(\"The gate g1 was not recorded on the branch.\") and f(\"gates not recorded\");print(bool(ok));sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "bl_dispatch.unrecorded_gate_lines returns no line for a result line that says no gates were recorded, that no gate was needed or that a gate was recorded",
+      "check": 0
+    },
+    {
+      "clause": "still returns a line that says a gate was not recorded",
+      "check": 0
+    }
+  ],
   "touches": [
-    "_tools/bl_dispatch.py"
+    "_tools/bl_dispatch.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-qa7v3soy"
   ],
   "links": [
     "parked: SP-rzwljgxv close"
   ],
+  "notes": "Premise run on origin/main at planning (2026-11-10): the repro or first check fails there on the behaviour named in the goal; not fixed by an earlier commit.",
   "filed_in": "clone-0ea70e5c"
 }

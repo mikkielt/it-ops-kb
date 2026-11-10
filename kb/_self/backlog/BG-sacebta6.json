@@ -3,11 +3,11 @@
   "kind": "bug",
   "title": "money_approved lifts the paid-session stub for a refused gate (answer no) and for any gate whose text holds spent or paid, since it tests only that an answer exists and a money word",
   "status": "draft",
-  "sprint": "SP-f2etj7dg",
+  "sprint": "SP-o3ag6hca",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "bl_dispatch.money_approved counts a gate as approving spend only when its answer is one of the gate's options that is not the refusal option and the gate's question names a money signal",
+  "goal": "bl_dispatch.money_approved counts a gate as approving spend only when its answer equals one of the gate's options, that option is not a refusal (its first word is no, refuse, decline, deny, reject or cancel, in any case), and the gate's question alone (not its options or its other fields) names a money signal in bl_authority.strict_signals; a gate answered no, an answer that is none of the options, or a question with no money signal leaves the paid-session stub in place",
   "repro": {
     "run": [
       "python3",
@@ -15,12 +15,44 @@
       "import sys;sys.path.insert(0,\"_tools\");import bl_dispatch as d;it={\"gates\":[{\"id\":\"g1\",\"question\":\"Spend USD 5 on a paid smoke test?\",\"options\":[\"yes\",\"no\"],\"answer\":\"no\"}]};sys.exit(1 if d.money_approved(it) else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, \"_tools\")\nimport bl_dispatch as d\ndef g(a, q=\"Spend USD 5 on a paid smoke test?\", opts=(\"yes\", \"no\")):\n    return {\"gates\": [{\"id\": \"g1\", \"question\": q, \"options\": list(opts), \"answer\": a}]}\ncases = [\n    d.money_approved(g(\"yes\")) is True,\n    d.money_approved(g(\"no\")) is False,\n    d.money_approved(g(\"Decline\")) is False,\n    d.money_approved(g(\"maybe\")) is False,\n    d.money_approved(g(\"yes\", \"Which helper name for the stub?\")) is False,\n    d.money_approved(g(\"approve USD 5\", \"Which helper name for the stub?\", (\"approve USD 5\", \"decline\"))) is False,\n    d.money_approved(g(\"approve USD 5\", \"Spend on the smoke test?\", (\"approve USD 5\", \"decline\"))) is True,\n]\nprint(cases)\nsys.exit(0 if all(cases) else 1)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, subprocess, sys, tempfile, types, pathlib\nsys.path.insert(0, \"_tools\")\nimport bl_dispatch as d\nr = pathlib.Path(tempfile.mkdtemp()); subprocess.run([\"git\", \"init\", \"-q\", str(r)], check=True)\nit = {\"gates\": [{\"id\": \"g1\", \"question\": \"Spend USD 5 on a paid smoke test?\", \"options\": [\"yes\", \"no\"], \"answer\": \"no\"}]}\nbl = types.SimpleNamespace(root=r, items={\"BG-aaaaaaaa\": it})\nenv = d.guard_spend(bl, \"BG-aaaaaaaa\", {\"PATH\": \"/usr/bin\"})\nfirst = env[\"PATH\"].split(os.pathsep)[0]\nsys.exit(0 if first.endswith(d.STUB_DIR_NAME) else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "bl_dispatch.money_approved counts a gate as approving spend only when its answer equals one of the gate's options, that option is not a refusal (its first word is no, refuse, decline, deny, reject or cancel, in any case)",
+      "check": 0
+    },
+    {
+      "clause": "the gate's question alone (not its options or its other fields) names a money signal in bl_authority.strict_signals",
+      "check": 0
+    },
+    {
+      "clause": "a gate answered no, an answer that is none of the options, or a question with no money signal leaves the paid-session stub in place",
+      "check": 1
+    }
+  ],
   "touches": [
     "_tools/bl_dispatch.py",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ],
   "links": [
     "parked: SP-rzwljgxv review"
   ],
+  "notes": "Premise run on origin/main at planning (2026-11-10): the repro or first check fails there on the behaviour named in the goal; not fixed by an earlier commit.",
   "filed_in": "clone-0ea70e5c"
 }

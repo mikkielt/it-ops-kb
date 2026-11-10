@@ -1,9 +1,9 @@
 {
-  "id": "ST-bexzfve3",
+  "id": "ST-yeu7zjzi",
   "kind": "story",
-  "title": "Research sprint goal: Worker, dispatch and housekeeping follow-ups: the paid-session stub lifts only for an approved money gate and works on Windows, report and usage text read workers right, release commits its item file, settings paths stay in the clone, tidy and call-row order scale and sort right, forge reads keep their deadline and fields, the 7-Zip installer handles a folder with a space, perfcheck excuses no dropped test",
+  "title": "Research sprint goal: Worker, dispatch and housekeeping follow-ups: the paid-session stub lifts only for an approved money gate and works on Windows, report and usage text read workers right, release commits its item file, the path setting stays in the clone, tidy and call-row order scale and sort right, forge reads keep their deadline and fields, the 7-Zip installer handles a folder with a space",
   "status": "draft",
-  "sprint": "SP-f2etj7dg",
+  "sprint": "SP-o3ag6hca",
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
@@ -14,7 +14,7 @@
         "python3",
         "_tools/backlog.py",
         "researched",
-        "ST-bexzfve3"
+        "ST-yeu7zjzi"
       ]
     }
   ],

@@ -3,7 +3,6 @@
   "kind": "bug",
   "title": "perfcheck names_successor still lets a dropped test excuse itself by its module stem or a call form of its name",
   "status": "draft",
-  "sprint": "SP-f2etj7dg",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -22,5 +21,6 @@
   ],
   "links": [
     "parked: SP-yzs3bj6f review"
-  ]
+  ],
+  "notes": "Left out of SP-o3ag6hca on 2026-11-10: _tools/perfcheck.py is planned in SP-3nqlr7b5; also its goal names _tools/test_audit.py, which no touch covers."
 }
