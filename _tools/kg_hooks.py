@@ -409,7 +409,7 @@ def hook_commit_msg(args):
         with open(args[0], "w", encoding="utf-8", newline="") as f:
             f.write(new)
     stray = message_strays(new)
-    for ln in stray:  # warnings only: the commit goes through, and check-trailers refuses it before a push
+    for ln in stray:  # the hook prints each stray line; kg_trailers.refuse_commit_msg then refuses the commit (exit 3)
         print(f"kbgit.py commit-msg: not a trailer: {ln!r}; check-trailers (the pre-push hook, sync's gate) refuses "
               "this commit", file=sys.stderr)
     if stray:
