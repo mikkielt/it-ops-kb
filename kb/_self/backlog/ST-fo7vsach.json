@@ -1,0 +1,42 @@
+{
+  "id": "ST-fo7vsach",
+  "kind": "story",
+  "title": "Review sprint: Review leftovers close: gate classes skip backticked class names and word-list text, whole-suite detection follows tests.run_scope, rule-file names stay protected, kbingest digests follow sibling packages, census and goal-question edge cases, web-sources and answers facts state what the code holds, docs maps name extending.md, item and sprint skills keep their promises",
+  "status": "draft",
+  "sprint": "SP-enhaglcw",
+  "review": true,
+  "priority": "P1",
+  "rank": 999999,
+  "goal": "Every committed item is done or dropped, provisional answers are confirmed by the operator, and a fresh-context review of the sprint's diff found no unfiled defect.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval",
+        "--file",
+        "kb/public/_retrieval/lookup_heldout.csv",
+        "--root",
+        "public",
+        "--min",
+        "86",
+        "--max-false-good",
+        "8"
+      ]
+    }
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
