@@ -7,7 +7,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "skills/sprint/SKILL.md run section says what the orchestrator does when a ready item waits on, or shares files with, an item another live session holds (a depends_on on it, a precheck or coord hook overlap): it follows the coordination settings (strategy.working for an item being worked, strategy.landing for one being landed; ask by default asks that session with kbask.py ask OTHER), records the chosen strategy with kbask.py coordinate ITEM OTHER STRATEGY, then adds or drops the depends_on (backlog.py set ITEM --depends or --add-depends) to match, and puts the choice to the operator only when strategy.decide is operator and neither a setting nor the other session's answer settles it; kb/_self/backlog.md and kb/_self/coordination.md say the same.",
+  "goal": "skills/sprint/SKILL.md run section says what the orchestrator does when a ready item waits on, or shares files with, an item another live session holds: it follows the coordination settings (strategy.working for an item being worked, strategy.landing for one being landed), asks that session with kbask.py ask OTHER when the setting says ask, records the chosen strategy with kbask.py coordinate ITEM OTHER STRATEGY, then adds or drops the depends_on to match, and puts the choice to the operator only when strategy.decide is operator and neither a setting nor the other session's answer settles it, with kb/_self/backlog.md and kb/_self/coordination.md saying the same",
   "repro": {
     "run": [
       "python3",
@@ -16,6 +16,22 @@
     ]
   },
   "repro_reason": "The defect is an orchestrator's choice in a live run (an AskUserQuestion instead of kbask.py coordinate or an ask to the other session), which no command can replay; the repro reads the run section of the skill text that drives that choice.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open(\"skills/sprint/SKILL.md\",encoding=\"utf-8\").read();r=t.split(\"## run\")[1].split(\"## review\")[0];m=[w for w in (\"strategy.working\",\"strategy.landing\",\"strategy.decide\",\"kbask.py coordinate\",\"--add-depends\") if w not in r];print(m);sys.exit(1 if m else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;d=[open(p,encoding=\"utf-8\").read() for p in (\"kb/_self/backlog.md\",\"kb/_self/coordination.md\")];m=[i for i,x in enumerate(d) if \"kbask.py coordinate\" not in x or \"strategy.decide\" not in x];print(m);sys.exit(1 if m else 0)"
+      ]
+    }
+  ],
   "touches": [
     "skills/sprint/SKILL.md",
     "kb/_self/backlog.md",
