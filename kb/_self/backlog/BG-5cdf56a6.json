@@ -2,7 +2,7 @@
   "id": "BG-5cdf56a6",
   "kind": "bug",
   "title": "perfcheck names_successor still lets a dropped test excuse itself by its module stem or a call form of its name",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-u5zhszow",
   "priority": "P3",
   "rank": 0,
@@ -49,5 +49,7 @@
   "links": [
     "parked: SP-yzs3bj6f review"
   ],
-  "notes": "Found by the SP-yzs3bj6f review of BG-fiwxnug3. Planned 2026-11-10 in SP-u5zhszow; no sibling sprint holds _tools/perfcheck.py now (SP-3nqlr7b5's items do not touch it); the premise reproduces on origin/main: names_successor returns True for the stem form. Check 2 (a removed module's name still counts) passes before the work: it pins behaviour that must stay."
+  "notes": "Found by the SP-yzs3bj6f review of BG-fiwxnug3. Planned 2026-11-10 in SP-u5zhszow; no sibling sprint holds _tools/perfcheck.py now (SP-3nqlr7b5's items do not touch it); the premise reproduces on origin/main: names_successor returns True for the stem form. Check 2 (a removed module's name still counts) passes before the work: it pins behaviour that must stay.",
+  "claimed_by": "claude-n7run001",
+  "operator": "op-f618a13e"
 }
