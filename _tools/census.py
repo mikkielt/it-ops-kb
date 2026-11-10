@@ -97,7 +97,7 @@ reading) as confirmed, with no scratch census log: it writes the row a census wr
 outcome_note, bucket NEEDS-READING, evidence `read by hand`) to _census/read-<D>.csv (D default today; a row of an id it
 already holds is replaced, the others kept, so a second read of the day adds to the file), then runs confirm on that log:
 the source rows, the articles whose sources all are confirmed and the fetch state are dated as confirm dates them.
-An id not in _sources.csv or a date that is not YYYY-MM-DD refuses the command (exit 2) before any write. --dry-run
+An id not in _sources.csv, a date that is no YYYY-MM-DD calendar day or an empty --note refuses the command (exit 2) before any write. --dry-run
 prints the confirm report, writes nothing.
 
 baselines prints how many live (not superseded) unpinned sources hold no detection baseline, and the count by host (the
@@ -1259,8 +1259,15 @@ def cmd_confirm(a, tally):
 def cmd_read(a, tally):
     """Date sources read by hand: the census log row of each (outcome confirmed), then `confirm` on that log."""
     date = a.date or today()
-    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", date):
-        print(f"read: --date {date!r} is not YYYY-MM-DD")
+    try:
+        if not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", date):
+            raise ValueError(date)
+        datetime.date.fromisoformat(date)
+    except ValueError:
+        print(f"read: --date {date!r} is not a YYYY-MM-DD calendar day")
+        return 2
+    if not a.note.split():
+        print("read: --note is empty")
         return 2
     by_id = {r["id"]: r for r in kbcommon.read_sources()}
     unknown = [i for i in a.ids if i not in by_id]
