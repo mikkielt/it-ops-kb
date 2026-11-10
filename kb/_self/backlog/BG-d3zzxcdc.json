@@ -21,6 +21,27 @@
     "kb/_self/maintaining.md",
     "kb/_self/token-efficiency.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the coord hook read announce.to_other_sessions from a settings.json that is not valid JSON?",
+      "options": [
+        "regex over the file text for the first \"to_other_sessions\": true|false",
+        "strip trailing commas and parse again"
+      ],
+      "recommendation": "regex over the file text for the first \"to_other_sessions\": true|false",
+      "reason": "it covers any syntax error, not only a trailing comma",
+      "do": {
+        "regex over the file text for the first \"to_other_sessions\": true|false": "BG-d3zzxcdc",
+        "strip trailing commas and parse again": "BG-d3zzxcdc"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "regex over the file text for the first \"to_other_sessions\": true|false",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-yisvj7vd review"
   ],
