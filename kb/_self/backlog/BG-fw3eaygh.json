@@ -2,7 +2,7 @@
   "id": "BG-fw3eaygh",
   "kind": "bug",
   "title": "extending.md says kbpublic.file_hits passes a leak_scan extender no root, so root is None there, but file_hits now passes the file's root to one that takes it",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-wjrxikw6",
   "priority": "P2",
   "rank": 0,
@@ -21,6 +21,19 @@
     "kb/_self/git.md"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-a1b2c3d4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "9a9a12820bd9bfd91e1c0d8f9d40bafeeb39ecdd",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,re; sys.exit(1 if re.search(r\"so .root. is .None. there\", open(\"kb/_self/extending.md\", encoding=\"utf-8\").read()) else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
