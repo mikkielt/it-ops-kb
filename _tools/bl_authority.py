@@ -228,7 +228,8 @@ QUESTION_WORDS = {
     "querylog": re.compile(r"query[- ]?log|querylog|redact", re.I),
     "agents-rule": re.compile(r"(?<![\w.-])(?:AGENTS|CLAUDE)\.md|\bskill\b|\bagent definition", re.I),
     "delete": re.compile(r"\bdelet|purge|erase|"
-                         r"\bremov(?:e|es|ed|ing|al)\b(?:\s+(?:the|all|old|stale|any)){0,3}\s+(?:kb|content|history)\b|"
+                         r"\bremov(?:e|es|ed|ing|al)\b(?:\s+(?!(?:flags?|options?|switch(?:es)?)\b)\S+){0,4}"
+                         r"\s+(?:kb|content|history)\b|"
                          r"\bremov(?:e|es|ed|ing|al)\b(?:\s+\w+){0,4}?\s+(?:from|of|in|out of|within)"
                          r"\s+(?:(?:the|all|old|stale|any)\s+)*(?:kb|content|history)\b", re.I),
 }
