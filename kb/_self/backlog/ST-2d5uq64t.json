@@ -2,7 +2,7 @@
   "id": "ST-2d5uq64t",
   "kind": "story",
   "title": "Review sprint: Backlog gates, land, report and skill text tell the truth: gate classes match meaning, whole-suite detection exact, land tokens right, upstream import reads workers right, skills and agents name the real rules, kbingest guards and digests hold",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-uz3rhdlq",
   "review": true,
   "priority": "P1",
@@ -38,5 +38,44 @@
       ]
     }
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "evidence": {
+    "commit": "dacf5f0b0fad4b67a8570a200345b868e716078c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "ac44062cdf30cee3"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "476a959c8e29847f"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval",
+          "--file",
+          "kb/public/_retrieval/lookup_heldout.csv",
+          "--root",
+          "public",
+          "--min",
+          "86",
+          "--max-false-good",
+          "8"
+        ],
+        "exit": 0,
+        "sha256": "25fd675ab31d3178"
+      }
+    ]
+  }
 }
