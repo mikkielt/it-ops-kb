@@ -402,18 +402,24 @@ def tools_path():
 def own_flag(ws):
     """The announce.to_other_sessions the workspace's settings.json holds when it is a boolean there, whatever else the
     file holds, else True: a bad key elsewhere in the file leaves a false as it is. A file that is not valid JSON (a
-    trailing comma) is read for its `"to_other_sessions": false` text, the first one, so a syntax error does not
-    turn an opt-out into a post."""
+    trailing comma) is read again with its trailing commas dropped, and when that still fails, for the first
+    `"to_other_sessions": true` or `false` text after a `"coordination"` key and an `"announce"` key, so a syntax error
+    does not turn an opt-out into a post and a key outside coordination.announce does not beat the real one."""
     try:
         with open(os.path.join(ws, "settings.json"), encoding="utf-8") as f:
             text = f.read()
     except Exception:
         return True
     try:
-        flag = json.loads(text)["coordination"]["announce"]["to_other_sessions"]
+        try:
+            doc = json.loads(text)
+        except ValueError:
+            doc = json.loads(re.sub(r",(\s*[}\]])", r"\1", text))
+        flag = doc["coordination"]["announce"]["to_other_sessions"]
         return flag if isinstance(flag, bool) else True
     except ValueError:
-        found = re.search(r'"to_other_sessions"\s*:\s*(true|false)\b', text)
+        found = re.search(r'"coordination"\s*:\s*\{.*?"announce"\s*:\s*\{.*?"to_other_sessions"\s*:\s*(true|false)\b',
+                          text, re.DOTALL)
         return found is None or found.group(1) == "true"
     except Exception:
         return True
