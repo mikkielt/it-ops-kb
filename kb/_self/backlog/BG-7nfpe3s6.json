@@ -2,7 +2,7 @@
   "id": "BG-7nfpe3s6",
   "kind": "bug",
   "title": "kbmon_otel --check-rules misses a kbmon_ name inside a YAML-quoted expr or a __name__ matcher and misreads a recording-rule name",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-3nqlr7b5",
   "priority": "P3",
@@ -65,5 +65,7 @@
   "links": [
     "parked: SP-4f4m3noq review"
   ],
-  "notes": "Review of SP-4f4m3noq (2026-10-22): otel_prom.rule_exprs/rule_names blank a whole YAML-quoted expression with the quote stripper (a file of only quoted exprs exits 2 'no kbmon_ metric'), miss {__name__=\"kbmon_x\"} (false pass) and read kbmon_foo:rate5m as kbmon_foo (false fail). Multi-line | blocks, inline comments and a commented-out expr are read right. The shipped rules file is plain, so nothing fails today. The reviewer recommends changing the provisional answer of ST-6oidkcqv g1 this way, and keeping the line scan otherwise."
+  "notes": "Review of SP-4f4m3noq (2026-10-22): otel_prom.rule_exprs/rule_names blank a whole YAML-quoted expression with the quote stripper (a file of only quoted exprs exits 2 'no kbmon_ metric'), miss {__name__=\"kbmon_x\"} (false pass) and read kbmon_foo:rate5m as kbmon_foo (false fail). Multi-line | blocks, inline comments and a commented-out expr are read right. The shipped rules file is plain, so nothing fails today. The reviewer recommends changing the provisional answer of ST-6oidkcqv g1 this way, and keeping the line scan otherwise.",
+  "claimed_by": "claude-n3run001",
+  "operator": "op-f618a13e"
 }
