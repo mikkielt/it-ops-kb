@@ -2,7 +2,7 @@
   "id": "BG-udzt6mbi",
   "kind": "bug",
   "title": "bl_authority.command_words puts the option text of a gate's do dict back into the text strict_signals and class_reasons read, so the word-list and backticked-class-name blanking never applies to a gate that carries do",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-enhaglcw",
   "priority": "P1",
   "rank": 0,
@@ -21,6 +21,19 @@
     "kb/_self/tools.md"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-86c7e088",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "59827811d326f06f4d38325723a45949dbeeb49d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import bl_authority as a;o=\"paying: pay, paid, spend, charge\";c=\"give class \" + chr(96) + \"secrets\" + chr(96) + \", \" + chr(96) + \"push\" + chr(96) + \" or \" + chr(96) + \"delete\" + chr(96);g={\"question\":\"Which words does PRICE_ASK read as a paying cue?\",\"options\":[o,\"x\"],\"do\":{o:\"BG-aaaaaaaa\",\"x\":\"BG-aaaaaaaa\"}};h={\"id\":\"g1\",\"question\":\"Which phrase does the eval row expect?\",\"options\":[c],\"do\":{c:\"BG-aaaaaaaa\"}};k=a.class_reasons({\"touches\":[\"kb/_self/_retrieval/lookup_eval.csv\"],\"title\":\"an eval row\"},h)[0];m=[s for s in a.strict_signals(g) if s[0]==\"money\"];print(m,k);sys.exit(1 if m or k in (\"secrets\",\"delete\",\"push\") else 0)"
+        ],
+        "exit": 0,
+        "sha256": "b34dafd62ba3db75"
+      }
+    ]
+  }
 }
