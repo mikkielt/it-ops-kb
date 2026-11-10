@@ -2,7 +2,7 @@
   "id": "BG-hzbxfzut",
   "kind": "bug",
   "title": "A gate whose option text only lists gate class names in backticks (secrets, push, delete) is classed by those words, so BG-3mjif4cw's wording question was made blocking as secrets",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-enhaglcw",
   "priority": "P3",
   "rank": 0,
@@ -26,5 +26,7 @@
   "links": [
     "parked: SP-uz3rhdlq close"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-86c7e088",
+  "operator": "op-f618a13e"
 }
