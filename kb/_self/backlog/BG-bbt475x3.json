@@ -2,7 +2,7 @@
   "id": "BG-bbt475x3",
   "kind": "bug",
   "title": "report warns that a gate was not recorded for a worker line that says no gates recorded",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-o3ag6hca",
   "priority": "P2",
   "rank": 0,
@@ -68,6 +68,28 @@
   ],
   "notes": "Premise run on origin/main at planning (2026-11-10): the repro or first check fails there on the behaviour named in the goal; not fixed by an earlier commit.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-5a0b1c2d",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "083a824c42f7dae80844f9abded6daa2c9c91f0b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import bl_dispatch as d;f=d.unrecorded_gate_lines;ok=not f(\"**Not done:** no staging-copy changes, no bug filed, no gates recorded.\") and not f(\"No gate was needed, none recorded.\") and not f(\"Not done: no bug, no gate recorded.\") and f(\"The gate g1 was not recorded on the branch.\") and f(\"gates not recorded\");print(bool(ok));sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "a9ac0c3ac83c40e1"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import bl_dispatch as d;got=d.unrecorded_gate_lines(\"**Not done:** no staging-copy changes, no bug filed, no gates recorded.\");print(got);sys.exit(1 if got else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      }
+    ]
+  }
 }
