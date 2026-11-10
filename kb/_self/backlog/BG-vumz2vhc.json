@@ -19,7 +19,8 @@
   "touches": [
     "kb/_self/web-sources.md",
     "_tools/factdiff.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md"
   ],
   "links": [
     "parked: SP-cb5bp3sz review"
