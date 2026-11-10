@@ -48,6 +48,27 @@
   "relates_to": [
     "ST-y5volitm"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does worker_plugins_off take its value and how does claude_argv pass it to claude?",
+      "options": [
+        "list of name@marketplace keys, refused otherwise, passed as inline JSON to --settings",
+        "any list of strings, passed through a settings file in the scratch directory"
+      ],
+      "recommendation": "list of name@marketplace keys, refused otherwise, passed as inline JSON to --settings",
+      "reason": "no file to go missing, and a malformed key is refused at load",
+      "do": {
+        "list of name@marketplace keys, refused otherwise, passed as inline JSON to --settings": "BG-3pqzpd2q",
+        "any list of strings, passed through a settings file in the scratch directory": "BG-3pqzpd2q"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "list of name@marketplace keys, refused otherwise, passed as inline JSON to --settings",
+      "by": "agent"
+    }
+  ],
   "links": [
     "retro: drain 2026-10-27..11-08"
   ],
