@@ -2,7 +2,7 @@
   "id": "BG-wtxrzkty",
   "kind": "bug",
   "title": "The plugin's item skill says check-trailers refuses the push, a guard a host project's land_push does not have",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4fawjprq",
   "sprint": "SP-enhaglcw",
   "priority": "P2",
@@ -32,5 +32,7 @@
   "links": [
     "parked: SP-ciqk6gt6 review"
   ],
-  "notes": "Review gap 7: skills/item/SKILL.md:18 and :42 say check-trailers refuses the push; a host whose land_push is git push has no such guard. Left out of SP-wjrxikw6 2026-11-10: its files (bl_upstream.py, skills/item/SKILL.md) are planned by SP-uz3rhdlq tonight."
+  "notes": "Review gap 7: skills/item/SKILL.md:18 and :42 say check-trailers refuses the push; a host whose land_push is git push has no such guard. Left out of SP-wjrxikw6 2026-11-10: its files (bl_upstream.py, skills/item/SKILL.md) are planned by SP-uz3rhdlq tonight.",
+  "claimed_by": "claude-86c7e088",
+  "operator": "op-f618a13e"
 }
