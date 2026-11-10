@@ -2,7 +2,7 @@
   "id": "BG-6pjogxeg",
   "kind": "bug",
   "title": "check.py's lexical code scan drops a docstring followed by a backslash line continuation",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3nqlr7b5",
   "priority": "P3",
   "rank": 0,
@@ -24,6 +24,19 @@
     "parked: SP-acysfnxr review"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-n3run001",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "53018a9ede19b9f3aaf95613b4d4047e86dd64dc",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,sys,tempfile;sys.path.insert(0,\"_tools\");import check;n=chr(10);bs=chr(92);p=os.path.join(tempfile.mkdtemp(),\"x.py\");open(p,\"w\").write(\"def f():\"+n+\"    \\\"doc\\\" \"+bs+n+n+\"    x = 1\"+n);got=sorted(k for k,_ in check.code_comment_lines(p));print(\"docstring lines\",got,\"want [2]\");sys.exit(0 if got==[2] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "7f2b7e439c7e3a0c"
+      }
+    ]
+  }
 }
