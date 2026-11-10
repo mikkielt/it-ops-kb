@@ -19,7 +19,10 @@
     "_tools/kbingest.py",
     "kb/_self/extending.md",
     "kb/_self/tools.md",
-    ".claude/skills/kb-ingest/SKILL.md"
+    ".claude/skills/kb-ingest/SKILL.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/plugin.md"
   ],
   "links": [
     "parked: SP-uz3rhdlq review"
