@@ -2,7 +2,7 @@
   "id": "BG-57l7khij",
   "kind": "bug",
   "title": "kbingest.module_digest skips a package a non-package group mapper imports from its own directory, so a change to that package leaves a stale cached map",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-enhaglcw",
   "priority": "P3",
   "rank": 0,
@@ -27,5 +27,7 @@
   "links": [
     "parked: SP-uz3rhdlq review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-86c7e088",
+  "operator": "op-f618a13e"
 }
