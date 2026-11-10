@@ -421,8 +421,7 @@ def check_token(run):
     run = [str(x) for x in run]
     name = run[run.index("-k") + 1] if "-k" in run[:-1] else next(
         (Path(x).stem for x in run[1:] if x.endswith(".py")), Path(run[0]).stem if run else "check")
-    tok = ops_token(name)
-    return tok if tok[:1].isalpha() else f"c-{tok}"[:40]
+    return ops_token(name, lead="c")
 
 
 def refuse_done(iid, t0, reasons, message, checks=(), record=True):
@@ -776,9 +775,11 @@ FETCH_RETRIES = 1  # times land runs a failed git fetch again (a refused key, a 
 LAND_OPS = {"step": None, "t": 0.0, "exit": 0, "lane": None, "item": None}
 
 
-def ops_token(label):
-    """A step label as an ops token: lower case, every run of other characters one `-`, at most 40 characters."""
-    return re.sub(r"[^a-z0-9_.]+", "-", label.lower()).strip("-")[:40] or "step"
+def ops_token(label, lead="s"):
+    """A step label as an ops token: lower case, every run of other characters one `-`, at most 40 characters, and
+    a letter first (`ql_capture.OPS_TOKEN`): a label that starts with a digit, `_` or `.` gets `LEAD-` before it."""
+    tok = re.sub(r"[^a-z0-9_.]+", "-", label.lower()).strip("-") or "step"
+    return (tok if tok[:1].isalpha() else f"{lead}-{tok}")[:40].rstrip("-")
 
 
 def ops_write(**fields):
