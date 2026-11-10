@@ -2,7 +2,7 @@
   "id": "BG-g6emvylx",
   "kind": "bug",
   "title": "census.py read counts each confirmed source twice in its census.phase row",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-cb5bp3sz",
   "priority": "P2",
   "rank": 0,
@@ -28,6 +28,19 @@
   ],
   "notes": "Planned into SP-cb5bp3sz on 2026-11-10; the draft's touches, checks and clause mapping were completed then.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-n1run001",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "2024cd60eda76e98ec9d346fbad892e356646dd4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import argparse, collections, sys\nsys.path.insert(0, \"_tools\")\nimport census, kbcommon\ncensus.KB = kbcommon.KB\nimport factdiff\nfactdiff.ROOT = kbcommon.root(\"public\")\nt = collections.Counter()\ncensus.cmd_read(argparse.Namespace(date=\"2026-11-09\", ids=[\"S100\", \"S102\"], note=\"n\", dry_run=True), t)\nprint(\"named 2 sources; confirmed tallied\", t[\"confirmed\"])\nsys.exit(0 if t[\"confirmed\"] == 2 else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "c6474a069bde4dc4"
+      }
+    ]
+  }
 }
