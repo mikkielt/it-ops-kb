@@ -1,0 +1,19 @@
+{
+  "id": "BG-olmovmf4",
+  "kind": "bug",
+  "title": "bench_pool.py's no-pool-rows hint names pool build without --ask, which now lists the rows and exits 1",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The Skip message in _tools/bench_pool.py that names pool build for an empty pool names the --ask it needs since TK-3ycnarx5 (or its --dry-run first)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;L=[l.strip() for l in open('_tools/bench_pool.py',encoding='utf-8') if 'no pool rows:' in l];bad=[l for l in L if '--ask' not in l];print(bad);sys.exit(1 if bad else 0)"
+    ]
+  },
+  "repro_reason": "the defect is a message string; reaching it needs an empty pool",
+  "filed_in": "clone-0ea70e5c"
+}
