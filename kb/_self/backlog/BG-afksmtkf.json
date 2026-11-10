@@ -7,7 +7,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "skills/sprint/SKILL.md run section says what the orchestrator does when a ready item waits on, or shares files with, an item another live session holds: it follows the coordination settings (strategy.working for an item being worked, strategy.landing for one being landed), asks that session with kbask.py ask OTHER when the setting says ask, records the chosen strategy with kbask.py coordinate ITEM OTHER STRATEGY, then adds or drops the depends_on to match, and puts the choice to the operator only when strategy.decide is operator and neither a setting nor the other session's answer settles it, with kb/_self/backlog.md and kb/_self/coordination.md saying the same",
+  "goal": "skills/sprint/SKILL.md run section says what the orchestrator does when a ready item waits on, or shares files with, an item another live session holds: it follows the coordination settings (strategy.working for an item being worked, strategy.landing for one being landed), asks that session with kbask.py ask OTHER when the setting says ask, records the chosen strategy with kbask.py coordinate ITEM OTHER STRATEGY, adds or drops the depends_on to match and puts the choice to the operator only when strategy.decide is operator and neither a setting nor the other session's answer settles it, with kb/_self/backlog.md and kb/_self/coordination.md saying the same",
   "repro": {
     "run": [
       "python3",
