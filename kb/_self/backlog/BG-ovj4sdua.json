@@ -17,7 +17,9 @@
   },
   "touches": [
     ".claude/hooks/coord_hook.py",
-    "kb/_self/coordination.md"
+    "kb/_self/coordination.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/token-efficiency.md"
   ],
   "links": [
     "parked: SP-wjrxikw6 review"

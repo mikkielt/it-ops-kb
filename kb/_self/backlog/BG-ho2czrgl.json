@@ -7,7 +7,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "bl_dispatch.gate_approves_spend treats an option that opens with a negation or refusal (not, do not, don't, never, abort, as well as no, refuse, decline, deny, reject, cancel) as a refusal, so the paid-session stub stays for such an answer",
+  "goal": "bl_dispatch.gate_approves_spend treats an answer as a refusal when its first word is no, not, never, abort, refuse, decline, deny, reject, cancel or don (from don't), or its first two words are do not (a match on the answer's leading words, REFUSAL_WORDS extended and a two-word case added), so the paid-session stub stays for such an answer and an answer such as Approve or Yes still approves",
   "repro": {
     "run": [
       "python3",
@@ -15,9 +15,19 @@
       "import sys;sys.path.insert(0,\"_tools\");import bl_dispatch as d;g=lambda a:{\"question\":\"Approve spend?\",\"options\":[\"yes\",a],\"answer\":a};bad=[a for a in (\"Do not spend\",\"Not approved\",\"Never\",\"Abort\") if d.gate_approves_spend(g(a))];print(bad);sys.exit(1 if bad else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,\"_tools\");import bl_dispatch as d;g=lambda a:{\"question\":\"Approve spend?\",\"options\":[\"yes\",a],\"answer\":a};ok=[a for a in (\"Approve spend\",\"Yes\",\"Go ahead\") if d.gate_approves_spend(g(a))];bad=[a for a in (\"No\",\"Decline\",\"Do not spend\",\"Don\\x27t spend\",\"Not approved\",\"Never\",\"Abort\") if d.gate_approves_spend(g(a))];print(ok,bad);sys.exit(0 if len(ok)==3 and not bad else 1)"
+      ]
+    }
+  ],
   "touches": [
     "_tools/bl_dispatch.py",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ],
   "links": [
     "parked: SP-o3ag6hca review"

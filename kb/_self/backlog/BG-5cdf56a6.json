@@ -7,7 +7,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "perfcheck's is_own matches a reason token against the dropped ids' own names by exact string, so the test module's stem (test_audit, for a dropped test of the test_audit module), or the test name written as a call (test_x()) or with trailing space inside the backticks, beside the live-module-calls-went-with phrase still counts as a successor. names_successor skips these forms of the dropped ids' own names too, and a genuine successor (a removed module's name) still counts.",
+  "goal": "names_successor skips the forms of a dropped id's own names that is_own misses: the test module's stem (test_audit, for a dropped test of that module), the test name written as a call (test_x()) and the name with a trailing space inside the backticks, beside the live-module-calls-went-with phrase; a genuine successor (a removed module's name) still counts",
   "repro": {
     "run": [
       "python3",
@@ -15,6 +15,32 @@
       "import sys,tempfile; sys.path.insert(0,'_tools'); import perfcheck; d=tempfile.mkdtemp(); r=perfcheck.names_successor('live-module calls went with `test_audit`', ['_tools/test_audit.py::test_x'], d, ''); print(r); sys.exit(1 if r else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,\"_tools\");import perfcheck as p;i=[\"_tools/test_audit.py::test_x\"];ph=\"live-module calls went with \";bad=[t for t in (\"`test_audit`\",\"`test_x()`\",\"`test_x `\",\"` test_x`\") if p.names_successor(ph+t,i,\".\",\"\")];print(bad);sys.exit(1 if bad else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,\"_tools\");import perfcheck as p;i=[\"_tools/test_audit.py::test_x\"];ph=\"live-module calls went with \";got=[p.names_successor(ph+\"`autopilot.py`\",i,\".\",\"\"),p.names_successor(ph+\"`test_audit` and `autopilot.py`\",i,\".\",\"\")];print(got);sys.exit(0 if all(got) else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "a genuine successor (a removed module's name) still counts",
+      "check": 1
+    },
+    {
+      "clause": "names_successor skips the forms of a dropped id's own names that is_own misses: the test module's stem (test_audit, for a dropped test of that module), the test name written as a call (test_x()) and the name with a trailing space inside the backticks, beside the live-module-calls-went-with phrase",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/perfcheck.py",
     "kb/_self/tools.md",
@@ -23,5 +49,5 @@
   "links": [
     "parked: SP-yzs3bj6f review"
   ],
-  "notes": "Found by the SP-yzs3bj6f review of BG-fiwxnug3. Planned 2026-11-10 in SP-u5zhszow; no sibling sprint holds _tools/perfcheck.py now (SP-3nqlr7b5's items do not touch it); the premise reproduces on origin/main: names_successor returns True for the stem form."
+  "notes": "Found by the SP-yzs3bj6f review of BG-fiwxnug3. Planned 2026-11-10 in SP-u5zhszow; no sibling sprint holds _tools/perfcheck.py now (SP-3nqlr7b5's items do not touch it); the premise reproduces on origin/main: names_successor returns True for the stem form. Check 2 (a removed module's name still counts) passes before the work: it pins behaviour that must stay."
 }

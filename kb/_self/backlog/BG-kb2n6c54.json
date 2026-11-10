@@ -7,7 +7,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "claude_argv and the bench_multi claude wrapper give a worker's claude one --settings value that holds both the plugins-off keys and the bench's session settings, so neither is dropped",
+  "goal": "claude_argv and the bench_multi claude wrapper give a worker's claude one --settings value that holds both the plugins-off keys and the bench's session settings: the wrapper merges the --settings value already in the argv with MULTI_SETTINGS (the bench's keys win on a clash) and passes the one result, so neither is dropped",
   "repro": {
     "run": [
       "python3",
@@ -16,10 +16,24 @@
     ]
   },
   "repro_reason": "claude's handling of a repeated --settings is not run here; the repro counts the flags the two argv builders give",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport sys,os,json,subprocess,tempfile\nsys.path.insert(0,\"_tools\")\nimport bench_multi as b\nd=tempfile.mkdtemp();fake=os.path.join(d,\"fakebin\");os.makedirs(fake)\nf=os.path.join(fake,\"claude\");open(f,\"w\").write(\"#!\"+sys.executable+\"\\nimport sys,json\\nprint(json.dumps(sys.argv[1:]))\\n\");os.chmod(f,0o755)\nb.write_wrapper(d)\nw=os.path.join(d,b.BIN,\"claude\")\nenv=dict(os.environ,PATH=fake+os.pathsep+os.environ[\"PATH\"],MULTI_SETTINGS=json.dumps({\"disableAllHooks\":True}),MULTI_MCP_CONFIG=\"m.json\",MULTI_MAX_USD=\"1\")\nr=subprocess.run([sys.executable,w,\"-p\",\"--settings\",json.dumps({\"enabledPlugins\":{\"p@x\":False}})],env=env,capture_output=True,text=True)\na=json.loads(r.stdout);v=[json.loads(a[i+1]) for i,x in enumerate(a) if x==\"--settings\"]\nprint(len(v),v)\nsys.exit(0 if len(v)==1 and v[0].get(\"enabledPlugins\")=={\"p@x\":False} and v[0].get(\"disableAllHooks\") is True else 1)\n"
+      ]
+    }
+  ],
   "touches": [
     "_tools/bl_dispatch.py",
     "_tools/bench_multi.py",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/benchmarks.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-ho2czrgl"
   ],
   "links": [
     "parked: SP-ejeki6bv review"

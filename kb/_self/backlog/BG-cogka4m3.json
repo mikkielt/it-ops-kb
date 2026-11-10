@@ -7,7 +7,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "kbpublic.location normalises a remote url's repository path (repeated slashes, . and .. segments, a trailing-dot host, a doubled .git) and resolves a local path in git's own lookup order (x, then x.git, then x/.git), so the same repository is matched and two different repositories at x and x.git are not",
+  "goal": "kbpublic.location gives the same location for the urls of one remote repository whatever their repeated slashes, . and .. segments, trailing-dot host or doubled .git suffix (_repo_path takes posixpath.normpath of the path and strips every .git suffix, the host loses its trailing dot); for a local path it names only the first place git tries that exists, in the order x, x.git, x/.git, so one repository is matched and two repositories at x and x.git are not",
   "repro": {
     "run": [
       "python3",
@@ -15,6 +15,39 @@
       "import sys;sys.path.insert(0,'_tools');import kbpublic;a=kbpublic.location('https://example.com/org//repo','.');b=kbpublic.location('https://example.com/org/repo','.');ok=kbpublic.same_repository(a,b);print('double slash matched:',ok);sys.exit(0 if ok else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,\"_tools\");import kbpublic as k;L=lambda u:k.location(u,\".\");base=L(\"https://example.com/org/repo\");same=[u for u in (\"https://example.com/org//repo\",\"https://example.com/org/./x/../repo\",\"https://example.com./org/repo\",\"https://example.com/org/repo.git.git\",\"git@example.com:org//repo.git\") if k.same_repository(L(u),base)];print(len(same),\"of 5 match\");sys.exit(0 if len(same)==5 and not k.same_repository(L(\"https://example.com/org/other\"),base) else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,tempfile;sys.path.insert(0,\"_tools\");import kbpublic as k;d=tempfile.mkdtemp();[os.makedirs(os.path.join(d,n)) for n in (\"x\",\"x.git\",\"y.git\")];L=lambda n:k.location(os.path.join(d,n),d);a=k.same_repository(L(\"x\"),L(\"x.git\"));b=k.same_repository(L(\"y\"),L(\"y.git\"));print(\"x vs x.git same:\",a,\"y vs y.git same:\",b);sys.exit(0 if (not a and b) else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_prepush_e2e.py"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbpublic.location gives the same location for the urls of one remote repository whatever their repeated slashes, . and .. segments, trailing-dot host or doubled .git suffix (_repo_path takes posixpath.normpath of the path and strips every .git suffix, the host loses its trailing dot)",
+      "check": 0
+    },
+    {
+      "clause": "for a local path it names only the first place git tries that exists, in the order x, x.git, x/.git, so one repository is matched and two repositories at x and x.git are not",
+      "check": 1
+    }
+  ],
   "touches": [
     "_tools/kbpublic.py",
     "kb/_self/git.md"
@@ -22,5 +55,6 @@
   "links": [
     "parked: SP-3trnelzv review"
   ],
+  "notes": "Check 3 (test_prepush_e2e.py) passes before the work: it pins the url matching that must stay. kbpublic.location and same_repository feed is_public: the normalisation only widens what matches one repository, and x versus x.git splits two repositories that matched as one. Normalisation: _repo_path takes posixpath.normpath of the path and the host loses its trailing dot.",
   "filed_in": "clone-0ea70e5c"
 }

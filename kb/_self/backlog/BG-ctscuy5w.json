@@ -16,10 +16,53 @@
     ]
   },
   "repro_reason": "the defect is stale docstring text; no behaviour differs",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,\"_tools\");import bl_cli;d=bl_cli.load_group_commands.__doc__;print(\"extension_paths\" in d);sys.exit(0 if \"extension_paths\" in d else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,\"_tools\");import kblane;a=\"new_lanes\" in kblane.__doc__;b=\"new_lanes\" in kblane.raw_names.__doc__;print(a,b);sys.exit(0 if a and b else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,\"_tools\");import kbpublic;d=kbpublic.blobs_marked.__doc__;print(\"newline\" in d);sys.exit(0 if \"newline\" in d else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "the load_group_commands docstring says kbext is also imported when a layer sets extension_paths",
+      "check": 0
+    },
+    {
+      "clause": "the kblane header and raw_names docstring say kg_hooks.new_lanes drops a gitlink too",
+      "check": 1
+    },
+    {
+      "clause": "the blobs_marked docstring says None also for a path with a newline",
+      "check": 2
+    }
+  ],
   "touches": [
     "_tools/bl_cli.py",
     "_tools/kblane.py",
-    "_tools/kbpublic.py"
+    "_tools/kbpublic.py",
+    "kb/_self/backlog.md",
+    "kb/_self/git.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-cogka4m3"
   ],
   "links": [
     "parked: SP-wjrxikw6 review"

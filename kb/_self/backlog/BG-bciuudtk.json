@@ -16,8 +16,29 @@
     ]
   },
   "repro_reason": "the usage block is the module docstring, which no command prints whole; only its text can be read",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,subprocess,sys;o=json.loads(subprocess.run([sys.executable,\"_tools/kbtools.py\",\"--json\",\"release item to todo\"],capture_output=True,text=True).stdout);t=next(e[\"answers\"][0] for e in o[\"entries\"] if e[\"tool\"]==\"backlog.py claim\");i=t.find(\"release ID\");print(t[i:i+40]);sys.exit(0 if i>=0 and \"--commit\" in t[i:i+40] else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbtools shows --commit in the release entry",
+      "check": 0
+    },
+    {
+      "clause": "the usage block of _tools/backlog.py names release among the commands that take --commit [--trailer] and its subject list",
+      "check": 1
+    }
+  ],
   "touches": [
-    "_tools/backlog.py"
+    "_tools/backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ],
   "links": [
     "parked: SP-o3ag6hca review"
