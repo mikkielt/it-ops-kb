@@ -335,12 +335,18 @@ def without_benign_push_words(text, question=None, kb_content=False):
 
 # A gate class name in backticks (`secrets`, `push`, `agents-rule`) in a question or an option names a class, as when a
 # gate asks which class a phrase should get: its letters are no class word of the gate's own text. The same word
-# unquoted, or inside any other backticked text (`git push`, `secrets.md`), keeps its class.
+# unquoted, or inside any other backticked text (`git push`, `secrets.md`), keeps its class. A text with one such name
+# and no word `class` asks for that act (`should the worker `push` the branch?`), so it keeps it: the names are blanked
+# only in a text that holds two or more of them or the word `class`.
 CLASS_NAME_QUOTED = re.compile(r"`(?:" + "|".join(re.escape(c) for c in CLASSES) + r")`")
+CLASS_WORD = re.compile(r"\bclass(?:es)?\b", re.I)
 
 
 def without_class_names(text):
-    """The text with each backticked gate class name replaced by a space: what the class words are searched in."""
+    """The text with each backticked gate class name replaced by a space: what the class words are searched in. A text
+    with one such name and no word `class` or `classes` is left as it is."""
+    if len(CLASS_NAME_QUOTED.findall(text)) < 2 and not CLASS_WORD.search(text):
+        return text
     return CLASS_NAME_QUOTED.sub(" ", text)
 
 
