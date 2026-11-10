@@ -1,0 +1,22 @@
+{
+  "id": "ST-2upvgn4c",
+  "kind": "story",
+  "title": "The plan step of the sprint skill says to write the sprint's real goal in new sprint --goal, since set refuses a changed sprint goal without the operator",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "skills/sprint/SKILL.md step 1 of plan says new sprint --goal takes the goal the chosen items carry, written after the items are chosen (find and list first), because set --goal on a sprint needs --by operator and a stand-in goal can only be replaced by dropping the sprint",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open(\"skills/sprint/SKILL.md\",encoding=\"utf-8\").read();i=t.find(\"## plan\");seg=t[i:i+3000];sys.exit(0 if \"stand-in\" in seg else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
