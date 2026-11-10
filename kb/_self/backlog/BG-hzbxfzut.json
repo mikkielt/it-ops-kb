@@ -1,0 +1,26 @@
+{
+  "id": "BG-hzbxfzut",
+  "kind": "bug",
+  "title": "A gate whose option text only lists gate class names in backticks (secrets, push, delete) is classed by those words, so BG-3mjif4cw's wording question was made blocking as secrets",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "class_reasons reads no class word inside a backticked gate class name, so an option that quotes the class names to say what a phrase expects is classed by its other words",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,\"_tools\"); import bl_authority as b; g={\"id\":\"g1\",\"question\":\"Which phrase does the eval row expect?\",\"options\":[\"touches class `push` or `agents-rule` is held\",\"give class `ceiling`, `secrets`, `push`, `agents-rule`, `querylog` or `delete`\"]}; c=b.class_reasons({\"touches\":[\"kb/_self/_retrieval/lookup_eval.csv\"],\"title\":\"an eval row\"},g)[0]; print(c); sys.exit(1 if c in (\"secrets\",\"delete\",\"push\",\"ceiling\") else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_authority.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-uz3rhdlq close"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

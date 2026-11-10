@@ -1,0 +1,25 @@
+{
+  "id": "BG-rwviux2q",
+  "kind": "bug",
+  "title": "The docs map sends a kbingest.py change to tools.md and the kb-ingest skill but not to extending.md, which states the group mapper digest, so BG-5lnmlpua's plan missed it and its worker stopped for touches",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/_self/map.csv has a row from kb/_self/extending.md to _tools/kbingest.py, so a plan that changes kbingest.py names extending.md in its touches",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open(\"kb/_self/map.csv\",encoding=\"utf-8\").read().splitlines();sys.exit(0 if \"kb/_self/extending.md,_tools/kbingest.py\" in t else 1)"
+    ]
+  },
+  "repro_reason": "the defect is a missing row of the docs map csv; the repro reads that row",
+  "touches": [
+    "kb/_self/map.csv"
+  ],
+  "links": [
+    "parked: SP-uz3rhdlq close"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
