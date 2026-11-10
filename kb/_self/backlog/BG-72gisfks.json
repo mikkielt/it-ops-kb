@@ -2,7 +2,7 @@
   "id": "BG-72gisfks",
   "kind": "bug",
   "title": "committed_calls keeps the newest call rows by git grep path order, which is not strictly chronological",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-o3ag6hca",
   "priority": "P3",
   "rank": 0,
@@ -34,5 +34,7 @@
   "links": [
     "parked: SP-yzs3bj6f review"
   ],
-  "notes": "Premise run on origin/main at planning (2026-11-10): the repro or first check fails there on the behaviour named in the goal; not fixed by an earlier commit."
+  "notes": "Premise run on origin/main at planning (2026-11-10): the repro or first check fails there on the behaviour named in the goal; not fixed by an earlier commit.",
+  "claimed_by": "claude-5a0b1c2d",
+  "operator": "op-f618a13e"
 }
