@@ -63,6 +63,7 @@ OBJECTS = ("extensions", "extension_paths", "backlog", "gate_checks", "group", "
 LIST_KEYS = ("extension_paths", "gate_checks")
 STRING_KEYS = ("group",)
 GROUP_ENV = "KB_GROUP_SETTINGS"
+PLAIN_NAME = re.compile(r"[A-Za-z0-9_][A-Za-z0-9_.-]*")  # a kb root name: a plain directory name, `layered` and `gate_check_entries` agree on it
 STRATEGIES = ("wait", "ask", "after", "join", "proceed")
 RUN_STATES = ("working", "landing", "blocked", "returned")
 
@@ -220,7 +221,7 @@ def layer_files(root, kb_root=None):
     named), the clone file, the kb root's (when named) and the user's, each validated; a missing file's object is {}.
     A later layer that sets a key the group file locks raises SettingsError."""
     root = Path(root)
-    if kb_root is not None and not re.fullmatch(r"[A-Za-z0-9_][A-Za-z0-9_.-]*", str(kb_root)):
+    if kb_root is not None and not PLAIN_NAME.fullmatch(str(kb_root)):
         raise SettingsError(f"kb root name {str(kb_root)!r}: a plain directory name is expected")
     clone = _clone_path(root)
     clone_data = _read(clone, root)
