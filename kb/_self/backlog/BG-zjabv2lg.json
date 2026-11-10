@@ -2,7 +2,7 @@
   "id": "BG-zjabv2lg",
   "kind": "bug",
   "title": "rag.py audit --stale-gaps lists gaps answered by lines that hold the pack's known words and not the question's",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-cb5bp3sz",
   "priority": "P2",
   "rank": 0,
@@ -25,5 +25,7 @@
     "parked: SP-2cq2hse4 review"
   ],
   "notes": "Planned into SP-cb5bp3sz on 2026-11-10; the draft's touches, checks and clause mapping were completed then.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-n1run001",
+  "operator": "op-f618a13e"
 }
