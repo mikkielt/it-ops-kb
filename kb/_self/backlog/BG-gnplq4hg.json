@@ -1,0 +1,21 @@
+{
+  "id": "BG-gnplq4hg",
+  "kind": "bug",
+  "title": "Publish refuses three unpublished commits whose backlog item files hold planted test passwords that the stricter url-password scan now flags, so nothing reaches the public home",
+  "status": "draft",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "the two planted url-password test values in the item files of BG-pwhlp2sy and BG-sa4pmxsl (commits 20b110b4d852, 8019a30bab3c, 1dced285d9a9) are reviewed secret exceptions in _tools/tests_allowlist.txt with a reason naming the planted test, so publish --dry-run refuses no commit for them",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,subprocess as s\nsys.path.insert(0,'_tools')\nimport kbcommon as kc, kbpublic as k\nallow=k.parse_allowlist(open(k.ALLOWLIST_PATH,encoding='utf-8').read()).get('secret',set())\nbad=[]\nfor c,p in [('20b110b4d852','kb/_self/backlog/BG-pwhlp2sy.json'),('8019a30bab3c','kb/_self/backlog/BG-pwhlp2sy.json'),('1dced285d9a9','kb/_self/backlog/BG-sa4pmxsl.json')]:\n    t=s.run(['git','show',c+':'+p],capture_output=True,text=True).stdout\n    bad+=[c for kind,v in kc.leak_hits(t) if kind=='secret' and v.lower() not in allow]\nprint('unpublished commits publish refuses for a planted test value:',sorted(set(bad)))\nsys.exit(1 if bad else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/tests_allowlist.txt"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
