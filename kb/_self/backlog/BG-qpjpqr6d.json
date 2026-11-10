@@ -2,7 +2,7 @@
   "id": "BG-qpjpqr6d",
   "kind": "bug",
   "title": "install_7z.py passes the NSIS /D= folder as a quoted argument, which fails for a Windows user folder with a space",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-o3ag6hca",
   "priority": "P2",
   "rank": 0,
@@ -24,5 +24,7 @@
     "parked: SP-iir3d2tu review"
   ],
   "notes": "Review G3 of SP-iir3d2tu (plausible, Windows only, not run): install_7z.py:156 runs subprocess.run([installer, '/S', '/D=' + dest.parent]); NSIS documents /D= as unquoted and last. Premise run on origin/main at planning (2026-11-10): the repro or first check fails there on the behaviour named in the goal; not fixed by an earlier commit.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-5a0b1c2d",
+  "operator": "op-f618a13e"
 }
