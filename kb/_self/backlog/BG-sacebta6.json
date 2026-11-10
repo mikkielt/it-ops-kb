@@ -2,7 +2,7 @@
   "id": "BG-sacebta6",
   "kind": "bug",
   "title": "money_approved lifts the paid-session stub for a refused gate (answer no) and for any gate whose text holds spent or paid, since it tests only that an answer exists and a money word",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-o3ag6hca",
   "priority": "P2",
   "rank": 0,
@@ -54,5 +54,7 @@
     "parked: SP-rzwljgxv review"
   ],
   "notes": "Premise run on origin/main at planning (2026-11-10): the repro or first check fails there on the behaviour named in the goal; not fixed by an earlier commit.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-5a0b1c2d",
+  "operator": "op-f618a13e"
 }
