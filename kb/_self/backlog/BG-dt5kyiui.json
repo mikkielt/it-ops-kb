@@ -2,7 +2,7 @@
   "id": "BG-dt5kyiui",
   "kind": "bug",
   "title": "kbingest's pattern-row guard accepts overlapping quantifiers split by a fixed atom or over classes outside its probe alphabet, and the file timeout cannot stop one slow line",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-uz3rhdlq",
   "priority": "P2",
   "rank": 0,
@@ -70,6 +70,28 @@
   ],
   "notes": "Review gap G4 of SP-n7zxspch. kbingest.py:1759 PATTERN_PROBE spans chr(0) to chr(0x2ff), so a class outside it compares as empty: [a-ya Cyrillic]+[same]+ passes the guard and takes about 0.4 s on 990 letters. kbingest.py:1764 adjacent_overlap stops at a fixed atom: \\w+.\\w+.\\w+ is accepted, is cubic, and takes 7 s on a 400-letter line. kbingest.py:2009 reads the clock once per line (gate g1 of BG-76mclha4), so the file timeout does not bound a slow line, while tools.md says a file stops after 10 seconds. Never run these regexes on 1000 characters in a check. Choice settled in the plan: the timeout part is a doc fix, not new code (the clock stays read once per line), so tools.md says 'read between lines'. Clause 1 is the repro; run its regexes only on short lines in a check. Planned in SP-uz3rhdlq: repro/checks fail on the base, touches and order set.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-n4run01",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "2963f364c75b20bf2036a36ab893b8e5478678e0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open(\"kb/_self/tools.md\",encoding=\"utf-8\").read();i=t.index(\"or after 10 seconds\");sys.exit(0 if \"between lines\" in t[i:i+300] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import kbingest as k;rows=[r\"\\w+.\\w+.\\w+(?P<name>y)\",chr(91)+chr(0x430)+\"-\"+chr(0x44f)+chr(93)+\"+\"+chr(91)+chr(0x430)+\"-\"+chr(0x44f)+chr(93)+\"+(?P<name>y)\"];bad=[p for p in rows if k.rule_row({\"language\":\"lua\",\"role\":\"def\",\"kind\":\"function\",\"pattern\":p},1,\"sensitive\")[0] is not None];sys.exit(\"guard accepts %r\"%bad if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
