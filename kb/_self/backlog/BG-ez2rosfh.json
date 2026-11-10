@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "researched's skip line says no question mark and not numbered for a numbered piece goal_questions leaves unread after a colon lead-in",
   "status": "draft",
+  "sprint": "SP-enhaglcw",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",

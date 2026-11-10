@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "bl_items.cmd_referrers's docstring still says kind=ref is a file the code map has using the term in code, the wording the sprint corrected in backlog.md and the backlog skill",
   "status": "draft",
+  "sprint": "SP-enhaglcw",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",

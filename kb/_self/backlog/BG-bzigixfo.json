@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "bl_authority's bare-name bypass also clears the bare name of a rule-guarding file (settings.json, tests.py, backlog.py) when a touch of another directory ends in that name",
   "status": "draft",
+  "sprint": "SP-enhaglcw",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",

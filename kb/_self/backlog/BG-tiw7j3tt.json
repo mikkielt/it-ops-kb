@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "_answers.md QK-stores-changing-facts-mark-fact-was says Graphiti's created_at and expired_at mark when the store knew, beyond what the pinned edges.py holds",
   "status": "draft",
+  "sprint": "SP-enhaglcw",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -15,6 +16,9 @@
     ]
   },
   "repro_reason": "the defect is the wording of one answer line against a pinned source; the behaviour is the text itself",
+  "touches": [
+    "kb/public/_answers.md"
+  ],
   "notes": "Found while fixing BG-ut5cs72k: same claim as its fact line 28, in the answer at kb/public/_answers.md:4542; touches to plan: kb/public/_answers.md.",
   "filed_in": "clone-0ea70e5c"
 }

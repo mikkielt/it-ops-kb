@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "extending.md says a lazy import inside a group mapper's function is not covered by its map digest, but a long-lived process covers it once the mapper has run",
   "status": "draft",
+  "sprint": "SP-enhaglcw",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
