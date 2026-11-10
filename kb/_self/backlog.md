@@ -219,7 +219,7 @@ Each refusal first appends an ops row `done.refused` with the item, the closed c
 
 ## Checks that prove an item
 
-A check is a command that does its work in the clone: a tool run on a planted input, a command with a match, or `tests.py` or a `-k` selection of an existing test. A check need not be a test. The suite runs the lookup eval and `check.py` over the live kb. A check that runs a Python tool names `python3`; `done`, a bug's repro and `red-pipeline` run it with the interpreter that runs `backlog.py`, so a check proves the item on any host where the tool itself runs, a Windows Store `python3` alias or none on `PATH` included.
+A check is a command that does its work in the clone: a tool run on a planted input, a command with a match, or `tests.py` or a `-k` selection of an existing test. A check need not be a test. No test runs the lookup eval or `check.py` over the live kb: the landing's eval step (`land_eval`, `rag.py eval`) runs the tuned eval, and the sync gate runs `check.py` and the held-out gate files (`lookup_heldout.csv`, `repro_bench.csv`). A check that runs a Python tool names `python3`; `done`, a bug's repro and `red-pipeline` run it with the interpreter that runs `backlog.py`, so a check proves the item on any host where the tool itself runs, a Windows Store `python3` alias or none on `PATH` included.
 
 ## Sprints
 
