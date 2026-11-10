@@ -22,6 +22,26 @@
     "kb/_self/tools.md",
     "kb/_self/content-rules.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the item settle the doc/code mismatch on the first detect after the reducer's tooltip skip?",
+      "options": [
+        "Reword web-sources.md to state detect's real verdict",
+        "Change detect_source to re-baseline such a row once"
+      ],
+      "recommendation": "Reword web-sources.md to state detect's real verdict",
+      "reason": "no code change, the anchors already decide whether a fact moved",
+      "do": {
+        "Reword web-sources.md to state detect's real verdict": "BG-vumz2vhc",
+        "Change detect_source to re-baseline such a row once": "BG-vumz2vhc"
+      },
+      "class": "design",
+      "answer": "Reword web-sources.md to state detect's real verdict",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-cb5bp3sz review"
   ],
