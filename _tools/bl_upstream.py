@@ -165,11 +165,13 @@ def imported_ids(bl, url):
 
 def story_notes(s, issue):
     """The notes of an imported draft: where it came from, then the premise and local change as the clone reported them
-    (the `Premise:` and `Local change:` lines `upstream-report` reads back)."""
+    (the `Premise:` and `Local change:` lines `upstream-report` reads back): a multi-line text keeps its non-blank lines,
+    joined with single spaces into the one line `note_line` reads."""
     lines = [f"Imported from upstream-report issue {issue}."]
     for label, key in (("Premise", "premise"), ("Local change", "local")):
-        if s.get(key):
-            lines.append(f"{label}: {s[key]}")
+        text = " ".join(x.strip() for x in (s.get(key) or "").splitlines() if x.strip())
+        if text:
+            lines.append(f"{label}: {text}")
     return "\n\n".join(lines)[:TEXT_MAX]
 
 
