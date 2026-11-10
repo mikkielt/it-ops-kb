@@ -25,5 +25,6 @@
   "links": [
     "parked: SP-basca7ae review"
   ],
+  "notes": "Planning 2026-11-10: sibling sprints (kb/public/**, _answers.md) edit other entries of kb/public/_answers.md; this item edits only its own QK entry, so it proceeds and the landing rebase merges; rerun the landing after a rebase conflict, never overwrite a sibling's entry.",
   "filed_in": "clone-0ea70e5c"
 }

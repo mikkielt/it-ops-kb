@@ -22,6 +22,6 @@
   "depends_on": [
     "ST-y74gcgvf"
   ],
-  "notes": "Found while fixing BG-ut5cs72k: same claim as its fact line 28, in the answer at kb/public/_answers.md:4542; touches to plan: kb/public/_answers.md.",
+  "notes": "Found while fixing BG-ut5cs72k: same claim as its fact line 28, in the answer at kb/public/_answers.md:4542; touches to plan: kb/public/_answers.md. Planning 2026-11-10: sibling sprints (kb/public/**, _answers.md) edit other entries of kb/public/_answers.md; this item edits only its own QK entry, so it proceeds and the landing rebase merges; rerun the landing after a rebase conflict, never overwrite a sibling's entry.",
   "filed_in": "clone-0ea70e5c"
 }
