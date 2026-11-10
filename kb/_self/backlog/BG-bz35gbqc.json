@@ -21,5 +21,6 @@
   "links": [
     "parked: SP-mut2pmu3 close"
   ],
+  "notes": "Seen again in SP-uz3rhdlq: BG-3mjif4cw was released after its worker left a branch, begin refused the local work/BG-3mjif4cw branch, tidy kept its worktree (item todo), and the way on was a re-claim on main plus git reset --hard origin/main and a cherry-pick of the one fix commit in the worker worktree.",
   "filed_in": "clone-0ea70e5c"
 }
