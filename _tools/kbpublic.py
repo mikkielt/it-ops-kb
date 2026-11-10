@@ -437,7 +437,8 @@ def tree_files(rev, cwd):
 def texts(specs, cwd, chunk=2000, bad=None):
     """{spec: text} of the utf-8 blobs SPECS (object names: a sha or REV:PATH), read CHUNK at a time through one
     `git cat-file --batch` each; binary, missing and unreadable ones are left out. BAD, a set, collects the specs of the
-    blobs that are not valid utf-8 (`texts_marked` answers them as None)."""
+    blobs that are not valid utf-8 (`texts_marked` answers them as None); a spec holding a newline cannot go through
+    `--batch` and is left out too (`texts_marked` answers it as None)."""
     specs = [x for x in dict.fromkeys(specs) if "\n" not in x]
     res = {}
     for i in range(0, len(specs), chunk):
@@ -463,11 +464,13 @@ def texts(specs, cwd, chunk=2000, bad=None):
 
 
 def texts_marked(specs, cwd):
-    """`texts` that also answers each blob that is not valid utf-8 as None, for the readers of a `_root.md` or a pointer,
-    which must not let an unreadable file pass as one that says `visibility: public`."""
+    """`texts` that also answers each blob that is not valid utf-8, and each spec `texts` cannot ask git for (a path with
+    a newline), as None, for the readers of a `_root.md` or a pointer, which must not let an unreadable file pass as one
+    that says `visibility: public`."""
     bad = set()
     res = texts(specs, cwd, bad=bad)
     res.update({x: None for x in bad})
+    res.update({x: None for x in specs if "\n" in x})
     return res
 
 
