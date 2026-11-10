@@ -58,7 +58,9 @@
       },
       "class": "design",
       "answer": "prune on a memo's first write, drop a memo that names no source",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
