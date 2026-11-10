@@ -2,7 +2,7 @@
   "id": "BG-nilc5rgz",
   "kind": "bug",
   "title": "SP-mut2pmu3 changed which fixture files the leak scan reads for secrets only but SCAN_FORM was not bumped, so a cached publish verdict keeps the old secrets-only reading",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-wjrxikw6",
   "priority": "P3",
   "rank": 0,
@@ -27,5 +27,7 @@
     "parked: SP-mut2pmu3 review"
   ],
   "notes": "SP-mut2pmu3 review gap 4 (S3). The commit that made a _root.md under _tools/fixtures a test input changed what the scan flags in those files (secrets-only before, every kind now) but kbpublic.py SCAN_FORM stays 8, and the verdict cache key (verdicts-<TIP>-<digest of scan_form, allowlist, pinned, placeholders>) holds no internal prefixes: a clone whose _cache holds a verdict of a commit that wrote fixture files keeps the old one. Fix: bump SCAN_FORM to 9, as its comment says a change to what the scan flags does. Planned in SP-wjrxikw6 2026-11-10: touches, order and repro checked against the base.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-a1b2c3d4",
+  "operator": "op-f618a13e"
 }
