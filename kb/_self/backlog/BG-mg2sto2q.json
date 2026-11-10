@@ -2,7 +2,7 @@
   "id": "BG-mg2sto2q",
   "kind": "bug",
   "title": "forge_reads does not cut a caller-injected runner at the total deadline, so BG-mhsmvdrz's 60 s bound holds only for the default runner and is unproven by its repro",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-o3ag6hca",
   "priority": "P3",
   "rank": 0,
@@ -42,5 +42,7 @@
   "links": [
     "parked: SP-tsb23kev review"
   ],
-  "notes": "Premise run on origin/main at planning (2026-11-10): the repro or first check fails there on the behaviour named in the goal; not fixed by an earlier commit."
+  "notes": "Premise run on origin/main at planning (2026-11-10): the repro or first check fails there on the behaviour named in the goal; not fixed by an earlier commit.",
+  "claimed_by": "claude-5a0b1c2d",
+  "operator": "op-f618a13e"
 }
