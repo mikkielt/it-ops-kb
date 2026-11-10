@@ -12,7 +12,7 @@ With `--paid` (paid_rows) it starts, per arm, phase, session count and rep, `cla
 throwaway clones with the arm's settings, and samples their process trees into the same rows with the model column set.
 This module imports no facade; `mon_host` is imported where a process is given its class.
 """
-import json, os, re, shutil, signal, sqlite3, statistics, subprocess, sys, tempfile, threading, time, uuid
+import json, os, re, shutil, signal, sqlite3, statistics, subprocess, sys, threading, time, uuid
 from pathlib import Path
 
 from bench_core import (HOME, PRICE, RAW, RESULTS, Bench, Skip, git, need_sh, no_plugin_env, read_rows, shim_dir, spent, spent_usd,
@@ -845,18 +845,9 @@ def live_rows(b):
 
 
 class PaidBench(Bench):
-    """The Bench of `run session-load --paid`. `Bench` reads the Claude Code version with a `claude --version` of its own, and a
-    paid run starts no `claude` that is not a capped session, so that one runs a `claude` that fails at once (the version
-    stays `?`, then the init event of the first session names it, `paid_rows`)."""
-
-    def __init__(self, scratch, reps):
-        with tempfile.TemporaryDirectory() as d:
-            path = os.environ.get("PATH", "")
-            os.environ["PATH"] = os.pathsep.join((str(shim_dir(d)), path))
-            try:
-                super().__init__(scratch, reps)
-            finally:
-                os.environ["PATH"] = path
+    """The Bench of `run session-load --paid`. `Bench.__init__` starts no `claude` (`Bench.cc` reads the Claude Code version on
+    first use), and a paid run starts no `claude` that is not a capped session, so `benchmarks.main` presets the version to `?`
+    and it stays unknown until the init event of the first session names it (`paid_rows`)."""
 
 
 def arm_settings(clone, arm):
