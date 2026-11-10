@@ -1,0 +1,27 @@
+{
+  "id": "BG-32pflgn4",
+  "kind": "bug",
+  "title": "bl_authority's backticked-class-name blanking also drops the only push or delete word of a gate that asks the operator to push or delete in backticks, so that gate is classed design and an agent answers it",
+  "status": "todo",
+  "sprint": "SP-enhaglcw",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "bl_authority.class_reasons blanks a backticked gate class name only in a text that holds two or more of them or the word class, so a gate that asks to push or delete with the word in backticks keeps its class while a gate that lists class names to say what a phrase expects stays unclassed by them",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import bl_authority as b;t=chr(96);g={\"id\":\"g1\",\"question\":\"Should the worker \" + t + \"push\" + t + \" the branch to the main branch?\",\"options\":[\"yes\",\"no\"]};c=b.class_reasons({\"touches\":[],\"title\":\"x\"},g)[0];print(c);sys.exit(1 if c==\"design\" else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_authority.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-udzt6mbi"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
