@@ -4,7 +4,6 @@
   "title": "backlog.py tidy starts one git status per removable worktree, so its git processes grow with the number of leftovers",
   "status": "draft",
   "parent": "EP-iowijan3",
-  "sprint": "SP-o3ag6hca",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
@@ -46,8 +45,9 @@
     "kb/_self/monitoring.md"
   ],
   "links": [
-    "parked: SP-vmtfnkim review"
+    "parked: SP-vmtfnkim review",
+    "parked: SP-o3ag6hca run"
   ],
-  "notes": "Found by the SP-vmtfnkim review on 2026-10-26 (BG-xgpnkgth, whose gate g1 answer keeps one git status for each worktree every other check leaves removable): the item's check plants 30 leftovers that are not removable (their items are open), so it counts 13 processes; with 60 leftovers whose items are done and which are clean, merged and idle, tidy --older-than 0 starts 73 git processes, one status each. The repro plants that. No verdict changes and no data is at risk; the process count grows with the removable leftovers, which the goal's fixed number says it should not. A fix needs a way to read the dirtiness of many worktrees in a fixed number of processes, or a bounded goal. Planner's choice (no way reads many worktrees' dirtiness in one git process): a cap of 25 status reads a plan keeps the process count fixed and converges, since --apply removes up to 25 and the next run reads the rest. Premise reproduced on the base: 70 git processes for 60 leftovers. Premise run on origin/main at planning (2026-11-10): the repro or first check fails there on the behaviour named in the goal; not fixed by an earlier commit.",
+  "notes": "Found by the SP-vmtfnkim review on 2026-10-26 (BG-xgpnkgth, whose gate g1 answer keeps one git status for each worktree every other check leaves removable): the item's check plants 30 leftovers that are not removable (their items are open), so it counts 13 processes; with 60 leftovers whose items are done and which are clean, merged and idle, tidy --older-than 0 starts 73 git processes, one status each. The repro plants that. No verdict changes and no data is at risk; the process count grows with the removable leftovers, which the goal's fixed number says it should not. A fix needs a way to read the dirtiness of many worktrees in a fixed number of processes, or a bounded goal. Planner's choice (no way reads many worktrees' dirtiness in one git process): a cap of 25 status reads a plan keeps the process count fixed and converges, since --apply removes up to 25 and the next run reads the rest. Premise reproduced on the base: 70 git processes for 60 leftovers. Premise run on origin/main at planning (2026-11-10): the repro or first check fails there on the behaviour named in the goal; not fixed by an earlier commit. parked for the operator: cap design vs earlier answer (the earlier operator answer keeps one git status per removable worktree; the planned cap of 25 reverses it)",
   "filed_in": "clone-0ea70e5c"
 }
