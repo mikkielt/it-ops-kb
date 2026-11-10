@@ -39,6 +39,7 @@ import json
 import os
 import re
 import subprocess
+import threading
 import time
 from pathlib import Path
 
@@ -365,7 +366,9 @@ class DeadlineReached(Exception):
 
 def bounded_run(run, deadline):
     """A runner of `run`'s shape that starts no command once the monotonic time DEADLINE has passed (DeadlineReached)
-    and, for the default runner, gives a command no more than the time left (`bl_base.run`'s own limit otherwise)."""
+    and stops waiting for one in flight when the time left is up: the default runner is given no more than the time
+    left, a caller-injected one runs in a daemon thread this waits for up to the time left and leaves behind (a
+    command that raises raises here)."""
     def bounded(argv, cwd=None):
         left = deadline - time.monotonic()
         if left <= 0:
@@ -373,7 +376,21 @@ def bounded_run(run, deadline):
         if run is None:
             from ql_base import run_cmd
             return run_cmd(argv, cwd=cwd, timeout=min(FORGE_CALL_S, left))
-        return run(argv, cwd=cwd)
+        box = {}
+
+        def call():
+            try:
+                box["got"] = run(argv, cwd=cwd)
+            except BaseException as e:  # noqa: BLE001 - handed to the waiting caller
+                box["err"] = e
+        worker = threading.Thread(target=call, daemon=True)
+        worker.start()
+        worker.join(left)
+        if worker.is_alive():
+            raise DeadlineReached()
+        if "err" in box:
+            raise box["err"]
+        return box["got"]
     return bounded
 
 
