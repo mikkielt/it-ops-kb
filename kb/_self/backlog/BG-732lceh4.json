@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "census.py phase 2 brief names the earlier detect log in its factdiff.py dead command when the rows came from a numbered log",
   "status": "draft",
+  "sprint": "SP-cb5bp3sz",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -11,16 +12,18 @@
     "run": [
       "python3",
       "-c",
-      "import sys; sys.exit(1)"
+      "import os, sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport census, kbcommon, factdiff\ncensus.KB = kbcommon.KB\nfactdiff.ROOT = kbcommon.root(\"public\")\nd = tempfile.mkdtemp()\nlog = os.path.join(d, \"2026-11-09.csv\")\nrow = {\"id\": \"S100\", \"url\": \"https://example.com/x\", \"kind\": \"web\", \"repo\": \"\", \"pin\": \"\", \"path\": \"\", \"retrieved_utc\": \"2026-01-01\", \"http_status\": \"\", \"bucket\": \"NEEDS-READING\", \"evidence\": \"factdiff.py review factdiff-2026-11-09-2.csv\", \"proof\": \"\", \"note\": \"\", \"used_in\": \"\", \"outcome\": \"\", \"outcome_note\": \"\"}\ncensus.write_log(log, [row])\nctx = census.phase2_context(census.read_log(log), log)\nprint(ctx[\"flog\"])\nsys.exit(0 if ctx[\"flog\"].endswith(\"factdiff-2026-11-09-2.csv\") else 1)\n"
     ]
   },
   "repro_reason": "needs a census log whose evidence names a numbered detect log: phase2_context (census.py near line 2120) falls back to factdiff-DATE.csv for flog while FACTDIFF_REVIEW reads factdiff-DATE-2.csv; the reviewer probed it on a planted log, the planner writes the real repro",
   "touches": [
     "_tools/census.py",
-    "kb/_self/web-sources.md"
+    "kb/_self/web-sources.md",
+    "kb/_self/tools.md"
   ],
   "links": [
     "parked: SP-2cq2hse4 review"
   ],
+  "notes": "Planned into SP-cb5bp3sz on 2026-11-10; the draft's touches, checks and clause mapping were completed then.",
   "filed_in": "clone-0ea70e5c"
 }

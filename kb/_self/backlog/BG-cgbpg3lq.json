@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "PRICE_ASK misses a storage price asked without is or are after how much, and prices a RAM or data-limit requirement ask",
   "status": "draft",
+  "sprint": "SP-cb5bp3sz",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "kbfacts.PRICE_ASK gives the priced note to a storage or data price asked with another verb ('How much do I pay for storage per user per month?', 'How much does OneDrive storage run per user per month?', 'How much for extra storage per user per month?') and none to a requirement ask worded with is ('How much is RAM required per device?', 'How much is the minimum RAM per device for Windows 11?'), with the existing positives and negatives of test_pack_notes_a_subject_held_in_passing kept. Found by the SP-vk3wf746 review (S3, kbfacts.py:2443).",
+  "goal": "kf_index.PRICE_ASK (the regex kbfacts re-exports) gives the priced note to a storage or data price asked with another verb than is or are ('How much do I pay for storage per user per month?', 'How much does OneDrive storage run per user per month?', 'How much for extra storage per user per month?') and none to a requirement ask worded with is ('How much is RAM required per device?', 'How much is the minimum RAM per device for Windows 11?'), while the price asks it already matches stay matched. Found by the SP-vk3wf746 review (S3).",
   "repro": {
     "run": [
       "python3",
@@ -14,11 +15,34 @@
       "import sys;sys.path.insert(0,'_tools');import kbfacts as k;qs=['How much do I pay for storage per user per month?','How much does OneDrive storage run per user per month?','How much for extra storage per user per month?'];neg=['How much is RAM required per device?','How much is the minimum RAM per device for Windows 11?'];bad=[q for q in qs if not k.PRICE_ASK.search(q)]+[q for q in neg if k.PRICE_ASK.search(q)];print(bad);sys.exit(1 if bad else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, \"_tools\")\nimport kf_index as k\npos = [\"What is the price of Intune Plan 1?\", \"How much is OneDrive storage per user per month?\", \"How much does a Microsoft 365 E3 licence cost per user?\", \"How much is Intune per device per month?\"]\nneg = [\"How many units does it cost?\", \"How much memory per device?\"]\nbad = [q for q in pos if not k.PRICE_ASK.search(q)] + [q for q in neg if k.PRICE_ASK.search(q)]\nprint(bad)\nsys.exit(1 if bad else 0)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, \"_tools\")\nimport kbfacts, kf_index\nsys.exit(0 if kbfacts.PRICE_ASK is kf_index.PRICE_ASK else 1)\n"
+      ]
+    }
+  ],
   "touches": [
     "_tools/kbfacts.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/kf_index.py",
+    "kb/_self/content-rules.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "BG-zjabv2lg"
   ],
   "links": [
     "parked: SP-vk3wf746 review"
-  ]
+  ],
+  "notes": "Premise run 2026-11-10: PRICE_ASK is defined at _tools/kf_index.py:789 (kbfacts.py only re-exports it), so the fix is in kf_index.py; the test named in the first draft of this goal is gone, so the repro is the check of the asks. Planner 2026-11-10: a check of this item that already exits 0 on the base pins behaviour that must stay (the positives and re-export, a numbered list read as before, a valid date and note accepted, the id command still running, a memo kept for a live source, an explicitly closed hidden element); the repro and the other checks fail until the work. Planned into SP-cb5bp3sz on 2026-11-10; the draft's touches, checks and clause mapping were completed then."
 }

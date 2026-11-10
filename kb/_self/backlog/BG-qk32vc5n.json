@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "census.py read accepts a date that is no calendar day and an empty note",
   "status": "draft",
+  "sprint": "SP-cb5bp3sz",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -14,12 +15,33 @@
       "import subprocess, sys\nr = subprocess.run([sys.executable, \"_tools/census.py\", \"--root\", \"public\", \"read\", \"S100\", \"--note\", \"n\", \"--date\", \"2026-13-45\", \"--dry-run\"], capture_output=True, text=True)\nprint(\"exit\", r.returncode, r.stdout[-150:])\nsys.exit(1 if r.returncode == 0 else 0)\n"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, sys\nr = subprocess.run([sys.executable, \"_tools/census.py\", \"--root\", \"public\", \"read\", \"S100\", \"--note\", \"  \", \"--date\", \"2026-11-09\", \"--dry-run\"], capture_output=True, text=True)\nprint(\"exit\", r.returncode, r.stdout[-150:])\nsys.exit(0 if r.returncode == 2 else 1)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess, sys\nr = subprocess.run([sys.executable, \"_tools/census.py\", \"--root\", \"public\", \"read\", \"S100\", \"--note\", \"n\", \"--date\", \"2026-11-09\", \"--dry-run\"], capture_output=True, text=True)\nprint(\"exit\", r.returncode, r.stdout[-150:])\nsys.exit(0 if r.returncode == 0 else 1)\n"
+      ]
+    }
+  ],
   "touches": [
     "_tools/census.py",
-    "kb/_self/web-sources.md"
+    "kb/_self/web-sources.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-g6emvylx"
   ],
   "links": [
     "parked: SP-2cq2hse4 review"
   ],
+  "notes": "Planner 2026-11-10: a check of this item that already exits 0 on the base pins behaviour that must stay (the positives and re-export, a numbered list read as before, a valid date and note accepted, the id command still running, a memo kept for a live source, an explicitly closed hidden element); the repro and the other checks fail until the work. Planned into SP-cb5bp3sz on 2026-11-10; the draft's touches, checks and clause mapping were completed then.",
   "filed_in": "clone-0ea70e5c"
 }

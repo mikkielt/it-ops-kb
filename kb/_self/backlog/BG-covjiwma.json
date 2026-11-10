@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "provider.read_licence gives CC BY-SA to a gitlab-org/gitlab doc/ path with a double-encoded .. segment",
   "status": "draft",
+  "sprint": "SP-cb5bp3sz",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",
@@ -14,11 +15,23 @@
       "import sys;sys.path.insert(0,\"_tools\");import provider as p;p.request=lambda *a,**k:{\"status\":404,\"error\":\"x\",\"body\":b\"\",\"headers\":{}};l=p.read_licence(\"https://gitlab.com/gitlab-org/gitlab/-/blob/master/doc/%252e%252e/app/x.rb\")[\"licence\"];print(l);sys.exit(1 if l.startswith(\"CC BY-SA\") else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import provider as p;p.request=lambda *a,**k:{'status':404,'error':'x','body':b'','headers':{}};f=lambda s:p.read_licence('https://gitlab.com/gitlab-org/gitlab/-/blob/master/doc/'+s)['licence'];r=[f('user/x.md'),f('%2e%2e/app/x.rb'),f('%252e%252e/app/x.rb'),f('%25252e%25252e/app/x.rb')];print(r);sys.exit(0 if r[0].startswith('CC BY-SA') and not any(x.startswith('CC BY-SA') for x in r[1:]) else 1)"
+      ]
+    }
+  ],
   "touches": [
-    "_tools/provider.py"
+    "_tools/provider.py",
+    "kb/_self/tools.md",
+    "kb/_self/web-sources.md"
   ],
   "links": [
     "parked: SP-c6tr77jl review"
   ],
+  "notes": "Planned into SP-cb5bp3sz on 2026-11-10; the draft's touches, checks and clause mapping were completed then.",
   "filed_in": "clone-0ea70e5c"
 }

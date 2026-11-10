@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "fact-validity-windows.md states Graphiti's created_at and expired_at beyond what the pinned code says",
   "status": "draft",
+  "sprint": "SP-cb5bp3sz",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "The two Graphiti CODE facts of kb/public/prior-art/fact-validity-windows.md say only what the pinned edges.py and edge_operations.py hold: created_at is a field of the base Edge, expired_at is described as when the node was invalidated, and an existing expired_at is kept, not overwritten. Found by the SP-vlfcgmbu review (gap 5).",
+  "goal": "The two Graphiti CODE facts of kb/public/prior-art/fact-validity-windows.md say only what the pinned edges.py and edge_operations.py hold: created_at is a field of the base Edge, expired_at is described as when the node was invalidated, and an existing expired_at is kept, not overwritten",
   "repro": {
     "run": [
       "python3",
@@ -15,13 +16,43 @@
     ]
   },
   "repro_reason": "the defect is the wording of two kb fact lines against a pinned source; the behaviour is the text itself, so the repro reads those lines for the overstated phrases",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys;L=[l for l in open('kb/public/prior-art/fact-validity-windows.md',encoding='utf-8') if 'resolve_edge_contradictions' in l and 'expired_at' in l];print(len(L));sys.exit(0 if L and all(re.search(r'already|not overwritten|only (?:when|if)|unless', l) for l in L) else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/doc2query.py",
+        "stale"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "The two Graphiti CODE facts of kb/public/prior-art/fact-validity-windows.md say only what the pinned edges.py and edge_operations.py hold: created_at is a field of the base Edge, expired_at is described as when the node was invalidated",
+      "check": 2
+    },
+    {
+      "clause": "an existing expired_at is kept, not overwritten",
+      "check": 0
+    }
+  ],
   "touches": [
     "kb/public/prior-art/fact-validity-windows.md",
     "kb/public/_anchors.csv",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
+  "depends_on": [
+    "ST-qumcek4h"
+  ],
   "links": [
     "parked: SP-vlfcgmbu review"
   ],
+  "notes": "Found by the SP-vlfcgmbu review (gap 5). The doc2query stale check passes before the work and pins that reworded facts leave no stale expansion rows. Planned into SP-cb5bp3sz on 2026-11-10; the draft's touches, checks and clause mapping were completed then.",
   "filed_in": "clone-0ea70e5c"
 }

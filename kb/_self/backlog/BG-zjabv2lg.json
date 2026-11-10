@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "rag.py audit --stale-gaps lists gaps answered by lines that hold the pack's known words and not the question's",
   "status": "draft",
+  "sprint": "SP-cb5bp3sz",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -16,10 +17,13 @@
   },
   "touches": [
     "_tools/kbfacts.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/token-efficiency.md"
   ],
   "links": [
     "parked: SP-2cq2hse4 review"
   ],
+  "notes": "Planned into SP-cb5bp3sz on 2026-11-10; the draft's touches, checks and clause mapping were completed then.",
   "filed_in": "clone-0ea70e5c"
 }

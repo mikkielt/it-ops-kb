@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "fetch._PageText hides the rest of the page after a role=tooltip or visually hidden element whose end tag HTML lets the parser leave out",
   "status": "draft",
+  "sprint": "SP-cb5bp3sz",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -14,12 +15,37 @@
       "import sys;sys.path.insert(0,\"_tools\");import fetch;p=fetch._PageText();p.feed(\"<main><p class=VisuallyHidden>hid<p>keep one<p>keep two</main><div>after</div>\");t=p.text();print(repr(t));sys.exit(0 if \"keep one\" in t and \"after\" in t else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import fetch;p=fetch._PageText();p.feed('<main><span class=VisuallyHidden>hid</span>keep</main>');t=p.text();print(repr(t));sys.exit(0 if 'keep' in t and 'hid' not in t else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import fetch;p=fetch._PageText();p.feed('<main><p class=VisuallyHidden>hid<p>keep one<p>keep two</main><div>after</div>');t=p.text();print(repr(t));sys.exit(0 if 'hid' not in t.replace('hidden','') and 'keep two' in t else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import fetch;p=fetch._PageText();p.feed('<main><ul><li role=tooltip>tip<li>keep li</ul><dl><dt class=VisuallyHidden>termhid<dd>keep dd</dl></main>');t=p.text();print(repr(t));sys.exit(0 if 'tip' not in t and 'termhid' not in t and 'keep li' in t and 'keep dd' in t else 1)"
+      ]
+    }
+  ],
   "touches": [
     "_tools/fetch.py",
-    "kb/_self/web-sources.md"
+    "kb/_self/web-sources.md",
+    "kb/_self/tools.md"
   ],
   "links": [
     "parked: SP-c6tr77jl review"
   ],
+  "notes": "Planner 2026-11-10: a check of this item that already exits 0 on the base pins behaviour that must stay (the positives and re-export, a numbered list read as before, a valid date and note accepted, the id command still running, a memo kept for a live source, an explicitly closed hidden element); the repro and the other checks fail until the work. Planned into SP-cb5bp3sz on 2026-11-10; the draft's touches, checks and clause mapping were completed then.",
   "filed_in": "clone-0ea70e5c"
 }
