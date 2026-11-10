@@ -1756,7 +1756,9 @@ def nested_quantifier(pattern):
     return False
 
 
-PATTERN_PROBE = [chr(c) for c in range(0x300)]  # the characters two quantified atoms are compared on
+PATTERN_PROBE = [chr(c) for c in range(0x300)]  # the characters two quantified atoms are always compared on
+PATTERN_PROBE_STEP = 64  # and one character in each run of this many code points over the whole Unicode range
+_CODE_POINT_ESCAPE = re.compile(r"\\x([0-9a-fA-F]{2})|\\u([0-9a-fA-F]{4})|\\U([0-9a-fA-F]{8})")
 PATTERN_FILE_TIMEOUT_S = 10  # seconds PatternMapper reads one file before it stops and notes it
 _QUANTIFIER = re.compile(r"\*|\+|\?|\{(\d*)(,?)(\d*)\}")
 
@@ -1764,17 +1766,23 @@ _QUANTIFIER = re.compile(r"\*|\+|\?|\{(\d*)(,?)(\d*)\}")
 def adjacent_overlap(pattern, case="sensitive"):
     """True when two variable-width atoms (`*`, `+`, `{m,n}`) of PATTERN follow each other, with only skippable atoms
     (`?`, `*`, an optional group) between, and can match a same character: the shape that runs quadratic on a hostile
-    line (`\\w+\\w*`, `[\\w.:]*?(?P<name>\\w+)`). Atoms are compared on PATTERN_PROBE; a literal or a class of fixed
-    width, and an alternation, end the comparison."""
+    line (`\\w+\\w*`, `[\\w.:]*?(?P<name>\\w+)`). A fixed atom between two of them (`\\w+.\\w+`) lets the comparison go on
+    only while it can match a character the variable atom before it matches. Atoms are compared on PATTERN_PROBE, one
+    character of every PATTERN_PROBE_STEP code points of Unicode, and each character the pattern itself writes (a
+    class's ends too, literal or as an escape); an alternation ends the comparison."""
     flags = re.I if case == "insensitive" else 0
     n, pos, atoms, hit = len(pattern), 0, [], []
+    written = {ord(c) for c in pattern if ord(c) > 0x2ff}
+    written.update(int(h, 16) for m in _CODE_POINT_ESCAPE.finditer(pattern) for h in m.groups() if h)
+    probe = "".join(PATTERN_PROBE) + "".join(
+        chr(c) for c in sorted(set(range(0x300, 0x110000, PATTERN_PROBE_STEP)) | {0x10FFFF} | written) if c <= 0x10FFFF)
 
     def chars(src):
         try:
             rx = re.compile(src, flags)
         except re.error:
             return frozenset()
-        return frozenset(c for c in PATTERN_PROBE if rx.fullmatch(c))
+        return frozenset(m.group() for m in rx.finditer(probe) if len(m.group()) == 1)
 
     def quantifier():
         nonlocal pos
@@ -1801,7 +1809,11 @@ def adjacent_overlap(pattern, case="sensitive"):
             if cs and any(cs & p for p in pending):
                 hit.append(cs)
             return pending | {cs} if least == 0 else frozenset({cs})
-        return pending if least == 0 else frozenset()
+        if least == 0:
+            return pending
+        # a fixed atom keeps a pending atom only as the characters both match: the next variable atom is ambiguous with
+        # it only on a character the fixed atom between them matches too
+        return frozenset(p & cs for p in pending if p & cs)
 
     def sequence(pending):
         nonlocal pos
