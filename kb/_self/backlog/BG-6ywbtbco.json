@@ -2,7 +2,7 @@
   "id": "BG-6ywbtbco",
   "kind": "bug",
   "title": "token_words misses a hyphen-prefixed source id joined to text by an underscore, as S-5kvx24wm_old",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-uz3rhdlq",
   "priority": "P2",
   "rank": 0,

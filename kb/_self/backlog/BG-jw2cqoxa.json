@@ -2,7 +2,7 @@
   "id": "BG-jw2cqoxa",
   "kind": "bug",
   "title": "The delete class matches removed or removal of a flag anywhere before the word content, kb or history in the same question, so a design question is made blocking",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-uz3rhdlq",
   "priority": "P3",
   "rank": 0,

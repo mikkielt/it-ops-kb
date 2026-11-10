@@ -2,7 +2,7 @@
   "id": "BG-4wjar4pn",
   "kind": "bug",
   "title": "bl_land.ops_token gives a token that starts with an underscore or a digit, which ql_capture refuses, so the land.step row of a project whose push program starts that way is dropped",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-uz3rhdlq",
   "priority": "P3",
   "rank": 0,

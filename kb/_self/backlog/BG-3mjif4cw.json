@@ -2,7 +2,7 @@
   "id": "BG-3mjif4cw",
   "kind": "bug",
   "title": "The _self eval row EV-gate-classes-only-operator-answers no longer checks any gate class name",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-uz3rhdlq",
   "priority": "P3",
   "rank": 0,

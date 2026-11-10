@@ -2,7 +2,7 @@
   "id": "BG-bqjhjgyn",
   "kind": "bug",
   "title": "gate add reads a bare doc file name in an option (tools.md) as a path outside the touches although a touch holds kb/_self/tools.md, and so makes the gate blocking",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-uz3rhdlq",
   "priority": "P2",
   "rank": 0,
