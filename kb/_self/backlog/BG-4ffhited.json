@@ -2,7 +2,7 @@
   "id": "BG-4ffhited",
   "kind": "bug",
   "title": "bench_retrieval.py's no-pool hint names pool build without --ask, which now lists the rows and exits 1",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3nqlr7b5",
   "priority": "P3",
   "rank": 0,
@@ -44,6 +44,19 @@
   "links": [
     "parked: SP-honlhzdc review"
   ],
-  "claimed_by": "claude-n3run001",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "80ca851f4918df8d5d6ebfafa7b9e9d82a5d6111",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;L=[l.strip() for l in open('_tools/bench_retrieval.py',encoding='utf-8') if 'pool build' in l];bad=[l for l in L if '--ask' not in l];print(bad);sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      }
+    ]
+  }
 }
