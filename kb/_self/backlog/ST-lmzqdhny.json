@@ -1,0 +1,22 @@
+{
+  "id": "ST-lmzqdhny",
+  "kind": "story",
+  "title": "The review step of the sprint skill names a reviewer mode in which python3 -c runs, since a reviewer started with acceptEdits had every python3 -c refused and could not run any planted input",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "skills/sprint/SKILL.md review step 1 says the headless reviewer is started with a permission setting that lets a read-only python3 -c and a scratch script run (and its brief names the commands it may not run), so the reviewer runs each fix on a planted input instead of only reading it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open(\"skills/sprint/SKILL.md\",encoding=\"utf-8\").read();i=t.find(\"## review\");seg=t[i:i+3500];sys.exit(0 if \"python3 -c\" in seg else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
