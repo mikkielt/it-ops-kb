@@ -66,7 +66,7 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           is found, else 0
   backlog.py claim ID --by NAME          status doing, claimed by NAME, with the session's operator id beside it
                                           (kbwho.py; `new sprint` writes the sprint's creator the same way);
-                                          backlog.py release ID  back to todo
+                                          backlog.py release ID [--commit]  back to todo
                                           (a research item of a planned sprint, one whose touches are all inside kb
                                           roots: claimed from draft, released to draft; check accepts it doing or
                                           done, and done proves it before the sprint starts)
@@ -419,9 +419,9 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           KB_BACKLOG_CONFIG names) with each value's source, file or default; a
                                           file with an unknown key or a wrong type is refused naming it, exit 2
 
-claim, done, new, start and close take --commit [--trailer 'KEY: VALUE']...: after the command succeeds, commit the
-item files it wrote or deleted and nothing else (`git commit --only`: what was staged before stays staged), subject
-`chore(backlog): claim|done|file|start|close ID "title"`, and a last paragraph of trailers: KB-Work: <ids> (the item;
+claim, release, done, new, start and close take --commit [--trailer 'KEY: VALUE']...: after the command succeeds, commit
+the item files it wrote or deleted and nothing else (`git commit --only`: what was staged before stays staged), subject
+`chore(backlog): claim|release|done|file|start|close ID "title"`, and a last paragraph of trailers: KB-Work: <ids> (the item;
 a new sprint and its review story), then each --trailer (the session's own, e.g. Co-Authored-By; a KB-* key is
 refused). close's commit body is its --summary list.
 
