@@ -1,0 +1,25 @@
+{
+  "id": "BG-wdogpr5g",
+  "kind": "bug",
+  "title": "The inline comment in bl_cli.load_group_commands says kbext is imported only when a group installed an entry point, but it is also imported when a layer sets extension_paths",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "the comment above the importlib.metadata import in load_group_commands matches the docstring: kbext is also imported when extension_paths is set",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open(\"_tools/bl_cli.py\",encoding=\"utf-8\").read();sys.exit(1 if \"kbext is imported only when a group installed an entry point\" in t else 0)"
+    ]
+  },
+  "repro_reason": "the defect is the wording of an inline comment; no behaviour differs",
+  "touches": [
+    "_tools/bl_cli.py"
+  ],
+  "links": [
+    "parked: SP-u5zhszow review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

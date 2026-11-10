@@ -1,0 +1,25 @@
+{
+  "id": "ST-qx3svzsh",
+  "kind": "story",
+  "title": "The stale-stop remedy for a landing refused at stale says to edit the branch, but a git commit --amend there drops the KB-Work trailer, which only the item's own commands add back",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the land stale-stop recipe in backlog.md says that an amend of the worker's commit to add a Self-Reviewed name keeps the KB-Work trailer in the message, since the commit hook adds only the KB-Operator and the later trailers",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open(\"kb/_self/backlog.md\",encoding=\"utf-8\").read();sys.exit(0 if \"amend\" in t and \"KB-Work\" in t[t.find(\"amend\"):t.find(\"amend\")+400] else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-u5zhszow close"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "BG-w6y6jjpu",
+  "kind": "bug",
+  "title": "The coord hook's last-resort regex for announce.to_other_sessions crosses a closed coordination.announce object and reads a later announce key outside it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "the coord hook's fallback regex for announce.to_other_sessions does not read a key past the end of the coordination.announce object it found",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "\nimport importlib.util,tempfile,os,sys\ns=importlib.util.spec_from_file_location(\"ch\",\".claude/hooks/coord_hook.py\");m=importlib.util.module_from_spec(s);s.loader.exec_module(m)\nd=tempfile.mkdtemp()\nopen(os.path.join(d,\"settings.json\"),\"w\").write(\"{\\\"coordination\\\":{\\\"announce\\\":{}} \\\"x\\\":{\\\"announce\\\":{\\\"to_other_sessions\\\": false}}}\")\nsys.exit(0 if m.settings(d)[0][\"to_other_sessions\"] is True else 1)\n"
+    ]
+  },
+  "touches": [
+    ".claude/hooks/coord_hook.py",
+    "kb/_self/coordination.md"
+  ],
+  "links": [
+    "parked: SP-u5zhszow review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

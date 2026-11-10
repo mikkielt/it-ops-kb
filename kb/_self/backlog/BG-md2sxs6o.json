@@ -1,0 +1,25 @@
+{
+  "id": "BG-md2sxs6o",
+  "kind": "bug",
+  "title": "gate_approves_spend still approves an answer worded Won't spend, Cannot approve, Do nothing or Dont spend, which the sprint's refusal words leave out",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "gate_approves_spend treats an answer that opens with a contraction of a refusal (won't, can't, cannot, don't without the apostrophe) or with do nothing as a refusal",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import bl_dispatch as d;g=lambda a:{\"question\":\"Approve spend?\",\"options\":[\"yes\",a],\"answer\":a};bad=[a for a in (\"Won\\x27t spend\",\"Cannot approve\",\"Do nothing\",\"Dont spend\") if d.gate_approves_spend(g(a))];print(bad);sys.exit(1 if bad else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-u5zhszow review"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}

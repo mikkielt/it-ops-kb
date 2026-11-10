@@ -1,0 +1,25 @@
+{
+  "id": "ST-h64pczdw",
+  "kind": "story",
+  "title": "selfcheck's allow-rules check fails at the start of a run because a command named in the sprint skill text, python3 _tools/kbext.py, has no allow rule",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "python3 _tools/backlog.py selfcheck exits 0 in a clone with the shipped settings: the allow rules cover each command the sprint skill names, kbext.py included",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "selfcheck"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/settings.json"
+  ],
+  "links": [
+    "parked: SP-u5zhszow close"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
