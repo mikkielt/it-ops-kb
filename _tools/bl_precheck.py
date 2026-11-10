@@ -198,7 +198,8 @@ def unanswered_questions(bl, it):
     unread = []
     questions = goal_questions(it.get("goal"), unread)
     for piece in unread:
-        say(f"  skip: not read as a question (no `?`, not numbered): {piece}")
+        why = "no `?`, several numbers after a lead-in" if NUMBERED_PIECE.search(piece) else "no `?`, not numbered"
+        say(f"  skip: not read as a question ({why}): {piece}")
     if not questions:
         return [], "coverage not read: the goal names no question (a sentence ending in `?` or a numbered piece)"
     roots = research_roots(it)

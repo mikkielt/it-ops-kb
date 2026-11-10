@@ -20,6 +20,26 @@
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the skip line word a numbered piece left unread after a lead-in with several numbers?",
+      "options": [
+        "name the cause: no question mark, several numbers after a lead-in",
+        "only drop the words not numbered for such a piece"
+      ],
+      "recommendation": "name the cause: no question mark, several numbers after a lead-in",
+      "do": {
+        "name the cause: no question mark, several numbers after a lead-in": "BG-ez2rosfh",
+        "only drop the words not numbered for such a piece": "BG-ez2rosfh"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "name the cause: no question mark, several numbers after a lead-in",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-cb5bp3sz review"
   ],
