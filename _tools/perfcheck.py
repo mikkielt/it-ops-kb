@@ -347,18 +347,21 @@ RETIRED_PHRASE = "live-module calls went with"  # a retired feature's dropped te
 
 def own_names(ids):
     """Every form the dropped IDS name themselves by: the whole id, the id without its parametrization, and each of its
-    parts (the file path and its basename, the class, the test function)."""
+    parts (the file path, its basename and its stem, the class, the test function)."""
     out = set()
     for i in ids:
         base = i.partition("[")[0]
         parts = base.split("::")
-        out |= {i, base, *parts, parts[0].rsplit("/", 1)[-1]}
+        name = parts[0].rsplit("/", 1)[-1]
+        out |= {i, base, *parts, name, name.removesuffix(".py")}
     return out
 
 
 def is_own(tok, own):
     """True when TOK, a reason's token, is one of the OWN names of the dropped ids, with or without a parametrization,
-    or an id built only of such parts."""
+    or an id built only of such parts; the token's surrounding blanks and a trailing call form `()` are not part of the
+    name."""
+    tok = tok.strip().removesuffix("()")
     base = tok.partition("[")[0]
     return tok in own or base in own or all(p in own or p.rsplit("/", 1)[-1] in own for p in base.split("::"))
 
@@ -384,7 +387,8 @@ def names_successor(reason, ids, root, code):
     live module's calls went with a retired feature (RETIRED_PHRASE) and names a removed module, file or symbol that is
     not one of the dropped ids' own file or test. A reason that names only the dropped test or its file, with or without
     that phrase, or a removed module without that phrase, excuses nothing; a dropped id's own names are its file, its
-    class, its test, its whole id and the test's name without its parametrization."""
+    class, its test, its whole id and the test's name without its parametrization, and the test file's name without
+    `.py`; the name written as a call (`test_x()`) or with blanks inside the backticks is the same name."""
     gone = own_names(ids)
     if RETIRED_PHRASE in (reason or "") and names_removed(reason, root, code, gone):
         return True  # a retired feature: its live modules' calls went with the removed code the reason names
