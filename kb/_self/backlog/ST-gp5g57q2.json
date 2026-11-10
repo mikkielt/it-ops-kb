@@ -6,6 +6,15 @@
   "priority": "P2",
   "rank": 0,
   "goal": "done of an item whose touches hold _tools/kbcommon.py, _tools/redact.py or _tools/kbpublic.py runs kbpublic.range_leaks from refs/kb/published to the item's tip and refuses with each cause the change adds over the base, naming the allowlist or a reworded file as the remedy; the sprint skill's review step names the same check",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('_tools/bl_land.py',encoding='utf-8').read();sys.exit(0 if 'range_leaks' in t else 1)"
+      ]
+    }
+  ],
   "touches": [
     "_tools/bl_land.py",
     "kb/_self/backlog.md",
