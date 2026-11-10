@@ -2191,20 +2191,30 @@ def load_group_mapper(language, spec, commit, root):
 
 
 def module_digest(module):
-    """The sha256 of the files MODULE's code came from, or "" when it has no readable file: its own file (a package: its
-    `__init__`) and every module loaded in this process from the same directory (a package: from under its directory),
-    so a change to a helper module the mapper imports from its own directory changes the digest too."""
+    """The sha256 of the files MODULE's code came from, or "" when it has no readable file: its own file and every
+    module loaded in this process from the same directory (a package: from under its directory; a module that is no
+    package: also from under each package directory beside it, `helpers/__init__.py` and its modules), so a change to a
+    helper module or package the mapper imports from its own directory changes the digest too."""
     try:
         own = Path(module.__file__).resolve()
         files = {own}
         is_package = own.stem == "__init__"
         home = own.parent
+        loaded = []
         for other in list(sys.modules.values()):
             try:
                 path = Path(other.__file__).resolve()
             except (AttributeError, TypeError, OSError, ValueError):
                 continue
-            if path.suffix == ".py" and (home in path.parents if is_package else path.parent == home):
+            if path.suffix == ".py":
+                loaded.append(path)
+        beside = {p.parent for p in loaded if p.stem == "__init__" and p.parent.parent == home}
+        for path in loaded:
+            if is_package:
+                keep = home in path.parents
+            else:
+                keep = path.parent == home or not beside.isdisjoint(path.parents)
+            if keep:
                 files.add(path)
         blob = hashlib.sha256()
         for path in sorted(files):

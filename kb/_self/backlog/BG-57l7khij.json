@@ -24,6 +24,28 @@
     "kb/_self/maintaining.md",
     "kb/_self/plugin.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which modules does module_digest add for a mapper that is no package?",
+      "options": [
+        "every loaded module under a package directory beside the mapper, a package being one whose __init__.py is loaded",
+        "every .py file under each directory beside the mapper, loaded or not"
+      ],
+      "recommendation": "every loaded module under a package directory beside the mapper, a package being one whose __init__.py is loaded",
+      "do": {
+        "every loaded module under a package directory beside the mapper, a package being one whose __init__.py is loaded": "BG-57l7khij",
+        "every .py file under each directory beside the mapper, loaded or not": "BG-57l7khij"
+      },
+      "class": "agents-rule",
+      "answer": "every loaded module under a package directory beside the mapper, a package being one whose __init__.py is loaded",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "links": [
     "parked: SP-uz3rhdlq review"
   ],
