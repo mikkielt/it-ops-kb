@@ -2,7 +2,7 @@
   "id": "BG-36f2dgds",
   "kind": "bug",
   "title": "kbpublic.texts drops a path with a newline before git is asked, so a _root.md in such a directory is neither refused nor read as not public by tree_refusals and internal_prefixes",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-wjrxikw6",
   "priority": "P3",
   "rank": 0,
@@ -24,5 +24,7 @@
     "parked: SP-mut2pmu3 review"
   ],
   "notes": "SP-mut2pmu3 review gap 3 (S3). kbpublic.py texts() skips specs holding a newline (:437-466) and texts_marked marks only invalid UTF-8; used by blobs_marked in tree_refusals (:540) and internal_prefixes (:687). Planted: kb/public/_root.md public plus kb/<name with a newline>/_root.md saying visibility: internal; tree_refusals gives no cause for it. history_refusals catches it only for the commit that wrote it, by blob sha. Fix: answer a skipped spec as None in texts_marked.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-a1b2c3d4",
+  "operator": "op-f618a13e"
 }
