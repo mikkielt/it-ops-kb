@@ -516,23 +516,21 @@ def land_siblings(bl, iid):
                                                 for i, c, code in failed))
 
 
-NARROWING_OPTIONS = frozenset((  # tests.py options that select or skip tests, run none or only report: no whole-suite run
-    "-m", "--ceiling", "--show-profile", "--set-profile", "--write-lint-baseline", "-h", "--help",
-    "--collect-only", "--co", "--lf", "--last-failed", "--ff", "--failed-first", "--nf", "--new-first", "--lfnf",
-    "--sw", "--stepwise", "--deselect", "--ignore", "--ignore-glob"))
+NARROWING_OPTIONS = frozenset((  # tests.py options after which no test runs, or that only report: no whole-suite run
+    "--ceiling", "--show-profile", "--set-profile", "--write-lint-baseline", "-h", "--help", "--collect-only", "--co"))
 
 
 def is_whole_suite(argv):
     """True when the check is a whole-suite tests.py run: the script whose own `tests.run_scope` gives mode `full` (no
-    -k, named file or --changed) and that selects or skips no test (-m, --lf, --ff, --deselect, --ignore and the like),
-    runs none (--collect-only) and is no report-only form (--ceiling, --show-profile, --set-profile,
-    --write-lint-baseline, --help), so a worker count (-n 2), -x or --durations=5 is still a whole run."""
+    -k, named file or --changed), which tests.py holds to its seconds ceiling, and that runs no test (--collect-only) and
+    is no report-only form (--ceiling, --show-profile, --set-profile, --write-lint-baseline, --help), so a worker count
+    (-n 2), -x, --durations=5 and an option that reorders or deselects (-m, --lf, --ff, --deselect, --ignore) leave it
+    a whole run, as `run_scope` calls it."""
     argv = [str(x) for x in argv]
     if len(argv) < 2 or Path(argv[1]).name != "tests.py":
         return False
     args = argv[2:]
-    if any(x in NARROWING_OPTIONS or x.split("=", 1)[0] in NARROWING_OPTIONS
-           or (x.startswith("-m") and len(x) > 2 and not x.startswith("--")) for x in args):
+    if any(x in NARROWING_OPTIONS for x in args):
         return False
     import tests  # imported where `done` reads it: the one copy of what narrows a run (run_scope, path_args)
     return tests.run_scope([x for x in args if x != "--no-reuse"], "--changed" in args, False) == "full"
