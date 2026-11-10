@@ -17,7 +17,8 @@
   },
   "touches": [
     "_tools/census.py",
-    "kb/_self/web-sources.md"
+    "kb/_self/web-sources.md",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "BG-vumz2vhc"

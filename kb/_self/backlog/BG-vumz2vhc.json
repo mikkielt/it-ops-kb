@@ -18,7 +18,8 @@
   "repro_reason": "the defect is a documented claim about factdiff.detect_source's verdict on a hashed github.com row; the reviewer ran detect_source on a planted row and got changed, and the repro reads the sentence that says otherwise",
   "touches": [
     "kb/_self/web-sources.md",
-    "_tools/factdiff.py"
+    "_tools/factdiff.py",
+    "kb/_self/tools.md"
   ],
   "links": [
     "parked: SP-cb5bp3sz review"
