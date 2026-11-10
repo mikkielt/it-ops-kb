@@ -2,7 +2,7 @@
   "id": "BG-iwd2ovag",
   "kind": "bug",
   "title": "coordination.md still says the kb-observer role's command list is longer than the session's allowed tools, which the narrowed role no longer is",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3nqlr7b5",
   "priority": "P3",
   "rank": 0,
@@ -23,5 +23,7 @@
     "parked: SP-jopt2c3z review"
   ],
   "notes": "SP-jopt2c3z review (S3, other): kb/_self/coordination.md line 98 is made false by the narrowed role of BG-5p3bfm4u; selfdoc.py check does not read the claim (problems=0). The same line says 'a command outside the allow list is denied in a remediate or summary session', which stays true.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-n3run001",
+  "operator": "op-f618a13e"
 }
