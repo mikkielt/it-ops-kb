@@ -2,7 +2,7 @@
   "id": "BG-bqjhjgyn",
   "kind": "bug",
   "title": "gate add reads a bare doc file name in an option (tools.md) as a path outside the touches although a touch holds kb/_self/tools.md, and so makes the gate blocking",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-uz3rhdlq",
   "priority": "P2",
   "rank": 0,
@@ -56,6 +56,28 @@
   ],
   "notes": "Planned in SP-uz3rhdlq: repro/checks fail on the base, touches and order set.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-n4run01",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "51cf14f090f01c2f8526e5e938397cfe60389161",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import bl_authority as a;g=lambda o,t:{\"id\":\"g1\",\"kind\":\"provisional\",\"question\":\"which way?\",\"options\":[\"Drop it\",o],\"recommendation\":\"Drop it\"};i={\"title\":\"x\",\"touches\":[\"kb/_self/tools.md\"]};ok=a.block_reasons(i,g(\"Keep it and reword tools.md\",0),False);bad=a.block_reasons(i,g(\"Keep it and reword web-sources.md\",0),False);print(ok,bad);sys.exit(0 if not ok and bad else 1)"
+        ],
+        "exit": 0,
+        "sha256": "271b6636c5503877"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import bl_authority as a;i={\"title\":\"x\",\"touches\":[\"kb/_self/tools.md\"]};g={\"id\":\"g1\",\"kind\":\"provisional\",\"question\":\"which way?\",\"options\":[\"Drop it\",\"Keep it and reword tools.md\"],\"recommendation\":\"Drop it\"};r=a.block_reasons(i,g,False);print(r);sys.exit(1 if r else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      }
+    ]
+  }
 }
