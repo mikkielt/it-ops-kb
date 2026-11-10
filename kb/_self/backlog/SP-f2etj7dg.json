@@ -1,0 +1,22 @@
+{
+  "id": "SP-f2etj7dg",
+  "kind": "sprint",
+  "title": "Worker, dispatch and housekeeping follow-ups: the paid-session stub lifts only for an approved money gate and works on Windows, report and usage text read workers right, release commits its item file, settings paths stay in the clone, tidy and call-row order scale and sort right, forge reads keep their deadline and fields, the 7-Zip installer handles a folder with a space, perfcheck excuses no dropped test",
+  "status": "planned",
+  "goal": "placeholder goal",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "creator": "op-f618a13e",
+  "filed_in": "clone-0ea70e5c"
+}
