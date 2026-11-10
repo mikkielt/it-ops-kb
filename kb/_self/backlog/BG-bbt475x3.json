@@ -2,7 +2,7 @@
   "id": "BG-bbt475x3",
   "kind": "bug",
   "title": "report warns that a gate was not recorded for a worker line that says no gates recorded",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-o3ag6hca",
   "priority": "P2",
   "rank": 0,
@@ -46,5 +46,7 @@
     "parked: SP-rzwljgxv close"
   ],
   "notes": "Premise run on origin/main at planning (2026-11-10): the repro or first check fails there on the behaviour named in the goal; not fixed by an earlier commit.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-5a0b1c2d",
+  "operator": "op-f618a13e"
 }
