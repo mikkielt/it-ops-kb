@@ -227,7 +227,10 @@ QUESTION_WORDS = {
                        r"\buploa(?:d|ds|ded|ding)\b|\bdeploy(?:s|ed|ing|ment)?\b", re.I),
     "querylog": re.compile(r"query[- ]?log|querylog|redact", re.I),
     "agents-rule": re.compile(r"(?<![\w.-])(?:AGENTS|CLAUDE)\.md|\bskill\b|\bagent definition", re.I),
-    "delete": re.compile(r"\bdelet|\bremov(?:e|es|ed|ing|al) .*(?:kb|content|history)|purge|erase", re.I),
+    "delete": re.compile(r"\bdelet|purge|erase|"
+                         r"\bremov(?:e|es|ed|ing|al)\b(?:\s+(?:the|all|old|stale|any)){0,3}\s+(?:kb|content|history)\b|"
+                         r"\bremov(?:e|es|ed|ing|al)\b(?:\s+\w+){0,4}?\s+(?:from|of|in|out of|within)"
+                         r"\s+(?:(?:the|all|old|stale|any)\s+)*(?:kb|content|history)\b", re.I),
 }
 # The `ceiling` words are the wordings the rules use for the suite's ceiling (`seconds ceiling`, `darwin ceiling`, `the
 # suite's ceiling`, `ceiling for the test suite`, `tests.py ceiling`, `ceiling profile`, `max_seconds`), so a gate that

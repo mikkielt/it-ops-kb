@@ -32,6 +32,29 @@
   "depends_on": [
     "BG-fdxeot43"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the delete pattern tell a removal that governs kb, content or history from one that only precedes the word?",
+      "options": [
+        "Removal word followed by kb/content/history, or by a from/of/in phrase ending in it",
+        "Keep the old pattern and add a negative lookahead for flag"
+      ],
+      "recommendation": "Removal word followed by kb/content/history, or by a from/of/in phrase ending in it",
+      "reason": "a lookahead lists words and misses other nouns",
+      "do": {
+        "Removal word followed by kb/content/history, or by a from/of/in phrase ending in it": "BG-jw2cqoxa",
+        "Keep the old pattern and add a negative lookahead for flag": "BG-jw2cqoxa"
+      },
+      "class": "agents-rule",
+      "answer": "Removal word followed by kb/content/history, or by a from/of/in phrase ending in it",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "links": [
     "parked: SP-pww4aqis review"
   ],
