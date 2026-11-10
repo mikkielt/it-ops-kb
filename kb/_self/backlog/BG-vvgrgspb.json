@@ -19,6 +19,9 @@
   "touches": [
     "kb/public/_answers.md"
   ],
+  "depends_on": [
+    "BG-tiw7j3tt"
+  ],
   "links": [
     "parked: SP-basca7ae review"
   ],
