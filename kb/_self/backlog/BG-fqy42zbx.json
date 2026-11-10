@@ -2,7 +2,7 @@
   "id": "BG-fqy42zbx",
   "kind": "bug",
   "title": "bl_land.is_whole_suite lets --ff, --nf, --deselect, --ignore and --lf through as no whole-suite run although tests.run_scope calls them full and holds them to the seconds ceiling",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-enhaglcw",
   "priority": "P3",
   "rank": 0,

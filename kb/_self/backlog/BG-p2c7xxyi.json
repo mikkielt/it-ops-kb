@@ -2,7 +2,7 @@
   "id": "BG-p2c7xxyi",
   "kind": "bug",
   "title": "A gate that asks which words a regex reads as a paying cue is made blocking with strict money, since its option text lists the word paid",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-enhaglcw",
   "priority": "P3",
   "rank": 0,

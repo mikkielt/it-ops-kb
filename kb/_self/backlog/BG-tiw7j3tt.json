@@ -2,7 +2,7 @@
   "id": "BG-tiw7j3tt",
   "kind": "bug",
   "title": "_answers.md QK-stores-changing-facts-mark-fact-was says Graphiti's created_at and expired_at mark when the store knew, beyond what the pinned edges.py holds",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-enhaglcw",
   "priority": "P2",
   "rank": 0,

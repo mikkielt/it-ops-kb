@@ -2,7 +2,7 @@
   "id": "BG-afksmtkf",
   "kind": "bug",
   "title": "The kb-sprint run step has no route for an item that waits on or overlaps another session's item, so the orchestrator asks the operator instead of settling it through coord",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-enhaglcw",
   "priority": "P2",
   "rank": 0,

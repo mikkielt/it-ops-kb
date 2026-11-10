@@ -2,7 +2,7 @@
   "id": "BG-rwviux2q",
   "kind": "bug",
   "title": "The docs map sends a kbingest.py change to tools.md and the kb-ingest skill but not to extending.md, which states the group mapper digest, so BG-5lnmlpua's plan missed it and its worker stopped for touches",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-enhaglcw",
   "priority": "P3",
   "rank": 0,

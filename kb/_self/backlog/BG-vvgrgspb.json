@@ -2,7 +2,7 @@
   "id": "BG-vvgrgspb",
   "kind": "bug",
   "title": "An answers entry says a cross-session message is held only by an explicit hold or a bypass default",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-enhaglcw",
   "priority": "P3",
   "rank": 0,

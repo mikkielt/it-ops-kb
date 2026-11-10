@@ -2,7 +2,7 @@
   "id": "SP-enhaglcw",
   "kind": "sprint",
   "title": "Review leftovers close: gate classes skip backticked class names and word-list text, whole-suite detection follows tests.run_scope, rule-file names stay protected, kbingest digests follow sibling packages, census and goal-question edge cases, web-sources and answers facts state what the code holds, docs maps name extending.md, item and sprint skills keep their promises",
-  "status": "planned",
+  "status": "active",
   "goal": "bl_land.is_whole_suite counts --ff, --nf, --deselect, --ignore and --lf runs as whole-suite runs like tests.run_scope; bl_authority keeps the outside-the-touches reason for a rule-guarding bare file name, reads no class word inside a backticked gate class name, and reads no money signal in a gate that quotes paid as a word list; kbingest.module_digest covers a package imported from a non-package mapper's directory, and extending.md says a lazy import is covered only after the mapper has run; kb/_self/map.csv maps extending.md to kbingest.py; bl_precheck.unanswered_questions words the skip line for a numbered piece exactly; census.brief_flog breaks a detect-log tie by the later run; web-sources.md says what detect does for a github.com row after the reducer change; the answers QK-stores-changing-facts-mark-fact-was and QK-listagents-sendmessage-two-sessions-held state only what the cited facts hold; the item skill names check-trailers only for a project whose push is the kb's sync; the sprint skill run section says how the orchestrator settles a dependency or overlap with another session's item through coord",
   "gates": [
     {

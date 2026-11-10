@@ -2,7 +2,7 @@
   "id": "BG-wtxrzkty",
   "kind": "bug",
   "title": "The plugin's item skill says check-trailers refuses the push, a guard a host project's land_push does not have",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4fawjprq",
   "sprint": "SP-enhaglcw",
   "priority": "P2",

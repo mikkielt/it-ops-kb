@@ -2,7 +2,7 @@
   "id": "ST-y74gcgvf",
   "kind": "story",
   "title": "Research sprint goal: Review leftovers close: gate classes skip backticked class names and word-list text, whole-suite detection follows tests.run_scope, rule-file names stay protected, kbingest digests follow sibling packages, census and goal-question edge cases, web-sources and answers facts state what the code holds, docs maps name extending.md, item and sprint skills keep their promises",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-enhaglcw",
   "goal_research": true,
   "priority": "P1",
