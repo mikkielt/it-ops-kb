@@ -37,7 +37,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "name the cause: no question mark, several numbers after a lead-in",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
