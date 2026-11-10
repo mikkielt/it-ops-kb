@@ -2,7 +2,7 @@
   "id": "BG-6ywbtbco",
   "kind": "bug",
   "title": "token_words misses a hyphen-prefixed source id joined to text by an underscore, as S-5kvx24wm_old",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-uz3rhdlq",
   "priority": "P2",
   "rank": 0,
@@ -36,5 +36,7 @@
     "parked: SP-yriisdti review"
   ],
   "notes": "Planned in SP-uz3rhdlq: repro/checks fail on the base, touches and order set.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-n4run01",
+  "operator": "op-f618a13e"
 }
