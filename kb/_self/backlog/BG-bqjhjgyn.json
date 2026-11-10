@@ -2,7 +2,7 @@
   "id": "BG-bqjhjgyn",
   "kind": "bug",
   "title": "gate add reads a bare doc file name in an option (tools.md) as a path outside the touches although a touch holds kb/_self/tools.md, and so makes the gate blocking",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-uz3rhdlq",
   "priority": "P2",
   "rank": 0,
@@ -33,5 +33,7 @@
     "parked: SP-c6tr77jl close"
   ],
   "notes": "Planned in SP-uz3rhdlq: repro/checks fail on the base, touches and order set.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-n4run01",
+  "operator": "op-f618a13e"
 }
