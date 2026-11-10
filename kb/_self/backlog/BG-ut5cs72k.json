@@ -2,7 +2,7 @@
   "id": "BG-ut5cs72k",
   "kind": "bug",
   "title": "fact-validity-windows.md states Graphiti's created_at and expired_at beyond what the pinned code says",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-cb5bp3sz",
   "priority": "P3",
   "rank": 0,
@@ -55,6 +55,37 @@
   ],
   "notes": "Found by the SP-vlfcgmbu review (gap 5). The doc2query stale check passes before the work and pins that reworded facts leave no stale expansion rows. Planned into SP-cb5bp3sz on 2026-11-10; the draft's touches, checks and clause mapping were completed then.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-n1run001",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "f8c347572671305ba07b0a2e981bb5db4dde7100",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,sys;L=[l for l in open('kb/public/prior-art/fact-validity-windows.md',encoding='utf-8') if 'resolve_edge_contradictions' in l and 'expired_at' in l];print(len(L));sys.exit(0 if L and all(re.search(r'already|not overwritten|only (?:when|if)|unless', l) for l in L) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "4355a46b19d348dc"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/doc2query.py",
+          "stale"
+        ],
+        "exit": 0,
+        "sha256": "87a3b1b935511a85"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;L=open(\"kb/public/prior-art/fact-validity-windows.md\").read().splitlines();bad=[i+1 for i,l in enumerate(L) if \"EntityEdge\" in l and \"when the store knew\" in l]+[i+1 for i,l in enumerate(L) if \"fills its `expired_at` with the current time\" in l];print(\"lines still worded beyond the code:\",bad);sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "564e38cf1f42f478"
+      }
+    ]
+  }
 }
