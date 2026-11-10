@@ -2,7 +2,7 @@
   "id": "BG-d6ku6pkl",
   "kind": "bug",
   "title": "The session-load Setup of the benchmarks report says arm B replays kbmon.py --once and --status all, though PANE_COMMANDS is now --once --shared --max-age 55, and does not say the recorded arm B figures used plain --once",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-3nqlr7b5",
   "priority": "P3",
   "rank": 0,

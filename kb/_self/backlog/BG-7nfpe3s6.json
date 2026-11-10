@@ -2,7 +2,7 @@
   "id": "BG-7nfpe3s6",
   "kind": "bug",
   "title": "kbmon_otel --check-rules misses a kbmon_ name inside a YAML-quoted expr or a __name__ matcher and misreads a recording-rule name",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-3nqlr7b5",
   "priority": "P3",

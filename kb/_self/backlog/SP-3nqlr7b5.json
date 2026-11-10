@@ -2,7 +2,7 @@
   "id": "SP-3nqlr7b5",
   "kind": "sprint",
   "title": "kbmon, coord, bench and check scans are exact",
-  "status": "planned",
+  "status": "active",
   "goal": "kbmon's needs-you line and receipt say nothing or no alert only for panels they read; kbmon's fold line for many sprints stays within 120 characters; the kbmon-pane mod records no alert set from a refresh begun before /clear; kbmon's coord panel leaves a coord store as it found it; monitoring.md says a failed receipt run is retried at the next refresh; kbmon_otel --check-rules reads quoted, __name__ and recording-rule metric names; selfcheck's host line fits its limit beside an old host lock; coord digest labels an intent done only when all its items are done; coord wait takes --state to return only on the states listed; coordination.md no longer calls the kb-observer role's command list longer than the session's tools; pool build's Sonnet call leaves no scratch directory; bench_retrieval's pool hint names pool build --ask; the benchmarks report Setup names the pane commands arm B replays; PaidBench builds no failing claude shim; multi run limits its agent's tools with --tools; check.py's code scan keeps a docstring before a backslash continuation; check.py's code scan records a comment inside an f-string replacement field",
   "gates": [
     {

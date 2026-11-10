@@ -2,7 +2,7 @@
   "id": "BG-gvgiekwa",
   "kind": "bug",
   "title": "PaidBench.__init__ puts a failing claude shim on PATH around Bench.__init__, which no longer starts claude, and its docstring says Bench reads the version there",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-3nqlr7b5",
   "priority": "P2",
   "rank": 0,

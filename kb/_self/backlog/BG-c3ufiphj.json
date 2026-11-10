@@ -2,7 +2,7 @@
   "id": "BG-c3ufiphj",
   "kind": "bug",
   "title": "The needs-you head says nothing and the receipt says no alert for a panel kbmon did not read",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-3nqlr7b5",
   "priority": "P3",
