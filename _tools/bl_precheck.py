@@ -76,8 +76,13 @@ def goal_questions(goal, skipped=None):
     each once. The goal is cut where `goal_clauses` cuts it, but a question is read
     whole: a piece that names no question is joined to the next across a `, and ` (a question's own comma-and, `which
     item ..., and what does it print?`) and left unread at a `; `, which ends a clause, or at the goal's end: SKIPPED,
-    when a list, takes each such piece, so a caller says what it did not read. A goal with no such sentence (the
-    default goal of a research story, which `new sprint` files) names none."""
+    when a list, takes each such piece, so a caller says what it did not read. A sentence that leads in the first
+    numbered piece (the text before it, ending in `.` or `!`, as `Answer with the kb tools first. (1) How ...?`) is
+    dropped, so question 1 holds the piece's own words; a `?` sentence before the number is a question of its own, and
+    a number inside a question (`Does it support (1) a or (2) b?`) leads nothing. A numbered piece that has no `?`
+    before a `; ` is one question with the text after the `; ` when that text does not start a numbered piece and
+    ends in a `?`: `(2) May a path hold = and ; so a pair rides in it?`. A goal with no such sentence (the default
+    goal of a research story, which `new sprint` files) names none."""
     parts = re.split(f"({CLAUSE_SPLIT.pattern})", str(goal or ""))
     out, cur = [], ""
 
@@ -91,14 +96,27 @@ def goal_questions(goal, skipped=None):
             piece = rest.strip()
         return piece
 
+    def without_lead_in(text):
+        first = NUMBERED_PIECE.search(text)
+        if first and first.start() and re.search(r"[.!]\s*$", text[:first.start()]):
+            return text[first.start():]
+        return text
+
     for n in range(0, len(parts), 2):
         cur = parts[n] if not cur else cur + parts[n - 1] + parts[n]
         sentences = [x.strip() for x in re.split(r"(?<=\?)\s+", cur.strip()) if x.strip()]
         tail = sentences.pop() if sentences and not sentences[-1].endswith("?") else ""  # the text a `?` has not ended
+        sentences = [without_lead_in(x) for x in sentences]
+        tail = without_lead_in(tail)
         out.extend(question(piece) for piece in sentences)
-        if n + 2 < len(parts) and not parts[n + 1].startswith(";"):
-            cur = tail
-            continue
+        if n + 2 < len(parts):
+            semicolon = parts[n + 1].startswith(";")
+            # a numbered piece cut at a `; ` inside its own question: the next part ends that question
+            joins = semicolon and NUMBERED_PIECE.match(tail) and not NUMBERED_PIECE.match(parts[n + 2]) \
+                and re.match(r"[^?]*\?(\s|$)", parts[n + 2])
+            if not semicolon or joins:
+                cur = tail + " " if joins and parts[n].endswith(" ") else tail  # the space before a `;` stays
+                continue
         cur = ""
         if NUMBERED_PIECE.match(tail) and question(tail):
             out.append(question(tail))
