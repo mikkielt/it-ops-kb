@@ -20,6 +20,27 @@
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does check_host keep the line over both load limits with an old host lock within LINE_MAX?",
+      "options": [
+        "a short host-lock remedy when a load remedy already names the -k selection, and a tighter both-load remedy",
+        "cut the lock listing or the load detail instead"
+      ],
+      "recommendation": "a short host-lock remedy when a load remedy already names the -k selection, and a tighter both-load remedy",
+      "reason": "the lock detail and every remedy stay whole",
+      "do": {
+        "a short host-lock remedy when a load remedy already names the -k selection, and a tighter both-load remedy": "BG-cfw3z5yd",
+        "cut the lock listing or the load detail instead": "BG-cfw3z5yd"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "a short host-lock remedy when a load remedy already names the -k selection, and a tighter both-load remedy",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-tsb23kev review"
   ],
