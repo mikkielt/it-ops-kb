@@ -2,7 +2,7 @@
   "id": "BG-3anea3z7",
   "kind": "bug",
   "title": "group_gate refuses the whole gate when one kb/<dir>/settings.json has a directory name that is not a plain name",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-wjrxikw6",
   "priority": "P2",
   "rank": 0,
@@ -47,6 +47,19 @@
   ],
   "notes": "Planned in SP-wjrxikw6 2026-11-10: touches, order and repro checked against the base.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-a1b2c3d4",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "ba6170ee635cf705bfae4ace7086b5afbd143780",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport json,sys,tempfile,pathlib\nsys.path.insert(0,\"_tools\")\nT=pathlib.Path(tempfile.mkdtemp())\nd=T/\"kb\"/\"odd dir\"; d.mkdir(parents=True)\n(d/\"settings.json\").write_text(json.dumps({\"gate_checks\":[[\"true\"]]}))\nimport kg_sync\nf=kg_sync.group_gate(T)\nsys.exit(0 if not f else \"not yet: \"+str(f)[:300])\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
