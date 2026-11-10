@@ -2,7 +2,7 @@
   "id": "BG-erzhc222",
   "kind": "bug",
   "title": "release leaves the item file modified and uncommitted, so begin of an item whose touches overlap the released claim still refuses until a hand set --commit and sync push",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-o3ag6hca",
   "priority": "P3",
   "rank": 0,
@@ -45,5 +45,7 @@
     "parked: SP-mut2pmu3 close"
   ],
   "notes": "Premise run on origin/main at planning (2026-11-10): the repro or first check fails there on the behaviour named in the goal; not fixed by an earlier commit.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-5a0b1c2d",
+  "operator": "op-f618a13e"
 }
