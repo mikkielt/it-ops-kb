@@ -2,7 +2,7 @@
   "id": "ST-44e3ngi6",
   "kind": "story",
   "title": "Research sprint goal: Backlog gates, land, report and skill text tell the truth: gate classes match meaning, whole-suite detection exact, land tokens right, upstream import reads workers right, skills and agents name the real rules, kbingest guards and digests hold",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-uz3rhdlq",
   "goal_research": true,
   "priority": "P1",
@@ -21,7 +21,22 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: every item of this sprint changes the project's own tools, skills and _self docs, which the _self rules and the code answer; no Microsoft, MCP or Claude Code product fact is open, so no article fact, source row or gap entry is written.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-n4run01",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "6a6b0c5cbd71dabcd7d9923ac36b27d6d795c563",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-44e3ngi6"
+        ],
+        "exit": 0,
+        "sha256": "182cb19f1004969b"
+      }
+    ]
+  }
 }
