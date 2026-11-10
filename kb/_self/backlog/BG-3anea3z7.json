@@ -19,6 +19,29 @@
     "_tools/kg_sync.py",
     "kb/_self/git.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does group_gate treat a kb directory whose name kbsettings.layered refuses as not a plain name?",
+      "options": [
+        "skip it silently, kg_sync keeping its own PLAIN_ROOT_NAME pattern",
+        "skip it and name it in a warning line",
+        "fail the gate for that directory only"
+      ],
+      "recommendation": "skip it silently, kg_sync keeping its own PLAIN_ROOT_NAME pattern",
+      "reason": "the repro needs no failure, and kbsettings.py is outside the touches, so a public helper there is a follow-up",
+      "do": {
+        "skip it silently, kg_sync keeping its own PLAIN_ROOT_NAME pattern": "BG-3anea3z7",
+        "skip it and name it in a warning line": "BG-3anea3z7",
+        "fail the gate for that directory only": "BG-3anea3z7"
+      },
+      "class": "push",
+      "hold": true,
+      "answer": "skip it silently, kg_sync keeping its own PLAIN_ROOT_NAME pattern",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ga3lbnlk review"
   ],
