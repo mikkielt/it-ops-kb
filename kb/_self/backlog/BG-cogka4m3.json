@@ -3,7 +3,6 @@
   "kind": "bug",
   "title": "The url identity helper does not normalise // and dot segments or a trailing-dot host, and reads x, x.git and x/.git as one repository",
   "status": "draft",
-  "sprint": "SP-u5zhszow",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -53,8 +52,9 @@
     "kb/_self/git.md"
   ],
   "links": [
-    "parked: SP-3trnelzv review"
+    "parked: SP-3trnelzv review",
+    "parked: publish-adjacent, after the operator's morning publish"
   ],
-  "notes": "Check 3 (test_prepush_e2e.py) passes before the work: it pins the url matching that must stay. kbpublic.location and same_repository feed is_public: the normalisation only widens what matches one repository, and x versus x.git splits two repositories that matched as one. Normalisation: _repo_path takes posixpath.normpath of the path and the host loses its trailing dot.",
+  "notes": "Check 3 (test_prepush_e2e.py) passes before the work: it pins the url matching that must stay. kbpublic.location and same_repository feed is_public: the normalisation only widens what matches one repository, and x versus x.git splits two repositories that matched as one. Normalisation: _repo_path takes posixpath.normpath of the path and the host loses its trailing dot. parked: publish-adjacent, after the operator's morning publish",
   "filed_in": "clone-0ea70e5c"
 }
