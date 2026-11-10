@@ -2,7 +2,7 @@
   "id": "BG-fol7jkye",
   "kind": "bug",
   "title": "goal_questions strips a number such as (2) or '2.' from inside a question, not only from its start",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-cb5bp3sz",
   "priority": "P3",
   "rank": 0,
@@ -64,6 +64,37 @@
     "parked: SP-ia6xayiy review"
   ],
   "notes": "Planner 2026-11-10: a check of this item that already exits 0 on the base pins behaviour that must stay (the positives and re-export, a numbered list read as before, a valid date and note accepted, the id command still running, a memo kept for a live source, an explicitly closed hidden element); the repro and the other checks fail until the work. Planned into SP-cb5bp3sz on 2026-11-10; the draft's touches, checks and clause mapping were completed then.",
-  "claimed_by": "claude-n1run001",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "59132b072783acb52238b2fb62f7c9afe7941dff",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bl_precheck as b;q=b.goal_questions('See section 2. Does it matter?');print(q);sys.exit(0 if q==['See section 2. Does it matter?'] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "88c4c53d72ddbf0d"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bl_precheck as b;q=b.goal_questions('(1) Does it support a? (2) Does it support b?');print(q);sys.exit(0 if q==['Does it support a?','Does it support b?'] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "8b3d201552bead8f"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bl_precheck as b;q=b.goal_questions('Does it support (1) a or (2) b?');print(q);sys.exit(0 if q==['Does it support (1) a or (2) b?'] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e645aa2aef4186d6"
+      }
+    ]
+  }
 }
