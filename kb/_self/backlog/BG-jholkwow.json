@@ -2,7 +2,7 @@
   "id": "BG-jholkwow",
   "kind": "bug",
   "title": "coord.py digest labels a two-item intent state=done when asked by its touch or topic key and only one item is done",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3nqlr7b5",
   "priority": "P3",
   "rank": 0,
@@ -24,5 +24,7 @@
   "links": [
     "parked: SP-n7f53pgv review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-n3run001",
+  "operator": "op-f618a13e"
 }
