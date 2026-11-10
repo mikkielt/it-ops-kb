@@ -1,0 +1,15 @@
+{
+  "id": "ST-gp5g57q2",
+  "kind": "story",
+  "title": "A change that widens the leak scan checks the unpublished range before done, so commits made under the older scan cannot block publish later",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "done of an item whose touches hold _tools/kbcommon.py, _tools/redact.py or _tools/kbpublic.py runs kbpublic.range_leaks from refs/kb/published to the item's tip and refuses with each cause the change adds over the base, naming the allowlist or a reworded file as the remedy; the sprint skill's review step names the same check",
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md",
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
