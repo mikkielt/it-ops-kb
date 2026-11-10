@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "forge_reads does not cut a caller-injected runner at the total deadline, so BG-mhsmvdrz's 60 s bound holds only for the default runner and is unproven by its repro",
   "status": "draft",
+  "sprint": "SP-f2etj7dg",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

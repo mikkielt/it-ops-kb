@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "committed_calls keeps the newest call rows by git grep path order, which is not strictly chronological",
   "status": "draft",
+  "sprint": "SP-f2etj7dg",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",

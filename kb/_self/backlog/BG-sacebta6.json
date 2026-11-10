@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "money_approved lifts the paid-session stub for a refused gate (answer no) and for any gate whose text holds spent or paid, since it tests only that an answer exists and a money word",
   "status": "draft",
+  "sprint": "SP-f2etj7dg",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "the kbtools entry for backlog.py set cuts the list of options a batch refuses after --notes and runs into the next fragment",
   "status": "draft",
+  "sprint": "SP-f2etj7dg",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",

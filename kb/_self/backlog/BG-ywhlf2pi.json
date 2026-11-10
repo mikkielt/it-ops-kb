@@ -4,6 +4,7 @@
   "title": "The path setting type accepts a Windows drive path and backslash dot-dot, so scratch_dir can leave the clone on Windows",
   "status": "draft",
   "parent": "EP-4fawjprq",
+  "sprint": "SP-f2etj7dg",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

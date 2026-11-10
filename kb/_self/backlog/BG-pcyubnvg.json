@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "bl_dispatch.worker_traceparent's docstring and backlog.md's dispatch paragraph say the worker's trace is its sprint's, but mon_events.worker_ids gives the run's own trace",
   "status": "draft",
+  "sprint": "SP-f2etj7dg",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",

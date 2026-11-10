@@ -4,6 +4,7 @@
   "title": "backlog.py tidy starts one git status per removable worktree, so its git processes grow with the number of leftovers",
   "status": "draft",
   "parent": "EP-iowijan3",
+  "sprint": "SP-f2etj7dg",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",

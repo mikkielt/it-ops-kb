@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "release leaves the item file modified and uncommitted, so begin of an item whose touches overlap the released claim still refuses until a hand set --commit and sync push",
   "status": "draft",
+  "sprint": "SP-f2etj7dg",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
