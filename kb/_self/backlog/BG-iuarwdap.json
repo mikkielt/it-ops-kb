@@ -38,6 +38,25 @@
   "depends_on": [
     "BG-c3ufiphj"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the fold line of the sprints topic name the sprints with run states within 120 characters, and what do the kept lines show?",
+      "options": [
+        "Fold by state with sprint ids, kept lines lead with the sprint id and a 28-character name; ids fall back to a sprint count when they do not fit",
+        "Fold by sprint with its short title and states, cut at 120 characters"
+      ],
+      "recommendation": "Fold by state with sprint ids, kept lines lead with the sprint id and a 28-character name; ids fall back to a sprint count when they do not fit",
+      "do": {
+        "Fold by state with sprint ids, kept lines lead with the sprint id and a 28-character name; ids fall back to a sprint count when they do not fit": "BG-iuarwdap",
+        "Fold by sprint with its short title and states, cut at 120 characters": "BG-iuarwdap"
+      },
+      "class": "design",
+      "answer": "Fold by state with sprint ids, kept lines lead with the sprint id and a 28-character name; ids fall back to a sprint count when they do not fit",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-hyfyn22d review"
   ],
