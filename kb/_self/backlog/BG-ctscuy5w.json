@@ -2,7 +2,7 @@
   "id": "BG-ctscuy5w",
   "kind": "bug",
   "title": "Docstrings of load_group_commands, kblane.raw_names and kbpublic.blobs_marked still describe the behaviour before the sprint's fixes: kbext imported only for an entry point, only commit_paths dropping a gitlink, None only for invalid UTF-8",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-u5zhszow",
   "priority": "P3",
   "rank": 0,
@@ -64,5 +64,7 @@
   "links": [
     "parked: SP-wjrxikw6 review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-n7run001",
+  "operator": "op-f618a13e"
 }
