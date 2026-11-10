@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kg_sync.PLAIN_ROOT_NAME copies kbsettings' plain-name pattern, so a name layered accepts but the copy skips drops that root's gate_checks silently",
   "status": "draft",
+  "sprint": "SP-u5zhszow",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",

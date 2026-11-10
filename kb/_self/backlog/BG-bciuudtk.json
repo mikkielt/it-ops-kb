@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "The usage text of backlog.py says only claim, done, new, start and close take --commit, but release now takes it too, and the kbtools entry for release names no --commit",
   "status": "draft",
+  "sprint": "SP-u5zhszow",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",

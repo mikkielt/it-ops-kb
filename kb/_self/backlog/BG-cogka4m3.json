@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "The url identity helper does not normalise // and dot segments or a trailing-dot host, and reads x, x.git and x/.git as one repository",
   "status": "draft",
+  "sprint": "SP-u5zhszow",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

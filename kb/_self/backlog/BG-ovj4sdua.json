@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "The coord hook reads announce.to_other_sessions from an invalid settings.json by the first such key in the text, so an unrelated earlier key outside coordination.announce beats the real false and the intent is posted",
   "status": "draft",
+  "sprint": "SP-u5zhszow",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
