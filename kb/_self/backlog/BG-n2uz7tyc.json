@@ -19,6 +19,9 @@
   "touches": [
     "kb/_self/extending.md"
   ],
+  "depends_on": [
+    "BG-57l7khij"
+  ],
   "links": [
     "parked: SP-uz3rhdlq review"
   ],
