@@ -50,6 +50,26 @@
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which text counts as a lead-in dropped before the first numbered piece, and when does a semicolon stay inside a numbered question?",
+      "options": [
+        "Drop only text ending in a full stop or exclamation mark, and join a numbered piece to the text after a semicolon only when that text starts no numbered piece and ends in a question mark",
+        "Drop any text before the first numbered piece, a colon lead-in too, and join across every semicolon"
+      ],
+      "recommendation": "Drop only text ending in a full stop or exclamation mark, and join a numbered piece to the text after a semicolon only when that text starts no numbered piece and ends in a question mark",
+      "do": {
+        "Drop only text ending in a full stop or exclamation mark, and join a numbered piece to the text after a semicolon only when that text starts no numbered piece and ends in a question mark": "BG-ax6e6rzc",
+        "Drop any text before the first numbered piece, a colon lead-in too, and join across every semicolon": "BG-ax6e6rzc"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "Drop only text ending in a full stop or exclamation mark, and join a numbered piece to the text after a semicolon only when that text starts no numbered piece and ends in a question mark",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-g4mwrwsv close"
   ],
