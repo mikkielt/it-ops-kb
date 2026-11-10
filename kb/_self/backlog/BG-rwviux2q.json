@@ -20,6 +20,9 @@
     "kb/_self/map.csv",
     "kb/_self/extending.md"
   ],
+  "depends_on": [
+    "BG-n2uz7tyc"
+  ],
   "links": [
     "parked: SP-uz3rhdlq close"
   ],
