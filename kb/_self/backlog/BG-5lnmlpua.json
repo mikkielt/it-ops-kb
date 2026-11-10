@@ -38,7 +38,12 @@
         "modules loaded in the process from the mapper's directory (a package: under its directory)": "BG-5lnmlpua",
         "every .py file in the mapper's directory": "BG-5lnmlpua"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "modules loaded in the process from the mapper's directory (a package: under its directory)",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "links": [
