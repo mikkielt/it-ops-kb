@@ -1,0 +1,22 @@
+{
+  "id": "BG-ilm3aeau",
+  "kind": "bug",
+  "title": "A design gate that says a paid pool build is blocked by the strict money signal although nothing is spent",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "block_reasons gives no strict money reason for a gate whose question names a paid pool build only as the thing a fix keeps clean, with no spend or cost choice among its options",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_authority as a;g={'id':'g1','kind':'blocking','question':'How does sonnet_regexes get its working directory so a paid pool build leaves none?','options':['tempfile.TemporaryDirectory removed after the call','keep scratch_dir() and remove it after the call']};it={'id':'BG-y','kind':'bug','title':'pool build scratch','goal':'g','touches':['_tools/bench_pool.py']};r=a.block_reasons(it,g);print(r);sys.exit(1 if any('money' in x for x in r) else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_authority.py",
+    "kb/_self/backlog.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
