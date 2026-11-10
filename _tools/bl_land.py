@@ -330,13 +330,16 @@ def cites_sources(path):
 def token_words(text):
     """The tokens of TEXT, and the parts of each joined by a hyphen or underscore: S100-related and S100-S120 name
     S100 (and S120), S300_old names S300; each two neighbouring parts joined by one hyphen are a word too, so a
-    hyphen-prefixed id names itself: S-5kvx24wm-related and S-5kvx24wm-S-abcd1234 name S-5kvx24wm (and S-abcd1234)."""
+    hyphen-prefixed id names itself: S-5kvx24wm-related and S-5kvx24wm-S-abcd1234 name S-5kvx24wm (and S-abcd1234).
+    The token is split at underscores before the hyphen pairs are built, so S-5kvx24wm_old and x_S-5kvx24wm name
+    S-5kvx24wm too."""
     words = set()
     for tok in TOKEN_RE.findall(text):
         words.add(tok)
         words.update(p for p in re.split(r"[-_]+", tok) if p)
-        parts = tok.split("-")
-        words.update(f"{a}-{b}" for a, b in zip(parts, parts[1:]) if a and b and "_" not in a + b)
+        for seg in tok.split("_"):
+            parts = seg.split("-")
+            words.update(f"{a}-{b}" for a, b in zip(parts, parts[1:]) if a and b)
     return words
 
 
