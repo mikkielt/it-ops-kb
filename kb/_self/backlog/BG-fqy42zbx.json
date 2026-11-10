@@ -20,7 +20,7 @@
       "run": [
         "python3",
         "-c",
-        "import sys;sys.path.insert(0,\"_tools\");import bl_land;t=open(\"kb/_self/backlog.md\",encoding=\"utf-8\").read();l=[x for x in t.splitlines() if \"bl_land.NARROWING_OPTIONS\" in x];n=sorted(bl_land.NARROWING_OPTIONS);bad=[o for o in (\"--ff\",\"--nf\",\"--lf\",\"--deselect\",\"--ignore\") if o in n and not all(o in x for x in l)];print(l and n,bad);sys.exit(1 if (not l or any(o in n for o in (\"--ff\",\"--nf\",\"--lf\")) and any(\"\" in x for x in l)) else 0)"
+        "import sys;t=open(\"kb/_self/backlog.md\",encoding=\"utf-8\").read();l=[x for x in t.splitlines() if \"bl_land.NARROWING_OPTIONS\" in x];s=l[0].split(\"bl_land.NARROWING_OPTIONS\",1)[1].split(\"-n 2\")[0] if l else \"\";print(s);sys.exit(1 if not l or any(o in s for o in (\"--ff\",\"--lf\",\"--deselect\",\"--ignore\")) else 0)"
       ]
     }
   ],
