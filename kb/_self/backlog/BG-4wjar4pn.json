@@ -2,7 +2,7 @@
   "id": "BG-4wjar4pn",
   "kind": "bug",
   "title": "bl_land.ops_token gives a token that starts with an underscore or a digit, which ql_capture refuses, so the land.step row of a project whose push program starts that way is dropped",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-uz3rhdlq",
   "priority": "P3",
   "rank": 0,
@@ -27,5 +27,7 @@
     "parked: SP-w57bnhhx review"
   ],
   "notes": "Found by the SP-w57bnhhx review on 2026-10-26 (fresh-context reviewer, probed on the tip of the main branch); not S1, so parked as a draft in no sprint. Planned in SP-uz3rhdlq: repro/checks fail on the base, touches and order set.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-n4run01",
+  "operator": "op-f618a13e"
 }
