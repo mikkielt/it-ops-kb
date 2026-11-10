@@ -2,7 +2,7 @@
   "id": "BG-fqy42zbx",
   "kind": "bug",
   "title": "bl_land.is_whole_suite lets --ff, --nf, --deselect, --ignore and --lf through as no whole-suite run although tests.run_scope calls them full and holds them to the seconds ceiling",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-enhaglcw",
   "priority": "P3",
   "rank": 0,
@@ -32,5 +32,7 @@
   "links": [
     "parked: SP-uz3rhdlq review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-86c7e088",
+  "operator": "op-f618a13e"
 }
