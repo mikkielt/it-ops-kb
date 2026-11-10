@@ -23,6 +23,24 @@
   "depends_on": [
     "BG-udzt6mbi"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Is the count of backticked names read in each text alone (the question, each option), or over the whole gate together?",
+      "options": [
+        "each text alone",
+        "the whole gate together"
+      ],
+      "recommendation": "each text alone",
+      "reason": "the existing blanking already reads the question and each option separately, and an option that holds one name beside a question that holds two stays read on its own words",
+      "do": {
+        "each text alone": "BG-32pflgn4",
+        "the whole gate together": "BG-32pflgn4"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-86c7e088",
   "operator": "op-f618a13e"
