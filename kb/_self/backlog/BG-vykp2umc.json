@@ -2,7 +2,7 @@
   "id": "BG-vykp2umc",
   "kind": "bug",
   "title": "kbid.py's module docstring says the publisher comes from the page's og:site_name or application-name, which provider.read_page no longer reads",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-cb5bp3sz",
   "priority": "P2",
   "rank": 0,
@@ -33,6 +33,29 @@
   ],
   "notes": "Planner 2026-11-10: a check of this item that already exits 0 on the base pins behaviour that must stay (the positives and re-export, a numbered list read as before, a valid date and note accepted, the id command still running, a memo kept for a live source, an explicitly closed hidden element); the repro and the other checks fail until the work. Planned into SP-cb5bp3sz on 2026-11-10; the draft's touches, checks and clause mapping were completed then.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-n1run001",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "65e6ef2151ec728b9d8f3ce6181535fa110c11a5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/kbid.py",
+          "url",
+          "https://example.com/x"
+        ],
+        "exit": 0,
+        "sha256": "131eeface89e7549"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.exit(1 if 'og:site_name or application-name' in open('_tools/kbid.py',encoding='utf-8').read() else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
