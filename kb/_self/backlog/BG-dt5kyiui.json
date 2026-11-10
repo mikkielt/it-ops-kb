@@ -45,6 +45,26 @@
   "depends_on": [
     "BG-5lnmlpua"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the pattern-row guard compare atoms over all of Unicode, and when does a fixed atom between two variable atoms keep them ambiguous?",
+      "options": [
+        "Probe every character below U+0300, one per 64 code points above and each character the regex writes; a fixed atom keeps a pending atom as the characters both match",
+        "Probe every code point of Unicode for every atom"
+      ],
+      "recommendation": "Probe every character below U+0300, one per 64 code points above and each character the regex writes; a fixed atom keeps a pending atom as the characters both match",
+      "do": {
+        "Probe every character below U+0300, one per 64 code points above and each character the regex writes; a fixed atom keeps a pending atom as the characters both match": "BG-dt5kyiui",
+        "Probe every code point of Unicode for every atom": "BG-dt5kyiui"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "Probe every character below U+0300, one per 64 code points above and each character the regex writes; a fixed atom keeps a pending atom as the characters both match",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-n7zxspch review"
   ],
