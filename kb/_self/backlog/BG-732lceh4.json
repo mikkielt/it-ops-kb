@@ -21,6 +21,25 @@
     "kb/_self/web-sources.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which detect log does the brief's factdiff.py dead command name when the rows' evidence names several numbered logs?",
+      "options": [
+        "the log most rows name, the last by name on a tie",
+        "the last log by name"
+      ],
+      "recommendation": "the log most rows name, the last by name on a tie",
+      "do": {
+        "the log most rows name, the last by name on a tie": "BG-732lceh4",
+        "the last log by name": "BG-732lceh4"
+      },
+      "class": "design",
+      "answer": "the log most rows name, the last by name on a tie",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-2cq2hse4 review"
   ],
