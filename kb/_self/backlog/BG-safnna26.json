@@ -3,7 +3,7 @@
   "kind": "bug",
   "title": "pool build --ask and --redo make a run-<pid>-<hex> scratch directory in sonnet_regexes that nothing removes, since no Bench closes it",
   "status": "draft",
-  "sprint": "SP-qho2eyk2",
+  "sprint": "SP-3nqlr7b5",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -18,7 +18,8 @@
   "repro_reason": "the call is a paid Sonnet run, so the repro reads that sonnet_regexes still takes scratch_dir() from the benchmarks scratch base",
   "touches": [
     "_tools/bench_pool.py",
-    "kb/_self/benchmarks.md"
+    "kb/_self/benchmarks.md",
+    "kb/_self/tools.md"
   ],
   "links": [
     "parked: SP-hyfyn22d review"

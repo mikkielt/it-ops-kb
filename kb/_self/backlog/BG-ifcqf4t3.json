@@ -4,7 +4,7 @@
   "title": "multi run --tools files and kb restrict an agent with --allowedTools, which bypassPermissions ignores",
   "status": "draft",
   "parent": "EP-giqleoy2",
-  "sprint": "SP-qho2eyk2",
+  "sprint": "SP-3nqlr7b5",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -19,7 +19,11 @@
   "touches": [
     "_tools/bench_multi.py",
     "_tools/benchmarks.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/benchmarks.md"
+  ],
+  "depends_on": [
+    "BG-gvgiekwa"
   ],
   "links": [
     "parked: SP-5y4ut64g review"

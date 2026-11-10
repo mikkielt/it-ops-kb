@@ -3,7 +3,7 @@
   "kind": "bug",
   "title": "monitoring.md's receipt paragraph does not say a failed --receipt run or append is retried at the next refresh",
   "status": "draft",
-  "sprint": "SP-qho2eyk2",
+  "sprint": "SP-3nqlr7b5",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

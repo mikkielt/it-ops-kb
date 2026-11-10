@@ -3,7 +3,7 @@
   "kind": "bug",
   "title": "coord.py wait on an item's progress returns at each non-final move (working, landing), so a wait for a landing wakes the orchestrator once per intermediate state",
   "status": "draft",
-  "sprint": "SP-qho2eyk2",
+  "sprint": "SP-3nqlr7b5",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",
@@ -16,11 +16,33 @@
     ]
   },
   "repro_reason": "the missing option shows only in the help text; planting a store needs the coord internals",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess,sys,tempfile;st=os.path.join(tempfile.mkdtemp(),'c.sqlite');c=lambda *a:subprocess.run([sys.executable,'_tools/coord.py',*a,'--store',st],capture_output=True,text=True);[c('post','--kind','progress','--field','item=BG-aaaaaaaa','--field','state='+s) for s in ('working','landing','landed')];r=c('wait','--since','0','--timeout','0','--kind','progress','--item','BG-aaaaaaaa','--state','landed,refused');print(r.returncode,r.stdout[-300:],r.stderr[-200:]);ev=json.loads(r.stdout)['events'] if r.returncode==0 else [];sys.exit(0 if [e['fields']['state'] for e in ev]==['landed'] else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "coord.py wait takes a --state option that returns only on a move to one of the listed states, so one wait serves a landing or a worker's return",
+      "check": 0
+    }
+  ],
   "touches": [
-    "_tools/coord.py"
+    "_tools/coord.py",
+    "kb/_self/coordination.md",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-jholkwow"
   ],
   "links": [
     "parked: SP-rzwljgxv close"
   ],
+  "notes": "Planned 2026-11-10: the --state option goes into coord.py's CLI; the kb MCP coord_wait tool (_tools/kb_mcp.py, a sibling sprint's file) is left as it is and is a follow-up if the operator wants it there. Order: after BG-jholkwow (same file).",
   "filed_in": "clone-0ea70e5c"
 }

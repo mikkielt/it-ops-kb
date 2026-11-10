@@ -4,11 +4,11 @@
   "title": "kbmon_otel --check-rules misses a kbmon_ name inside a YAML-quoted expr or a __name__ matcher and misreads a recording-rule name",
   "status": "draft",
   "parent": "EP-wqgicmmj",
-  "sprint": "SP-qho2eyk2",
+  "sprint": "SP-3nqlr7b5",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "--check-rules reads a kbmon_ metric name inside a YAML-quoted expression (single or double quoted) and inside a {__name__=\"...\"} matcher, and reads a recording-rule name with a colon (kbmon_foo:rate5m) as one name, so it neither passes a rules file that uses an unserved name nor fails one that uses only served names; this replaces the provisional answer of ST-6oidkcqv gate g1 (scan expr: lines) where it misread",
+  "goal": "--check-rules reads a kbmon_ metric name inside a single-quoted YAML expression; --check-rules reads a kbmon_ metric name inside a double-quoted YAML expression; --check-rules reads a kbmon_ name inside a {__name__=\"...\"} matcher; --check-rules reads a recording-rule name with a colon (kbmon_foo:rate5m) as one name, so it neither passes a rules file that uses an unserved name nor fails one that uses only served names",
   "repro": {
     "run": [
       "python3",
@@ -16,6 +16,47 @@
       "import os, subprocess, sys, tempfile; q, dq = chr(39), chr(34); d = tempfile.mkdtemp(); p = os.path.join(d, 'q.rules.yml'); open(p, 'w').write('groups:\\n- name: t\\n  rules:\\n  - alert: X\\n    expr: ' + q + 'kbmon_no_such_metric{a=' + dq + 'b' + dq + '} > 0' + q + '\\n  - alert: Y\\n    expr: kbmon_alerts > 0\\n'); r = subprocess.run(['uv', 'run', '--frozen', '--project', 'otel', 'python', 'otel/kbmon_otel.py', '--check-rules', p], capture_output=True, text=True); sys.exit(0 if r.returncode == 1 and 'kbmon_no_such_metric' in r.stdout + r.stderr else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,subprocess,sys,tempfile;q,dq=chr(39),chr(34);L=['groups:','- name: t','  rules:','  - alert: X','    expr: '+dq+'kbmon_no_such_metric{a='+q+'b'+q+'} > 0'+dq,'  - alert: Y','    expr: kbmon_alerts > 0'];p=os.path.join(tempfile.mkdtemp(),'q.rules.yml');open(p,'w').write(chr(10).join(L)+chr(10));r=subprocess.run(['uv','run','--frozen','--project','otel','python','otel/kbmon_otel.py','--check-rules',p],capture_output=True,text=True);sys.exit(0 if r.returncode==1 and 'kbmon_no_such_metric' in r.stdout+r.stderr else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,subprocess,sys,tempfile;dq=chr(34);L=['groups:','- name: t','  rules:','  - alert: X','    expr: sum({__name__='+dq+'kbmon_no_such_metric'+dq+'}) > 0','  - alert: Y','    expr: kbmon_alerts > 0'];p=os.path.join(tempfile.mkdtemp(),'n.rules.yml');open(p,'w').write(chr(10).join(L)+chr(10));r=subprocess.run(['uv','run','--frozen','--project','otel','python','otel/kbmon_otel.py','--check-rules',p],capture_output=True,text=True);sys.exit(0 if r.returncode==1 and 'kbmon_no_such_metric' in r.stdout+r.stderr else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,subprocess,sys,tempfile;L=['groups:','- name: t','  rules:','  - record: kbmon_zzz:rate5m','    expr: rate(kbmon_alerts[5m])','  - alert: Y','    expr: kbmon_zzz:rate5m > 0'];p=os.path.join(tempfile.mkdtemp(),'r.rules.yml');open(p,'w').write(chr(10).join(L)+chr(10));r=subprocess.run(['uv','run','--frozen','--project','otel','python','otel/kbmon_otel.py','--check-rules',p],capture_output=True,text=True);print(r.returncode,r.stdout[-200:],r.stderr[-200:]);sys.exit(0 if r.returncode==0 else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "--check-rules reads a kbmon_ metric name inside a single-quoted YAML expression",
+      "check": 3
+    },
+    {
+      "clause": "--check-rules reads a kbmon_ metric name inside a double-quoted YAML expression",
+      "check": 0
+    },
+    {
+      "clause": "--check-rules reads a kbmon_ name inside a {__name__=\"...\"} matcher",
+      "check": 1
+    },
+    {
+      "clause": "--check-rules reads a recording-rule name with a colon (kbmon_foo:rate5m) as one name, so it neither passes a rules file that uses an unserved name nor fails one that uses only served names",
+      "check": 2
+    }
+  ],
   "touches": [
     "otel/otel_prom.py",
     "otel/kbmon_otel.py",

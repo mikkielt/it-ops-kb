@@ -3,7 +3,7 @@
   "kind": "bug",
   "title": "The fold line of kbmon --status all for more than four sprints is one unbounded line, over 300 characters for five folded sprints, where every other row is about 100",
   "status": "draft",
-  "sprint": "SP-qho2eyk2",
+  "sprint": "SP-3nqlr7b5",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -15,9 +15,28 @@
       "import sys;sys.path.insert(0,\"_tools\");import mon_status as m;rows=[{\"id\":\"SP-%d\"%n,\"title\":\"Sprint number %d of the long running kind\"%n,\"items\":{\"done\":1,\"todo\":1},\"open\":[{\"id\":\"BG-%d\"%n,\"run\":\"blocked\"}]} for n in range(8)];r=type(\"R\",(),{\"item\":staticmethod(lambda i:i)})();out=m.compact_lines(rows,r);print([len(x) for x in out]);sys.exit(1 if max(len(x) for x in out)>120 else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import mon_status as m;rows=[{'id':'SP-%d'%n,'title':'Sprint number %d of the long running kind'%n,'items':{'done':1,'todo':1},'open':[{'id':'BG-%d'%n,'run':'blocked'}]} for n in range(8)];r=type('R',(),{'item':staticmethod(lambda i:i)})();out=m.compact_lines(rows,r);t=' '.join(out);print(out);sys.exit(0 if max(len(x) for x in out)<=120 and all('SP-%d'%n in t for n in range(8)) else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "compact_lines keeps the fold line of the sprints topic within 120 characters, still naming each sprint that has run states",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/mon_status.py",
-    "kb/_self/monitoring.md"
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-c3ufiphj"
   ],
   "links": [
     "parked: SP-hyfyn22d review"

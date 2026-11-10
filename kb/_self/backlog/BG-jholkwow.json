@@ -3,7 +3,7 @@
   "kind": "bug",
   "title": "coord.py digest labels a two-item intent state=done when asked by its touch or topic key and only one item is done",
   "status": "draft",
-  "sprint": "SP-qho2eyk2",
+  "sprint": "SP-3nqlr7b5",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -16,7 +16,10 @@
     ]
   },
   "touches": [
-    "_tools/coord.py"
+    "_tools/coord.py",
+    "kb/_self/coordination.md",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
   ],
   "links": [
     "parked: SP-n7f53pgv review"

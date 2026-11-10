@@ -3,7 +3,7 @@
   "kind": "bug",
   "title": "check.py's lexical code scan skips a comment inside an f-string replacement field",
   "status": "draft",
-  "sprint": "SP-qho2eyk2",
+  "sprint": "SP-3nqlr7b5",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -19,6 +19,9 @@
     "_tools/check.py",
     "kb/_self/content-rules.md",
     "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-6pjogxeg"
   ],
   "links": [
     "parked: SP-acysfnxr review"

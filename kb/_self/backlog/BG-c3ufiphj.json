@@ -4,11 +4,11 @@
   "title": "The needs-you head says nothing and the receipt says no alert for a panel kbmon did not read",
   "status": "draft",
   "parent": "EP-n4dci4w7",
-  "sprint": "SP-qho2eyk2",
+  "sprint": "SP-3nqlr7b5",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "Neither mon_needs.line nor the receipt says nothing or no alert for a panel it did not read; the receipt names read panels, not requested ones.",
+  "goal": "mon_needs.line says nothing only when every panel it reads was read; the receipt says no alert on a panel only for an alert panel it read; the receipt names the alert panels it read, not the ones requested",
   "repro": {
     "run": [
       "python3",
@@ -16,6 +16,43 @@
       "import sys;sys.path.insert(0,'_tools');import mon_needs;sys.exit('nothing' in mon_needs.line({'panels':{'sprint':{'state':'timeout'}}}))"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,\"_tools\");import mon_receipt as r;l=r.receipt({\"panels\":{\"querylog\":{\"state\":\"timeout\"},\"host\":{\"state\":\"ok\",\"data\":{}}},\"alerts\":[]})[\"line\"];print(l);h=l.split(\"; needs you\")[0];sys.exit(0 if \"no alert on host\" in h and \"querylog\" not in h and \"sessions\" not in h else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,\"_tools\");import mon_receipt as r;l=r.receipt({\"panels\":{},\"alerts\":[]})[\"line\"];print(l);h=l.split(\"; needs you\")[0];sys.exit(1 if \"no alert on\" in h else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,\"_tools\");import mon_needs as m;s={\"panels\":{n:{\"state\":\"ok\",\"data\":{}} for n in m.PANELS},\"alerts\":[]};l=m.line(s);print(l);sys.exit(0 if \"nothing\" in l and \"not read\" not in l else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "mon_needs.line says nothing only when every panel it reads was read",
+      "check": 3
+    },
+    {
+      "clause": "the receipt says no alert on a panel only for an alert panel it read",
+      "check": 1
+    },
+    {
+      "clause": "the receipt names the alert panels it read, not the ones requested",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/mon_needs.py",
     "_tools/mon_receipt.py",
@@ -27,5 +64,6 @@
   "links": [
     "parked: SP-uh5h46fm review"
   ],
+  "notes": "Check 2 (every panel read still says nothing) passes before the work on purpose: it pins the behaviour the fix must keep. Premise reproduced 2026-11-10 on the base: the receipt names querylog, sessions, host when only host was read. Planned 2026-11-10 in SP-3nqlr7b5; BG-iuarwdap runs after this item because both edit _tools/mon_status.py.",
   "filed_in": "clone-0ea70e5c"
 }
