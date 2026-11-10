@@ -2,7 +2,7 @@
   "id": "BG-cfw3z5yd",
   "kind": "bug",
   "title": "selfcheck's host line over both load limits is still cut when an old host lock is reported beside it",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3nqlr7b5",
   "priority": "P3",
   "rank": 0,
@@ -44,6 +44,19 @@
   "links": [
     "parked: SP-tsb23kev review"
   ],
-  "claimed_by": "claude-n3run001",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "eeffc3da727b736782d73bdad47a557253dbe092",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0, \"_tools\")\nimport bl_selfcheck, bl_stall\nage = bl_stall.HOST_LOCK_WAIT_S + 60\nbl_selfcheck.lock_facts = lambda now: [(\"main\", 4242, \"/tmp/clone-a\", age)]\nline = bl_selfcheck.line_of(bl_selfcheck.check_host(load=30.0, cores=14))\nprint(len(line), line[-60:])\nsys.exit(1 if \"[cut]\" in line else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "c47cf8f2ff59effa"
+      }
+    ]
+  }
 }
