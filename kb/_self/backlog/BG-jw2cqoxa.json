@@ -2,7 +2,7 @@
   "id": "BG-jw2cqoxa",
   "kind": "bug",
   "title": "The delete class matches removed or removal of a flag anywhere before the word content, kb or history in the same question, so a design question is made blocking",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-uz3rhdlq",
   "priority": "P3",
   "rank": 0,
@@ -60,6 +60,28 @@
   ],
   "notes": "Review gap 4 of SP-pww4aqis (probed 2026-11-09 on origin/main): the delete pattern \\bremov(?:e|es|ed|ing|al) .*(?:kb|content|history) widened by BG-a65lzrjf matches the new endings anywhere before kb, content or history; fails closed (a blocking gate for the operator). Same file as BG-a65lzrjf, which landed. Choices settled in the plan so the worker asks none: narrow the existing delete pattern in bl_authority.py in place (the removal word must govern kb, content or history, not a flag before it), no new helper, no new class; one sentence each in backlog.md and tools.md. Planned in SP-uz3rhdlq: repro/checks fail on the base, touches and order set.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-n4run01",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "4b88dbb523f8757a415d3c2b9a6992277eb28445",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,\"_tools\"); import bl_authority as b; f=lambda q: b.class_reasons({\"touches\":[]},{\"id\":\"g1\",\"question\":q,\"options\":[\"one\",\"two\"]})[0]; r=[f(\"Are the old rows removed from kb history?\"),f(\"Is the removed flag content-addressed?\")]; print(r); sys.exit(0 if r[0]==\"delete\" and r[1]!=\"delete\" else 1)"
+        ],
+        "exit": 0,
+        "sha256": "010cbc4050b7589d"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,\"_tools\"); import bl_authority as b; bad=[q for q in (\"Is the removed flag content-addressed?\",\"Is removal of the flag content-addressed?\") if b.class_reasons({\"touches\":[]},{\"id\":\"g1\",\"question\":q,\"options\":[\"one\",\"two\"]})[0]==\"delete\"]; print(\"delete:\",bad); sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "cef4a8fce70ee544"
+      }
+    ]
+  }
 }
