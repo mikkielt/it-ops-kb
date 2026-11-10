@@ -2525,6 +2525,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## claude/ci-and-headless
 
 - **Whether `claude -p --json-schema` keeps a string field to the values of an `enum`.** Looked 2026-10-22 in the headless page and the CLI reference (S1800, S1824) and the kb's structured-output facts: they say the output is validated against the schema and that `format` is an annotation only, and an observed run returned an enum field whole, but no page says that an `enum` value outside the list is refused or retried. Needs a run with a schema whose enum excludes the answer the prompt asks for. [UNK] (topic: claude/ci-and-headless)
+- **claude -p --max-turns --max-budget-usd --settings enabledPlugins plugin off** The kb was asked this in a logged lookup of 2026-11-09, and no article answered it (query log finding F-2f92bc4a540b). Looked in the kb 2026-11-10: `rag.py pack` gives `good`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: claude/ci-and-headless)
 
 ## claude/mcp-install-scopes
 
