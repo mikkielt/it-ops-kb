@@ -2,7 +2,7 @@
   "id": "BG-ax6e6rzc",
   "kind": "bug",
   "title": "researched reads a goal's lead-in sentence into question 1 and cuts a question at a semicolon inside it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-cb5bp3sz",
   "priority": "P2",
   "rank": 0,
@@ -53,5 +53,7 @@
   "links": [
     "parked: SP-g4mwrwsv close"
   ],
-  "notes": "ST-vyb5q5gp (2026-10-18): its goal's first piece 'Answer with the kb tools first ... article. (1) When does SQLite BEGIN IMMEDIATE ...?' was read whole by researched, lead-in included; the pack went weak although python/stdlib-sqlite3-csv answers it, because the lead-in's hyphenated names stdlib-sqlite3-csv and shared-state counted as key words (the first, with a digit, as a named word that had to sit in a tagged fact). The worker had to put both names into the article's facts for researched to pass. ST-n5gxcl3n (2026-10-18): same defect. Its goal's lead-in 'Answer with the kb tools first and the live docs for the gaps, ..., extending claude/otel-monitoring and logs/otel-collector-otlp-pipeline or a new OpenTelemetry Python SDK article.' ends in a period, so researched read question 1 whole: pack weak (18 of 29 key words), kb lacks: live, docs, gaps, written, gap, entries, kb-research, extending, new, article, provide; the same article gave good for the other seven questions. Planned into SP-cb5bp3sz on 2026-11-10; the draft's touches, checks and clause mapping were completed then."
+  "notes": "ST-vyb5q5gp (2026-10-18): its goal's first piece 'Answer with the kb tools first ... article. (1) When does SQLite BEGIN IMMEDIATE ...?' was read whole by researched, lead-in included; the pack went weak although python/stdlib-sqlite3-csv answers it, because the lead-in's hyphenated names stdlib-sqlite3-csv and shared-state counted as key words (the first, with a digit, as a named word that had to sit in a tagged fact). The worker had to put both names into the article's facts for researched to pass. ST-n5gxcl3n (2026-10-18): same defect. Its goal's lead-in 'Answer with the kb tools first and the live docs for the gaps, ..., extending claude/otel-monitoring and logs/otel-collector-otlp-pipeline or a new OpenTelemetry Python SDK article.' ends in a period, so researched read question 1 whole: pack weak (18 of 29 key words), kb lacks: live, docs, gaps, written, gap, entries, kb-research, extending, new, article, provide; the same article gave good for the other seven questions. Planned into SP-cb5bp3sz on 2026-11-10; the draft's touches, checks and clause mapping were completed then.",
+  "claimed_by": "claude-n1run001",
+  "operator": "op-f618a13e"
 }
