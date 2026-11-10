@@ -68,7 +68,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "exact string equality",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
