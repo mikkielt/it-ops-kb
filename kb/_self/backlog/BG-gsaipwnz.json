@@ -21,6 +21,27 @@
     "kb/_self/querylog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does Backlog.save decide a gate was left as loaded?",
+      "options": [
+        "whole gate equals its loaded copy",
+        "question and options equal their loaded values"
+      ],
+      "recommendation": "whole gate equals its loaded copy",
+      "reason": "matches the goal's wording, simplest, any run change to a gate keeps the run's version",
+      "do": {
+        "whole gate equals its loaded copy": "BG-gsaipwnz",
+        "question and options equal their loaded values": "BG-gsaipwnz"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "whole gate equals its loaded copy",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-moxpl354 close"
   ],
