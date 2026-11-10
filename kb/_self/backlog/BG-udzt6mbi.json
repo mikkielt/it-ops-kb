@@ -1,0 +1,24 @@
+{
+  "id": "BG-udzt6mbi",
+  "kind": "bug",
+  "title": "bl_authority.command_words puts the option text of a gate's do dict back into the text strict_signals and class_reasons read, so the word-list and backticked-class-name blanking never applies to a gate that carries do",
+  "status": "todo",
+  "sprint": "SP-enhaglcw",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "bl_authority.command_words reads the values of a gate's do dict (the argv or item id each option runs) and not its option-text keys, so a gate with do whose question or options quote paid as a word list or a gate class name in backticks is read as strict_signals and class_reasons read the same gate without do",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import bl_authority as a;o=\"paying: pay, paid, spend, charge\";c=\"give class \" + chr(96) + \"secrets\" + chr(96) + \", \" + chr(96) + \"push\" + chr(96) + \" or \" + chr(96) + \"delete\" + chr(96);g={\"question\":\"Which words does PRICE_ASK read as a paying cue?\",\"options\":[o,\"x\"],\"do\":{o:\"BG-aaaaaaaa\",\"x\":\"BG-aaaaaaaa\"}};h={\"id\":\"g1\",\"question\":\"Which phrase does the eval row expect?\",\"options\":[c],\"do\":{c:\"BG-aaaaaaaa\"}};k=a.class_reasons({\"touches\":[\"kb/_self/_retrieval/lookup_eval.csv\"],\"title\":\"an eval row\"},h)[0];m=[s for s in a.strict_signals(g) if s[0]==\"money\"];print(m,k);sys.exit(1 if m or k in (\"secrets\",\"delete\",\"push\") else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_authority.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
