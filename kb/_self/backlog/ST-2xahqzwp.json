@@ -21,6 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: every item of this sprint changes this repository's own tools or docs and each repro runs on a planted input, so no vendor documentation is needed.",
   "filed_in": "clone-0ea70e5c",
   "claimed_by": "claude-a1b2c3d4",
   "operator": "op-f618a13e"
