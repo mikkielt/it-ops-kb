@@ -2,7 +2,7 @@
   "id": "BG-zw3lou2i",
   "kind": "bug",
   "title": "kbgit.py install-hooks --uninstall prints core.hooksPath unset without reading whether git config --unset succeeded",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-wjrxikw6",
   "priority": "P3",
   "rank": 0,
@@ -27,5 +27,7 @@
     "parked: SP-mut2pmu3 review"
   ],
   "notes": "SP-mut2pmu3 review gap 8 (S4). kg_hooks.py:203-209 does not read the result of git config --unset core.hooksPath (nor push.recurseSubmodules): when git fails (read-only or locked config, exit 5) the line still says the key is unset. Fix: add a key to the unset list only when git returned success, print a refusal and return 1 for a failed core.hooksPath.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-a1b2c3d4",
+  "operator": "op-f618a13e"
 }
