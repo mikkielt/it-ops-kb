@@ -2,7 +2,7 @@
   "id": "BG-covjiwma",
   "kind": "bug",
   "title": "provider.read_licence gives CC BY-SA to a gitlab-org/gitlab doc/ path with a double-encoded .. segment",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-cb5bp3sz",
   "priority": "P2",
   "rank": 0,
@@ -34,6 +34,28 @@
   ],
   "notes": "Planned into SP-cb5bp3sz on 2026-11-10; the draft's touches, checks and clause mapping were completed then.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-n1run001",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "b6a7d51dac8471ee911f9d6c68683575e2bf2618",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import provider as p;p.request=lambda *a,**k:{'status':404,'error':'x','body':b'','headers':{}};f=lambda s:p.read_licence('https://gitlab.com/gitlab-org/gitlab/-/blob/master/doc/'+s)['licence'];r=[f('user/x.md'),f('%2e%2e/app/x.rb'),f('%252e%252e/app/x.rb'),f('%25252e%25252e/app/x.rb')];print(r);sys.exit(0 if r[0].startswith('CC BY-SA') and not any(x.startswith('CC BY-SA') for x in r[1:]) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "f7aeb235d1ff2e9f"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import provider as p;p.request=lambda *a,**k:{\"status\":404,\"error\":\"x\",\"body\":b\"\",\"headers\":{}};l=p.read_licence(\"https://gitlab.com/gitlab-org/gitlab/-/blob/master/doc/%252e%252e/app/x.rb\")[\"licence\"];print(l);sys.exit(1 if l.startswith(\"CC BY-SA\") else 0)"
+        ],
+        "exit": 0,
+        "sha256": "01ba4719c80b6fe9"
+      }
+    ]
+  }
 }
