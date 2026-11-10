@@ -1773,9 +1773,10 @@ def rows_line(root, iid, session):
 
 
 def unrecorded_gate_lines(text):
-    """The lines of a worker's result text that say a gate was not recorded (the word gate and a `not ... recorded`)."""
+    """The lines of a worker's result text that say a gate was not recorded (the word gate and `not` directly before `recorded`, only `yet`, `been` and the like between: `no gates recorded` and `Not done: ... recorded` are no such line)."""
     return [ln.strip() for ln in text.splitlines()
-            if re.search(r"\bgates?\b", ln, re.I) and re.search(r"\bnot\b[^.\n]*\brecorded\b", ln, re.I)]
+            if re.search(r"\bgates?\b", ln, re.I)
+            and re.search(r"\bnot\s+(?:(?:yet|been|be|ever|actually|properly)\s+)*recorded\b", ln, re.I)]
 
 
 def branch_item(root, iid):
