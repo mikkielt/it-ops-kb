@@ -2,7 +2,7 @@
   "id": "BG-gwfweytp",
   "kind": "bug",
   "title": "agents/worker.md still says a worker whose brief names no cap commits 15 turns before the cap, which for a cap of 30 or less is half the cap since the commit-by clamp",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-uz3rhdlq",
   "priority": "P2",
   "rank": 0,
@@ -24,6 +24,19 @@
   ],
   "notes": "Planned in SP-uz3rhdlq: repro/checks fail on the base, touches and order set.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-n4run01",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "af706e05b467cf57f738f4b1212713cfd40e93e0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open(\"agents/worker.md\",encoding=\"utf-8\").read();sys.exit(1 if \"at the latest 15 turns before the turn cap\" in t else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
