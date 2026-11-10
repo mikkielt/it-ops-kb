@@ -130,10 +130,11 @@ REMEDY = {
     "host-load": "dispatch fewer workers and give the tests a `-k` selection, which takes no host lock",
     "suite-load": "wait for the load to fall (another application or sibling workers hold the CPU) and run the "
                   "whole suite then; a `-k` selection takes no host lock and no ceiling",
-    "both-load": "wait for the load to fall and run the whole suite then; dispatch fewer workers; a `-k` selection "
-                 "takes no host lock",
+    "both-load": "wait for the load to fall, then run the whole suite; dispatch fewer workers; `-k` selections take no "
+                 "host lock",
     "host-lock": "wait for the holder or narrow the tests to a `-k` selection; end the holder only when it is yours "
                  "and stuck",
+    "host-lock-more": "wait for the holder, ending it only if it is yours and stuck",  # the load remedy names `-k`
     "claims": "ask its worker, or release it (`backlog.py release ID`) and dispatch it again with the failure named in "
               "the brief; for mr-dead its work is pushed, so read its request first",
     "orphans": "end it if it is yours (`python3 _tools/backlog.py procs` lists each with its pid and checkout); "
@@ -397,7 +398,7 @@ def check_host(now=None, load=None, cores=None):
     problems, remedy = [], []
     suite = None if load is None else suite_load_problem(load, cores)
     busy = load is not None and load > LOAD_PER_CORE * cores
-    if suite and busy:  # over both limits: one short problem and one remedy, so the line stays within LINE_MAX
+    if suite and busy:  # over both limits: one short problem and one remedy; an old lock adds a short one, so the line fits LINE_MAX
         problems.append(f"load {load:.1f} over {SUITE_LOAD_PER_CORE:g} (a whole-suite run) and {LOAD_PER_CORE:g} "
                         f"(more workers) per core of {cores}")
         remedy.append(REMEDY["both-load"])
@@ -411,7 +412,7 @@ def check_host(now=None, load=None, cores=None):
            if age > bl_stall.HOST_LOCK_WAIT_S]
     if old:
         problems.append(listing(old))
-        remedy.append(REMEDY["host-lock"])
+        remedy.append(REMEDY["host-lock-more" if remedy else "host-lock"])
     if problems:
         return result("host", "fail", "; ".join(problems), " | ".join(remedy))
     if load is None:
