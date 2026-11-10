@@ -366,6 +366,14 @@ STRICT_WORDS = {
     "execute": re.compile(r"\bexecut(?:e|es|ed|ing|ion)\b", re.I),
 }
 STRICT_KINDS = tuple(STRICT_WORDS)
+# A gate that asks which words a pattern reads as a cue (`which words does PRICE_ASK read as a paying cue?`) quotes the
+# words, and `paid` or `spend` inside that list names no spend: when the question asks for words (`which words`, `what
+# words`, `word list`), each run of three or more bare words one comma apart (`pay, paid, spend, charge`, each word
+# alone or in quotes or backticks) is no money text. A `$` figure, a list in a question that asks no such thing and the
+# words outside a list keep the signal.
+WORD_LIST_ASK = re.compile(r"\b(?:which|what)\s+words\b|\bword[- ]?lists?\b", re.I)
+_LIST_WORD = r"""[`'"]?[A-Za-z][A-Za-z-]*[`'"]?"""
+WORD_LIST = re.compile(rf"(?<![\w-]){_LIST_WORD}(?:[ \t]*,[ \t]*{_LIST_WORD}){{2,}}(?![\w-])")
 PROGRAM_WORD = re.compile(r"\bprograms?\b", re.I)
 RUN_WORD = re.compile(r"\b(?:run|runs|running|ran)\b", re.I)
 # A clause ends at `;`, `:`, `?`, `!`, a line break, or a full stop that a space or the end follows: the dot inside a
@@ -377,12 +385,16 @@ def strict_signals(gate):
     """[(kind, word)] for each of STRICT_KINDS that the gate's question, options, `do` and `host_check` words name, the
     first word of each kind in text order; [] for a design question with none. `execute` is `execute` with its endings,
     or `program` and `run` within one clause (a stretch with no `;`, `:`, `?`, `!`, line break or full stop followed by a
-    space or the end in it: `foo.py` ends none)."""
+    space or the end in it: `foo.py` ends none). `money` is read without the word lists of a question that asks which
+    words a pattern reads (`WORD_LIST`)."""
     options = [str(o) for o in gate.get("options", []) or []]
     texts = [str(gate.get("question", "")), *options, command_words(gate)]
+    money_texts = texts
+    if WORD_LIST_ASK.search(texts[0]):
+        money_texts = [WORD_LIST.sub(" ", t) for t in texts[:-1]] + texts[-1:]
     out = []
     for kind, rx in STRICT_WORDS.items():
-        word = next((m.group(0) for t in texts for m in [rx.search(t)] if m), None)
+        word = next((m.group(0) for t in (money_texts if kind == "money" else texts) for m in [rx.search(t)] if m), None)
         if kind == "execute" and not word:
             for t in texts:
                 for clause in CLAUSE_END.split(t):
