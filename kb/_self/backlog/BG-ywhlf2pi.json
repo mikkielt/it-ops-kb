@@ -2,7 +2,7 @@
   "id": "BG-ywhlf2pi",
   "kind": "bug",
   "title": "The path setting type accepts a Windows drive path and backslash dot-dot, so scratch_dir can leave the clone on Windows",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4fawjprq",
   "sprint": "SP-o3ag6hca",
   "priority": "P3",
@@ -37,5 +37,7 @@
   "links": [
     "parked: SP-dqkf3i42 review"
   ],
-  "notes": "Premise run on origin/main at planning (2026-11-10): the repro or first check fails there on the behaviour named in the goal; not fixed by an earlier commit."
+  "notes": "Premise run on origin/main at planning (2026-11-10): the repro or first check fails there on the behaviour named in the goal; not fixed by an earlier commit.",
+  "claimed_by": "claude-5a0b1c2d",
+  "operator": "op-f618a13e"
 }
