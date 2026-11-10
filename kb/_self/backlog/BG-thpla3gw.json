@@ -23,6 +23,26 @@
   "depends_on": [
     "BG-6pjogxeg"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does code_comment_lines learn of a comment inside an f-string field?",
+      "options": [
+        "thread a found list through string_end, fstring_end and field_end",
+        "rescan each f-string's text for comments afterwards"
+      ],
+      "recommendation": "thread a found list through string_end, fstring_end and field_end",
+      "reason": "the field scan already finds the comment, so no second pass and no second reading of the string",
+      "do": {
+        "thread a found list through string_end, fstring_end and field_end": "BG-thpla3gw",
+        "rescan each f-string's text for comments afterwards": "BG-thpla3gw"
+      },
+      "class": "design",
+      "answer": "thread a found list through string_end, fstring_end and field_end",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-acysfnxr review"
   ],
