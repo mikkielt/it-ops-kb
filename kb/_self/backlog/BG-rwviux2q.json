@@ -17,7 +17,8 @@
   },
   "repro_reason": "the defect is a missing row of the docs map csv; the repro reads that row",
   "touches": [
-    "kb/_self/map.csv"
+    "kb/_self/map.csv",
+    "kb/_self/extending.md"
   ],
   "links": [
     "parked: SP-uz3rhdlq close"
