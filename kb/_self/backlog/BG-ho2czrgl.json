@@ -2,7 +2,7 @@
   "id": "BG-ho2czrgl",
   "kind": "bug",
   "title": "gate_approves_spend counts a refusing answer worded Not approved, Do not spend, Never or Abort as approval, since only the first words no, refuse, decline, deny, reject and cancel are refusals",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-u5zhszow",
   "priority": "P2",
   "rank": 0,
@@ -53,6 +53,28 @@
     "parked: SP-o3ag6hca review"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-n7run001",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "bca5be499c4cde3e5ba3a466d50a68d0051b5954",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import bl_dispatch as d;g=lambda a:{\"question\":\"Approve spend?\",\"options\":[\"yes\",a],\"answer\":a};ok=[a for a in (\"Approve spend\",\"Yes\",\"Go ahead\") if d.gate_approves_spend(g(a))];bad=[a for a in (\"No\",\"Decline\",\"Do not spend\",\"Don\\x27t spend\",\"Not approved\",\"Never\",\"Abort\") if d.gate_approves_spend(g(a))];print(ok,bad);sys.exit(0 if len(ok)==3 and not bad else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e06442408d601604"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import bl_dispatch as d;g=lambda a:{\"question\":\"Approve spend?\",\"options\":[\"yes\",a],\"answer\":a};bad=[a for a in (\"Do not spend\",\"Not approved\",\"Never\",\"Abort\") if d.gate_approves_spend(g(a))];print(bad);sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      }
+    ]
+  }
 }
