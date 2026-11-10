@@ -1,0 +1,28 @@
+{
+  "id": "BG-kb2n6c54",
+  "kind": "bug",
+  "title": "A bench worker's claude gets two --settings flags when worker_plugins_off is set, since bench_multi's wrapper appends its own after claude_argv's",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "claude_argv and the bench_multi claude wrapper give a worker's claude one --settings value that holds both the plugins-off keys and the bench's session settings, so neither is dropped",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, '_tools'); import bl_base, bl_dispatch, bench_multi; bl = bl_base.Backlog(bl_base.ROOT); iid = next(iter(bl.items)); n = bl_dispatch.claude_argv(bl, iid).count('--settings') + bench_multi.WRAPPER.count('\"--settings\"'); print('--settings flags a bench worker claude gets:', n); sys.exit(0 if n <= 1 else 1)"
+    ]
+  },
+  "repro_reason": "claude's handling of a repeated --settings is not run here; the repro counts the flags the two argv builders give",
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "_tools/bench_multi.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-ejeki6bv review"
+  ],
+  "notes": "Review gap (S3) of SP-ejeki6bv, fresh-context reviewer: BG-3pqzpd2q's claude_argv adds --settings whenever worker_plugins_off is non-empty, and clones of this repo (the bench's clones) carry that setting; bench_multi.WRAPPER appends --settings MULTI_SETTINGS after the argv. Whether claude keeps the first or last --settings, or merges them, is not checked here.",
+  "filed_in": "clone-0ea70e5c"
+}
