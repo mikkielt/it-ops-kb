@@ -2,7 +2,7 @@
   "id": "BG-6f5lhcik",
   "kind": "bug",
   "title": "coord.py wait on an item's progress returns at each non-final move (working, landing), so a wait for a landing wakes the orchestrator once per intermediate state",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3nqlr7b5",
   "priority": "P2",
   "rank": 0,
@@ -44,5 +44,7 @@
     "parked: SP-rzwljgxv close"
   ],
   "notes": "Planned 2026-11-10: the --state option goes into coord.py's CLI; the kb MCP coord_wait tool (_tools/kb_mcp.py, a sibling sprint's file) is left as it is and is a follow-up if the operator wants it there. Order: after BG-jholkwow (same file).",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-n3run001",
+  "operator": "op-f618a13e"
 }
