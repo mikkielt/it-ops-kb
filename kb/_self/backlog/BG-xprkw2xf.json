@@ -2,7 +2,7 @@
   "id": "BG-xprkw2xf",
   "kind": "bug",
   "title": "kg_sync.PLAIN_ROOT_NAME copies kbsettings' plain-name pattern, so a name layered accepts but the copy skips drops that root's gate_checks silently",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-u5zhszow",
   "priority": "P3",
   "rank": 0,
@@ -53,5 +53,7 @@
     "parked: SP-wjrxikw6 review"
   ],
   "notes": "Check 2 (gate_check_entries runs on this clone) passes before the work: it pins behaviour that must stay.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-n7run001",
+  "operator": "op-f618a13e"
 }
