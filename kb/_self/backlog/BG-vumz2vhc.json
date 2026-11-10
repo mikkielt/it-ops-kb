@@ -2,7 +2,7 @@
   "id": "BG-vumz2vhc",
   "kind": "bug",
   "title": "web-sources.md says the first detect after the reducer change is not read as a source change, but detect_source returns changed for a github.com row that holds a doc_sha256 and no version",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-enhaglcw",
   "priority": "P3",
   "rank": 0,
@@ -25,5 +25,7 @@
   "links": [
     "parked: SP-cb5bp3sz review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-86c7e088",
+  "operator": "op-f618a13e"
 }
