@@ -2,7 +2,7 @@
   "id": "BG-4ffhited",
   "kind": "bug",
   "title": "bench_retrieval.py's no-pool hint names pool build without --ask, which now lists the rows and exits 1",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3nqlr7b5",
   "priority": "P3",
   "rank": 0,
@@ -23,5 +23,7 @@
   ],
   "links": [
     "parked: SP-honlhzdc review"
-  ]
+  ],
+  "claimed_by": "claude-n3run001",
+  "operator": "op-f618a13e"
 }
