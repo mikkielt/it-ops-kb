@@ -2,7 +2,7 @@
   "id": "BG-vvgrgspb",
   "kind": "bug",
   "title": "An answers entry says a cross-session message is held only by an explicit hold or a bypass default",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-enhaglcw",
   "priority": "P3",
   "rank": 0,
@@ -26,5 +26,7 @@
     "parked: SP-basca7ae review"
   ],
   "notes": "Planning 2026-11-10: sibling sprints (kb/public/**, _answers.md) edit other entries of kb/public/_answers.md; this item edits only its own QK entry, so it proceeds and the landing rebase merges; rerun the landing after a rebase conflict, never overwrite a sibling's entry.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-86c7e088",
+  "operator": "op-f618a13e"
 }
