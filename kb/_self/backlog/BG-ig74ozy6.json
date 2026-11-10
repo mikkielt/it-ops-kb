@@ -45,6 +45,26 @@
     "BG-6f5lhcik",
     "BG-jholkwow"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does a kbmon run leave a coord store unchanged: make coord.py's get, list, wait and digest write nothing, or give the panel a read-only path of its own?",
+      "options": [
+        "coord.py's read commands write nothing",
+        "the panel reads the file read-only itself"
+      ],
+      "recommendation": "coord.py's read commands write nothing",
+      "reason": "one fix covers the panel and every other reader (peers, status, sessions panel), and the panel keeps running coord.py as it does",
+      "do": {
+        "coord.py's read commands write nothing": "BG-ig74ozy6",
+        "the panel reads the file read-only itself": "BG-ig74ozy6"
+      },
+      "class": "design",
+      "answer": "coord.py's read commands write nothing",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-5gph7fh6 review"
   ],
