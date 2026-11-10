@@ -2,7 +2,7 @@
   "id": "BG-c3ufiphj",
   "kind": "bug",
   "title": "The needs-you head says nothing and the receipt says no alert for a panel kbmon did not read",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-3nqlr7b5",
   "priority": "P3",
@@ -65,5 +65,7 @@
     "parked: SP-uh5h46fm review"
   ],
   "notes": "Check 2 (every panel read still says nothing) passes before the work on purpose: it pins the behaviour the fix must keep. Premise reproduced 2026-11-10 on the base: the receipt names querylog, sessions, host when only host was read. Planned 2026-11-10 in SP-3nqlr7b5; BG-iuarwdap runs after this item because both edit _tools/mon_status.py.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-n3run001",
+  "operator": "op-f618a13e"
 }
