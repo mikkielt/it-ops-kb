@@ -62,7 +62,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "Probe every character below U+0300, one per 64 code points above and each character the regex writes; a fixed atom keeps a pending atom as the characters both match",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
