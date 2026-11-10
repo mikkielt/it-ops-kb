@@ -39,7 +39,9 @@
       },
       "class": "design",
       "answer": "Reword web-sources.md to state detect's real verdict",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
