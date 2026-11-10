@@ -2,7 +2,7 @@
   "id": "BG-qa7v3soy",
   "kind": "bug",
   "title": "The stub claude of a dispatched worker is an extensionless /bin/sh script, so on Windows the real claude stays reachable with no warning",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-o3ag6hca",
   "priority": "P2",
   "rank": 0,
@@ -55,6 +55,37 @@
   ],
   "notes": "Premise run on origin/main at planning (2026-11-10): the repro or first check fails there on the behaviour named in the goal; not fixed by an earlier commit.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-5a0b1c2d",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "e50b3096688fd3cec2f0f41d13337b605c45f16b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys, tempfile, types, subprocess, pathlib, os\ntry:\n    sys.path.insert(0, \"_tools\"); import bl_dispatch as d\n    r = pathlib.Path(tempfile.mkdtemp()); subprocess.run([\"git\", \"init\", \"-q\", str(r)], check=True)\n    bl = types.SimpleNamespace(root=r, items={\"BG-aaaaaaaa\": {}})\n    env = d.guard_spend(bl, \"BG-aaaaaaaa\", {\"PATH\": \"/usr/bin\"}, platform=\"win32\")\n    s = pathlib.Path(env[\"PATH\"].split(os.pathsep)[0]); t = (s / \"claude.cmd\").read_text()\n    ok = t.startswith(\"@echo off\") and \"exit /b 2\" in t and \"BG-aaaaaaaa\" in t and s.name == d.STUB_DIR_NAME\nexcept Exception as e:\n    print(type(e).__name__, e); ok = False\nprint(ok); sys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "a9ac0c3ac83c40e1"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys, tempfile, types, subprocess, pathlib, os\ntry:\n    sys.path.insert(0, \"_tools\"); import bl_dispatch as d\n    r = pathlib.Path(tempfile.mkdtemp()); subprocess.run([\"git\", \"init\", \"-q\", str(r)], check=True)\n    bl = types.SimpleNamespace(root=r, items={\"BG-aaaaaaaa\": {}})\n    env = d.guard_spend(bl, \"BG-aaaaaaaa\", {\"PATH\": \"/usr/bin\"}, platform=\"linux\")\n    s = pathlib.Path(env[\"PATH\"].split(os.pathsep)[0]); t = (s / \"claude\").read_text()\n    ok = t.startswith(\"#!/bin/sh\") and \"exit 2\" in t and not (s / \"claude.cmd\").exists() and os.access(s / \"claude\", os.X_OK)\n    p = subprocess.run([str(s / \"claude\")], capture_output=True, text=True); ok = ok and p.returncode == 2 and \"BG-aaaaaaaa\" in p.stderr\nexcept Exception as e:\n    print(type(e).__name__, e); ok = False\nprint(ok); sys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "a9ac0c3ac83c40e1"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open(\"_tools/bl_dispatch.py\",encoding=\"utf-8\").read();sys.exit(0 if \"claude.cmd\" in t else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
