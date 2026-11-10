@@ -1,0 +1,22 @@
+{
+  "id": "BG-bciuudtk",
+  "kind": "bug",
+  "title": "The usage text of backlog.py says only claim, done, new, start and close take --commit, but release now takes it too, and the kbtools entry for release names no --commit",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "the usage block of _tools/backlog.py names release among the commands that take --commit [--trailer] and its subject list, and kbtools shows --commit in the release entry",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open(\"_tools/backlog.py\",encoding=\"utf-8\").read();i=t.find(\"take --commit\");seg=t[max(0,i-80):i+10];print(seg);sys.exit(0 if \"release\" in seg else 1)"
+    ]
+  },
+  "repro_reason": "the usage block is the module docstring, which no command prints whole; only its text can be read",
+  "touches": [
+    "_tools/backlog.py"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
