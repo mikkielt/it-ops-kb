@@ -728,17 +728,27 @@ def budget_line(budget):
             f"--max-turns (set it with {BUDGET_FLAG} USD or {BUDGET_ENV})")
 
 
+def plugins_off_settings(plugins):
+    """The JSON text of a `--settings` value that turns each plugin key of PLUGINS (the `worker_plugins_off` setting) off
+    through `enabledPlugins`, or "" for none: sorted keys, compact, so the same list gives the same argv."""
+    return json.dumps({"enabledPlugins": {p: False for p in sorted(set(plugins))}}, separators=(",", ":")) if plugins else ""
+
+
 def claude_argv(bl, iid, model=None, turns=None, budget=None, resume=None):
     """The headless session's argument list: the brief goes on stdin, never as a trailing prompt argument, which
     `--add-dir` swallows (it takes several paths: the scratch directory and, for an item with required repositories,
     the directory of their worktrees), and the plugin root when the brief names the plugin's role file (`role_file_line`:
     the project has none), which the session could not read else. BUDGET (`budget_usd`) adds the spend cap; RESUME, a
-    session id, makes the run `claude -p --resume RESUME` (the message goes on stdin in place of the brief)."""
+    session id, makes the run `claude -p --resume RESUME` (the message goes on stdin in place of the brief). The
+    project's `worker_plugins_off` setting adds `--settings` with `enabledPlugins` false for each plugin key it lists
+    (`plugins_off_settings`), so the session starts with those plugins, and their MCP servers, off."""
     dirs = [scratch_path(bl.root, iid)] + ([repos_dir(bl.root, iid)] if repo_checkouts(bl, iid) else [])
     if not (Path(bl.root) / ROLE_FILE).is_file():
         dirs.append(PLUGIN_ROOT)
+    off = plugins_off_settings(setting("worker_plugins_off"))
     return [os.path.abspath(shutil.which("claude") or "claude"), "-p", *(["--resume", resume] if resume else []), "--model", model or DEFAULT_MODEL, "--effort", EFFORT, "--output-format", "json",
             "--add-dir", *map(str, dirs), "--max-turns", str(turns or max_turns(bl, iid)),
+            *(["--settings", off] if off else []),
             *([BUDGET_FLAG, budget] if budget else [])]
 
 

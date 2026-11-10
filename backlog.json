@@ -76,6 +76,9 @@
   "forge": "gitlab",
   "forge_project": "",
   "stop_finished": false,
+  "worker_plugins_off": [
+    "gitkraken@synced"
+  ],
   "trackers": {},
   "docs_map": "kb/_self/map.csv",
   "kb_root": "_self",

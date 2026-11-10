@@ -68,6 +68,9 @@ SETTINGS = {
     # the argv of a command that starts a worker's session where the operator's runtime wants it: `{dir}` in an element is
     # the worker's worktree, `{command}` the session's command as one shell line; [] = dispatch starts the session itself
     "launcher": ("launcher", []),
+    # the plugin keys (`name@marketplace`, as `enabledPlugins` names them) that `dispatch`, `begin` and `dispatch --resume`
+    # start a worker's `claude -p` with off, through `--settings`; [] = none, so a worker starts with the operator's plugins
+    "worker_plugins_off": ("plugins", []),
     # the argv of a command whose stdout is JSON lines {"pid" or "session": ..., "state": working|blocked|idle|done}, the
     # states of the agents some runtime hosts, which kbmon shows on a session's row; [] = none
     "agent_states": ("argv", []),
@@ -103,6 +106,9 @@ def _type_problem(kind, v):
         return None if strs(v) else "a list of strings"
     if kind == "argv":
         return None if strs(v) else "a list of strings (the command's arguments; [] for no step)"
+    if kind == "plugins":
+        ok = strs(v) and all(re.fullmatch(r"[^\s@]+@[^\s@]+", p) for p in v)
+        return None if ok else "a list of plugin keys, each `name@marketplace` ([] for none)"
     if kind == "launcher":
         ok = strs(v) and (v == [] or any("{command}" in x for x in v))
         return None if ok else 'a list of strings with `{command}` in one of them ([] for dispatch\'s own start)'
