@@ -6,7 +6,8 @@
 A path is content when it is written by the kb's own routine work, and code otherwise:
 
   content  kb/<name>/** for a name not starting with `_` (a root; a submodule root's gitlink kb/<name> is left out of
-           commit_paths when every non-zero mode of its entry is 160000, and a plain file directly under kb/ is code), kb/_querylog/**, a backlog item
+           commit_paths and kg_hooks.new_lanes when every non-zero mode of its entry is 160000, and a plain file
+           directly under kb/ is code), kb/_querylog/**, a backlog item
            (kb/_self/backlog/*.json), a process doc directly in kb/_self/ (kb/_self/*.md), _tools/aliases.csv and
            _tools/lint_baseline.txt
   code     everything else: _tools/, .claude/, .claude-plugin/, .githooks/, the CI file, AGENTS.md, README.md, the
@@ -84,7 +85,8 @@ def _git(repo, *args):
 
 def raw_names(out):
     """Sorted paths of `git diff-tree -r --no-renames --raw -z` output, a combined `-c` merge diff too (N colons, then
-    N+1 modes): a submodule root's gitlink is left out."""
+    N+1 modes): a submodule root's gitlink is left out, for `commit_paths` and for `kg_hooks.new_lanes`, which reads a
+    merge commit through this function."""
     fields = out.split("\0")
     names = []
     for i in range(0, len(fields) - 1, 2):  # ":oldmode newmode oldsha newsha status", then the path

@@ -481,7 +481,8 @@ def blobs(rev, paths, cwd):
 
 
 def blobs_marked(rev, paths, cwd):
-    """{path: text} as `blobs`, with None for a file of REV's tree that is not valid utf-8 (see `texts_marked`)."""
+    """{path: text} as `blobs`, with None for a file of REV's tree that is not valid utf-8 and for a path with a newline,
+    which git cannot be asked for (see `texts_marked`)."""
     got = texts_marked([f"{rev}:{x}" for x in paths], cwd)
     return {x: got[f"{rev}:{x}"] for x in paths if f"{rev}:{x}" in got}
 
