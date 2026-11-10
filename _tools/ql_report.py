@@ -8,7 +8,7 @@ from pathlib import Path
 
 from ql_base import (HOME, STORE, STORE_REL, iso, launch_places, logging_off, places, read_json, read_mode, run_cmd,
                      write_text)
-from ql_deliver import BRANCH, CONFLICT_BRANCH_PREFIX, REMOTE, auto_log, forge_list, origin_forge
+from ql_deliver import BRANCH, CONFLICT_BRANCH_PREFIX, REMOTE, auto_log, forge_list
 from ql_learn import FAILED, feedback_reports, host_fetches, is_miss
 from ql_store import (DAY, ENTRY_KEYS, FETCH_KEYS, FINDING_KINDS, FINDING_STATES, JUDGED, ROW_SURFACES, RULES_ROOT,
                       RUN_ID, SURFACES, USAGE, add_models, finding_id, finding_states, findings_files, load_run, records,
@@ -460,15 +460,16 @@ def conflict_mrs(url, run):
     """([(number, branch, title, url)] (`!iid` on GitLab, `#number` on GitHub) of the open merge requests from a
     CONFLICT_BRANCH_PREFIX branch to BRANCH on origin's forge, None and a note when glab or gh is not signed in or
     the call fails). The API filters by one whole branch name, so the open ones targeting BRANCH are listed and the
-    prefix is matched here."""
-    forge = origin_forge(url)[0]
-    data, _, note = forge_list(
+    prefix is matched here. The fields are read by the forge the list came from (the CLI `forge_list` names: `gh` is
+    GitHub, `glab` is GitLab), which follows the `forge` setting before the url's host."""
+    data, cli, note = forge_list(
         url, run, lambda repo: ["gh", "pr", "list", "-R", repo, "--base", BRANCH, "--state", "open",
                                 "--json", "number,title,headRefName,url", "-L", "100"],
         lambda project: f"projects/{project}/merge_requests?state=opened&target_branch={BRANCH}&per_page=100",
         named=3)
     if data is None:
         return None, note
+    forge = "github" if cli == "gh" else "gitlab"
     out = []
     for r in data:
         if not isinstance(r, dict):
