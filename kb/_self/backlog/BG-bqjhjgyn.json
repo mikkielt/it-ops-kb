@@ -43,7 +43,12 @@
         "Compare the lower-case file name with the base name of each touch, for a word with no slash only": "BG-bqjhjgyn",
         "Widen option_paths so every bare name is read as a path under the touch's directory": "BG-bqjhjgyn"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Compare the lower-case file name with the base name of each touch, for a word with no slash only",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "links": [
