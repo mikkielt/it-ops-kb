@@ -15,6 +15,15 @@
       "import sys; sys.path.insert(0,\"_tools\"); import bl_authority as a; D=a.QUESTION_WORDS[\"delete\"]; qs=[\"remove outdated content\",\"remove the obsolete content\",\"remove every kb page\",\"remove this content\",\"remove our content\",\"remove unused entries from this kb\",\"remove sources and kb pages\",\"remove old, stale content\"]; bad=[q for q in qs if not D.search(q)]; print(bad); sys.exit(1 if bad else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.path.insert(0,\"_tools\"); import bl_authority as b; f=lambda q: b.class_reasons({\"touches\":[]},{\"id\":\"g1\",\"question\":q,\"options\":[\"one\",\"two\"]})[0]; r=[f(\"Is the removed flag content-addressed?\"),f(\"Is removal of the flag content-addressed?\"),f(\"Are the old rows removed from kb history?\"),f(\"Should we remove this content?\")]; print(r); sys.exit(0 if r[0]!=\"delete\" and r[1]!=\"delete\" and r[2]==\"delete\" and r[3]==\"delete\" else 1)"
+      ]
+    }
+  ],
   "touches": [
     "_tools/bl_authority.py",
     "kb/_self/backlog.md",
@@ -23,5 +32,6 @@
   "depends_on": [
     "BG-jw2cqoxa"
   ],
+  "notes": "Found by the SP-uz3rhdlq review of BG-jw2cqoxa (reviewer gap, S3 as filed; fixed in the sprint as S2 because a delete-class guard failing open lets an agent go on without the operator). Choices settled in the goal: up to four words between, a flag/option/switch word in between stops the match; edit the pattern in place, one sentence each in backlog.md and tools.md.",
   "filed_in": "clone-0ea70e5c"
 }
