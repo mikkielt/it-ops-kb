@@ -2,7 +2,7 @@
   "id": "BG-sacebta6",
   "kind": "bug",
   "title": "money_approved lifts the paid-session stub for a refused gate (answer no) and for any gate whose text holds spent or paid, since it tests only that an answer exists and a money word",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-o3ag6hca",
   "priority": "P2",
   "rank": 0,
@@ -76,6 +76,37 @@
   ],
   "notes": "Premise run on origin/main at planning (2026-11-10): the repro or first check fails there on the behaviour named in the goal; not fixed by an earlier commit.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-5a0b1c2d",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "e4982677ba46a0ca3bc3e0d5459a29499620c1df",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0, \"_tools\")\nimport bl_dispatch as d\ndef g(a, q=\"Spend USD 5 on a paid smoke test?\", opts=(\"yes\", \"no\")):\n    return {\"gates\": [{\"id\": \"g1\", \"question\": q, \"options\": list(opts), \"answer\": a}]}\ncases = [\n    d.money_approved(g(\"yes\")) is True,\n    d.money_approved(g(\"no\")) is False,\n    d.money_approved(g(\"Decline\")) is False,\n    d.money_approved(g(\"maybe\")) is False,\n    d.money_approved(g(\"yes\", \"Which helper name for the stub?\")) is False,\n    d.money_approved(g(\"approve USD 5\", \"Which helper name for the stub?\", (\"approve USD 5\", \"decline\"))) is False,\n    d.money_approved(g(\"approve USD 5\", \"Spend on the smoke test?\", (\"approve USD 5\", \"decline\"))) is True,\n]\nprint(cases)\nsys.exit(0 if all(cases) else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "df79205b0bab1c43"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, subprocess, sys, tempfile, types, pathlib\nsys.path.insert(0, \"_tools\")\nimport bl_dispatch as d\nr = pathlib.Path(tempfile.mkdtemp()); subprocess.run([\"git\", \"init\", \"-q\", str(r)], check=True)\nit = {\"gates\": [{\"id\": \"g1\", \"question\": \"Spend USD 5 on a paid smoke test?\", \"options\": [\"yes\", \"no\"], \"answer\": \"no\"}]}\nbl = types.SimpleNamespace(root=r, items={\"BG-aaaaaaaa\": it})\nenv = d.guard_spend(bl, \"BG-aaaaaaaa\", {\"PATH\": \"/usr/bin\"})\nfirst = env[\"PATH\"].split(os.pathsep)[0]\nsys.exit(0 if first.endswith(d.STUB_DIR_NAME) else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import bl_dispatch as d;it={\"gates\":[{\"id\":\"g1\",\"question\":\"Spend USD 5 on a paid smoke test?\",\"options\":[\"yes\",\"no\"],\"answer\":\"no\"}]};sys.exit(1 if d.money_approved(it) else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
