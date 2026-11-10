@@ -3,7 +3,7 @@
   "kind": "sprint",
   "title": "Census, research and provider tools read and count right",
   "status": "planned",
-  "goal": "Census, research and provider tools read and count right: census read counts each confirmed source once and refuses a non-day date and an empty note, census phase 2 names the numbered detect log, goal questions keep numbers inside a question and read a numbered piece after a lead-in, the stale-gap audit reads the question's own words, price asks are read right, provider licence and repository slugs read nested and encoded paths, page text keeps what follows an omitted end tag, the fact memo files stay bounded, and docs and article facts state no more than the code or pinned source holds",
+  "goal": "Census, research and provider tools read and count right: census read counts each confirmed source once and refuses a non-day date and an empty note, census phase 2 names the numbered detect log, goal questions skip a lead-in sentence, keep a semicolon and numbers inside a question and read a numbered piece after a lead-in, the stale-gap audit reads the question's own words, price asks are read right, provider licence and repository slugs read nested and encoded paths, page text keeps what follows an omitted end tag, the fact memo files stay bounded, web-sources.md names the one-time doc hash change, and docs and article facts (kbid.py's docstring, the Graphiti validity fields) state no more than the code or pinned source holds",
   "gates": [
     {
       "id": "start",
