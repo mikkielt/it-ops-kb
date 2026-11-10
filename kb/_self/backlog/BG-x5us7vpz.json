@@ -78,7 +78,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "Leave it unread on a skip line",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [

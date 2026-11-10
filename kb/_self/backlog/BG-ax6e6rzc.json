@@ -67,7 +67,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "Drop only text ending in a full stop or exclamation mark, and join a numbered piece to the text after a semicolon only when that text starts no numbered piece and ends in a question mark",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [

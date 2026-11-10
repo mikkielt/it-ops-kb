@@ -57,7 +57,9 @@
       "class": "agents-rule",
       "hold": true,
       "answer": "Match the number at the piece start, and again at the start of the text after a first ': ' lead-in",
-      "by": "agent"
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive"
     }
   ],
   "links": [
