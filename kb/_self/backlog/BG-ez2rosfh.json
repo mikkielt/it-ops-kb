@@ -17,7 +17,8 @@
   },
   "touches": [
     "_tools/bl_precheck.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
   ],
   "links": [
     "parked: SP-cb5bp3sz review"
