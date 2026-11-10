@@ -2,7 +2,7 @@
   "id": "BG-erzhc222",
   "kind": "bug",
   "title": "release leaves the item file modified and uncommitted, so begin of an item whose touches overlap the released claim still refuses until a hand set --commit and sync push",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-o3ag6hca",
   "priority": "P3",
   "rank": 0,
@@ -46,6 +46,28 @@
   ],
   "notes": "Premise run on origin/main at planning (2026-11-10): the repro or first check fails there on the behaviour named in the goal; not fixed by an earlier commit.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-5a0b1c2d",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "f19fda535525d1cc1b91dda17389034fe8c174e2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import shutil, subprocess as s, sys, tempfile, pathlib as P\nt = P.Path(tempfile.mkdtemp()); c = t / \"clone\"; c.mkdir()\nshutil.copytree(\"_tools\", c / \"_tools\", ignore=shutil.ignore_patterns(\"__pycache__\", \"test_*\"))\nshutil.copy(\"backlog.json\", c / \"backlog.json\")\n(c / \"kb/_self/backlog\").mkdir(parents=True)\nf = c / \"kb/_self/backlog/ST-aaaaaaaa.json\"\nf.write_text('{\"id\": \"ST-aaaaaaaa\", \"kind\": \"story\", \"title\": \"x\", \"status\": \"doing\", \"claimed_by\": \"t\"}\\n')\ndef g(*a): return s.run([\"git\", *a], cwd=c, check=True, capture_output=True, text=True).stdout\ng(\"init\", \"-q\", \"-b\", \"main\"); g(\"config\", \"user.email\", \"a@b.c\"); g(\"config\", \"user.name\", \"t\"); g(\"add\", \"-A\"); g(\"commit\", \"-q\", \"-m\", \"base\")\np = s.run([sys.executable, \"_tools/backlog.py\", \"release\", \"ST-aaaaaaaa\"], cwd=c, capture_output=True, text=True)\nprint(p.returncode, p.stdout[-300:], p.stderr[-300:])\ndirty = g(\"status\", \"--porcelain\", \"--\", \"kb/_self/backlog\").strip()\nlast = g(\"log\", \"-1\", \"--format=%s%n%b\").strip()\nprint(\"dirty:\", repr(dirty)); print(\"last:\", last)\nsys.exit(0 if p.returncode == 0 and dirty and \"uncommitted\" in p.stdout and \"commit\" in p.stdout else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "7df582174705c25b"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import shutil, subprocess as s, sys, tempfile, pathlib as P\nt = P.Path(tempfile.mkdtemp()); c = t / \"clone\"; c.mkdir()\nshutil.copytree(\"_tools\", c / \"_tools\", ignore=shutil.ignore_patterns(\"__pycache__\", \"test_*\"))\nshutil.copy(\"backlog.json\", c / \"backlog.json\")\n(c / \"kb/_self/backlog\").mkdir(parents=True)\nf = c / \"kb/_self/backlog/ST-aaaaaaaa.json\"\nf.write_text('{\"id\": \"ST-aaaaaaaa\", \"kind\": \"story\", \"title\": \"x\", \"status\": \"doing\", \"claimed_by\": \"t\"}\\n')\ndef g(*a): return s.run([\"git\", *a], cwd=c, check=True, capture_output=True, text=True).stdout\ng(\"init\", \"-q\", \"-b\", \"main\"); g(\"config\", \"user.email\", \"a@b.c\"); g(\"config\", \"user.name\", \"t\"); g(\"add\", \"-A\"); g(\"commit\", \"-q\", \"-m\", \"base\")\np = s.run([sys.executable, \"_tools/backlog.py\", \"release\", \"ST-aaaaaaaa\", \"--commit\"], cwd=c, capture_output=True, text=True)\nprint(p.returncode, p.stdout[-300:], p.stderr[-300:])\ndirty = g(\"status\", \"--porcelain\", \"--\", \"kb/_self/backlog\").strip()\nlast = g(\"log\", \"-1\", \"--format=%s%n%b\").strip()\nprint(\"dirty:\", repr(dirty)); print(\"last:\", last)\nsys.exit(0 if p.returncode == 0 and not dirty and \"release\" in last and \"ST-aaaaaaaa\" in last else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "f14a6ba82185298e"
+      }
+    ]
+  }
 }
