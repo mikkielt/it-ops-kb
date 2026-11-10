@@ -2,7 +2,7 @@
   "id": "ST-y74gcgvf",
   "kind": "story",
   "title": "Research sprint goal: Review leftovers close: gate classes skip backticked class names and word-list text, whole-suite detection follows tests.run_scope, rule-file names stay protected, kbingest digests follow sibling packages, census and goal-question edge cases, web-sources and answers facts state what the code holds, docs maps name extending.md, item and sprint skills keep their promises",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-enhaglcw",
   "goal_research": true,
   "priority": "P1",
@@ -23,6 +23,20 @@
   ],
   "notes": "No outside facts: every clause of the goal is a fix to this repository's own tools, skills and docs (gate class reading, tests.run_scope, kbingest digests, census, web-sources and answers wording); the kb tools and the code answer them, no official page is involved.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-86c7e088",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "96e115127fab3733d4aa2ea4424c1d18b4067e61",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-y74gcgvf"
+        ],
+        "exit": 0,
+        "sha256": "346d935b4398d65c"
+      }
+    ]
+  }
 }
