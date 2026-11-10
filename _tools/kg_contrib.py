@@ -87,11 +87,12 @@ def hit_reasons(path, hits):
 def added_hits(commits, head):
     """{sha: [reason]} of the shipped leak scan (shipped_file_hits, so the private names the registry knows too, and whatever
     extension point `leak_scan` a group set in this clone: contributing runs the shipped scan, never the group's) over the lines each of
-    COMMITS adds to a shared file; COMMITS is [(sha, [(status, old blob, new blob, path, new mode)])]. The values are never named."""
+    COMMITS adds to a shared file, a placeholder its root lists in HEAD's `_root.md` passing as publish lets it; COMMITS is [(sha, [(status, old blob, new blob, path, new mode)])]. The values are never named."""
     allow = kbpublic.parse_allowlist(kbpublic.blobs(head, [kbpublic.ALLOWLIST_PATH], KB).get(kbpublic.ALLOWLIST_PATH, ""))
     files = kbpublic.tree_files(head, KB) or []
     pinned = kbpublic.pinned_paths(head, files, KB)
-    specs = [s for _, ch in commits for st, old, new, _, _ in ch if st != "D" for s in (old, new) if not kbpublic.ZERO_RE.match(s)]
+    table = kbpublic.root_placeholders(head, files, KB)  # a name a root lists is no value its files hold
+    specs =[s for _, ch in commits for st, old, new, _, _ in ch if st != "D" for s in (old, new) if not kbpublic.ZERO_RE.match(s)]
     got, res = kbpublic.texts(specs, KB), {}
     for sha, ch in commits:
         for st, old, new, x, _ in ch:
@@ -99,7 +100,7 @@ def added_hits(commits, head):
                 continue
             seen = set(got.get(old, "").splitlines())
             added = "\n".join(ln for ln in got[new].splitlines() if ln not in seen)
-            hits = kbpublic.shipped_file_hits(x, added, allow, pinned)
+            hits = kbpublic.shipped_file_hits(x, added, allow, pinned, kbpublic.root_of(x, table))
             if hits:
                 res.setdefault(sha, []).append(hit_reasons(x, hits))
     return res
