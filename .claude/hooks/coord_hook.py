@@ -401,11 +401,20 @@ def tools_path():
 
 def own_flag(ws):
     """The announce.to_other_sessions the workspace's settings.json holds when it is a boolean there, whatever else the
-    file holds, else True: a bad key elsewhere in the file leaves a false as it is."""
+    file holds, else True: a bad key elsewhere in the file leaves a false as it is. A file that is not valid JSON (a
+    trailing comma) is read for its `"to_other_sessions": false` text, the first one, so a syntax error does not
+    turn an opt-out into a post."""
     try:
         with open(os.path.join(ws, "settings.json"), encoding="utf-8") as f:
-            flag = json.load(f)["coordination"]["announce"]["to_other_sessions"]
+            text = f.read()
+    except Exception:
+        return True
+    try:
+        flag = json.loads(text)["coordination"]["announce"]["to_other_sessions"]
         return flag if isinstance(flag, bool) else True
+    except ValueError:
+        found = re.search(r'"to_other_sessions"\s*:\s*(true|false)\b', text)
+        return found is None or found.group(1) == "true"
     except Exception:
         return True
 
