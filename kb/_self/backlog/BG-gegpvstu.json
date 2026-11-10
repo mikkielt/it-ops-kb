@@ -2,7 +2,7 @@
   "id": "BG-gegpvstu",
   "kind": "bug",
   "title": "provider._repository_of cuts a gitlab.com project whose group or name at depth 3 or more is blob, tree, raw or blame to the wrong slug",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-cb5bp3sz",
   "priority": "P2",
   "rank": 0,
@@ -42,5 +42,7 @@
     "parked: SP-c6tr77jl review"
   ],
   "notes": "Planner settled the open choice of the draft goal: document the cut, no API probe for the project a/b, since a second API call per ambiguous url is more than an S4 asks. Premise run 2026-11-10: _repository_of('https://gitlab.com/a/b/tree/c') gives slug a/b and tools.md names no blame word in a legacy sentence. Found by the SP-c6tr77jl review (S4, BG-iwqv7nxs gate g1). Planner 2026-11-10: the check that runs _repository_of on a/b/tree/c and a/b/-/tree/main/x already exits 0 on the base and pins that the code stays as it is; the repro fails until tools.md names the cut.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-n1run001",
+  "operator": "op-f618a13e"
 }
