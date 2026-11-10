@@ -2,7 +2,7 @@
   "id": "BG-iuarwdap",
   "kind": "bug",
   "title": "The fold line of kbmon --status all for more than four sprints is one unbounded line, over 300 characters for five folded sprints, where every other row is about 100",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3nqlr7b5",
   "priority": "P3",
   "rank": 0,
@@ -61,6 +61,28 @@
     "parked: SP-hyfyn22d review"
   ],
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-n3run001",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "f78980af4457d3c13f967a285dfb729594d0f0c8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import mon_status as m;rows=[{'id':'SP-%d'%n,'title':'Sprint number %d of the long running kind'%n,'items':{'done':1,'todo':1},'open':[{'id':'BG-%d'%n,'run':'blocked'}]} for n in range(8)];r=type('R',(),{'item':staticmethod(lambda i:i)})();out=m.compact_lines(rows,r);t=' '.join(out);print(out);sys.exit(0 if max(len(x) for x in out)<=120 and all('SP-%d'%n in t for n in range(8)) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "d7abe3ec39d24666"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import mon_status as m;rows=[{\"id\":\"SP-%d\"%n,\"title\":\"Sprint number %d of the long running kind\"%n,\"items\":{\"done\":1,\"todo\":1},\"open\":[{\"id\":\"BG-%d\"%n,\"run\":\"blocked\"}]} for n in range(8)];r=type(\"R\",(),{\"item\":staticmethod(lambda i:i)})();out=m.compact_lines(rows,r);print([len(x) for x in out]);sys.exit(1 if max(len(x) for x in out)>120 else 0)"
+        ],
+        "exit": 0,
+        "sha256": "434fb4973e631f4d"
+      }
+    ]
+  }
 }
