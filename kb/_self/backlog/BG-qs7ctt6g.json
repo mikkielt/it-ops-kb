@@ -1,0 +1,27 @@
+{
+  "id": "BG-qs7ctt6g",
+  "kind": "bug",
+  "title": "The delete class's new removal pattern misses a removal of kb content worded with another determiner or adjective, so a gate asking to remove kb content is no longer made blocking",
+  "status": "todo",
+  "sprint": "SP-uz3rhdlq",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "bl_authority's delete pattern matches a removal word (remove, removes, removed, removing, removal) followed by up to four other words and then kb, content or history, unless the words between hold flag, option or switch, so every probe of the repro is classed delete while the removed-flag design questions are not",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,\"_tools\"); import bl_authority as a; D=a.QUESTION_WORDS[\"delete\"]; qs=[\"remove outdated content\",\"remove the obsolete content\",\"remove every kb page\",\"remove this content\",\"remove our content\",\"remove unused entries from this kb\",\"remove sources and kb pages\",\"remove old, stale content\"]; bad=[q for q in qs if not D.search(q)]; print(bad); sys.exit(1 if bad else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_authority.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-jw2cqoxa"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
