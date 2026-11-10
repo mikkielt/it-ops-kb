@@ -1,0 +1,22 @@
+{
+  "id": "BG-hwxatqbg",
+  "kind": "bug",
+  "title": "A design gate whose option says a token object compared by identity is classed secrets, so its item cannot land without the operator",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "gate_class names design for a gate about telling two refreshes apart whose option holds the word token for a plain object, as it does for the same question without that option",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_authority as a;g={'id':'g1','kind':'blocking','question':'How does the mod tell a refresh that began before a session reset from one after it?','options':['a generation counter bumped at each reset','a per-refresh token object compared by identity']};it={'id':'BG-x','kind':'bug','title':'t','goal':'g','touches':['.claude/skills/kbmon-pane/**']};c=a.gate_class(it,g);print(c);sys.exit(0 if c=='design' else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_authority.py",
+    "kb/_self/backlog.md"
+  ],
+  "filed_in": "clone-0ea70e5c"
+}
