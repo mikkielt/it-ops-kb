@@ -37,7 +37,12 @@
         "Blank only a backticked gate class name (the eight CLASSES) in the question and options": "BG-hzbxfzut",
         "Blank every backticked span in the question and options": "BG-hzbxfzut"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Blank only a backticked gate class name (the eight CLASSES) in the question and options",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "links": [
