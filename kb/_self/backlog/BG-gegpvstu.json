@@ -2,7 +2,7 @@
   "id": "BG-gegpvstu",
   "kind": "bug",
   "title": "provider._repository_of cuts a gitlab.com project whose group or name at depth 3 or more is blob, tree, raw or blame to the wrong slug",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-cb5bp3sz",
   "priority": "P2",
   "rank": 0,
@@ -43,6 +43,28 @@
   ],
   "notes": "Planner settled the open choice of the draft goal: document the cut, no API probe for the project a/b, since a second API call per ambiguous url is more than an S4 asks. Premise run 2026-11-10: _repository_of('https://gitlab.com/a/b/tree/c') gives slug a/b and tools.md names no blame word in a legacy sentence. Found by the SP-c6tr77jl review (S4, BG-iwqv7nxs gate g1). Planner 2026-11-10: the check that runs _repository_of on a/b/tree/c and a/b/-/tree/main/x already exits 0 on the base and pins that the code stays as it is; the repro fails until tools.md names the cut.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-n1run001",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "028198357c5135452bd8d48ee500af4e2b2e9273",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import provider as p;u=p.urllib.parse.urlsplit;a=p._repository_of(u('https://gitlab.com/a/b/tree/c'));b=p._repository_of(u('https://gitlab.com/a/b/-/tree/main/x'));print(a,b);sys.exit(0 if a and b and a[1]=='a/b' and b[1]=='a/b' else 1)"
+        ],
+        "exit": 0,
+        "sha256": "9f409652b603be86"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;L=[l for l in open('kb/_self/tools.md',encoding='utf-8') if 'legacy' in l and 'blame' in l];print(len(L));sys.exit(0 if L else 1)"
+        ],
+        "exit": 0,
+        "sha256": "4355a46b19d348dc"
+      }
+    ]
+  }
 }
