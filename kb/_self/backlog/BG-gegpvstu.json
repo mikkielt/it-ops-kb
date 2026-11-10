@@ -2,7 +2,7 @@
   "id": "BG-gegpvstu",
   "kind": "bug",
   "title": "provider._repository_of cuts a gitlab.com project whose group or name at depth 3 or more is blob, tree, raw or blame to the wrong slug",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-cb5bp3sz",
   "priority": "P2",
   "rank": 0,

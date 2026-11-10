@@ -2,7 +2,7 @@
   "id": "BG-qk32vc5n",
   "kind": "bug",
   "title": "census.py read accepts a date that is no calendar day and an empty note",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-cb5bp3sz",
   "priority": "P2",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "BG-ut5cs72k",
   "kind": "bug",
   "title": "fact-validity-windows.md states Graphiti's created_at and expired_at beyond what the pinned code says",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-cb5bp3sz",
   "priority": "P3",
   "rank": 0,

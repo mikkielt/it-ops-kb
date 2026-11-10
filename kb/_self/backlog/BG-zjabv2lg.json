@@ -2,7 +2,7 @@
   "id": "BG-zjabv2lg",
   "kind": "bug",
   "title": "rag.py audit --stale-gaps lists gaps answered by lines that hold the pack's known words and not the question's",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-cb5bp3sz",
   "priority": "P2",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "BG-vykp2umc",
   "kind": "bug",
   "title": "kbid.py's module docstring says the publisher comes from the page's og:site_name or application-name, which provider.read_page no longer reads",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-cb5bp3sz",
   "priority": "P2",
   "rank": 0,

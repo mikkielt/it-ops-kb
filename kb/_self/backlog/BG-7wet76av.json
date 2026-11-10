@@ -2,7 +2,7 @@
   "id": "BG-7wet76av",
   "kind": "bug",
   "title": "The ledger and feedback-flag memo files of kf_fresh and kbfacts grow without bound in the shared _cache, one per worktree or sandbox path",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-cb5bp3sz",
   "priority": "P2",
   "rank": 0,

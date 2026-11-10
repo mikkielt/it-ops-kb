@@ -2,7 +2,7 @@
   "id": "BG-g6emvylx",
   "kind": "bug",
   "title": "census.py read counts each confirmed source twice in its census.phase row",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-cb5bp3sz",
   "priority": "P2",
   "rank": 0,

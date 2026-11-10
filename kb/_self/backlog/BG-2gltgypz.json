@@ -2,7 +2,7 @@
   "id": "BG-2gltgypz",
   "kind": "bug",
   "title": "The reducer change of BG-hfakjbdf moves the doc hash of every github.com page row once, and web-sources.md says nothing of the one false change",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-cb5bp3sz",
   "priority": "P2",
   "rank": 0,

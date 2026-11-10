@@ -2,7 +2,7 @@
   "id": "BG-732lceh4",
   "kind": "bug",
   "title": "census.py phase 2 brief names the earlier detect log in its factdiff.py dead command when the rows came from a numbered log",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-cb5bp3sz",
   "priority": "P2",
   "rank": 0,

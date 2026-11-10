@@ -2,7 +2,7 @@
   "id": "BG-covjiwma",
   "kind": "bug",
   "title": "provider.read_licence gives CC BY-SA to a gitlab-org/gitlab doc/ path with a double-encoded .. segment",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-cb5bp3sz",
   "priority": "P2",
   "rank": 0,

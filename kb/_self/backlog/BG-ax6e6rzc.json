@@ -2,7 +2,7 @@
   "id": "BG-ax6e6rzc",
   "kind": "bug",
   "title": "researched reads a goal's lead-in sentence into question 1 and cuts a question at a semicolon inside it",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-cb5bp3sz",
   "priority": "P2",
   "rank": 0,

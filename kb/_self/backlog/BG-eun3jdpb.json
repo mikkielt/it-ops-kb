@@ -2,7 +2,7 @@
   "id": "BG-eun3jdpb",
   "kind": "bug",
   "title": "fetch._PageText hides the rest of the page after a role=tooltip or visually hidden element whose end tag HTML lets the parser leave out",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-cb5bp3sz",
   "priority": "P2",
   "rank": 0,
