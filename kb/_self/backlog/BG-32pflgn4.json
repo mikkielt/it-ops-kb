@@ -2,7 +2,7 @@
   "id": "BG-32pflgn4",
   "kind": "bug",
   "title": "bl_authority's backticked-class-name blanking also drops the only push or delete word of a gate that asks the operator to push or delete in backticks, so that gate is classed design and an agent answers it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-enhaglcw",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,7 @@
   "depends_on": [
     "BG-udzt6mbi"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-86c7e088",
+  "operator": "op-f618a13e"
 }
