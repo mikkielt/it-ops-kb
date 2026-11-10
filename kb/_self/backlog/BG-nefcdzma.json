@@ -2,7 +2,7 @@
   "id": "BG-nefcdzma",
   "kind": "bug",
   "title": "the kbtools entry for backlog.py set cuts the list of options a batch refuses after --notes and runs into the next fragment",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-o3ag6hca",
   "priority": "P3",
   "rank": 0,
@@ -40,5 +40,7 @@
     "parked: SP-lhpvwh6l review"
   ],
   "notes": "Found by the SP-lhpvwh6l review (S4): the usage block in backlog.py is right, but the kbtools excerpt reads 'a batch refuses the options naming one item: --title, --goal, --notes, list option replaces its list...'. The reviewer did not locate the cut in kbtools.py (subcommand_blocks and the description join): keep the continuation lines whole, or put the refused-options sentence on lines the excerpt keeps. Sibling of the landed ST-c5ibk7sj. Premise run on origin/main at planning (2026-11-10): the repro or first check fails there on the behaviour named in the goal; not fixed by an earlier commit. The change is in the facade's own usage block (the docstring of _tools/backlog.py), so no bl_*.py module is touched; the check warning about the facade is expected.",
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-5a0b1c2d",
+  "operator": "op-f618a13e"
 }
