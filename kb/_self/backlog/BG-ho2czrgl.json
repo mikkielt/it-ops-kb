@@ -29,6 +29,26 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the refusal check read an answer's leading words: the first two runs of letters anywhere in the answer, or only from its first character?",
+      "options": [
+        "Letter runs: skip leading punctuation, so '- No' and '(Never)' refuse",
+        "From the first character: only an answer that starts with the word refuses"
+      ],
+      "recommendation": "Letter runs: skip leading punctuation, so '- No' and '(Never)' refuse",
+      "do": {
+        "Letter runs: skip leading punctuation, so '- No' and '(Never)' refuse": "BG-ho2czrgl",
+        "From the first character: only an answer that starts with the word refuses": "BG-ho2czrgl"
+      },
+      "class": "agents-rule",
+      "hold": true,
+      "answer": "Letter runs: skip leading punctuation, so '- No' and '(Never)' refuse",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-o3ag6hca review"
   ],
