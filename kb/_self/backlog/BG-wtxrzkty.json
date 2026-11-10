@@ -2,7 +2,7 @@
   "id": "BG-wtxrzkty",
   "kind": "bug",
   "title": "The plugin's item skill says check-trailers refuses the push, a guard a host project's land_push does not have",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-4fawjprq",
   "sprint": "SP-enhaglcw",
   "priority": "P2",
@@ -33,6 +33,28 @@
     "parked: SP-ciqk6gt6 review"
   ],
   "notes": "Review gap 7: skills/item/SKILL.md:18 and :42 say check-trailers refuses the push; a host whose land_push is git push has no such guard. Left out of SP-wjrxikw6 2026-11-10: its files (bl_upstream.py, skills/item/SKILL.md) are planned by SP-uz3rhdlq tonight.",
-  "claimed_by": "claude-86c7e088",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "d79c2375e456db65f83affb5960e940e4f774e16",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nL=[l for l in open('skills/item/SKILL.md',encoding='utf-8') if 'check-trailers' in l]\nprint(len(L));sys.exit(0 if L and all('land_push' in l for l in L) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "53c234e5e8472b6a"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; t=open('skills/item/SKILL.md').read(); sys.exit(1 if 'check-trailers' in t and 'land_push' not in t else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
