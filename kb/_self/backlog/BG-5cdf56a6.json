@@ -7,7 +7,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "Found by the SP-yzs3bj6f review of BG-fiwxnug3: is_own (_tools/perfcheck.py) matches a reason token against the dropped ids' own names by exact string, so the test module's stem (test_audit for _tools/test_audit.py), or the test name written as a call (test_x()) or with trailing space inside the backticks, beside the live-module-calls-went-with phrase still counts as a successor. names_successor skips these forms of the dropped ids' own names too, and a genuine successor (a removed module's name) still counts.",
+  "goal": "perfcheck's is_own matches a reason token against the dropped ids' own names by exact string, so the test module's stem (test_audit, for a dropped test of the test_audit module), or the test name written as a call (test_x()) or with trailing space inside the backticks, beside the live-module-calls-went-with phrase still counts as a successor. names_successor skips these forms of the dropped ids' own names too, and a genuine successor (a removed module's name) still counts.",
   "repro": {
     "run": [
       "python3",
@@ -23,5 +23,5 @@
   "links": [
     "parked: SP-yzs3bj6f review"
   ],
-  "notes": "Left out of SP-o3ag6hca on 2026-11-10: _tools/perfcheck.py is planned in SP-3nqlr7b5; also its goal names _tools/test_audit.py, which no touch covers."
+  "notes": "Found by the SP-yzs3bj6f review of BG-fiwxnug3. Planned 2026-11-10 in SP-u5zhszow; no sibling sprint holds _tools/perfcheck.py now (SP-3nqlr7b5's items do not touch it); the premise reproduces on origin/main: names_successor returns True for the stem form."
 }
