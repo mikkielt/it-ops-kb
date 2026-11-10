@@ -2,7 +2,7 @@
   "id": "BG-4jbl3jzh",
   "kind": "bug",
   "title": "ql_report.conflict_mrs picks the list's fields by the url's forge, not the forge setting bl_forge.read_list now aims at",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-o3ag6hca",
   "priority": "P3",
   "rank": 0,
@@ -44,6 +44,28 @@
     "parked: SP-dqkf3i42 review"
   ],
   "notes": "Premise run on origin/main at planning (2026-11-10): the repro or first check fails there on the behaviour named in the goal; not fixed by an earlier commit.",
-  "claimed_by": "claude-5a0b1c2d",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "c1bb2d9b1336a7f348a96bee6aad8d0819c42633",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json, os, subprocess, sys, tempfile\nCHILD = \"\"\"import json,sys;sys.path.insert(0,\"_tools\");import ql_report\nurl,data=sys.argv[1],json.loads(sys.argv[2])\nd,_=ql_report.conflict_mrs(url,lambda a,cwd=None:(0,json.dumps(data),\"\"))\nprint(json.dumps(d))\"\"\"\ndef case(forge, url, data):\n    c = os.path.join(tempfile.mkdtemp(), \"backlog.json\"); json.dump({\"forge\": forge}, open(c, \"w\"))\n    p = subprocess.run([sys.executable, \"-c\", CHILD, url, json.dumps(data)], capture_output=True, text=True, env=dict(os.environ, KB_BACKLOG_CONFIG=c))\n    try:\n        return json.loads(p.stdout)\n    except ValueError:\n        return None\nlab = case(\"gitlab\", \"https://gitlab.example.com/group/kb.git\", [{\"iid\": 4, \"title\": \"t\", \"source_branch\": \"querylog/r1\", \"web_url\": \"u\"}])\nhub = case(\"github\", \"https://ghe.corp.example.com/group/kb.git\", [{\"number\": 3, \"title\": \"t\", \"headRefName\": \"querylog/r1\", \"url\": \"u\"}])\nlab_ok = bool(lab) and lab[0][0] == \"!4\" and lab[0][1] == \"querylog/r1\"\nhub_ok = bool(hub) and hub[0][0] == \"#3\" and hub[0][1] == \"querylog/r1\"\nprint(\"gitlab:\", lab_ok, \"github enterprise host:\", hub_ok)\nsys.exit(0 if lab_ok and hub_ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "e4571dc16b4297a7"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,sys,tempfile; sys.path.insert(0,\"_tools\"); c=os.path.join(tempfile.mkdtemp(),\"backlog.json\"); json.dump({\"forge\":\"github\"},open(c,\"w\")); os.environ[\"KB_BACKLOG_CONFIG\"]=c; import ql_report; run=lambda a,cwd=None:(0,json.dumps([{\"number\":3,\"title\":\"t\",\"headRefName\":\"querylog/r1\",\"url\":\"u\"}]),\"\"); d,_=ql_report.conflict_mrs(\"https://ghe.corp.example.com/group/kb.git\",run); sys.exit(0 if d and d[0][0]==\"#3\" else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
