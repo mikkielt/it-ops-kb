@@ -21,6 +21,26 @@
     "kb/_self/content-rules.md",
     "kb/_self/token-efficiency.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does stale_gaps count the answer share so the Dev Drive timing gap is not listed?",
+      "options": [
+        "Share over the question's own key words, counted over the line's text without its tag bracket",
+        "Share over the question's own key words only, the tag bracket still read"
+      ],
+      "recommendation": "Share over the question's own key words, counted over the line's text without its tag bracket",
+      "reason": "a DER line's bracket holds cross-reference paths (windows/dev-drive.md for performance mode) that supplied 3 of the 7 held words, and the share over the own words alone still passes at 7 of 10",
+      "do": {
+        "Share over the question's own key words, counted over the line's text without its tag bracket": "BG-zjabv2lg",
+        "Share over the question's own key words only, the tag bracket still read": "BG-zjabv2lg"
+      },
+      "class": "design",
+      "answer": "Share over the question's own key words, counted over the line's text without its tag bracket",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-2cq2hse4 review"
   ],
