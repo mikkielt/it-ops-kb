@@ -2,7 +2,7 @@
   "id": "ST-fo7vsach",
   "kind": "story",
   "title": "Review sprint: Review leftovers close: gate classes skip backticked class names and word-list text, whole-suite detection follows tests.run_scope, rule-file names stay protected, kbingest digests follow sibling packages, census and goal-question edge cases, web-sources and answers facts state what the code holds, docs maps name extending.md, item and sprint skills keep their promises",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-enhaglcw",
   "review": true,
   "priority": "P1",
@@ -38,5 +38,7 @@
       ]
     }
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-86c7e088",
+  "operator": "op-f618a13e"
 }
