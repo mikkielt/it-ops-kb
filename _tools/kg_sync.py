@@ -708,21 +708,18 @@ def selector_gate(out):
 GROUP_CHECK_TIMEOUT_S = 600  # a settings layer's gate check gets this long, KB_GATE_CHECK_TIMEOUT_S overrides it
 
 
-PLAIN_ROOT_NAME = re.compile(r"[A-Za-z0-9_][A-Za-z0-9_.-]*")  # the kb directory names `kbsettings.layered` accepts
-
-
 def gate_check_entries(root):
     """`(argv, layer)` for each `gate_checks` entry of the settings layers of ROOT in layer order: group, clone, each kb
     root's `kb/NAME/settings.json` by name (layer `root NAME`), user. `kbsettings.layered` takes one kb root, so the
     layers before and after the kb roots come from a read with none and each kb root's entries from a read with it.
-    A kb directory whose name is not a plain name (PLAIN_ROOT_NAME), which `layered` refuses, is left out: it is no kb
-    root, and its refusal would fail the whole gate.
+    A kb directory whose name is not a plain name (`kbsettings.PLAIN_NAME`), which `layered` refuses, is left out: it
+    is no kb root, and its refusal would fail the whole gate.
     Raises `kbsettings.SettingsError` for a file that cannot be read."""
     root = Path(root)
     listed, layers = kbsettings.layered(root, "gate_checks")
     kb_dir = root / "kb"
     names = sorted(d.name for d in kb_dir.iterdir() if (d / "settings.json").is_file()
-                   and PLAIN_ROOT_NAME.fullmatch(d.name)) if kb_dir.is_dir() else []
+                   and kbsettings.PLAIN_NAME.fullmatch(d.name)) if kb_dir.is_dir() else []
     mine = {name: [(argv, "root " + name) for argv, layer in zip(*kbsettings.layered(root, "gate_checks", name))
                    if layer == "root"] for name in names}
     before = [(a, l) for a, l in zip(listed, layers) if l != "user"]
