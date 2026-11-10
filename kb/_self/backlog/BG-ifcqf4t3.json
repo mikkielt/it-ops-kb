@@ -25,6 +25,26 @@
   "depends_on": [
     "BG-gvgiekwa"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which claude --tools list does each multi run lookup tool set pass?",
+      "options": [
+        "kb gets --tools '' (only the kb server's tools), files gets Read,Grep,Glob",
+        "kb keeps every built-in tool, files gets Read,Grep,Glob"
+      ],
+      "recommendation": "kb gets --tools '' (only the kb server's tools), files gets Read,Grep,Glob",
+      "reason": "the kb arm is meant to answer from the kb's tools, as the code questions' arm already must",
+      "do": {
+        "kb gets --tools '' (only the kb server's tools), files gets Read,Grep,Glob": "BG-ifcqf4t3",
+        "kb keeps every built-in tool, files gets Read,Grep,Glob": "BG-ifcqf4t3"
+      },
+      "class": "design",
+      "answer": "kb gets --tools '' (only the kb server's tools), files gets Read,Grep,Glob",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-5y4ut64g review"
   ],

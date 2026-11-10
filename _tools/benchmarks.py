@@ -538,7 +538,7 @@ def main(argv=None):
                     + ",".join(f"{r}={m}" for r, m in bench_multi.DEFAULT_MODELS.items()) + f",manager={bench_multi.MANAGER_MODEL})")
     mr.add_argument("--pack-budget", type=int, default=bench_multi.PACK_BUDGET, metavar="TOKENS",
                     help=f"the budget a lookup agent passes kb_pack (default: {bench_multi.PACK_BUDGET})")
-    mr.add_argument("--tools", choices=list(bench_multi.TOOL_SETS), default="kb", help="the lookup agent's tools: the kb's, or Read, Grep and Glob (default: kb)")
+    mr.add_argument("--tools", choices=list(bench_multi.TOOL_SETS), default="kb", help="the lookup agent's tools, as claude's --tools list: the kb's alone, or Read, Grep and Glob alone (default: kb)")
     mr.add_argument("--manager", choices=bench_multi.MANAGERS, default="code", help="who starts the agents: this tool, or a model session (default: code)")
     mr.add_argument("--max-usd", type=float, metavar="USD", help="start no agent once the recorded spend plus its estimate would pass USD; "
                     "it is recorded with the failure budget (default: no cap)")
