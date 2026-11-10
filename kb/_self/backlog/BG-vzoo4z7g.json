@@ -2,7 +2,7 @@
   "id": "BG-vzoo4z7g",
   "kind": "bug",
   "title": "census.brief_flog breaks a tie of the detect logs the evidence names by name order, which puts factdiff-DATE.csv after factdiff-DATE-2.csv and -10 before -2",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-enhaglcw",
   "priority": "P3",
   "rank": 0,
@@ -26,5 +26,7 @@
   "links": [
     "parked: SP-cb5bp3sz review"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-86c7e088",
+  "operator": "op-f618a13e"
 }
