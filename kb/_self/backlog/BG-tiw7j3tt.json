@@ -1,0 +1,20 @@
+{
+  "id": "BG-tiw7j3tt",
+  "kind": "bug",
+  "title": "_answers.md QK-stores-changing-facts-mark-fact-was says Graphiti's created_at and expired_at mark when the store knew, beyond what the pinned edges.py holds",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The answer QK-stores-changing-facts-mark-fact-was of kb/public/_answers.md says only what the pinned edges.py holds of created_at and expired_at: created_at is a field of the base Edge and expired_at is described as when the node was invalidated, not as a store-knowledge window",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;n=open('kb/public/_answers.md',encoding='utf-8').read().count('for when the store knew');print(n);sys.exit(1 if n else 0)"
+    ]
+  },
+  "repro_reason": "the defect is the wording of one answer line against a pinned source; the behaviour is the text itself",
+  "notes": "Found while fixing BG-ut5cs72k: same claim as its fact line 28, in the answer at kb/public/_answers.md:4542; touches to plan: kb/public/_answers.md.",
+  "filed_in": "clone-0ea70e5c"
+}
