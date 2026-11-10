@@ -2,7 +2,7 @@
   "id": "BG-c3ufiphj",
   "kind": "bug",
   "title": "The needs-you head says nothing and the receipt says no alert for a panel kbmon did not read",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-n4dci4w7",
   "sprint": "SP-3nqlr7b5",
   "priority": "P3",
@@ -66,6 +66,46 @@
   ],
   "notes": "Check 2 (every panel read still says nothing) passes before the work on purpose: it pins the behaviour the fix must keep. Premise reproduced 2026-11-10 on the base: the receipt names querylog, sessions, host when only host was read. Planned 2026-11-10 in SP-3nqlr7b5; BG-iuarwdap runs after this item because both edit _tools/mon_status.py.",
   "filed_in": "clone-0ea70e5c",
-  "claimed_by": "claude-n3run001",
-  "operator": "op-f618a13e"
+  "operator": "op-f618a13e",
+  "evidence": {
+    "commit": "75a6345a291551075c1dbc8f355c2355800738c2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import mon_receipt as r;l=r.receipt({\"panels\":{\"querylog\":{\"state\":\"timeout\"},\"host\":{\"state\":\"ok\",\"data\":{}}},\"alerts\":[]})[\"line\"];print(l);h=l.split(\"; needs you\")[0];sys.exit(0 if \"no alert on host\" in h and \"querylog\" not in h and \"sessions\" not in h else 1)"
+        ],
+        "exit": 0,
+        "sha256": "4ae95a370b366c54"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import mon_receipt as r;l=r.receipt({\"panels\":{},\"alerts\":[]})[\"line\"];print(l);h=l.split(\"; needs you\")[0];sys.exit(1 if \"no alert on\" in h else 0)"
+        ],
+        "exit": 0,
+        "sha256": "756b7ae283d3c401"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import mon_needs as m;s={\"panels\":{n:{\"state\":\"ok\",\"data\":{}} for n in m.PANELS},\"alerts\":[]};l=m.line(s);print(l);sys.exit(0 if \"nothing\" in l and \"not read\" not in l else 1)"
+        ],
+        "exit": 0,
+        "sha256": "5545552473d315d6"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import mon_needs;sys.exit('nothing' in mon_needs.line({'panels':{'sprint':{'state':'timeout'}}}))"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
