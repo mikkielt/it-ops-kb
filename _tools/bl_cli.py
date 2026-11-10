@@ -296,7 +296,8 @@ class group_loading:
 
 def load_group_commands(root):
     """Import each module `extensions.backlog_commands` lists in the settings layers of ROOT, or, with no such setting, the
-    module of the one entry point of group `it_ops_kb.backlog_commands` (`kbext` is imported only for one), after the shipped modules,
+    module of the one entry point of group `it_ops_kb.backlog_commands` (`kbext` is imported for an entry point, and also when a
+    layer sets `extension_paths`, whose directories it puts on `sys.path` before that look), after the shipped modules,
     through `kbext.load_all` (kb/_self/extending.md): a module adds or replaces commands through `register` and `extend`
     as it is imported, the module being the one that calls them. A module that `kbext` refuses (it cannot be imported,
     declares no API version this one meets, raises) is named on stderr with its layer and file and every command the
