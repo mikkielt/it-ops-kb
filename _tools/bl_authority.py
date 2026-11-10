@@ -109,9 +109,13 @@ TOKEN_IDENT = re.compile(r"\b(?:[A-Z0-9]+_)+TOKENS(?:_[A-Z0-9]+)*\b(?!\.\w)")
 # `vault_token`, `api_token`, `gitlab_token`) keeps the identifier in the text searched, so the rule fails closed, as does
 # an identifier in upper case (`GITLAB_TOKEN`) or in mixed case, or after a credential word (`API bare_token`), or glued
 # by a hyphen, dot, slash or colon to a word before it (`vault-read_token`, `vault.read_token`, `vault/read_token`): the
-# prefix may be a credential's name, so only an identifier after a space, a backtick or the start stays blanked.
+# prefix may be a credential's name, so only an identifier after a space, a backtick or the start stays blanked, and
+# after `usage.` or `response.usage.`.
 SNAKE_TOKEN_IDENT = re.compile(r"\b(?:[a-z0-9]+_)+tokens?\b(?!\.\w)")
 GLUED_BEFORE = re.compile(r"\w[-./:]$")
+# `usage.` or `response.usage.` right before the identifier is a model response's usage object, no credential's name:
+# it does not count as glue, so `usage.cache_read_input_tokens` is judged by its parts alone.
+USAGE_PREFIX = re.compile(r"(?:^|[\s`'\"(\[])(?:response\.)?usage\.$")
 CODE_PARTS = frozenset(("bare", "def", "read"))
 # A model's usage field or token-count function (`cache_read_input_tokens`, `cache_creation_input_tokens`,
 # `output_tokens`, `count_tokens`, `max_tokens`): an identifier in the plural `tokens` whose every part before it is on
@@ -177,6 +181,12 @@ def code_identifier(ident):
     return all(p in CODE_PARTS for p in parts) or last == "tokens" and all(p in USAGE_PARTS for p in parts)
 
 
+def glued_before(before):
+    """Whether the text `before` an identifier ends in a word glued to it by a hyphen, dot, slash or colon (the word may
+    be a credential's name), `usage.` and `response.usage.` apart."""
+    return bool(GLUED_BEFORE.search(before)) and not USAGE_PREFIX.search(before)
+
+
 def without_token_counts(text):
     """The text with each token-count phrase, each upper-case identifier of token counts, each snake_case code
     identifier such as `bare_token`, each Markdown doc name that holds `token` and each word of the Python `tokenize` module and each
@@ -191,7 +201,7 @@ def without_token_counts(text):
     text = TOKEN_DOC.sub(
         lambda m: m.group(0) if names_secret(m.group(0)) or DOC_SECRET.search(m.group(0)) else " ", text)
     text = SNAKE_TOKEN_IDENT.sub(
-        lambda m: m.group(0) if CRED_BEFORE.search(text[:m.start()]) or GLUED_BEFORE.search(text[:m.start()])
+        lambda m: m.group(0) if CRED_BEFORE.search(text[:m.start()]) or glued_before(text[:m.start()])
         or not code_identifier(m.group(0)) else " ", text)
     text = TOKEN_IDENT.sub(
         lambda m: m.group(0) if any(CRED_PART.match(p) for p in m.group(0).split("_")) else " ", text)
