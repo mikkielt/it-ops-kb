@@ -536,7 +536,7 @@ DOC_PREFIX = re.compile(r"[rRuU]?")  # the one prefix a docstring may have
 DOC_JOIN = re.compile(r"[ \t]*(?:\\\n[ \t]*)*[rRuU]?")  # between two string literals that make one
 DOC_JOIN_PAREN = re.compile(r"(?:\s|\\\n|#[^\n]*)*[rRuU]?")  # the same inside parentheses, where a line may end
 DOC_CLOSE = re.compile(r"(?:\s|\\\n|#[^\n]*(?=\n|\Z))*\)")  # up to and with a closing parenthesis
-DOC_END = re.compile(r"[ \t]*(?:[#;\n]|\Z)")  # a docstring is a statement by itself, not the start of an expression
+DOC_END = re.compile(r"(?:[ \t]*\\\n)*[ \t]*(?:[#;\n]|\Z)")  # a docstring is a statement by itself, not the start of an expression; a line continuation may follow it
 
 
 def doc_open(text, i, end):
