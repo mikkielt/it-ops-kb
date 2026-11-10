@@ -38,7 +38,12 @@
         "each text alone": "BG-32pflgn4",
         "the whole gate together": "BG-32pflgn4"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "each text alone",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
     }
   ],
   "filed_in": "clone-0ea70e5c",
