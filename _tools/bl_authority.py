@@ -333,6 +333,17 @@ def without_benign_push_words(text, question=None, kb_content=False):
     return KEY_IN_WORD.sub(" ", text) if kb_content else text
 
 
+# A gate class name in backticks (`secrets`, `push`, `agents-rule`) in a question or an option names a class, as when a
+# gate asks which class a phrase should get: its letters are no class word of the gate's own text. The same word
+# unquoted, or inside any other backticked text (`git push`, `secrets.md`), keeps its class.
+CLASS_NAME_QUOTED = re.compile(r"`(?:" + "|".join(re.escape(c) for c in CLASSES) + r")`")
+
+
+def without_class_names(text):
+    """The text with each backticked gate class name replaced by a space: what the class words are searched in."""
+    return CLASS_NAME_QUOTED.sub(" ", text)
+
+
 def command_words(gate):
     """The words of a gate's `do` and `host_check` commands (argv lists, or a string)."""
     out = []
@@ -439,17 +450,17 @@ def class_reasons(item, gate, touches=True):
     if touches:
         for cls, why in touch_found(item).items():
             found.setdefault(cls, []).extend(why)
-    options = [str(o) for o in gate.get("options", []) or []]
-    text = f"{gate.get('question', '')} {' '.join(options)} {command_words(gate)}"
+    question = without_class_names(str(gate.get("question", "")))
+    options = [without_class_names(str(o)) for o in gate.get("options", []) or []]
+    text = f"{question} {' '.join(options)} {command_words(gate)}"
     commands = command_words(gate)
     push_text = " ".join((
-        without_benign_push_words(f"{gate.get('question', '')} {' '.join(options)}", str(gate.get("question", "")),
-                                  kb_content_only(item)),
+        without_benign_push_words(f"{question} {' '.join(options)}", question, kb_content_only(item)),
         without_benign_push_words(commands)))
     # a unit-noun list is read within the question or one option, never across the join of two texts
-    question_cred = bool(QUESTION_CRED.search(str(gate.get("question", ""))))
+    question_cred = bool(QUESTION_CRED.search(question))
     secrets_text = without_token_counts(" ".join(
-        without_unit_lists(str(p), question_cred) for p in [gate.get("question", ""), *options, command_words(gate)]))
+        without_unit_lists(str(p), question_cred) for p in [question, *options, command_words(gate)]))
     for cls, rx in QUESTION_WORDS.items():
         m = rx.search(secrets_text if cls == "secrets" else push_text if cls == "push" else text)
         if m:

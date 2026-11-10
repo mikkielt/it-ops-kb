@@ -23,6 +23,28 @@
   "depends_on": [
     "BG-bzigixfo"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How far does the backtick blanking in class_reasons reach?",
+      "options": [
+        "Blank only a backticked gate class name (the eight CLASSES) in the question and options",
+        "Blank every backticked span in the question and options"
+      ],
+      "recommendation": "Blank only a backticked gate class name (the eight CLASSES) in the question and options",
+      "do": {
+        "Blank only a backticked gate class name (the eight CLASSES) in the question and options": "BG-hzbxfzut",
+        "Blank every backticked span in the question and options": "BG-hzbxfzut"
+      },
+      "class": "agents-rule",
+      "answer": "Blank only a backticked gate class name (the eight CLASSES) in the question and options",
+      "by": "operator",
+      "operator": "op-f618a13e",
+      "role": "interactive",
+      "agent_session": true
+    }
+  ],
   "links": [
     "parked: SP-uz3rhdlq close"
   ],
