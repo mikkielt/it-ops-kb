@@ -2,7 +2,7 @@
   "id": "ST-uq4vasu2",
   "kind": "story",
   "title": "Research sprint goal: Night leftovers: refusal words never approve a paid session, usage and docstrings say what the code does, one plain-name pattern, url identity normalised, upstream import keeps a fenced premise, perfcheck excuses no dropped test",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-u5zhszow",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,7 @@
   "touches": [
     "kb/public/**"
   ],
-  "filed_in": "clone-0ea70e5c"
+  "filed_in": "clone-0ea70e5c",
+  "claimed_by": "claude-n7run001",
+  "operator": "op-f618a13e"
 }
