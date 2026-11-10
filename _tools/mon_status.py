@@ -53,6 +53,8 @@ ROWS = 6  # processes, claims, sprints or gates one topic names before it counts
 WHY_CHARS = 120
 NAME_CHARS = 40  # characters of a sprint's or an item's short name
 ROW_CHARS = 100  # characters of a sprint's row
+ID_CHARS = 12  # characters of a sprint's id and the space after it, in a line of the `all` answer
+FOLD_CHARS = 120  # characters of the last line of the sprints topic in `all`, which folds the sprints with no line of their own
 SPRINT_ORDER = ("active", "approved", "planned")  # the order the sprints answer lists them in
 GROUP_TEXT = {  # kind: (cause, remedy), fixed words
     "kbmon": ("the monitor reads every panel on each refresh",
@@ -468,15 +470,20 @@ def run_lines(r, s, facts):
     return lines + ["    " + x for x in more(len(running) - ROWS, "runs")]
 
 
+def run_states(s):
+    """The open items of the sprint row S that have a run, grouped by their state: {state: [item, ...]} in first-seen order."""
+    states = {}
+    for x in s.get("open") or []:
+        if isinstance(x, dict) and x.get("run"):
+            states.setdefault(x["run"], []).append(x)
+    return states
+
+
 def run_summary(s):
     """The run states of the open items of the sprint row S as one phrase, `working 2, blocked 1 (ST-abc)`: the count of each
     state, the id of an item that is blocked, failed or refused (the operator acts); "" where no open item has a run."""
-    running = [x for x in s.get("open") or [] if isinstance(x, dict) and x.get("run")]
-    states = {}
-    for x in running:
-        states.setdefault(x["run"], []).append(x)
     return ", ".join(f"{state} {len(xs)}" + (f" ({', '.join(str(x.get('id')) for x in xs[:2])})" if state in mon_needs.STOPPED else "")
-                     for state, xs in states.items())
+                     for state, xs in run_states(s).items())
 
 
 def compact_text(s):
@@ -485,23 +492,39 @@ def compact_text(s):
     return run_summary(s) or ("no run states" if state == "active" else "not started" if state == "approved" else "waits for start gate")
 
 
+def fold_line(rest, r):
+    """The last line of the sprints topic for the sprints REST that have no line of their own: `+N more: STATE N in ID, ID;
+    ...; M without run states`, each state counted by its open items and followed by the sprints that hold them, so every
+    sprint that has run states is named once for each of its states; at most FOLD_CHARS characters, where the sprints would
+    not fit by id each state is followed by the count of its sprints instead."""
+    by_state = {}
+    for s in rest:
+        for state, xs in run_states(s).items():
+            entry = by_state.setdefault(state, [0, []])
+            entry[0] += len(xs)
+            entry[1].append(str(s.get("id") or short_name(s.get("title") or r.item(s.get("id")))))
+    plain = sum(1 for s in rest if not run_states(s))
+    tail = [f"{plain} without run states"] if plain else []
+    head = f"  +{len(rest)} more: "
+    named = head + "; ".join([f"{state} {n} in {', '.join(ids)}" for state, (n, ids) in by_state.items()] + tail)
+    if len(named) <= FOLD_CHARS:
+        return named
+    return head + "; ".join([f"{state} {n} in {len(ids)} sprint{'' if len(ids) == 1 else 's'}" for state, (n, ids) in by_state.items()] + tail)
+
+
 def compact_lines(rows, r, budget=ALL_LINES):
     """The sprints topic for the `all` answer, at most BUDGET lines: one line for each sprint, the first one led by `Sprints:`,
-    each with its items done of all and the run states of its open items. With more sprints than lines, the first BUDGET - 1
-    keep a line each and the last line holds the rest as `+N more: NAME STATES; ...`, each sprint that has run states by its
-    name (the sprints with none are counted, `M without run states`), so every sprint's run states are named."""
+    each with its id, short name, items done of all and the run states of its open items. With more sprints than lines, the
+    first BUDGET - 1 keep a line each and the last line is the `fold_line` of the rest, at most FOLD_CHARS characters."""
     lines = []
     keep = rows if len(rows) <= budget else rows[:budget - 1]
     for s in keep:
         done, total = sprint_counts(s)
-        lines.append(("Sprints: " if not lines else "  ") + f"{short_name(s.get('title') or r.item(s.get('id'))):<{NAME_CHARS}}  {f'{done}/{total}':>5}  {compact_text(s)}")
+        name = short_name(s.get("title") or r.item(s.get("id")), NAME_CHARS - ID_CHARS)
+        lines.append(("Sprints: " if not lines else "  ") + f"{str(s.get('id') or ''):<{ID_CHARS}}{name:<{NAME_CHARS - ID_CHARS}}  {f'{done}/{total}':>5}  {compact_text(s)}")
     rest = rows[len(keep):]
     if rest:
-        named = [s for s in rest if run_summary(s)]
-        plain = len(rest) - len(named)
-        parts = [f"{short_name(s.get('title') or r.item(s.get('id')))} {run_summary(s)}" for s in named]
-        parts += [f"{plain} without run states"] if plain else []
-        lines.append(f"  +{len(rest)} more: " + "; ".join(parts))
+        lines.append(fold_line(rest, r))
     return lines or ["Sprints: none active or planned."]
 
 
